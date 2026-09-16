@@ -1,0 +1,16 @@
+[submodule "graal"]
+	path = vendor/graal
+	url = https://github.com/android-graal/graal.git
+	branch = android-graal
+[submodule "llvm-project"]
+	path = vendor/llvm-project
+	url = https://github.com/android-graal/llvm-project.git
+	branch = android-graal
+[submodule "mx"]
+	path = vendor/mx
+	url = https://github.com/android-graal/mx.git
+	branch = android-graal
+[submodule "labs-openjdk"]
+	path = vendor/labs-openjdk
+	url = https://github.com/android-graal/labs-openjdk.git
+	branch = android-graal
