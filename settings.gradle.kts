@@ -17,4 +17,3 @@ dependencyResolutionManagement {
 rootProject.name = "android-graal"
 
 include("gradle-plugin")
-include("app")
