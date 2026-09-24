@@ -1,5 +1,6 @@
 package org.androidgraal.buildlogic
 
+import org.apache.commons.io.output.TeeOutputStream
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.file.ConfigurableFileCollection

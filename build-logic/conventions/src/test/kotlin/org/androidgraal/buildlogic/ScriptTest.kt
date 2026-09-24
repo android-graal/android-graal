@@ -459,6 +459,20 @@ class ScriptTest {
     }
 
     @Test
+    fun `standard output and standard error both land in the log`() {
+        val present = File(tmp, "present.txt").apply { writeText("") }
+        val missing = File(tmp, "missing.txt")
+        val script = script()
+        script.exec("/bin/ls", present.path, missing.path)
+
+        assertFailsWith<GradleException> { script.runScript() }
+
+        val log = script.logFile.readLines()
+        assertTrue(present.path in log, "$log")
+        assertTrue(log.any { missing.path in it && it.startsWith("ls:") }, "$log")
+    }
+
+    @Test
     fun `the task directory holds the log and is the default work directory`() {
         val script = script()
         val taskDir = File(project.layout.buildDirectory.get().asFile, script.name)

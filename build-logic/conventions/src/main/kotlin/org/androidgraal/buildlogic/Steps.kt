@@ -1,5 +1,7 @@
 package org.androidgraal.buildlogic
 
+import org.apache.commons.io.output.CloseShieldOutputStream
+import org.apache.commons.io.output.TeeOutputStream
 import org.gradle.api.GradleException
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -230,70 +232,23 @@ private fun RunContext.execute(command: List<String>, capture: Boolean): String?
     log.line("=== $directory$ $commandLine")
     val startedAt = System.nanoTime()
     val resolvedEnvironment = environment.mapValues { unwrap(it.value) }
-    // Gradle closes the streams it is handed; the log has to outlive every process.
-    val processOutput = NonClosingOutputStream(log)
-    val captured = if (capture) CapturingOutputStream(processOutput) else null
+    val standard = CloseShieldOutputStream.wrap(log)
+    val captured = if (capture) ByteArrayOutputStream() else null
+    // Gradle closes each stream from its own forwarder thread.
     script.execOperations.exec {
         workingDir(directory)
         commandLine(resolved)
         environment(resolvedEnvironment)
-        standardOutput = captured ?: processOutput
-        errorOutput = processOutput
+        standardOutput = if (captured != null) TeeOutputStream(standard, captured) else standard
+        errorOutput = CloseShieldOutputStream.wrap(log)
     }
     val seconds = (System.nanoTime() - startedAt) / 1_000_000_000.0
     log.line("=== $commandLine took %.1f s".format(seconds))
-    return captured?.lastNonEmptyLine()
-}
 
-private class NonClosingOutputStream(private val delegate: OutputStream) : OutputStream() {
+    if (captured == null)
+        return null
 
-    override fun write(b: Int) = delegate.write(b)
-
-    override fun write(b: ByteArray, off: Int, len: Int) = delegate.write(b, off, len)
-
-    override fun flush() = delegate.flush()
-
-    override fun close() = delegate.flush()
-}
-
-internal class TeeOutputStream(private val first: OutputStream, private val second: OutputStream) : OutputStream() {
-
-    @Synchronized
-    override fun write(b: Int) {
-        first.write(b)
-        second.write(b)
-    }
-
-    @Synchronized
-    override fun write(b: ByteArray, off: Int, len: Int) {
-        first.write(b, off, len)
-        second.write(b, off, len)
-    }
-
-    @Synchronized
-    override fun flush() {
-        first.flush()
-        second.flush()
-    }
-}
-
-private class CapturingOutputStream(private val delegate: OutputStream) : OutputStream() {
-
-    private val buffer = ByteArrayOutputStream()
-
-    override fun write(b: Int) {
-        delegate.write(b)
-        buffer.write(b)
-    }
-
-    override fun write(b: ByteArray, off: Int, len: Int) {
-        delegate.write(b, off, len)
-        buffer.write(b, off, len)
-    }
-
-    override fun flush() = delegate.flush()
-
-    fun lastNonEmptyLine(): String? = buffer.toString(Charsets.UTF_8).lines().lastOrNull { it.isNotBlank() }?.trim()
+    return captured.toString(Charsets.UTF_8).lines().lastOrNull { it.isNotBlank() }?.trim()
 }
 
 internal fun OutputStream.line(text: String) {

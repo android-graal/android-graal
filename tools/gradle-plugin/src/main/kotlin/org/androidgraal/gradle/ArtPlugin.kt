@@ -120,6 +120,7 @@ class ArtPlugin : Plugin<Project> {
             project.extensions.getByType(ApplicationAndroidComponentsExtension::class.java)
 
         val ndkRoot = androidComponents.sdkComponents.ndkDirectory
+        val console = project.providers.gradleProperty(CONSOLE_PROPERTY).map { it != "false" }.orElse(false)
 
         androidComponents.onVariants(androidComponents.selector().all()) { variant: ApplicationVariant ->
             val target = target(variant, project.extensions.getByType(ApplicationExtension::class.java))
@@ -152,8 +153,10 @@ class ArtPlugin : Plugin<Project> {
                 task.verbose.set(extension.verbose)
                 task.quickBuild.set(extension.quickBuild)
                 task.useLLVM.set(extension.useLLVM)
-                task.workDir.set(project.layout.buildDirectory.dir("androidgraal/${variant.name}/work"))
-                task.objectsDir.set(project.layout.buildDirectory.dir("androidgraal/${variant.name}/objects"))
+                task.taskDir.set(project.layout.buildDirectory.dir("androidgraal/${variant.name}/native-image"))
+                task.console.set(console)
+                task.workDir.set(task.taskDir.dir("work"))
+                task.objectsDir.set(task.taskDir.dir("objects"))
             }
 
             val linkTask = project.tasks.register(
@@ -170,7 +173,9 @@ class ArtPlugin : Plugin<Project> {
                 task.ndkFiles.from(ndk.root)
                 task.clang.set(ndk.clang.toString())
                 task.minSdk.set(variant.minSdk.apiLevel)
-                task.outputDir.set(project.layout.buildDirectory.dir("androidgraal/${variant.name}/jniLibs"))
+                task.taskDir.set(project.layout.buildDirectory.dir("androidgraal/${variant.name}/link"))
+                task.console.set(console)
+                task.outputDir.set(task.taskDir.dir("jniLibs"))
             }
 
             // AGP packages every .so under <dir>/<abi>/ of a generated jniLibs directory.
@@ -269,6 +274,7 @@ class ArtPlugin : Plugin<Project> {
 
         private const val TOOLCHAIN_LOCAL_PROPERTY = "androidgraal.toolchain.dir"
         private const val TOOLCHAIN_ENV_VAR = "ANDROID_GRAAL_TOOLCHAIN"
+        private const val CONSOLE_PROPERTY = "androidgraal.console"
 
         private const val TOOLCHAIN_MODULE = "org.androidgraal:toolchain"
 

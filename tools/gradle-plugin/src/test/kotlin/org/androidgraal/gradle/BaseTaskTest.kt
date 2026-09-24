@@ -2,9 +2,12 @@ package org.androidgraal.gradle
 
 import org.androidgraal.substrate.ProcessRunner
 import org.apache.commons.io.FileUtils
+import org.gradle.api.GradleException
 import org.gradle.api.tasks.Internal
 import org.gradle.testfixtures.ProjectBuilder
+import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.PrintStream
 import kotlin.io.path.createTempDirectory
 import kotlin.test.AfterTest
 import kotlin.test.Test
@@ -17,7 +20,10 @@ class BaseTaskTest {
     private val tmp: File = createTempDirectory("base-task-test").toFile()
 
     private val task: ToolTask = ProjectBuilder.builder().withProjectDir(tmp).build()
-        .tasks.register("tool", ToolTask::class.java).get()
+        .tasks.register("tool", ToolTask::class.java) {
+            it.taskDir.set(tmp.resolve("build/task"))
+            it.console.set(false)
+        }.get()
 
     @AfterTest
     fun cleanUp() = FileUtils.deleteDirectory(tmp)
@@ -30,7 +36,7 @@ class BaseTaskTest {
         task.run()
 
         assertEquals(0, exit)
-        assertEquals(tmp.canonicalFile.resolve("build/tool.log"), task.logFile.canonicalFile)
+        assertEquals(tmp.canonicalFile.resolve("build/task/tool.log"), task.logFile.canonicalFile)
         assertEquals(listOf("=== $tmp$ $ECHO hello", "hello"), task.logFile.readLines())
     }
 
@@ -69,9 +75,10 @@ class BaseTaskTest {
             it.runOrFail("false", listOf(FALSE), tmp)
         }
 
-        val failure = assertFailsWith<IllegalStateException> { task.run() }
+        val failure = assertFailsWith<GradleException> { task.run() }
 
-        assertEquals("false failed with exit code 1", failure.message)
+        assertEquals("${task.name} failed, see ${task.logFile}", failure.message)
+        assertEquals("false failed with exit code 1", failure.cause?.message)
         assertEquals(listOf("=== $tmp$ $ECHO before", "before", "=== $tmp$ $FALSE"), task.logFile.readLines())
     }
 
@@ -85,13 +92,52 @@ class BaseTaskTest {
 
         assertEquals(listOf("=== $tmp$ $ECHO fresh", "fresh"), task.logFile.readLines())
     }
+
+    @Test
+    fun `the console tee repeats the log on standard output`() {
+        task.console.set(true)
+        task.action = { it.run(listOf(ECHO, "shown"), tmp) }
+
+        val printed = captureSystemOut { task.run() }
+
+        assertEquals(task.logFile.readText(), printed)
+    }
+
+    @Test
+    fun `without the console tee nothing reaches standard output`() {
+        task.action = { it.run(listOf(ECHO, "hidden"), tmp) }
+
+        val printed = captureSystemOut { task.run() }
+
+        assertEquals("", printed)
+        assertEquals(listOf("=== $tmp$ $ECHO hidden", "hidden"), task.logFile.readLines())
+    }
+
+    @Test
+    fun `the runner exists only while the task action runs`() {
+        val failure = assertFailsWith<IllegalStateException> { task.execute() }
+
+        assertTrue(task.path in failure.message.orEmpty(), failure.message)
+    }
+
+    private fun captureSystemOut(block: () -> Unit): String {
+        val original = System.out
+        val captured = ByteArrayOutputStream()
+        System.setOut(PrintStream(captured, true))
+        try {
+            block()
+        } finally {
+            System.setOut(original)
+        }
+        return captured.toString(Charsets.UTF_8)
+    }
 }
 
 abstract class ToolTask : BaseTask() {
     @get:Internal
     var action: (ProcessRunner) -> Unit = {}
 
-    override fun execute() = action(runner())
+    public override fun execute() = action(runner())
 }
 
 private const val ECHO = "/bin/echo"
