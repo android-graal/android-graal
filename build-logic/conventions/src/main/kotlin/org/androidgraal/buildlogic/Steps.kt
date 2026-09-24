@@ -245,8 +245,9 @@ private fun RunContext.execute(command: List<String>, capture: Boolean): String?
     val seconds = (System.nanoTime() - startedAt) / 1_000_000_000.0
     log.line("=== $commandLine took %.1f s".format(seconds))
 
-    if (captured == null)
+    if (captured == null) {
         return null
+    }
 
     return captured.toString(Charsets.UTF_8).lines().lastOrNull { it.isNotBlank() }?.trim()
 }
