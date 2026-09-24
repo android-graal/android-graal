@@ -14,9 +14,6 @@ val hostCMake = nativeHost.cmake()
 /** The shipped tools as ninja targets: `ld.lld` is a link the `lld` target produces. */
 val tools = Toolchain.LLVM_TOOLS.map { if (it == "ld.lld") "lld" else it }
 
-val cmakeDir: File = layout.buildDirectory.dir("llvm").get().asFile
-val binDir: File = cmakeDir.resolve("bin")
-
 val buildLlvm = tasks.register<Script>("buildLlvm") {
     group = "android-graal"
     description = "Configures and builds vendor/llvm-project for the host."
@@ -24,8 +21,8 @@ val buildLlvm = tasks.register<Script>("buildLlvm") {
     val llvm = source("llvm", nativeHost.vendor.llvm)
     val cmake = source("cmake", hostCMake.cmake)
     val ninja = source("ninja", hostCMake.ninja)
-    val build = root("llvmBuild", cmakeDir)
-    output("bin", binDir)
+    val build = root("llvmBuild", dir("llvm"))
+    val bin = output(Native.Llvm.bin, dir("bin"))
 
     env("CC", "/usr/bin/clang")
     env("CXX", "/usr/bin/clang++")
@@ -47,9 +44,10 @@ val buildLlvm = tasks.register<Script>("buildLlvm") {
     )
     progress("ninja ${tools.joinToString(" ")}")
     exec(listOf(ninja, "-C", build) + tools)
+    copy("$build/bin", bin, *Toolchain.LLVM_TOOLS.toTypedArray())
 }
 
-nativeOutput(Native.Llvm.bin, binDir, buildLlvm)
+nativeOutput(Native.Llvm.bin, buildLlvm)
 
 tasks.assemble {
     dependsOn(buildLlvm)

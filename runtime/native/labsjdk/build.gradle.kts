@@ -10,8 +10,7 @@ description = "The labsjdk that builds vendor/graal and cross-compiles vendor/la
 
 val vendor = nativeHost.vendor
 
-val jdkDir: File = layout.buildDirectory.dir("jdk").get().asFile
-val bootJdkHome: File = jdkDir.resolve("labsjdk")
+val jdkOutput = "jdk"
 
 val fetchJdk = tasks.register<Script>("fetchJdk") {
     group = "android-graal"
@@ -19,17 +18,14 @@ val fetchJdk = tasks.register<Script>("fetchJdk") {
 
     val mx = source("mx", vendor.mx)
     val commonJson = source("commonJson", vendor.graal.resolve("common.json"))
-    val mxOut = root("mxOutput", layout.buildDirectory.dir("mx").get().asFile)
-    val to = output("jdk", jdkDir)
+    val mxOut = root("mxOutput", dir("mx"))
+    val to = output(jdkOutput, dir("jdk"))
 
-    mkdir(to)
     workDir(to)
     env("MX_ALT_OUTPUT_ROOT", mxOut)
     env("PYTHONDONTWRITEBYTECODE", "1")
     env("MX_PYTHON", "python3")
     progress("fetch-jdk labsjdk-ce-latest")
-    // A build-cache restore leaves the alias as a directory, which mx refuses to replace.
-    delete("$to/labsjdk")
     exec(
         "$mx/mx", "-y", "--no-warning", "fetch-jdk",
         "--configuration", commonJson,
@@ -37,7 +33,7 @@ val fetchJdk = tasks.register<Script>("fetchJdk") {
     )
 }
 
-nativeOutput(Native.LabsJdk.home, bootJdkHome, fetchJdk)
+nativeOutput(Native.LabsJdk.home, fetchJdk.map { it.getOutput(jdkOutput).resolve("labsjdk") })
 
 tasks.assemble {
     dependsOn(fetchJdk)

@@ -256,6 +256,27 @@ private class NonClosingOutputStream(private val delegate: OutputStream) : Outpu
     override fun close() = delegate.flush()
 }
 
+internal class TeeOutputStream(private val first: OutputStream, private val second: OutputStream) : OutputStream() {
+
+    @Synchronized
+    override fun write(b: Int) {
+        first.write(b)
+        second.write(b)
+    }
+
+    @Synchronized
+    override fun write(b: ByteArray, off: Int, len: Int) {
+        first.write(b, off, len)
+        second.write(b, off, len)
+    }
+
+    @Synchronized
+    override fun flush() {
+        first.flush()
+        second.flush()
+    }
+}
+
 private class CapturingOutputStream(private val delegate: OutputStream) : OutputStream() {
 
     private val buffer = ByteArrayOutputStream()

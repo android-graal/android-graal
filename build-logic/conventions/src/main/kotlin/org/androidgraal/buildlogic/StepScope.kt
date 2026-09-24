@@ -11,7 +11,7 @@ interface StepScope {
     /** Added to the inherited environment of every following [exec]. */
     fun env(key: String, value: String)
 
-    /** Working directory of every following [exec]; the project directory by default. */
+    /** Working directory of every following [exec]; the task directory by default. */
     fun workDir(path: String)
 
     fun mkdir(path: String)

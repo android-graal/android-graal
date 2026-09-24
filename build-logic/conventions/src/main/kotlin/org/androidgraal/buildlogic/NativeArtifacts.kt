@@ -6,6 +6,7 @@ import org.gradle.api.Project
 import org.gradle.api.artifacts.ConsumableConfiguration
 import org.gradle.api.attributes.Usage
 import org.gradle.api.file.FileCollection
+import org.gradle.api.tasks.TaskProvider
 import org.gradle.kotlin.dsl.project
 
 sealed class NativeProject(val name: String) {
@@ -49,11 +50,7 @@ object Native {
     }
 }
 
-fun Project.nativeOutput(
-    artifact: NativeArtifact,
-    file: Any,
-    producedBy: Any = emptyList<Any>(),
-): NamedDomainObjectProvider<ConsumableConfiguration> {
+fun Project.nativeOutput(artifact: NativeArtifact, file: Any): NamedDomainObjectProvider<ConsumableConfiguration> {
     if (path != artifact.project.path) {
         throw GradleException("${artifact.project.path} produces ${artifact.name}, $path cannot")
     }
@@ -61,9 +58,14 @@ fun Project.nativeOutput(
         attributes {
             attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage::class.java, artifact.usage))
         }
-        outgoing.artifact(file) { builtBy(producedBy) }
+        outgoing.artifact(file)
     }
 }
+
+fun Project.nativeOutput(
+    artifact: NativeArtifact,
+    task: TaskProvider<out Script>,
+): NamedDomainObjectProvider<ConsumableConfiguration> = nativeOutput(artifact, task.map { it.getOutput(artifact) })
 
 fun Project.nativeInput(artifact: NativeArtifact): FileCollection {
     val name = artifact.project.name + artifact.name.replaceFirstChar { it.uppercaseChar() }

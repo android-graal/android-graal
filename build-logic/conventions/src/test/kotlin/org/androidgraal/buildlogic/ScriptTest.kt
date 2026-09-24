@@ -5,11 +5,17 @@ import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import java.io.ByteArrayOutputStream
 import java.io.File
+import java.io.PrintStream
+import java.nio.file.Files
+import java.nio.file.Path
 import kotlin.io.path.createTempDirectory
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
+import kotlin.test.assertNotNull
+import kotlin.test.assertTrue
 
 class ScriptTest {
 
@@ -241,6 +247,24 @@ class ScriptTest {
     }
 
     @Test
+    fun `an included copy writes the target of a symlink`() {
+        val bin = File(tmp, "llvm/bin")
+        bin.mkdirs()
+        File(bin, "lld").writeText("lld")
+        File(bin, "lld").setExecutable(true)
+        Files.createSymbolicLink(File(bin, "ld.lld").toPath(), Path.of("lld"))
+        val into = File(tmp, "bin")
+
+        CopyStep(bin.path, into.path, listOf("ld.lld")).run(RunContext(script(), ByteArrayOutputStream()))
+
+        val copied = File(into, "ld.lld")
+        assertFalse(Files.isSymbolicLink(copied.toPath()))
+        assertEquals("lld", copied.readText())
+        assertTrue(copied.canExecute())
+        assertEquals(listOf("ld.lld"), into.list()?.toList())
+    }
+
+    @Test
     fun `a source directory declares its tree, minus git, and a root`() {
         val clone = File(tmp, "clone")
         File(clone, "src").mkdirs()
@@ -273,6 +297,91 @@ class ScriptTest {
         assertEquals("@{lib}", script.output("lib", lib))
         assertEquals(setOf(lib), script.outputs.files.files)
         assertEquals("@{lib}/libjvm.a", script.rel(File(lib, "libjvm.a")))
+    }
+
+    @Test
+    fun `an output is looked up by its alias`() {
+        val lib = File(tmp, "build/lib")
+        val script = script()
+        script.output("lib", lib)
+
+        assertEquals(lib, script.getOutput("lib"))
+    }
+
+    @Test
+    fun `an undeclared output fails by name`() {
+        val script = script()
+        script.root("obj", File(tmp, "build/obj"))
+
+        val failure = assertFailsWith<GradleException> { script.getOutput("obj") }
+
+        assertEquals("no output obj declared in ${script.name}", failure.message)
+    }
+
+    @Test
+    fun `an artifact output is declared and looked up under the artifact name`() {
+        val bin = File(tmp, "build/bin")
+        val script = script()
+
+        assertEquals("@{bin}", script.output(Native.Llvm.bin, bin))
+        assertEquals(bin, script.getOutput(Native.Llvm.bin))
+        assertEquals(bin, script.getOutput("bin"))
+    }
+
+    @Test
+    fun `a native output of a task publishes the declared directory, built by the task`() {
+        val native = ProjectBuilder.builder().withName("native").withParent(project).build()
+        val llvm = ProjectBuilder.builder().withName("llvm").withParent(native).build()
+        val bin = File(tmp, "build/bin")
+        val buildLlvm = llvm.tasks.register("buildLlvm", Script::class.java) {
+            output(Native.Llvm.bin, bin)
+        }
+
+        val elements = llvm.nativeOutput(Native.Llvm.bin, buildLlvm).get()
+
+        val artifact = elements.outgoing.artifacts.single()
+        assertEquals(bin, artifact.file)
+        assertEquals(setOf(buildLlvm.get()), artifact.buildDependencies.getDependencies(null))
+    }
+
+    @Test
+    fun `a provider input resolves to the provider's file`() {
+        val query = File(tmp, "build/query")
+        val producer = project.tasks.register("producer")
+        val script = script()
+
+        assertEquals("@{query}", script.input("query", producer.map { query }))
+        assertEquals("$query/a.c", script.unwrap("@{query}/a.c"))
+        assertEquals(setOf(producer.get()), script.inputFiles.buildDependencies.getDependencies(script))
+    }
+
+    @Test
+    fun `an output is empty before the first step`() {
+        val lib = File(tmp, "build/lib")
+        lib.mkdirs()
+        File(lib, "stale.a").writeText("")
+        val script = script()
+        val out = script.output("lib", lib)
+        script.exec("/bin/test", "-d", out)
+        script.exec("/bin/rmdir", out)
+
+        script.runScript()
+
+        assertFalse(File(lib, "stale.a").exists())
+    }
+
+    @Test
+    fun `a root survives the run`() {
+        val obj = File(tmp, "build/obj")
+        obj.mkdirs()
+        File(obj, "kept.o").writeText("")
+        val script = script()
+        val root = script.root("obj", obj)
+        script.exec("/bin/test", "-e", "$root/kept.o")
+
+        script.runScript()
+
+        assertTrue(File(obj, "kept.o").exists())
     }
 
     @Test
@@ -349,5 +458,71 @@ class ScriptTest {
         assertEquals("=== after the processes", log.last())
     }
 
-    private fun script(): Script = project.tasks.register("script", Script::class.java).get()
+    @Test
+    fun `the task directory holds the log and is the default work directory`() {
+        val script = script()
+        val taskDir = File(project.layout.buildDirectory.get().asFile, script.name)
+
+        assertEquals(File(taskDir, "${script.name}.log"), script.logFile)
+        assertEquals(taskDir, script.defaultWorkDir)
+        assertEquals(File(taskDir, "x"), script.dir("x"))
+    }
+
+    @Test
+    fun `a process runs in the task directory by default`() {
+        val script = script()
+        script.exec("/bin/pwd")
+
+        script.runScript()
+
+        val printed = script.logFile.readLines().single { it.isNotEmpty() && !it.startsWith("=== ") }
+        assertEquals(script.defaultWorkDir.canonicalFile, File(printed).canonicalFile)
+    }
+
+    @Test
+    fun `the console tee writes the log to System out`() {
+        val script = script()
+        script.exec("/bin/echo", "teed")
+        script.progress("done")
+        script.console.set(true)
+
+        val printed = captureSystemOut { script.runScript() }
+
+        assertEquals(script.logFile.readText(), printed)
+    }
+
+    @Test
+    fun `without the console the log stays off System out`() {
+        val script = script()
+        script.exec("/bin/echo", "quiet")
+
+        val printed = captureSystemOut { script.runScript() }
+
+        assertEquals("", printed)
+    }
+
+    @Test
+    fun `a failing step names the task and its log`() {
+        val script = script()
+        script.exec("/usr/bin/false")
+
+        val failure = assertFailsWith<GradleException> { script.runScript() }
+
+        assertEquals("${script.name} failed, see ${script.logFile}", failure.message)
+        assertNotNull(failure.cause)
+    }
+
+    private fun captureSystemOut(action: () -> Unit): String {
+        val original = System.out
+        val captured = ByteArrayOutputStream()
+        System.setOut(PrintStream(captured, true))
+        try {
+            action()
+        } finally {
+            System.setOut(original)
+        }
+        return captured.toString(Charsets.UTF_8)
+    }
+
+    private fun script(): Script = project.tasks.register("script", Script::class.java) { console.set(false) }.get()
 }

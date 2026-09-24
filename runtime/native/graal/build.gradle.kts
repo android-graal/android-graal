@@ -13,20 +13,17 @@ val vendor = nativeHost.vendor
 
 val bootJdkHome: FileCollection = nativeInput(Native.LabsJdk.home)
 
-val graalvmHome: File = layout.buildDirectory.dir("graalvm").get().asFile
-val jvmFuncsFallbacks: File = layout.buildDirectory.file("fallbacks/JvmFuncsFallbacks.c").get().asFile
-
 val buildGraal = tasks.register<Script>("buildGraal") {
     group = "android-graal"
     description = "Runs `mx build` on a copy of vendor/graal and copies the GraalVM home out of it."
 
     val bootJdk = input("bootJdk", bootJdkHome)
-    val mxOutput = root("mxOutput", layout.buildDirectory.dir("mx").get().asFile)
-    val srcDir = layout.buildDirectory.dir("src").get().asFile
+    val mxOutput = root("mxOutput", dir("mx"))
+    val srcDir = dir("src")
     val clones = root("clones", srcDir)
 
-    val graalOutput = output("graalvmHome", graalvmHome)
-    val fallbackOutput = output("fallbacks", jvmFuncsFallbacks.parentFile)
+    val graalOutput = output(Native.Graal.home, dir("graalvm"))
+    val fallbackOutput = output(Native.Graal.jvmFuncsFallbacks, dir("fallbacks"))
 
     progress("copying the clones")
     val graal = sourceCopy("graal", vendor.graal, srcDir.resolve("graal"))
@@ -45,18 +42,14 @@ val buildGraal = tasks.register<Script>("buildGraal") {
     progress("mx build")
     exec("$mx/mx", "--java-home", bootJdk, "build")
     progress("copying the GraalVM home out of mxbuild")
-    val home = capture("home", "$mx/mx", "graalvm-home")
+    val home = capture("graalvmHome", "$mx/mx", "graalvm-home")
     rsync(home, graalOutput)
     progress("copying JvmFuncsFallbacks.c")
-    copy(
-        "$mxOutput/substratevm",
-        fallbackOutput,
-        "**/JvmFuncsFallbacks.c",
-    )
+    copy("$mxOutput/substratevm", fallbackOutput, "**/JvmFuncsFallbacks.c")
 }
 
-nativeOutput(Native.Graal.home, graalvmHome, buildGraal)
-nativeOutput(Native.Graal.jvmFuncsFallbacks, jvmFuncsFallbacks, buildGraal)
+nativeOutput(Native.Graal.home, buildGraal)
+nativeOutput(Native.Graal.jvmFuncsFallbacks, buildGraal)
 
 tasks.assemble {
     dependsOn(buildGraal)

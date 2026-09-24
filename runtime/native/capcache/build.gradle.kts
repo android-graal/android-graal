@@ -18,10 +18,11 @@ val llvmBinDir: FileCollection = nativeInput(Native.Llvm.bin)
 val target = Target.AARCH64
 
 val capCache: Directory = layout.projectDirectory.dir("src/${target.triple}")
-val queryDir: File = layout.buildDirectory.dir("query").get().asFile
-val queryBin: File = layout.buildDirectory.dir("bin").get().asFile
 
 nativeOutput(Native.CapCache.dir, capCache)
+
+val queryOutput = "query"
+val binOutput = "bin"
 
 val generateCapQueries = tasks.register<Script>("generateCapQueries") {
     group = "android-graal"
@@ -29,9 +30,8 @@ val generateCapQueries = tasks.register<Script>("generateCapQueries") {
 
     val graalvmHome = input("graalvmHome", graalvmHomeDir)
     val llvmBin = input("llvmBin", llvmBinDir)
-    val query = output("query", queryDir)
+    val query = output(queryOutput, dir("query"))
 
-    delete(query)
     progress("native-image -H:+ExitAfterQueryCodeGeneration")
     exec(
         "$graalvmHome/bin/native-image",
@@ -54,15 +54,13 @@ val compileCapQueries = tasks.register<Script>("compileCapQueries") {
     description = "Compiles the query programs for ${target.triple} with the NDK clang."
 
     val graalvmHome = input("graalvmHome", graalvmHomeDir)
-    val query = input("query", files(queryDir).builtBy(generateCapQueries))
+    val query = input("query", generateCapQueries.map { it.getOutput(queryOutput) })
     val jdkSrc = source("jdkSrc", vendor.labsOpenjdk.resolve("src"))
     val svmSrc = source("svmSrc", vendor.graal.resolve("substratevm/src"))
-    val ndkSrc = source("ndk", nativeHost.ndk.root)
-    val bin = output("bin", queryBin)
+    source("ndk", nativeHost.ndk.root)
+    val bin = output(binOutput, dir("bin"))
 
     val cc = "${rel(nativeHost.ndk.toolchain)}/bin/clang"
-    delete(bin)
-    mkdir(bin)
     progress("compiling the query programs")
     forEach(query, "*.c") { each ->
         exec(
@@ -80,13 +78,13 @@ tasks.register<Script>("regenerateCapCache") {
     group = "android-graal"
     description = "Runs the query programs on a connected device and rewrites src/${target.triple}/*.cap."
 
-    // Never up to date
     outputs.upToDateWhen { false }
     outputs.cacheIf { false }
 
-    val bin = input("bin", files(queryBin).builtBy(compileCapQueries))
+    val bin = input("bin", compileCapQueries.map { it.getOutput(binOutput) })
     val adb = source("adb", nativeHost.sdk.adb)
-    val cap = output("cap", capCache.asFile)
+    val cap = output("cap", dir("cap"))
+    val src = root("src", capCache.asFile)
 
     val remote = "/data/local/tmp/capq"
     progress("running the query programs on the device")
@@ -101,4 +99,5 @@ tasks.register<Script>("regenerateCapCache") {
         )
         exec(adb, "pull", "$remote/${each.name}.out", "$cap/${each.name}.cap")
     }
+    rsync(cap, src)
 }

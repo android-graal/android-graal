@@ -15,10 +15,8 @@ val substratevm: File = nativeHost.vendor.graal.resolve("substratevm")
 
 val target = Target.AARCH64
 
-val fallbacksFile: FileCollection = nativeInput(Native.Graal.jvmFuncsFallbacks)
+val fallbacksDir: FileCollection = nativeInput(Native.Graal.jvmFuncsFallbacks)
 val jdkIncludeDir: FileCollection = nativeInput(Native.Jdk.include)
-
-val staticLibs: File = layout.buildDirectory.dir("lib").get().asFile
 
 // commonCFlags and the two container lists are the "linux" cflags of jvm.posix and libcontainer in
 // vendor/graal/substratevm/mx.substratevm/suite.py, minus -g and -gdwarf-5.
@@ -53,16 +51,14 @@ val buildSvmStaticLibs = tasks.register<Script>("buildSvmStaticLibs") {
     group = "android-graal"
     description = "Compiles the three SubstrateVM support libraries for ${target.triple}."
 
-    val objDir: File = layout.buildDirectory.dir("obj").get().asFile
-
-    val fallbacks = input("fallbacks", fallbacksFile)
+    val fallbacks = input("fallbacks", fallbacksDir)
     val jdkInclude = input("jdkInclude", jdkIncludeDir)
     val chelperDir = source("libchelper", substratevm.resolve("src/com.oracle.svm.native.libchelper"))
     val jvmPosixDir = source("jvmPosix", substratevm.resolve("src/com.oracle.svm.native.jvm.posix"))
     val containerDir = source("libcontainer", substratevm.resolve("src/com.oracle.svm.native.libcontainer"))
     source("ndk", nativeHost.ndk.root)
-    val obj = root("obj", objDir)
-    val lib = output("lib", staticLibs)
+    val obj = root("obj", dir("obj"))
+    val lib = output(Native.Svm.staticLibs, dir("lib"))
 
     val toolchain = rel(nativeHost.ndk.toolchain)
     val clang = Compiler("$toolchain/bin/clang", "$toolchain/bin/clang++", "$toolchain/bin/llvm-ar")
@@ -70,8 +66,6 @@ val buildSvmStaticLibs = tasks.register<Script>("buildSvmStaticLibs") {
 
     progress("Compiling with NDK ${nativeHost.ndk.version()}")
     delete(obj)
-    delete(lib)
-    mkdir(lib)
     staticLib(
         "$lib/liblibchelper.a",
         "$obj/libchelper",
@@ -101,7 +95,7 @@ val buildSvmStaticLibs = tasks.register<Script>("buildSvmStaticLibs") {
     )
 }
 
-nativeOutput(Native.Svm.staticLibs, staticLibs, buildSvmStaticLibs)
+nativeOutput(Native.Svm.staticLibs, buildSvmStaticLibs)
 
 tasks.assemble {
     dependsOn(buildSvmStaticLibs)

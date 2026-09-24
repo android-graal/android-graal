@@ -10,4 +10,5 @@ val nativeHost = the<NativeHost>()
 
 tasks.withType<Script>().configureEach {
     forbid(nativeHost.root, nativeHost.sdk.root, nativeHost.ndk.root)
+    console.convention(providers.gradleProperty("androidgraal.console").map { it != "false" }.orElse(false))
 }

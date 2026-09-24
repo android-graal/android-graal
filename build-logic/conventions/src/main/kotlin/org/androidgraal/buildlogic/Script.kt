@@ -7,6 +7,8 @@ import org.gradle.api.file.FileCollection
 import org.gradle.api.file.FileSystemOperations
 import org.gradle.api.file.ProjectLayout
 import org.gradle.api.model.ObjectFactory
+import org.gradle.api.provider.Property
+import org.gradle.api.provider.Provider
 import org.gradle.api.tasks.CacheableTask
 import org.gradle.api.tasks.Input
 import org.gradle.api.tasks.InputFiles
@@ -48,16 +50,26 @@ abstract class Script :
 
     private val forbidden = mutableListOf<String>()
 
+    private val outputDirs = linkedMapOf<String, File>()
+
     private val builder = StepBuilder(::checkPortable, ::reserve)
 
     @get:Input
     val steps: List<Step> get() = builder.steps
 
     @get:Internal
-    val logFile: File get() = projectLayout.buildDirectory.file("$name.log").get().asFile
+    abstract val console: Property<Boolean>
 
     @get:Internal
-    val defaultWorkDir: File get() = projectLayout.projectDirectory.asFile
+    val taskDir: File get() = projectLayout.buildDirectory.dir(name).get().asFile
+
+    @get:Internal
+    val logFile: File get() = dir("$name.log")
+
+    @get:Internal
+    val defaultWorkDir: File get() = taskDir
+
+    fun dir(relative: String): File = taskDir.resolve(relative)
 
     /** Scratch: neither input nor output. */
     fun root(alias: String, file: File): String {
@@ -92,18 +104,30 @@ abstract class Script :
     }
 
     /** Another task's artifact; the sentinel stands for its single file. */
-    fun input(name: String, files: FileCollection): String {
+    fun input(alias: String, files: FileCollection): String {
         inputFiles.from(files)
-        artifacts[name] = files
-        reserve(name)
-        return sentinel(name)
+        artifacts[alias] = files
+        reserve(alias)
+        return sentinel(alias)
     }
 
-    /** Declares [dir] as an output directory under [alias] and registers it as a root. */
+    fun input(alias: String, file: Provider<File>): String = input(alias, objectFactory.fileCollection().from(file))
+
+    /** Declares [dir] as an output directory under [alias], empty before the first step, and as a root. */
     fun output(alias: String, dir: File): String {
+        val sentinel = root(alias, dir)
         outputs.dir(dir)
-        return root(alias, dir)
+        outputDirs[alias] = dir
+        return sentinel
     }
+
+    fun output(artifact: NativeArtifact, dir: File): String = output(artifact.name, dir)
+
+    fun getOutput(alias: String): File {
+        return outputDirs[alias] ?: throw GradleException("no output $alias declared in $name")
+    }
+
+    fun getOutput(artifact: NativeArtifact): File = getOutput(artifact.name)
 
     /** The source is declared as `<alias>.source`, the copy as [alias]. */
     fun sourceCopy(alias: String, dir: File, into: File): String {
@@ -153,21 +177,25 @@ abstract class Script :
     @TaskAction
     fun runScript() {
         val log = logFile
-        log.parentFile.mkdirs()
+        taskDir.mkdirs()
         log.delete()
+        fileSystemOperations.delete { delete(outputDirs.values) }
+        outputDirs.values.forEach { it.mkdirs() }
         try {
-            log.outputStream().buffered().use { out ->
+            log.outputStream().buffered().use { file ->
+                val out = if (console.get()) TeeOutputStream(file, System.out) else file
                 val context = RunContext(this, out)
                 for (step in steps) {
                     step.run(context)
                 }
             }
         } catch (e: Throwable) {
-            logger.error("android-graal: $name failed; log: $log")
+            logger.error("=== $log")
             if (log.isFile) {
                 log.forEachLine { logger.error(it) }
             }
-            throw e
+            logger.error("=== end of ${log.name}")
+            throw GradleException("$name failed, see $log", e)
         }
     }
 
