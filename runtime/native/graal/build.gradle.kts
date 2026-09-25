@@ -40,7 +40,8 @@ val buildGraal = tasks.register<Script>("buildGraal") {
     workDir("$graal/substratevm")
 
     progress("mx build")
-    exec("$mx/mx", "--java-home", bootJdk, "build")
+    val graalvmDist = capture("graalvmDist", "$mx/mx", "--java-home", bootJdk, "graalvm-dist-name")
+    exec("$mx/mx", "--java-home", bootJdk, "build", "--dependencies", graalvmDist)
     progress("copying the GraalVM home out of mxbuild")
     val home = capture("graalvmHome", "$mx/mx", "graalvm-home")
     rsync(home, graalOutput)
