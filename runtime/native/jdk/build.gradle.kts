@@ -36,16 +36,13 @@ val buildJdkStaticLibs = tasks.register<Script>("buildJdkStaticLibs") {
     exec(
         "bash", "$labsOpenjdk/configure",
         "--with-conf-name=$conf",
-        "--with-android-api-level=$androidApi",
         "--enable-headless-only",
         "--with-boot-jdk=$bootJdk",
         "--with-build-jdk=$bootJdk",
         "--with-toolchain-path=$toolchain/bin",
         "--with-sysroot=$toolchain/sysroot",
-        "--with-toolchain-type=clang",
         "--with-jvm-variants=minimal",
-        "--host=${target.triple}",
-        "--target=${target.triple}",
+        "--openjdk-target=${target.clangTarget}$androidApi",
     )
     progress("make static-libs")
     exec("make", "static-libs")
