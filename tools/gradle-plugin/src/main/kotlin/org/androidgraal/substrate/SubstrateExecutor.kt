@@ -48,8 +48,6 @@ class SubstrateExecutor(private val config: Config, private val runner: ProcessR
             "-H:TempDirectory=$work",
             "-o",
             config.workDir.resolve(config.imageName).absolutePath,
-            // `CPUTypeAArch64.getDefaultName()` would take armv8.1-a from the host CPU; the API 23
-            // arm64 kernel predates `HWCAP_ATOMICS` and the image then refuses to start.
             "-march=${target.march}",
             "-H:+ReportExceptionStackTraces",
             "-H:+AddAllCharsets",
