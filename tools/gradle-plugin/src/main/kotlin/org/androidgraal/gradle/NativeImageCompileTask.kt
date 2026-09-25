@@ -6,6 +6,7 @@ import org.androidgraal.common.ToolchainLayout
 import org.androidgraal.substrate.SubstrateExecutor
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.FileCollection
 import org.gradle.api.provider.ListProperty
 import org.gradle.api.provider.MapProperty
 import org.gradle.api.provider.Property
@@ -71,6 +72,32 @@ abstract class NativeImageCompileTask : BaseTask() {
 
     @get:OutputDirectory
     abstract val objectsDir: DirectoryProperty
+
+    fun setup(
+        variantName: String,
+        extension: AndroidGraalExtension,
+        classpath: Provider<out FileCollection>,
+        toolchain: Provider<ToolchainLayout>,
+        target: Target,
+    ) {
+        group = "build"
+        description = "Compiles the native image into relocatable objects for ${target.abi.abiString} ($variantName)."
+        this.taskDir.convention(layout.buildDirectory.dir("androidgraal/$variantName/native-image"))
+        this.workDir.convention(taskDir.dir("work"))
+        this.objectsDir.convention(taskDir.dir("objects"))
+        this.toolchain.convention(toolchain)
+        this.target.convention(target)
+        this.imageClasspath.convention(classpath)
+        this.imageName.convention(extension.imageName)
+        this.mainClass.convention(extension.mainClass)
+        this.buildArgs.convention(extension.buildArgs)
+        this.jvmArgs.convention(extension.jvmArgs)
+        this.systemProperties.convention(extension.systemProperties)
+        this.configurationFileDirectories.convention(extension.configurationFileDirectories)
+        this.verbose.convention(extension.verbose)
+        this.quickBuild.convention(extension.quickBuild)
+        this.useLLVM.convention(extension.useLLVM)
+    }
 
     override fun execute() {
         val config = SubstrateExecutor.Config(

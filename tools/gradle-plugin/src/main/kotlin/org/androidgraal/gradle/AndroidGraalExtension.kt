@@ -8,9 +8,10 @@ import org.gradle.api.provider.Property
 
 abstract class AndroidGraalExtension {
 
-    /** The plugin produces `lib<imageName>.so`. */
+    /** Required; the plugin produces `lib<imageName>.so`. */
     abstract val imageName: Property<String>
 
+    /** Required. */
     abstract val mainClass: Property<String>
 
     /**

@@ -6,7 +6,9 @@ import org.apache.commons.io.output.TeeOutputStream
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
 import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.file.ProjectLayout
 import org.gradle.api.provider.Property
+import org.gradle.api.provider.ProviderFactory
 import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 import org.gradle.process.ExecOperations
@@ -31,7 +33,17 @@ abstract class BaseTask : DefaultTask() {
     @get:Inject
     protected abstract val execOperations: ExecOperations
 
+    @get:Inject
+    protected abstract val providers: ProviderFactory
+
+    @get:Inject
+    protected abstract val layout: ProjectLayout
+
     private var log: OutputStream? = null
+
+    init {
+        console.convention(providers.gradleProperty(CONSOLE_PROPERTY).map { it != "false" }.orElse(false))
+    }
 
     @TaskAction
     fun run() {
@@ -73,3 +85,5 @@ abstract class BaseTask : DefaultTask() {
         }
     }
 }
+
+private const val CONSOLE_PROPERTY = "androidgraal.console"

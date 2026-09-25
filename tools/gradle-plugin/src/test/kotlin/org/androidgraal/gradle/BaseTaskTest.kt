@@ -13,6 +13,7 @@ import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class BaseTaskTest {
@@ -22,7 +23,6 @@ class BaseTaskTest {
     private val task: ToolTask = ProjectBuilder.builder().withProjectDir(tmp).build()
         .tasks.register("tool", ToolTask::class.java) {
             it.taskDir.set(tmp.resolve("build/task"))
-            it.console.set(false)
         }.get()
 
     @AfterTest
@@ -91,6 +91,11 @@ class BaseTaskTest {
         task.run()
 
         assertEquals(listOf("=== $tmp$ $ECHO fresh", "fresh"), task.logFile.readLines())
+    }
+
+    @Test
+    fun `console is off without the property`() {
+        assertFalse(task.console.get())
     }
 
     @Test
