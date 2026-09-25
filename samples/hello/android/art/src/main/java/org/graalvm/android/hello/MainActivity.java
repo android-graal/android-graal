@@ -25,7 +25,7 @@ public class MainActivity extends Activity {
         text = new TextView(this);
         text.setTextSize(18);
         text.setPadding(32, 64, 32, 32);
-        text.setGravity(Gravity.CENTER_HORIZONTAL);
+        text.setGravity(Gravity.CENTER);
         text.setTextColor(Color.BLACK);
         text.setText("starting native image ...");
         setContentView(text);
