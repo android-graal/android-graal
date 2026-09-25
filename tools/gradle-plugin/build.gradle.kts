@@ -53,6 +53,8 @@ tasks.shadowJar {
     relocate("org.androidgraal", "org.androidgraal")
     exclude("META-INF/versions/**")
     addMultiReleaseAttribute = false
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+    failOnDuplicateEntries = true
 }
 
 tasks.jar {
