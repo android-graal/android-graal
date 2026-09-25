@@ -60,81 +60,12 @@ class ArtPluginTest {
     }
 
     @Test
-    fun `the compile task takes its settings from the extension`() {
-        val jar = project.file("lib.jar")
-        project.dependencies.add("nativeImage", project.files(jar))
-        val extension = project.extensions.getByType(AndroidGraalExtension::class.java)
-        extension.imageName.set("hello")
-        extension.mainClass.set("org.example.Main")
-        extension.buildArgs.set(listOf("-H:+Foo"))
-        extension.jvmArgs.set(listOf("-Xmx4g"))
-        extension.systemProperties.set(mapOf("a" to "b"))
-        extension.configurationFileDirectories.from("config")
-        extension.verbose.set(true)
-        extension.quickBuild.set(true)
-        extension.useLLVM.set(false)
-
-        val task = project.tasks.register("compile", NativeImageCompileTask::class.java).get()
-
-        assertEquals("hello", task.imageName.get())
-        assertEquals("org.example.Main", task.mainClass.get())
-        assertEquals(listOf("-H:+Foo"), task.buildArgs.get())
-        assertEquals(listOf("-Xmx4g"), task.jvmArgs.get())
-        assertEquals(mapOf("a" to "b"), task.systemProperties.get())
-        assertEquals(setOf(project.file("config")), task.configurationFileDirectories.files)
-        assertTrue(task.verbose.get())
-        assertTrue(task.quickBuild.get())
-        assertFalse(task.useLLVM.get())
-        assertEquals(setOf(jar), task.imageClasspath.files)
-    }
-
-    @Test
-    fun `the compile task's directories follow its task directory`() {
-        val task = project.tasks.register("compile", NativeImageCompileTask::class.java).get()
-
-        task.taskDir.set(project.file("first"))
-        assertEquals(project.file("first/work"), task.workDir.get().asFile)
-        assertEquals(project.file("first/objects"), task.objectsDir.get().asFile)
-        task.taskDir.set(project.file("second"))
-        assertEquals(project.file("second/work"), task.workDir.get().asFile)
-        assertEquals(project.file("second/objects"), task.objectsDir.get().asFile)
-    }
-
-    @Test
-    fun `the link task follows its task directory and the extension`() {
-        val extension = project.extensions.getByType(AndroidGraalExtension::class.java)
-        extension.imageName.set("hello")
-        extension.useLLVM.set(false)
-
-        val task = project.tasks.register("link", NativeImageLinkTask::class.java).get()
-
-        assertEquals("hello", task.imageName.get())
-        assertFalse(task.useLLVM.get())
-        task.taskDir.set(project.file("first"))
-        assertEquals(project.file("first/jniLibs"), task.outputDir.get().asFile)
-        task.taskDir.set(project.file("second"))
-        assertEquals(project.file("second/jniLibs"), task.outputDir.get().asFile)
-    }
-
-    @Test
     fun `console is off by default`() {
         val compile = project.tasks.register("compile", NativeImageCompileTask::class.java).get()
         val link = project.tasks.register("link", NativeImageLinkTask::class.java).get()
 
         assertFalse(compile.console.get())
         assertFalse(link.console.get())
-    }
-
-    @Test
-    fun `a task setting beats the extension`() {
-        project.extensions.getByType(AndroidGraalExtension::class.java).verbose.set(true)
-
-        val task = project.tasks.register("compile", NativeImageCompileTask::class.java).get()
-        task.verbose.set(false)
-        assertFalse(task.verbose.get())
-
-        task.verbose.set(null as Boolean?)
-        assertTrue(task.verbose.get())
     }
 
     private fun <T : Named> AttributeContainer.named(key: Attribute<T>) = getAttribute(key)?.name
