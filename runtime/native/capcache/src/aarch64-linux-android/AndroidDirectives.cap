@@ -1,0 +1,6 @@
+NativeCodeInfo:AndroidDirectives:ConstantInfo:ANDROID_LOG_ERROR:PropertyInfo:size=4
+NativeCodeInfo:AndroidDirectives:ConstantInfo:ANDROID_LOG_ERROR:PropertyInfo:signedness=$UNSIGNED$
+NativeCodeInfo:AndroidDirectives:ConstantInfo:ANDROID_LOG_ERROR:PropertyInfo:value=6
+NativeCodeInfo:AndroidDirectives:ConstantInfo:ANDROID_LOG_WARN:PropertyInfo:size=4
+NativeCodeInfo:AndroidDirectives:ConstantInfo:ANDROID_LOG_WARN:PropertyInfo:signedness=$UNSIGNED$
+NativeCodeInfo:AndroidDirectives:ConstantInfo:ANDROID_LOG_WARN:PropertyInfo:value=5
