@@ -426,7 +426,7 @@ class ScriptTest {
         val failure = assertFailsWith<GradleException> { script.exec("clang", "-I$tmp/include") }
 
         assertEquals(
-            "${script.name}: \"-I$tmp/include\" contains the machine-specific path $tmp; declare it",
+            "${script.name}: \"-I$tmp/include\" contains the machine-specific path $tmp, declare it",
             failure.message,
         )
     }

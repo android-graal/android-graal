@@ -119,6 +119,18 @@ class BaseTaskTest {
     }
 
     @Test
+    fun `the task directory sits under the variant when one is set`() {
+        val project = ProjectBuilder.builder().withProjectDir(tmp.resolve("layout")).build()
+        val plain = project.tasks.register("plain", ToolTask::class.java).get()
+        val perVariant = project.tasks.register("perVariant", ToolTask::class.java) {
+            it.variantName.set("debug")
+        }.get()
+
+        assertEquals(project.layout.buildDirectory.dir("androidgraal/tool").get(), plain.taskDir.get())
+        assertEquals(project.layout.buildDirectory.dir("androidgraal/debug/tool").get(), perVariant.taskDir.get())
+    }
+
+    @Test
     fun `the runner exists only while the task action runs`() {
         val failure = assertFailsWith<IllegalStateException> { task.execute() }
 
@@ -138,7 +150,7 @@ class BaseTaskTest {
     }
 }
 
-abstract class ToolTask : BaseTask() {
+abstract class ToolTask : BaseTask("tool") {
     @get:Internal
     var action: (ProcessRunner) -> Unit = {}
 

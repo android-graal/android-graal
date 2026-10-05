@@ -12,5 +12,9 @@ dependencyResolutionManagement {
 
 includeBuild("../build-logic")
 includeBuild("hello")
+includeBuild("bridges")
+includeBuild("catalogue")
+includeBuild("gameloop")
+includeBuild("gl")
 
 rootProject.name = "samples"

@@ -24,7 +24,7 @@ class NativeImageCompileTaskTest {
         it.setup(
             "debug",
             extension,
-            project.provider { project.files(jar) },
+            project.files(jar),
             project.provider { toolchain },
             Target.AARCH64,
         )
@@ -57,7 +57,6 @@ class NativeImageCompileTaskTest {
     @Test
     fun `the settings come from the extension`() {
         extension.imageName.set("hello")
-        extension.mainClass.set("org.example.Main")
         extension.buildArgs.set(listOf("-H:+Foo"))
         extension.jvmArgs.set(listOf("-Xmx4g"))
         extension.systemProperties.set(mapOf("a" to "b"))
@@ -67,7 +66,6 @@ class NativeImageCompileTaskTest {
         extension.useLLVM.set(false)
 
         assertEquals("hello", task.imageName.get())
-        assertEquals("org.example.Main", task.mainClass.get())
         assertEquals(listOf("-H:+Foo"), task.buildArgs.get())
         assertEquals(listOf("-Xmx4g"), task.jvmArgs.get())
         assertEquals(mapOf("a" to "b"), task.systemProperties.get())

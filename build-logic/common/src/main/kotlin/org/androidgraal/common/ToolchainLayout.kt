@@ -2,7 +2,7 @@ package org.androidgraal.common
 
 import java.io.File
 
-/** The layout of an android-graal toolchain at [root]; constructing one touches no file. */
+/** The layout of an android-graal toolchain at [root] */
 class ToolchainLayout(val root: File) {
 
     val graalvmHome: File = root.resolve("graalvm")
@@ -11,7 +11,7 @@ class ToolchainLayout(val root: File) {
     val nativeImage: File =
         graalvmHome.resolve("lib").resolve("svm").resolve("bin").resolve("native-image")
 
-    /** Where `LLVMToolchain.getLLVMBinDir()` looks: `<java.home>/lib/llvm/bin`. */
+    /** Where the LLVM backend looks for its tools: `<java.home>/lib/llvm/bin`. */
     val llvmBin: File = graalvmHome.resolve("lib").resolve("llvm").resolve("bin")
 
     val versionFile: File = root.resolve(Toolchain.VERSION)

@@ -19,13 +19,16 @@ import java.io.OutputStream
 import javax.inject.Inject
 
 @DisableCachingByDefault(because = "each subclass declares its own caching")
-abstract class BaseTask : DefaultTask() {
+abstract class BaseTask(private val dirName: String) : DefaultTask() {
 
     @get:Internal
     abstract val taskDir: DirectoryProperty
 
     @get:Internal
     val logFile: File get() = taskDir.file("$name.log").get().asFile
+
+    @get:Internal
+    abstract val variantName: Property<String>
 
     @get:Internal
     abstract val console: Property<Boolean>
@@ -39,10 +42,19 @@ abstract class BaseTask : DefaultTask() {
     @get:Inject
     protected abstract val layout: ProjectLayout
 
-    private var log: OutputStream? = null
+    private var stream: OutputStream? = null
+
+    @get:Internal
+    protected val log: OutputStream
+        get() = checkNotNull(stream) { "$path: log is only available while the task action runs" }
 
     init {
         console.convention(providers.gradleProperty(CONSOLE_PROPERTY).map { it != "false" }.orElse(false))
+        taskDir.convention(
+            layout.buildDirectory.dir(
+                providers.provider { listOfNotNull("androidgraal", variantName.orNull, dirName).joinToString("/") },
+            ),
+        )
     }
 
     @TaskAction
@@ -51,8 +63,8 @@ abstract class BaseTask : DefaultTask() {
         try {
             file.parentFile.mkdirs()
             file.delete()
-            FileOutputStream(file).buffered().use { stream ->
-                log = if (console.get()) TeeOutputStream(stream, System.out) else stream
+            FileOutputStream(file).buffered().use { out ->
+                stream = if (console.get()) TeeOutputStream(out, System.out) else out
                 execute()
             }
         } catch (e: Throwable) {
@@ -63,14 +75,14 @@ abstract class BaseTask : DefaultTask() {
             logger.error("=== end of ${file.name}")
             throw GradleException("$name failed, see $file", e)
         } finally {
-            log = null
+            stream = null
         }
     }
 
     protected abstract fun execute()
 
     protected fun runner(): ProcessRunner {
-        val out = checkNotNull(log) { "$path: runner() is only available while the task action runs" }
+        val out = log
         return ProcessRunner { command, workingDir ->
             out.write("=== $workingDir$ ${command.joinToString(" ")}\n".toByteArray())
             out.flush()

@@ -1,0 +1,95 @@
+contract class org.graalvm.android.bridges.generated.Bridge
+root org.graalvm.android.bridges.core.Hello
+org.graalvm.android.bridges.core.Allocations implemented on ART
+  allocate allocate(int): (primitive) -> void
+  start start(): () -> void
+  stop stop(): () -> primitive long
+org.graalvm.android.bridges.core.Display implemented on ART
+  initial initial(java.lang.String): (String) -> primitive char
+  mix mix(boolean, byte, char, short, long, float, double): (primitive, primitive, primitive, primitive, primitive, primitive, primitive) -> primitive double
+  open open(): () -> void
+  ping ping(int): (primitive) -> primitive int
+  place place(org.graalvm.android.bridges.core.Placement, int): (record, primitive) -> void
+  show$0 show(java.lang.String): (String) -> void
+  show$1 show(java.lang.String, int): (String, primitive) -> void
+org.graalvm.android.bridges.core.Display implemented on the image
+  initial initial(java.lang.String): (String) -> primitive char
+  mix mix(boolean, byte, char, short, long, float, double): (primitive, primitive, primitive, primitive, primitive, primitive, primitive) -> primitive double
+  open open(): () -> void
+  ping ping(int): (primitive) -> primitive int
+  place place(org.graalvm.android.bridges.core.Placement, int): (record, primitive) -> void
+  show$0 show(java.lang.String): (String) -> void
+  show$1 show(java.lang.String, int): (String, primitive) -> void
+org.graalvm.android.bridges.core.Frame implemented on the image
+  corners4 corners4(): () -> array float[] static 4
+  count16 count16(java.lang.String): (String static 16) -> primitive int
+  events events(int[]): (array out) -> primitive int
+  fill fill(int[]): (array out) -> void
+  fill16 fill16(int[]): (array out static 16) -> void
+  join join(int[], java.lang.String): (array in, String) -> String
+  mode mode(org.graalvm.android.bridges.core.Mode): (ordinal) -> ordinal org.graalvm.android.bridges.core.Mode
+  press press(int, int, int): (primitive, primitive, primitive) -> void
+  probe probe(org.graalvm.android.bridges.core.Probe): (reference) -> primitive int
+  range range(int): (primitive) -> array int[]
+  render render(org.graalvm.android.bridges.core.Probe): (reference) -> primitive float
+  self self(): () -> reference org.graalvm.android.bridges.core.Frame
+  squares squares(int[], int): (array out, primitive) -> void
+  step step(int): (primitive) -> primitive int
+  sum sum(float[]): (array in) -> primitive float
+  sum16 sum16(float[]): (array in static 16) -> primitive float
+  sum16Tls sum16Tls(float[]): (array in static 16) -> primitive float
+  text text(java.lang.String): (String) -> String
+  text16 text16(int): (primitive) -> String static 16
+  total total(int[], int): (array in, primitive) -> primitive int
+org.graalvm.android.bridges.core.Hello implemented on the image
+  callbacks callbacks(org.graalvm.android.bridges.core.Display, int, boolean): (reference, primitive, primitive) -> primitive long
+  churn churn(org.graalvm.android.bridges.core.Registry, int): (reference, primitive) -> void
+  coldThrow coldThrow(org.graalvm.android.bridges.core.Display): (reference) -> void
+  doubled doubled(int): (primitive) -> primitive int
+  echo echo(java.lang.String): (String) -> String
+  fail fail(java.lang.String): (String) -> void
+  failTyped failTyped(java.lang.String): (String) -> void
+  frame frame(): () -> reference org.graalvm.android.bridges.core.Frame
+  gc gc(): () -> void
+  liveIds liveIds(): () -> primitive long
+  liveProxies liveProxies(): () -> primitive long
+  loop loop(org.graalvm.android.bridges.core.Probe, org.graalvm.android.bridges.core.Display, org.graalvm.android.bridges.core.Allocations, int, int, boolean): (reference, reference, reference, primitive, primitive, primitive) -> primitive long
+  ping ping(int): (primitive) -> primitive int
+  refuse refuse(java.lang.String): (String) -> void
+  register register(org.graalvm.android.bridges.core.Registry): (reference) -> primitive boolean
+  run run(org.graalvm.android.bridges.core.Display): (reference) -> void
+  same same(org.graalvm.android.bridges.core.Display): (reference) -> reference org.graalvm.android.bridges.core.Display
+  self self(): () -> reference org.graalvm.android.bridges.core.Hello
+  shows shows(org.graalvm.android.bridges.core.Display, int, boolean): (reference, primitive, primitive) -> void
+  threads threads(): () -> primitive int
+  values values(org.graalvm.android.bridges.core.Display, boolean): (reference, primitive) -> primitive int
+org.graalvm.android.bridges.core.Listener implemented on the image
+  on on(int): (primitive) -> void
+org.graalvm.android.bridges.core.Probe implemented on ART
+  corners4 corners4(): () -> array float[] static 4
+  count16 count16(java.lang.String): (String static 16) -> primitive int
+  fill fill(int[]): (array out) -> void
+  fill16 fill16(int[]): (array out static 16) -> void
+  fill16Tls fill16Tls(int[]): (array out static 16) -> void
+  frame frame(org.graalvm.android.bridges.core.Frame): (reference) -> primitive int
+  join join(int[], java.lang.String): (array in, String) -> String
+  mode mode(org.graalvm.android.bridges.core.Mode): (ordinal) -> ordinal org.graalvm.android.bridges.core.Mode
+  pressed pressed(int): (primitive) -> primitive boolean
+  range range(int): (primitive) -> array int[]
+  self self(): () -> reference org.graalvm.android.bridges.core.Probe
+  squares squares(int[], int): (array out, primitive) -> void
+  step step(int): (primitive) -> primitive int
+  sum sum(float[]): (array in) -> primitive float
+  sum16 sum16(float[]): (array in static 16) -> primitive float
+  text text(java.lang.String): (String) -> String
+  text16 text16(int): (primitive) -> String static 16
+  total total(int[], int): (array in, primitive) -> primitive int
+  x x(): () -> primitive float
+  y y(): () -> primitive float
+org.graalvm.android.bridges.core.Registry implemented on ART
+  add add(org.graalvm.android.bridges.core.Listener): (reference) -> void
+  remove remove(org.graalvm.android.bridges.core.Listener): (reference) -> primitive boolean
+  size size(): () -> primitive int
+enum org.graalvm.android.bridges.core.Mode as ordinal of IDLE, RUN, STOP
+record org.graalvm.android.bridges.core.Placement: x int, y int, mode org.graalvm.android.bridges.core.Mode, label java.lang.String, size org.graalvm.android.bridges.core.Size
+record org.graalvm.android.bridges.core.Size: width float, height double

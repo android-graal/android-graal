@@ -26,3 +26,4 @@ rootProject.name = "tools"
 
 include("toolchain")
 include("gradle-plugin")
+include("processor")

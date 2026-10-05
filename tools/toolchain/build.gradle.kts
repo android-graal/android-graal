@@ -15,7 +15,6 @@ import org.gradle.nativeplatform.OperatingSystemFamily
 import javax.inject.Inject
 
 plugins {
-    base
     id("androidgraal.publishing")
 }
 

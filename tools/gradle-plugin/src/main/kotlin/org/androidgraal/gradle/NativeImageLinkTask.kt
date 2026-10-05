@@ -21,7 +21,7 @@ import org.gradle.api.tasks.PathSensitivity
 import java.io.File
 
 @CacheableTask
-abstract class NativeImageLinkTask : BaseTask() {
+abstract class NativeImageLinkTask : BaseTask("link") {
 
     @get:Internal
     abstract val toolchain: Property<ToolchainLayout>
@@ -69,7 +69,7 @@ abstract class NativeImageLinkTask : BaseTask() {
     ) {
         group = "build"
         description = "Links the native image for ${target.abi.abiString} ($variantName)."
-        this.taskDir.convention(layout.buildDirectory.dir("androidgraal/$variantName/link"))
+        this.variantName.convention(variantName)
         this.outputDir.convention(taskDir.dir("jniLibs"))
         this.toolchain.convention(toolchain)
         this.target.convention(target)

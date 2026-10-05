@@ -6,6 +6,7 @@ import com.android.build.api.variant.ApplicationVariant
 import com.android.build.api.variant.Variant
 import org.androidgraal.common.Host
 import org.androidgraal.common.Ndk
+import org.androidgraal.common.Side
 import org.androidgraal.common.Target
 import org.androidgraal.common.Toolchain
 import org.androidgraal.common.ToolchainLayout
@@ -15,13 +16,12 @@ import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
-import org.gradle.api.attributes.Bundling
-import org.gradle.api.attributes.Category
-import org.gradle.api.attributes.LibraryElements
 import org.gradle.api.attributes.Usage
-import org.gradle.api.attributes.java.TargetJvmEnvironment
+import org.gradle.api.file.FileCollection
+import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.JvmEcosystemPlugin
 import org.gradle.api.provider.Provider
+import org.gradle.api.tasks.ClasspathNormalizer
 import org.gradle.nativeplatform.MachineArchitecture
 import org.gradle.nativeplatform.OperatingSystemFamily
 import java.io.File
@@ -46,32 +46,13 @@ class ArtPlugin : Plugin<Project> {
         // matching rules.
         val runtimeClasspath = project.configurations.resolvable(NATIVE_IMAGE_RUNTIME_CLASSPATH_CONFIGURATION_NAME) {
             it.extendsFrom(nativeImage.get())
-            it.attributes.attribute(
-                Usage.USAGE_ATTRIBUTE,
-                project.objects.named(Usage::class.java, Usage.JAVA_RUNTIME),
-            )
-            it.attributes.attribute(
-                Category.CATEGORY_ATTRIBUTE,
-                project.objects.named(Category::class.java, Category.LIBRARY),
-            )
-            it.attributes.attribute(
-                LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE,
-                project.objects.named(LibraryElements::class.java, LibraryElements.JAR),
-            )
-            it.attributes.attribute(
-                Bundling.BUNDLING_ATTRIBUTE,
-                project.objects.named(Bundling::class.java, Bundling.EXTERNAL),
-            )
-            it.attributes.attribute(
-                TargetJvmEnvironment.TARGET_JVM_ENVIRONMENT_ATTRIBUTE,
-                project.objects.named(TargetJvmEnvironment::class.java, TargetJvmEnvironment.STANDARD_JVM),
-            )
+            it.configureAsRuntimeClasspath(project.objects)
         }
 
         val toolchainBucket = project.configurations.dependencyScope(TOOLCHAIN_CONFIGURATION_NAME) {
             it.description = "The android-graal toolchain the image is built with."
             it.defaultDependencies { dependencies ->
-                dependencies.add(project.dependencies.create("$TOOLCHAIN_MODULE:$PLUGIN_VERSION"))
+                dependencies.add(project.dependencies.create(Modules.TOOLCHAIN))
             }
         }
         val toolchainClasspath = project.configurations.resolvable(TOOLCHAIN_CLASSPATH_CONFIGURATION_NAME) {
@@ -97,7 +78,10 @@ class ArtPlugin : Plugin<Project> {
         }
 
         project.plugins.withId(ANDROID_APPLICATION) {
-            configureAndroid(project, extension, runtimeClasspath, toolchainClasspath)
+            project.dependencies.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, Modules.runtime(Side.ART))
+            val contract = registerContractScope(project, Side.ART)
+            val contracts = registerContractJars(project, contract, Side.ART)
+            configureAndroid(project, extension, runtimeClasspath, toolchainClasspath, contracts)
         }
 
         project.afterEvaluate {
@@ -115,23 +99,45 @@ class ArtPlugin : Plugin<Project> {
         extension: AndroidGraalExtension,
         runtimeClasspath: NamedDomainObjectProvider<out Configuration>,
         toolchainClasspath: NamedDomainObjectProvider<out Configuration>,
+        contracts: FileCollection,
     ) {
         val androidComponents =
             project.extensions.getByType(ApplicationAndroidComponentsExtension::class.java)
 
         val ndk = androidComponents.sdkComponents.ndkDirectory.map { Ndk(it.asFile) }
+        val imageClasspath = project.files(runtimeClasspath)
 
         androidComponents.onVariants(androidComponents.selector().all()) { variant: ApplicationVariant ->
-            val target = target(variant, project.extensions.getByType(ApplicationExtension::class.java))
+            val android = project.extensions.getByType(ApplicationExtension::class.java)
+            val target = target(variant, android)
 
             val capitalized = variant.name.replaceFirstChar { it.titlecase(Locale.ROOT) }
             val toolchain = toolchain(project, extension, toolchainClasspath, variant.minSdk.apiLevel)
+
+            val checkImageClasspath = project.tasks.register(
+                "checkImageClasspath$capitalized",
+                CheckImageClasspathTask::class.java,
+            ) {
+                it.setup(variant.name, imageClasspath)
+            }
+
+            val generateNativeImage = project.tasks.register(
+                "generateNativeImage$capitalized",
+                GenerateNativeImageTask::class.java,
+            ) {
+                it.setup(variant.name, extension, variant.namespace)
+            }
+
+            val java = variant.sources.java
+                ?: throw GradleException("variant '${variant.name}' has no Java sources")
+            java.addGeneratedSourceDirectory(generateNativeImage, GenerateNativeImageTask::outputDir)
 
             val compileTask = project.tasks.register(
                 "nativeImageCompile$capitalized",
                 NativeImageCompileTask::class.java,
             ) {
-                it.setup(variant.name, extension, runtimeClasspath, toolchain, target)
+                it.setup(variant.name, extension, imageClasspath, toolchain, target)
+                it.dependsOn(checkImageClasspath)
             }
 
             val linkTask = project.tasks.register("nativeImageLink$capitalized", NativeImageLinkTask::class.java) {
@@ -150,6 +156,13 @@ class ArtPlugin : Plugin<Project> {
             val jniLibs = variant.sources.jniLibs
                 ?: throw GradleException("variant '${variant.name}' has no jniLibs sources")
             jniLibs.addGeneratedSourceDirectory(linkTask, NativeImageLinkTask::outputDir)
+
+            // AGP's incremental Java-resource merge names a project's jars by project path alone, so a contract jar
+            // and its bridge share one entry of its state; a change to a non-incremental input makes it run in full.
+            project.tasks.named { it == "merge${capitalized}JavaResource" }.configureEach {
+                it.inputs.files(contracts).withPropertyName(CONTRACTS_INPUT_PROPERTY)
+                    .withNormalizer(ClasspathNormalizer::class.java)
+            }
         }
     }
 
@@ -233,24 +246,23 @@ class ArtPlugin : Plugin<Project> {
     }
 
     companion object {
-        private const val ANDROID_GRAAL_EXTENSION_NAME = "androidGraal"
         private const val ANDROID_APPLICATION = "com.android.application"
         private const val NATIVE_IMAGE_CONFIGURATION_NAME = "nativeImage"
         private const val NATIVE_IMAGE_RUNTIME_CLASSPATH_CONFIGURATION_NAME = "nativeImageRuntimeClasspath"
         private const val TOOLCHAIN_CONFIGURATION_NAME = "androidGraalToolchain"
         private const val TOOLCHAIN_CLASSPATH_CONFIGURATION_NAME = "androidGraalToolchainClasspath"
 
+        internal const val CONTRACTS_INPUT_PROPERTY = "androidgraal.contracts"
+
         private const val TOOLCHAIN_LOCAL_PROPERTY = "androidgraal.toolchain.dir"
         private const val TOOLCHAIN_ENV_VAR = "ANDROID_GRAAL_TOOLCHAIN"
-
-        private const val TOOLCHAIN_MODULE = "org.androidgraal:toolchain"
 
         private val TOOLCHAIN_SOURCES = """
             The toolchain is taken from the first of:
               $TOOLCHAIN_LOCAL_PROPERTY=<path>            in the build's local.properties
               $TOOLCHAIN_ENV_VAR=<path>               in the environment
-              androidGraal { toolchainDir = file("...") }  in the module's build script
-              $TOOLCHAIN_CONFIGURATION_NAME("$TOOLCHAIN_MODULE:<version>") as a dependency
+              $ANDROID_GRAAL_EXTENSION_NAME { toolchainDir = file("...") }  in the module's build script
+              $TOOLCHAIN_CONFIGURATION_NAME("$PLUGIN_GROUP:toolchain:<version>") as a dependency
         """.trimIndent()
     }
 }

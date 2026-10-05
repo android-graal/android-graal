@@ -26,7 +26,6 @@ class SubstrateExecutorTest {
             SubstrateExecutor.Config(
                 toolchain = ToolchainLayout(File("/toolchain")),
                 imageName = "hello",
-                mainClass = "HelloWorld",
                 classpath = listOf(File("/build/nativeImage.jar"), File("/libs/extra.jar")),
                 workDir = File("/build/work"),
                 objectsDir = File("/build/objects"),
@@ -63,6 +62,7 @@ class SubstrateExecutorTest {
                 "-H:+AddAllCharsets",
                 "-H:+IncludeAllLocales",
                 "--initialize-at-run-time=java.net.DefaultInterface",
+                "--link-at-build-time",
                 "-H:+ExitAfterRelocatableImageWrite",
                 "--verbose",
                 "-Ob",
@@ -71,7 +71,6 @@ class SubstrateExecutorTest {
                 "-H:+PrintAnalysisCallTree",
                 "-cp",
                 "/build/nativeImage.jar" + File.pathSeparator + "/libs/extra.jar",
-                "HelloWorld",
             ),
             executor.command(),
         )
@@ -103,10 +102,10 @@ class SubstrateExecutorTest {
                 "-H:+AddAllCharsets",
                 "-H:+IncludeAllLocales",
                 "--initialize-at-run-time=java.net.DefaultInterface",
+                "--link-at-build-time",
                 "-H:+ExitAfterRelocatableImageWrite",
                 "-cp",
                 "/build/nativeImage.jar",
-                "HelloWorld",
             ),
             SubstrateExecutor(config, noRunner).command(),
         )
@@ -157,7 +156,7 @@ class SubstrateExecutorTest {
             compiled.objects,
         )
         assertEquals(listOf("DATA", "CODE"), compiled.objects.map { it.readText() })
-        assertTrue("run_main" in compiled.exportedSymbols.readText())
+        assertTrue("Java_org_androidgraal_art_NativeImage_create0" in compiled.exportedSymbols.readText())
         assertEquals(listOf("java", "zip", "jvm"), compiled.staticLibraries)
         assertEquals(listOf("m", "dl", "z"), compiled.libraries)
     }
@@ -205,7 +204,6 @@ class SubstrateExecutorTest {
     private fun minimalConfig(toolchainRoot: File, host: Host = Host.LINUX_X86_64) = SubstrateExecutor.Config(
         toolchain = ToolchainLayout(toolchainRoot),
         imageName = "hello",
-        mainClass = "HelloWorld",
         classpath = listOf(File("/build/nativeImage.jar")),
         workDir = tmp.resolve("work"),
         objectsDir = tmp.resolve("objects"),
@@ -220,7 +218,8 @@ class SubstrateExecutorTest {
             temp.resolve("llvm").mkdirs()
             temp.resolve("llvm").resolve(CompiledImage.LLVM_OBJECT).writeText("CODE")
         }
-        temp.resolve(CompiledImage.EXPORTED_SYMBOLS).writeText("{\nglobal:\n\"run_main\";\nlocal: *;\n};")
+        temp.resolve(CompiledImage.EXPORTED_SYMBOLS)
+            .writeText("{\nglobal:\n\"Java_org_androidgraal_art_NativeImage_create0\";\nlocal: *;\n};")
         temp.resolve(CompiledImage.STATIC_LIBRARIES).writeText("java\nzip\njvm\n")
         temp.resolve(CompiledImage.LIBRARIES).writeText("m\ndl\nz\n")
     }

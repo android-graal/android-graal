@@ -1,7 +1,7 @@
 plugins {
     alias(libs.plugins.android.application)
     id("org.androidgraal.art")
-    id("androidgraal.format")
+    id("androidgraal.base")
 }
 
 android {
@@ -20,29 +20,22 @@ android {
         }
     }
 
-    externalNativeBuild {
-        cmake {
-            path = file("src/main/cpp/CMakeLists.txt")
-            version = "3.22.1+"
-        }
-    }
-
-    // The API 23 system image wants the image extracted to the app's lib dir, not mmapped from the APK.
-    packaging {
-        jniLibs {
-            useLegacyPackaging = true
+    buildTypes {
+        release {
+            isMinifyEnabled = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"))
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = JavaVersion.VERSION_17
+        targetCompatibility = JavaVersion.VERSION_17
     }
 }
 
 androidGraal {
     imageName = "hello"
-    mainClass = "HelloWorld"
 }
 
 dependencies {

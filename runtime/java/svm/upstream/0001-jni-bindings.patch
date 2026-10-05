@@ -1,0 +1,136 @@
+diff --git a/runtime/java/svm/src/main/java/org/androidgraal/svm/jni/JNI.java b/runtime/java/svm/src/main/java/org/androidgraal/svm/jni/JNI.java
+index 8bd81b3..a86e46a 100644
+--- a/runtime/java/svm/src/main/java/org/androidgraal/svm/jni/JNI.java
++++ b/runtime/java/svm/src/main/java/org/androidgraal/svm/jni/JNI.java
+@@ -38,7 +38,7 @@
+  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+  * SOFTWARE.
+  */
+-package org.graalvm.jniutils;
++package org.androidgraal.svm.jni;
+ 
+ import java.io.IOException;
+ import java.nio.file.Files;
+@@ -49,7 +49,6 @@ import java.util.List;
+ import java.util.Optional;
+ import java.util.stream.Collectors;
+ 
+-import org.graalvm.nativeimage.ImageSingletons;
+ import org.graalvm.nativeimage.c.CContext;
+ import org.graalvm.nativeimage.c.function.CFunction.Transition;
+ import org.graalvm.nativeimage.c.function.CFunctionPointer;
+@@ -411,6 +410,15 @@ public final class JNI {
+         @CField("CallStaticBooleanMethodA")
+         CallStaticBooleanMethodA getCallStaticBooleanMethodA();
+ 
++        @CField("CallStaticByteMethodA")
++        CallStaticByteMethodA getCallStaticByteMethodA();
++
++        @CField("CallStaticCharMethodA")
++        CallStaticCharMethodA getCallStaticCharMethodA();
++
++        @CField("CallStaticShortMethodA")
++        CallStaticShortMethodA getCallStaticShortMethodA();
++
+         @CField("CallStaticIntMethodA")
+         CallStaticIntMethodA getCallStaticIntMethodA();
+ 
+@@ -423,6 +431,12 @@ public final class JNI {
+         @CField("CallStaticLongMethodA")
+         CallStaticLongMethodA getCallStaticLongMethodA();
+ 
++        @CField("CallStaticFloatMethodA")
++        CallStaticFloatMethodA getCallStaticFloatMethodA();
++
++        @CField("CallStaticDoubleMethodA")
++        CallStaticDoubleMethodA getCallStaticDoubleMethodA();
++
+         @CField("CallObjectMethodA")
+         CallObjectMethodA getCallObjectMethodA();
+ 
+@@ -483,9 +497,15 @@ public final class JNI {
+         @CField("GetObjectRefType")
+         GetObjectRefType getGetObjectRefType();
+ 
++        @CField("NewDirectByteBuffer")
++        NewDirectByteBuffer getNewDirectByteBuffer();
++
+         @CField("GetDirectBufferAddress")
+         GetDirectBufferAddress getGetDirectBufferAddress();
+ 
++        @CField("GetDirectBufferCapacity")
++        GetDirectBufferCapacity getGetDirectBufferCapacity();
++
+         @CField("IsInstanceOf")
+         IsInstanceOf getIsInstanceOf();
+ 
+@@ -545,6 +565,21 @@ public final class JNI {
+         GetEnv getGetEnv();
+     }
+ 
++    public interface CallStaticByteMethodA extends CFunctionPointer {
++        @InvokeCFunctionPointer
++        byte call(JNIEnv env, JClass clazz, JMethodID methodID, JValue args);
++    }
++
++    public interface CallStaticCharMethodA extends CFunctionPointer {
++        @InvokeCFunctionPointer
++        char call(JNIEnv env, JClass clazz, JMethodID methodID, JValue args);
++    }
++
++    public interface CallStaticShortMethodA extends CFunctionPointer {
++        @InvokeCFunctionPointer
++        short call(JNIEnv env, JClass clazz, JMethodID methodID, JValue args);
++    }
++
+     public interface CallStaticIntMethodA extends CFunctionPointer {
+         @InvokeCFunctionPointer
+         int call(JNIEnv env, JClass clazz, JMethodID methodID, JValue args);
+@@ -573,6 +608,16 @@ public final class JNI {
+         long call(JNIEnv env, JClass clazz, JMethodID methodID, JValue args);
+     }
+ 
++    public interface CallStaticFloatMethodA extends CFunctionPointer {
++        @InvokeCFunctionPointer
++        float call(JNIEnv env, JClass clazz, JMethodID methodID, JValue args);
++    }
++
++    public interface CallStaticDoubleMethodA extends CFunctionPointer {
++        @InvokeCFunctionPointer
++        double call(JNIEnv env, JClass clazz, JMethodID methodID, JValue args);
++    }
++
+     public interface CallObjectMethodA extends CFunctionPointer {
+         @InvokeCFunctionPointer
+         JObject call(JNIEnv env, JObject object, JMethodID methodID, JValue args);
+@@ -1012,11 +1057,21 @@ public final class JNI {
+         int callNoTransition(JNIEnv env, JThrowable throwable);
+     }
+ 
++    public interface NewDirectByteBuffer extends CFunctionPointer {
++        @InvokeCFunctionPointer
++        JObject call(JNIEnv env, VoidPointer address, long capacity);
++    }
++
+     public interface GetDirectBufferAddress extends CFunctionPointer {
+         @InvokeCFunctionPointer
+         VoidPointer call(JNIEnv env, JObject buf);
+     }
+ 
++    public interface GetDirectBufferCapacity extends CFunctionPointer {
++        @InvokeCFunctionPointer
++        long call(JNIEnv env, JObject buf);
++    }
++
+     public interface IsInstanceOf extends CFunctionPointer {
+         @InvokeCFunctionPointer
+         boolean call(JNIEnv env, JObject o, JClass c);
+@@ -1082,7 +1137,7 @@ public final class JNI {
+ 
+         @Override
+         public boolean isInConfiguration() {
+-            return ImageSingletons.contains(NativeBridgeSupport.class);
++            return true;
+         }
+ 
+         @Override

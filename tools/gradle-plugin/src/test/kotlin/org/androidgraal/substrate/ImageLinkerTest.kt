@@ -113,6 +113,19 @@ class ImageLinkerTest {
     }
 
     @Test
+    fun `androidgraal is our archive in the toolchain, not a system library`() {
+        val toolchain = fakeToolchain()
+        val targetLayout = ToolchainLayout(toolchain).target(Target.AARCH64)
+        val config =
+            config(toolchain, tmp.resolve("objects"), staticLibraries = listOf("androidgraal"), libraries = listOf())
+
+        val command = ImageLinker(config, noRunner).command()
+
+        assertTrue("${targetLayout.svmLibs}/libandroidgraal.a" in command, "$command")
+        assertFalse("-landroidgraal" in command, "$command")
+    }
+
+    @Test
     fun `a static library without an archive is linked as -l, once`() {
         val config = config(
             fakeToolchain(),

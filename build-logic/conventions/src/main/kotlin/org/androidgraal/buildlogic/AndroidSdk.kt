@@ -27,12 +27,14 @@ class AndroidSdk(val root: File) {
         }
         return ndks().firstOrNull { it.version() == version }
             ?: throw GradleException(
-                "no NDK $version under $ndkDir; installed: " +
+                "no NDK $version under $ndkDir, installed: " +
                     ndks().joinToString { it.version().toString() }.ifEmpty { "none" },
             )
     }
 
     val adb: File = root.resolve("platform-tools/adb")
+
+    fun androidJar(api: Int): File = root.resolve("platforms/android-$api/android.jar")
 
     private val cmakeDir: File = root.resolve("cmake")
 

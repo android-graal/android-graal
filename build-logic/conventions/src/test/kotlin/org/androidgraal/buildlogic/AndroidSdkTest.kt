@@ -116,6 +116,13 @@ class AndroidSdkTest {
         assertEquals(newer, sdk.cmake(null))
     }
 
+    @Test
+    fun `androidJar is the platform's jar whether or not it is installed`() {
+        val sdk = sdk("platform-sdk")
+
+        assertEquals(File(sdk.root, "platforms/android-36/android.jar"), sdk.androidJar(36))
+    }
+
     private fun sdk(name: String): AndroidSdk {
         val root = File(tmp, name)
         root.mkdirs()

@@ -11,11 +11,11 @@ object Toolchain {
     /** The artifact type of the unpacked toolchain directory, not the zip. */
     const val ARTIFACT_TYPE = "android-graal-toolchain"
 
-    /** The LLVM tools substratevm execs; `llvm-config` must report major >= 20. */
+    /** The LLVM tools substratevm execs. */
     val LLVM_TOOLS: List<String> =
         listOf("llc", "opt", "llvm-link", "clang", "ld.lld", "llvm-objcopy", "llvm-config")
 
-    val SVM_LIBS: List<String> = listOf("liblibchelper.a", "libjvm.a", "libsvm_container.a")
+    val SVM_LIBS: List<String> = listOf("liblibchelper.a", "libjvm.a", "libsvm_container.a", "libandroidgraal.a")
 
     /** The static libraries `make static-libs` produces. */
     val JDK_LIBS: List<String> = listOf(
@@ -28,7 +28,7 @@ object Toolchain {
     val CAP_CACHE: List<String> = listOf(
         "AArch64LibCHelperDirectives.cap", "AMD64LibCHelperDirectives.cap", "AndroidDirectives.cap",
         "ARM32LibCHelperDirectives.cap", "BuiltinDirectives.cap", "ContainerLibraryDirectives.cap",
-        "JNIHeaderDirectives.cap", "LLVMDirectives.cap", "LocaleDirectives.cap", "PosixDirectives.cap",
-        "RISCV64LibCHelperDirectives.cap",
+        "JNI_JNIHeaderDirectives.cap", "JNIHeaderDirectives.cap", "LLVMDirectives.cap", "LocaleDirectives.cap",
+        "PosixDirectives.cap", "RISCV64LibCHelperDirectives.cap",
     )
 }

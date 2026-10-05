@@ -9,7 +9,6 @@ class CMake(val cmake: File, val ninja: File) {
 
     companion object {
 
-        /** [BuildSettings.cmakeDir], else the SDK package, else [path]; ninja next to that cmake, else [path]. */
         fun find(settings: BuildSettings, sdk: AndroidSdk, path: List<File>): CMake {
             val cmake = cmake(settings, sdk, path)
             val ninja = executable(cmake.parentFile, "ninja")
@@ -27,7 +26,7 @@ class CMake(val cmake: File, val ninja: File) {
             settings.cmakeVersion?.let { version ->
                 val bin = sdk.cmake(version)
                     ?: throw GradleException(
-                        "no cmake $version under $packages; installed: " +
+                        "no cmake $version under $packages, installed: " +
                             sdk.cmakes().keys.joinToString().ifEmpty { "none" },
                     )
                 return executable(bin, "cmake") ?: throw GradleException("no cmake in $bin")

@@ -11,7 +11,7 @@ description = "The LLVM fork substratevm's LLVM backend runs (llc, opt, llvm-lin
 
 val hostCMake = nativeHost.cmake()
 
-/** The shipped tools as ninja targets: `ld.lld` is a link the `lld` target produces. */
+/** `ld.lld` is a link that ninja's `lld` target produces. */
 val tools = Toolchain.LLVM_TOOLS.map { if (it == "ld.lld") "lld" else it }
 
 val buildLlvm = tasks.register<Script>("buildLlvm") {

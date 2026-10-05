@@ -1,7 +1,7 @@
 import org.androidgraal.buildlogic.redirectToSubprojects
 
 plugins {
-    id("androidgraal.format")
+    id("androidgraal.base")
 }
 
 tasks.register("publishToMavenLocal") {
@@ -9,4 +9,4 @@ tasks.register("publishToMavenLocal") {
     description = "Publishes every tools artifact to the local Maven repository."
 }
 
-redirectToSubprojects("build", "spotlessApply", "publishToMavenLocal")
+redirectToSubprojects("publishToMavenLocal")

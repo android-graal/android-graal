@@ -53,6 +53,28 @@ class ToolchainLayoutTest {
     }
 
     @Test
+    fun `validate names a missing libandroidgraal a`() {
+        val layout = ToolchainLayout(fakeToolchain())
+        val targetLayout = layout.target(Target.AARCH64)
+        targetLayout.svmLibs.resolve("libandroidgraal.a").delete()
+
+        val failure = assertFailsWith<IllegalStateException> { layout.validate() }
+
+        assertTrue("no libandroidgraal.a in ${targetLayout.svmLibs}" in failure.message!!, failure.message)
+    }
+
+    @Test
+    fun `validate names a missing JNI_JNIHeaderDirectives cap`() {
+        val layout = ToolchainLayout(fakeToolchain())
+        val targetLayout = layout.target(Target.AARCH64)
+        targetLayout.capCache.resolve("JNI_JNIHeaderDirectives.cap").delete()
+
+        val failure = assertFailsWith<IllegalStateException> { layout.validate() }
+
+        assertTrue("no JNI_JNIHeaderDirectives.cap in ${targetLayout.capCache}" in failure.message!!, failure.message)
+    }
+
+    @Test
     fun `validate refuses a toolchain built on another host`() {
         val root = fakeToolchain()
         val layout = ToolchainLayout(root)

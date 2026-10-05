@@ -1,7 +1,7 @@
 import org.androidgraal.buildlogic.redirectToBuilds
 
 plugins {
-    id("androidgraal.format")
+    id("androidgraal.base")
 }
 
 tasks.register("publishToMavenLocal") {
@@ -9,5 +9,5 @@ tasks.register("publishToMavenLocal") {
     description = "Publishes the tools and runtime artifacts to the local Maven repository."
 }
 
-redirectToBuilds(listOf("build-logic", "tools", "runtime", "samples"), "build", "spotlessApply")
+redirectToBuilds(listOf("build-logic", "tools", "runtime", "samples"), "build", "spotlessApply", "clean")
 redirectToBuilds(listOf("tools", "runtime"), "publishToMavenLocal")

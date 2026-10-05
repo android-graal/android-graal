@@ -76,7 +76,7 @@ class CMakeTest {
             CMake.find(settings("androidgraal.cmake.version=3.22.1"), sdk, listOf(path))
         }
 
-        assertEquals("no cmake 3.22.1 under ${File(sdk.root, "cmake")}; installed: 3.31.6", failure.message)
+        assertEquals("no cmake 3.22.1 under ${File(sdk.root, "cmake")}, installed: 3.31.6", failure.message)
     }
 
     @Test

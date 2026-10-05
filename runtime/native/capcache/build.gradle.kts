@@ -21,6 +21,26 @@ val capCache: Directory = layout.projectDirectory.dir("src/${target.triple}")
 
 nativeOutput(Native.CapCache.dir, capCache)
 
+val capQueryScope = configurations.dependencyScope("capQuery")
+val capQueryPath = configurations.resolvable("capQueryPath") {
+    extendsFrom(capQueryScope.get())
+    isTransitive = false
+    attributes {
+        attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage.JAVA_RUNTIME))
+        attribute(Category.CATEGORY_ATTRIBUTE, objects.named(Category.LIBRARY))
+        attribute(LibraryElements.LIBRARY_ELEMENTS_ATTRIBUTE, objects.named(LibraryElements.JAR))
+        attribute(Bundling.BUNDLING_ATTRIBUTE, objects.named(Bundling.EXTERNAL))
+        attribute(
+            TargetJvmEnvironment.TARGET_JVM_ENVIRONMENT_ATTRIBUTE,
+            objects.named(TargetJvmEnvironment.STANDARD_JVM),
+        )
+    }
+}
+dependencies {
+    capQueryScope(project(":java:svm"))
+}
+val capQueryJar: FileCollection = files(capQueryPath)
+
 val queryOutput = "query"
 val binOutput = "bin"
 
@@ -30,6 +50,7 @@ val generateCapQueries = tasks.register<Script>("generateCapQueries") {
 
     val graalvmHome = input("graalvmHome", graalvmHomeDir)
     val llvmBin = input("llvmBin", llvmBinDir)
+    val capQuery = input("capQuery", capQueryJar)
     val query = output(queryOutput, dir("query"))
 
     progress("native-image -H:+ExitAfterQueryCodeGeneration")
@@ -46,6 +67,8 @@ val generateCapQueries = tasks.register<Script>("generateCapQueries") {
         "-H:+ExitAfterQueryCodeGeneration",
         "-H:QueryCodeDir=$query",
         "-J-Dllvm.bin.dir=$llvmBin/",
+        "-cp",
+        capQuery,
     )
 }
 

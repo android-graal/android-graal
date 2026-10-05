@@ -4,6 +4,7 @@ import org.gradle.api.GradleException
 import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ConsumableConfiguration
+import org.gradle.api.artifacts.Dependency
 import org.gradle.api.attributes.Usage
 import org.gradle.api.file.FileCollection
 import org.gradle.api.tasks.TaskProvider
@@ -76,11 +77,11 @@ fun Project.nativeInput(artifact: NativeArtifact): FileCollection {
             attribute(Usage.USAGE_ATTRIBUTE, objects.named(Usage::class.java, artifact.usage))
         }
     }
-    val notation: Any = if (findProject(artifact.project.path) != null) {
+    val dependency: Dependency = if (findProject(artifact.project.path) != null) {
         dependencies.project(artifact.project.path)
     } else {
-        "$group:${artifact.project.name}"
+        dependencyFactory.create("$group.native:${artifact.project.name}")
     }
-    dependencies.add(bucket.name, notation)
+    bucket.get().dependencies.add(dependency)
     return files(resolvable)
 }

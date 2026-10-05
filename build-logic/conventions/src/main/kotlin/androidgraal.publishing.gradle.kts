@@ -1,4 +1,4 @@
 plugins {
-    id("androidgraal.base")
+    id("androidgraal.host")
     `maven-publish`
 }

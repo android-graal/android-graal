@@ -2,9 +2,10 @@ import org.androidgraal.buildlogic.NativeHost
 import org.androidgraal.buildlogic.Script
 
 plugins {
-    id("androidgraal.base")
-    base
+    id("androidgraal.host")
 }
+
+group = "$group.native"
 
 val nativeHost = the<NativeHost>()
 

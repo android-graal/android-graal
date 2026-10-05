@@ -13,7 +13,6 @@ class SubstrateExecutor(private val config: Config, private val runner: ProcessR
         val target: Target,
         val host: Host,
         val imageName: String,
-        val mainClass: String,
         val classpath: List<File>,
         val workDir: File,
         val objectsDir: File,
@@ -55,6 +54,7 @@ class SubstrateExecutor(private val config: Config, private val runner: ProcessR
             // The builder runs on the host JDK, whose macOS `DefaultInterface` caches the host's default
             // `NetworkInterface`; graal initializes it at run time only for Darwin targets.
             "--initialize-at-run-time=java.net.DefaultInterface",
+            "--link-at-build-time",
             "-H:+ExitAfterRelocatableImageWrite",
             *argsIf(config.verbose, "--verbose"),
             *argsIf(config.quickBuild, "-Ob"),
@@ -67,7 +67,6 @@ class SubstrateExecutor(private val config: Config, private val runner: ProcessR
             *config.buildArgs.toTypedArray(),
             "-cp",
             config.classpath.joinToString(File.pathSeparator) { it.absolutePath },
-            config.mainClass,
         )
     }
 

@@ -4,7 +4,6 @@ import org.semver4j.Semver
 import java.io.File
 import java.util.Properties
 
-/** The toolchain's `VERSION` file. */
 data class ToolchainVersion(
     val toolchainVersion: String,
     val host: String,

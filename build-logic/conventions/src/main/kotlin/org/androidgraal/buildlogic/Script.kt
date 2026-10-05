@@ -89,7 +89,7 @@ abstract class Script :
         return sentinel(root.key) + path.removePrefix(root.value)
     }
 
-    /** Something on this machine the task reads; a directory contributes its tree minus `.git`. */
+    /** Something on this machine the task reads, a directory excludes `.git`. */
     fun source(alias: String, file: File): String {
         if (!file.exists()) {
             throw GradleException("$name: no $file to declare as $alias")
@@ -114,7 +114,7 @@ abstract class Script :
 
     fun input(alias: String, file: Provider<File>): String = input(alias, objectFactory.fileCollection().from(file))
 
-    /** Declares [dir] as an output directory under [alias], empty before the first step, and as a root. */
+    /** Declares [dir] as an output directory and root, cleared before first step */
     fun output(alias: String, dir: File): String {
         val sentinel = root(alias, dir)
         outputs.dir(dir)
@@ -130,7 +130,7 @@ abstract class Script :
 
     fun getOutput(artifact: NativeArtifact): File = getOutput(artifact.name)
 
-    /** The source is declared as `<alias>.source`, the copy as [alias]. */
+    /** Copies the source into the build dir, excluding .git */
     fun sourceCopy(alias: String, dir: File, into: File): String {
         val from = source("$alias.source", dir)
         val copy = root(alias, into)
@@ -224,14 +224,14 @@ abstract class Script :
         for ((alias, path) in roots) {
             if (value.contains(path)) {
                 throw GradleException(
-                    "$name: \"$value\" contains the absolute path of root $alias; use rel(...)",
+                    "$name: \"$value\" contains the absolute path of root $alias, use rel(...)",
                 )
             }
         }
         for (prefix in forbidden) {
             if (value.contains(prefix)) {
                 throw GradleException(
-                    "$name: \"$value\" contains the machine-specific path $prefix; declare it",
+                    "$name: \"$value\" contains the machine-specific path $prefix, declare it",
                 )
             }
         }

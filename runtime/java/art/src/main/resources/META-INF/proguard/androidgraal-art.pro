@@ -1,0 +1,6 @@
+-keepclasseswithmembers,includedescriptorclasses class * { @org.androidgraal.art.EndPoint <methods>; }
+-keepnames class * extends java.lang.Throwable
+-keepclasseswithmembernames class org.androidgraal.art.Image { native <methods>; }
+-keepclasseswithmembernames class org.androidgraal.art.Transport { native <methods>; }
+-keep class * implements org.androidgraal.art.Contract { <init>(); }
+-dontwarn org.androidgraal.hosted.annotate.**

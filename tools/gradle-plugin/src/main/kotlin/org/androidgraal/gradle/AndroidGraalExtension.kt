@@ -11,9 +11,6 @@ abstract class AndroidGraalExtension {
     /** Required; the plugin produces `lib<imageName>.so`. */
     abstract val imageName: Property<String>
 
-    /** Required. */
-    abstract val mainClass: Property<String>
-
     /**
      * `androidgraal.toolchain.dir` in the build's `local.properties` and `ANDROID_GRAAL_TOOLCHAIN` take
      * precedence; unset, it is the `org.androidgraal:toolchain` dependency.
@@ -38,3 +35,5 @@ abstract class AndroidGraalExtension {
     /** Default `true`; `false` selects graal's own LIR backend. */
     abstract val useLLVM: Property<Boolean>
 }
+
+internal const val ANDROID_GRAAL_EXTENSION_NAME = "androidGraal"

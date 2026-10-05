@@ -1,33 +1,38 @@
-import org.androidgraal.buildlogic.AndroidSdk
-import org.androidgraal.buildlogic.BuildSettings
-import org.androidgraal.buildlogic.NativeHost
+import org.androidgraal.buildlogic.redirectToSubprojects
 import org.androidgraal.buildlogic.repositoryRoot
 
 plugins {
-    id("androidgraal.format")
+    base
+    id("com.diffplug.spotless")
 }
 
 val repositoryRoot = repositoryRoot()
 
-// Gradle applies a gradle.properties to its own build only.
-val settings = BuildSettings(
-    providers.fileContents(
-        layout.projectDirectory.file(repositoryRoot.resolve("gradle.properties").absolutePath),
-    ).asText.get(),
-    providers.fileContents(
-        layout.projectDirectory.file(repositoryRoot.resolve("local.properties").absolutePath),
-    ).asText.orNull,
-    { providers.gradleProperty(it).orNull },
-    { providers.environmentVariable(it).orNull },
-    repositoryRoot,
-)
+fun rootFile(name: String): File {
+    val file = repositoryRoot.resolve(name)
+    if (!file.isFile) {
+        throw GradleException("no $name in $repositoryRoot")
+    }
+    return file
+}
 
-group = settings.group
-version = settings.version
+val editorConfig = rootFile(".editorconfig")
+val eclipseConfig = rootFile(".eclipse-java-format.properties")
 
-val searchPath = providers.environmentVariable("PATH").orNull.orEmpty()
-    .split(File.pathSeparator)
-    .filter { it.isNotEmpty() }
-    .map(::File)
+spotless {
+    kotlin {
+        target("*.gradle.kts", "src/**/*.kt")
+        val ktlintVersion = the<VersionCatalogsExtension>().named("libs").findVersion("ktlint")
+            .orElseThrow { GradleException("no ktlint version in the libs catalog") }
+        ktlint(ktlintVersion.requiredVersion).setEditorConfigPath(editorConfig)
+    }
+    java {
+        target("src/*/java/**/*.java")
+        importOrder()
+        removeUnusedImports("cleanthat-javaparser-unnecessaryimport")
+        eclipse().configFile(eclipseConfig)
+        trimTrailingWhitespace()
+    }
+}
 
-extensions.add("nativeHost", NativeHost(repositoryRoot, settings, AndroidSdk(settings.sdkDir), searchPath))
+redirectToSubprojects("build", "spotlessApply", "clean")

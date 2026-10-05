@@ -14,3 +14,7 @@ spotless {
 tasks.named("build") {
     dependsOn(":common:build", ":conventions:build")
 }
+
+tasks.named("clean") {
+    dependsOn(":common:clean", ":conventions:clean")
+}

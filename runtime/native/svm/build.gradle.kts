@@ -9,7 +9,7 @@ plugins {
     id("androidgraal.native")
 }
 
-description = "liblibchelper.a, libjvm.a and libsvm_container.a compiled for aarch64-linux-android."
+description = "liblibchelper.a, libjvm.a, libsvm_container.a and libandroidgraal.a compiled for aarch64-linux-android."
 
 val substratevm: File = nativeHost.vendor.graal.resolve("substratevm")
 
@@ -49,13 +49,14 @@ val containerIncludes = listOf(
 
 val buildSvmStaticLibs = tasks.register<Script>("buildSvmStaticLibs") {
     group = "android-graal"
-    description = "Compiles the three SubstrateVM support libraries for ${target.triple}."
+    description = "Compiles the three SubstrateVM support libraries and libandroidgraal.a for ${target.triple}."
 
     val fallbacks = input("fallbacks", fallbacksDir)
     val jdkInclude = input("jdkInclude", jdkIncludeDir)
     val chelperDir = source("libchelper", substratevm.resolve("src/com.oracle.svm.native.libchelper"))
     val jvmPosixDir = source("jvmPosix", substratevm.resolve("src/com.oracle.svm.native.jvm.posix"))
     val containerDir = source("libcontainer", substratevm.resolve("src/com.oracle.svm.native.libcontainer"))
+    val androidgraalDir = source("androidgraal", file("src/androidgraal"))
     source("ndk", nativeHost.ndk.root)
     val obj = root("obj", dir("obj"))
     val lib = output(Native.Svm.staticLibs, dir("lib"))
@@ -92,6 +93,15 @@ val buildSvmStaticLibs = tasks.register<Script>("buildSvmStaticLibs") {
         containerIncludes.map { "$containerDir/$it" },
         listOf(targetFlag) + containerCFlags,
         containerCxxFlags,
+    )
+    staticLib(
+        "$lib/libandroidgraal.a",
+        "$obj/androidgraal",
+        listOf(androidgraalDir),
+        clang,
+        emptyList(),
+        listOf(targetFlag) + commonCFlags,
+        emptyList(),
     )
 }
 

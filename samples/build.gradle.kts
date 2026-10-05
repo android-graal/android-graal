@@ -1,7 +1,7 @@
 import org.androidgraal.buildlogic.redirectToBuilds
 
 plugins {
-    id("androidgraal.format")
+    id("androidgraal.base")
 }
 
-redirectToBuilds(listOf("hello"), "build", "spotlessApply")
+redirectToBuilds(listOf("hello", "bridges", "catalogue", "gameloop", "gl"), "build", "spotlessApply", "clean")

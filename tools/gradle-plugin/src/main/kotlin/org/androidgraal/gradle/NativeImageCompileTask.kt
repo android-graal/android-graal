@@ -23,7 +23,7 @@ import org.gradle.api.tasks.PathSensitivity
 import java.io.File
 
 @CacheableTask
-abstract class NativeImageCompileTask : BaseTask() {
+abstract class NativeImageCompileTask : BaseTask("native-image") {
 
     @get:Internal
     abstract val toolchain: Property<ToolchainLayout>
@@ -38,9 +38,6 @@ abstract class NativeImageCompileTask : BaseTask() {
 
     @get:Input
     abstract val imageName: Property<String>
-
-    @get:Input
-    abstract val mainClass: Property<String>
 
     @get:Input
     abstract val target: Property<Target>
@@ -76,20 +73,19 @@ abstract class NativeImageCompileTask : BaseTask() {
     fun setup(
         variantName: String,
         extension: AndroidGraalExtension,
-        classpath: Provider<out FileCollection>,
+        classpath: FileCollection,
         toolchain: Provider<ToolchainLayout>,
         target: Target,
     ) {
         group = "build"
         description = "Compiles the native image into relocatable objects for ${target.abi.abiString} ($variantName)."
-        this.taskDir.convention(layout.buildDirectory.dir("androidgraal/$variantName/native-image"))
+        this.variantName.convention(variantName)
         this.workDir.convention(taskDir.dir("work"))
         this.objectsDir.convention(taskDir.dir("objects"))
         this.toolchain.convention(toolchain)
         this.target.convention(target)
         this.imageClasspath.convention(classpath)
         this.imageName.convention(extension.imageName)
-        this.mainClass.convention(extension.mainClass)
         this.buildArgs.convention(extension.buildArgs)
         this.jvmArgs.convention(extension.jvmArgs)
         this.systemProperties.convention(extension.systemProperties)
@@ -103,7 +99,6 @@ abstract class NativeImageCompileTask : BaseTask() {
         val config = SubstrateExecutor.Config(
             toolchain = toolchain.get(),
             imageName = imageName.get(),
-            mainClass = mainClass.get(),
             classpath = imageClasspath.files.toList(),
             workDir = workDir.get().asFile,
             objectsDir = objectsDir.get().asFile,
