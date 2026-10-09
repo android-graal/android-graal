@@ -71,7 +71,7 @@ internal object Sources {
 
     private fun javaFileOf(name: ClassName, type: TypeSpec): JavaFile {
         return JavaFile.builder(name.packageName(), type)
-            .addFileComment("Generated android.jar and the NDK's GLES headers.")
+            .addFileComment("Generated from android.jar and the NDK's GLES headers.")
             .skipJavaLangImports(true)
             .indent("    ")
             .build()
