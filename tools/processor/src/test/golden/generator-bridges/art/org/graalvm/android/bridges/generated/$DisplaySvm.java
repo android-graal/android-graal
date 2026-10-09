@@ -29,7 +29,7 @@ public final class $DisplaySvm extends Foreign implements Display {
         try {
             if (transport != null) {
                 Transport.setBlockHeader(transport, 0, n0, 2);
-                if (a0 != null && a0.length() > 0) {
+                if (a0 != null) {
                     char[] c0 = new char[a0.length()];
                     a0.getChars(0, c0.length, c0, 0);
                     transport.position(Blocks.HEADER);
@@ -91,7 +91,7 @@ public final class $DisplaySvm extends Foreign implements Display {
         try {
             if (transport != null) {
                 Transport.setBlockHeader(transport, 0, n0_label, 2);
-                if (a0_label != null && a0_label.length() > 0) {
+                if (a0_label != null) {
                     char[] c0_label = new char[a0_label.length()];
                     a0_label.getChars(0, c0_label.length, c0_label, 0);
                     transport.position(Blocks.HEADER);
@@ -117,7 +117,7 @@ public final class $DisplaySvm extends Foreign implements Display {
         try {
             if (transport != null) {
                 Transport.setBlockHeader(transport, 0, n0, 2);
-                if (a0 != null && a0.length() > 0) {
+                if (a0 != null) {
                     char[] c0 = new char[a0.length()];
                     a0.getChars(0, c0.length, c0, 0);
                     transport.position(Blocks.HEADER);
@@ -143,7 +143,7 @@ public final class $DisplaySvm extends Foreign implements Display {
         try {
             if (transport != null) {
                 Transport.setBlockHeader(transport, 0, n0, 2);
-                if (a0 != null && a0.length() > 0) {
+                if (a0 != null) {
                     char[] c0 = new char[a0.length()];
                     a0.getChars(0, c0.length, c0, 0);
                     transport.position(Blocks.HEADER);

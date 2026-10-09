@@ -19,9 +19,7 @@ internal class FreshParameter(private val side: Side, override val operand: Oper
 
     override val offset: String = "o${place.suffix}"
 
-    private val senderLength: String = elements.lengthOf(place.argument)
-
-    override val blockLength: CodeBlock = blockLengthOf(place.argument, senderLength)
+    override val blockLength: CodeBlock = blockLengthOf(place.argument, elements.lengthOf(place.argument))
 
     override val slots: List<WireSlot> = emptyList()
 
@@ -48,11 +46,11 @@ internal class FreshParameter(private val side: Side, override val operand: Oper
             elements.bytes,
         )
         if (direction == Direction.IN) {
-            body.inside.beginControlFlow("if (${place.argument} != null && $senderLength > 0)")
+            body.inside.beginControlFlow("if (${place.argument} != null)")
                 .add(copyInOf(elements, "transport", start, place.argument, "c${place.suffix}"))
                 .endControlFlow()
         } else {
-            body.after.beginControlFlow("if (${place.argument} != null && $senderLength > 0)")
+            body.after.beginControlFlow("if (${place.argument} != null)")
                 .add(bufferCopyOf(elements.type, "transport", start, place.argument, intoBuffer = false))
                 .endControlFlow()
         }
@@ -80,7 +78,7 @@ internal class FreshParameter(private val side: Side, override val operand: Oper
         }
         receiveArray(body)
         val output = direction == Direction.OUT
-        (if (output) body.after else body.statements).beginControlFlow("if ($length > 0)")
+        (if (output) body.after else body.statements).beginControlFlow("if (${place.value} != null)")
             .add(bufferCopyOf(elements.type, "view", plus(at, JavaNames.HEADER), place.value, output))
             .endControlFlow()
     }
@@ -145,9 +143,7 @@ internal class FreshResult(private val side: Side, implementation: Side, operand
                 elements.type,
                 JavaNames.ART_TRANSPORT,
             )
-                .beginControlFlow("if (result.length > 0)")
                 .add(bufferCopyOf(elements.type, "block", JavaNames.HEADER, "result", intoBuffer = false))
-                .endControlFlow()
         }
         code.addStatement("\$T.free(thread, block)", JavaNames.ART_TRANSPORT).addStatement("return result")
     }
@@ -173,7 +169,6 @@ internal class FreshResult(private val side: Side, implementation: Side, operand
     }
 
     private fun sendArtResult(body: ReceiverBody, call: CodeBlock) {
-        val length = elements.lengthOf("result")
         body.called { addStatement("\$T result = \$L", type, call) }
             .beginControlFlow("if (result == null)")
             .addStatement("return null")
@@ -182,12 +177,10 @@ internal class FreshResult(private val side: Side, implementation: Side, operand
                 "\$T r = \$T.allocBlock(thread, \$L, \$L)",
                 JavaNames.BYTE_BUFFER,
                 JavaNames.ART_TRANSPORT,
-                length,
+                elements.lengthOf("result"),
                 elements.bytes,
             )
-            .beginControlFlow("if (\$L > 0)", length)
             .add(copyInOf(elements, "r", JavaNames.HEADER, "result", "chars"))
-            .endControlFlow()
             .addStatement("return r")
     }
 

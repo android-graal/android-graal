@@ -27,8 +27,7 @@ public final class $HelloSvm extends Foreign implements Hello {
     public long callbacks(Display a0, int a1, boolean a2) {
         foreignCheck();
         Image.ThreadData thread = Image.thread();
-        long h0 = HANDLES.send(a0);
-        long r = callbacks(thread.isolateThread, id, h0, a1, a2);
+        long r = callbacks(thread.isolateThread, id, HANDLES.send(a0), a1, a2);
         thread.throwPendingException();
         return r;
     }
@@ -37,8 +36,7 @@ public final class $HelloSvm extends Foreign implements Hello {
     public void churn(Registry a0, int a1) {
         foreignCheck();
         Image.ThreadData thread = Image.thread();
-        long h0 = HANDLES.send(a0);
-        churn(thread.isolateThread, id, h0, a1);
+        churn(thread.isolateThread, id, HANDLES.send(a0), a1);
         thread.throwPendingException();
     }
 
@@ -46,8 +44,7 @@ public final class $HelloSvm extends Foreign implements Hello {
     public void coldThrow(Display a0) {
         foreignCheck();
         Image.ThreadData thread = Image.thread();
-        long h0 = HANDLES.send(a0);
-        coldThrow(thread.isolateThread, id, h0);
+        coldThrow(thread.isolateThread, id, HANDLES.send(a0));
         thread.throwPendingException();
     }
 
@@ -70,7 +67,7 @@ public final class $HelloSvm extends Foreign implements Hello {
         try {
             if (transport != null) {
                 Transport.setBlockHeader(transport, 0, n0, 2);
-                if (a0 != null && a0.length() > 0) {
+                if (a0 != null) {
                     char[] c0 = new char[a0.length()];
                     a0.getChars(0, c0.length, c0, 0);
                     transport.position(Blocks.HEADER);
@@ -103,7 +100,7 @@ public final class $HelloSvm extends Foreign implements Hello {
         try {
             if (transport != null) {
                 Transport.setBlockHeader(transport, 0, n0, 2);
-                if (a0 != null && a0.length() > 0) {
+                if (a0 != null) {
                     char[] c0 = new char[a0.length()];
                     a0.getChars(0, c0.length, c0, 0);
                     transport.position(Blocks.HEADER);
@@ -129,7 +126,7 @@ public final class $HelloSvm extends Foreign implements Hello {
         try {
             if (transport != null) {
                 Transport.setBlockHeader(transport, 0, n0, 2);
-                if (a0 != null && a0.length() > 0) {
+                if (a0 != null) {
                     char[] c0 = new char[a0.length()];
                     a0.getChars(0, c0.length, c0, 0);
                     transport.position(Blocks.HEADER);
@@ -184,10 +181,7 @@ public final class $HelloSvm extends Foreign implements Hello {
     public long loop(Probe a0, Display a1, Allocations a2, int a3, int a4, boolean a5) {
         foreignCheck();
         Image.ThreadData thread = Image.thread();
-        long h0 = HANDLES.send(a0);
-        long h1 = HANDLES.send(a1);
-        long h2 = HANDLES.send(a2);
-        long r = loop(thread.isolateThread, id, h0, h1, h2, a3, a4, a5);
+        long r = loop(thread.isolateThread, id, HANDLES.send(a0), HANDLES.send(a1), HANDLES.send(a2), a3, a4, a5);
         thread.throwPendingException();
         return r;
     }
@@ -211,7 +205,7 @@ public final class $HelloSvm extends Foreign implements Hello {
         try {
             if (transport != null) {
                 Transport.setBlockHeader(transport, 0, n0, 2);
-                if (a0 != null && a0.length() > 0) {
+                if (a0 != null) {
                     char[] c0 = new char[a0.length()];
                     a0.getChars(0, c0.length, c0, 0);
                     transport.position(Blocks.HEADER);
@@ -231,8 +225,7 @@ public final class $HelloSvm extends Foreign implements Hello {
     public boolean register(Registry a0) {
         foreignCheck();
         Image.ThreadData thread = Image.thread();
-        long h0 = HANDLES.send(a0);
-        boolean r = register(thread.isolateThread, id, h0);
+        boolean r = register(thread.isolateThread, id, HANDLES.send(a0));
         thread.throwPendingException();
         return r;
     }
@@ -241,8 +234,7 @@ public final class $HelloSvm extends Foreign implements Hello {
     public void run(Display a0) {
         foreignCheck();
         Image.ThreadData thread = Image.thread();
-        long h0 = HANDLES.send(a0);
-        run(thread.isolateThread, id, h0);
+        run(thread.isolateThread, id, HANDLES.send(a0));
         thread.throwPendingException();
     }
 
@@ -250,8 +242,7 @@ public final class $HelloSvm extends Foreign implements Hello {
     public Display same(Display a0) {
         foreignCheck();
         Image.ThreadData thread = Image.thread();
-        long h0 = HANDLES.send(a0);
-        long r = same(thread.isolateThread, id, h0);
+        long r = same(thread.isolateThread, id, HANDLES.send(a0));
         thread.throwPendingException();
         return HANDLES.receive(r, $DisplaySvm.PROXIES);
     }
@@ -269,8 +260,7 @@ public final class $HelloSvm extends Foreign implements Hello {
     public void shows(Display a0, int a1, boolean a2) {
         foreignCheck();
         Image.ThreadData thread = Image.thread();
-        long h0 = HANDLES.send(a0);
-        shows(thread.isolateThread, id, h0, a1, a2);
+        shows(thread.isolateThread, id, HANDLES.send(a0), a1, a2);
         thread.throwPendingException();
     }
 
@@ -287,8 +277,7 @@ public final class $HelloSvm extends Foreign implements Hello {
     public int values(Display a0, boolean a1) {
         foreignCheck();
         Image.ThreadData thread = Image.thread();
-        long h0 = HANDLES.send(a0);
-        int r = values(thread.isolateThread, id, h0, a1);
+        int r = values(thread.isolateThread, id, HANDLES.send(a0), a1);
         thread.throwPendingException();
         return r;
     }

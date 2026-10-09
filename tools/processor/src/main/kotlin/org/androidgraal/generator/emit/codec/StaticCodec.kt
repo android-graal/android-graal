@@ -26,7 +26,6 @@ internal class StaticBlock(
     operand: Operand,
     private val argument: String,
     private val local: String,
-    private val length: String,
     private val field: String,
     isResult: Boolean,
 ) {
@@ -43,8 +42,6 @@ internal class StaticBlock(
     val reusedField = if (isResult) "${field}Array" else field
 
     val holderClass: ClassName = model.generatedClass(wire.proxy).nestedClass(field.capitalized())
-
-    val decoded = if (elements.isString) "new String($local.array, 0, $length)" else "$local.array"
 
     private val blockLength = blockLengthOf(argument, elements.lengthOf(argument))
 
@@ -228,14 +225,6 @@ internal class StaticBlock(
             .addStatement("$local.view.put($local.array, 0, $argument.length())")
             .build()
     }
-
-    fun viewCopyOut(): CodeBlock {
-        if (!elements.isString) return viewCopyOf(elements.type, "$local.view", "$local.array", intoView = false)
-        return CodeBlock.builder()
-            .addStatement("$local.view.clear()")
-            .addStatement("$local.view.get($local.array, 0, $length)")
-            .build()
-    }
 }
 
 internal class StaticParameter(
@@ -247,12 +236,10 @@ internal class StaticParameter(
 ) : ParameterCodec {
     private val local = "b${place.suffix}"
 
-    private val length = "n${place.suffix}"
-
     private val field = "${wire.name}Buffer${place.suffix}"
 
     private val block =
-        StaticBlock(model, side, wire, operand, place.argument, local, length, field, isResult = false)
+        StaticBlock(model, side, wire, operand, place.argument, local, field, isResult = false)
 
     private val type = TypeName.get(operand.type)
 
@@ -300,23 +287,21 @@ internal class StaticParameter(
     private fun receiveArt(body: ReceiverBody): CodeBlock {
         if (block.elements.isString) {
             body.statements.addStatement("\$T $local = \$T.at(${place.argument})", block.holderClass, block.holderClass)
-                .addStatement("int $length = \$T.getBlockLength($local.block, 0)", JavaNames.ART_TRANSPORT)
-                .addStatement("String ${place.value} = null")
-                .beginControlFlow("if ($length != \$L)", JavaNames.BLOCK_NULL)
-                .add(block.viewCopyOut())
-                .addStatement("${place.value} = ${block.decoded}")
-                .endControlFlow()
+                .addStatement(
+                    "String ${place.value} = \$T.readStringBlock($local.block, $local.view, $local.array)",
+                    JavaNames.ART_TRANSPORT,
+                )
             return CodeBlock.of(place.value)
         }
         body.statements.addStatement(
             "\$T $local = ${place.argument} == 0 ? null : \$T.at(${place.argument})",
             block.holderClass,
             block.holderClass,
-        )
+        ).addStatement("\$T ${place.value} = $local == null ? null : $local.array", type)
         (if (isInput) body.statements else body.after).beginControlFlow("if ($local != null)")
-            .add(viewCopyOf(block.elements.type, "$local.view", "$local.array", !isInput))
+            .add(viewCopyOf(block.elements.type, "$local.view", place.value, !isInput))
             .endControlFlow()
-        return CodeBlock.of("$local == null ? null : $local.array")
+        return CodeBlock.of(place.value)
     }
 
     private fun receiveImage(body: ReceiverBody): CodeBlock {
@@ -351,7 +336,7 @@ internal class StaticResult(model: BridgeModel, private val side: Side, wire: Wi
 
     private val field = "${wire.name}Result"
 
-    private val block = StaticBlock(model, side, wire, operand, argument, local, length, field, isResult = true)
+    private val block = StaticBlock(model, side, wire, operand, argument, local, field, isResult = true)
 
     private val type = TypeName.get(operand.type)
 
@@ -381,12 +366,19 @@ internal class StaticResult(model: BridgeModel, private val side: Side, wire: Wi
     }
 
     private fun receiveArtResult(code: CodeBlock.Builder) {
+        if (block.elements.isString) {
+            code.addStatement(
+                "return \$T.readStringBlock($local.block, $local.view, $local.array)",
+                JavaNames.ART_TRANSPORT,
+            )
+            return
+        }
         code.addStatement("int $length = \$T.getBlockLength($local.block, 0)", JavaNames.ART_TRANSPORT)
             .beginControlFlow("if ($length == \$L)", JavaNames.BLOCK_NULL)
             .addStatement("return null")
             .endControlFlow()
-            .add(block.viewCopyOut())
-            .addStatement("return ${block.decoded}")
+            .add(viewCopyOf(block.elements.type, "$local.view", "$local.array", intoView = false))
+            .addStatement("return $local.array")
     }
 
     private fun receiveImageResult(code: CodeBlock.Builder) {

@@ -73,7 +73,7 @@ public final class $FrameSvm extends Foreign implements Frame {
             }
             int r = events(thread.isolateThread, id, transport);
             thread.throwPendingException();
-            if (a0 != null && a0.length > 0) {
+            if (a0 != null) {
                 transport.position(Blocks.HEADER);
                 transport.asIntBuffer().get(a0);
             }
@@ -98,7 +98,7 @@ public final class $FrameSvm extends Foreign implements Frame {
             }
             fill(thread.isolateThread, id, transport);
             thread.throwPendingException();
-            if (a0 != null && a0.length > 0) {
+            if (a0 != null) {
                 transport.position(Blocks.HEADER);
                 transport.asIntBuffer().get(a0);
             }
@@ -137,12 +137,12 @@ public final class $FrameSvm extends Foreign implements Frame {
         try {
             if (transport != null) {
                 Transport.setBlockHeader(transport, 0, n0, 4);
-                if (a0 != null && a0.length > 0) {
+                if (a0 != null) {
                     transport.position(Blocks.HEADER);
                     transport.asIntBuffer().put(a0);
                 }
                 Transport.setBlockHeader(transport, o1, n1, 2);
-                if (a1 != null && a1.length() > 0) {
+                if (a1 != null) {
                     char[] c1 = new char[a1.length()];
                     a1.getChars(0, c1.length, c1, 0);
                     transport.position(o1 + Blocks.HEADER);
@@ -186,8 +186,7 @@ public final class $FrameSvm extends Foreign implements Frame {
     public int probe(Probe a0) {
         foreignCheck();
         Image.ThreadData thread = Image.thread();
-        long h0 = HANDLES.send(a0);
-        int r = probe(thread.isolateThread, id, h0);
+        int r = probe(thread.isolateThread, id, HANDLES.send(a0));
         thread.throwPendingException();
         return r;
     }
@@ -203,10 +202,8 @@ public final class $FrameSvm extends Foreign implements Frame {
         }
         ByteBuffer block = Transport.viewBlock(thread, r);
         int[] result = new int[Transport.getBlockLength(block, 0)];
-        if (result.length > 0) {
-            block.position(Blocks.HEADER);
-            block.asIntBuffer().get(result);
-        }
+        block.position(Blocks.HEADER);
+        block.asIntBuffer().get(result);
         Transport.free(thread, block);
         return result;
     }
@@ -215,8 +212,7 @@ public final class $FrameSvm extends Foreign implements Frame {
     public float render(Probe a0) {
         foreignCheck();
         Image.ThreadData thread = Image.thread();
-        long h0 = HANDLES.send(a0);
-        float r = render(thread.isolateThread, id, h0);
+        float r = render(thread.isolateThread, id, HANDLES.send(a0));
         thread.throwPendingException();
         return r;
     }
@@ -243,7 +239,7 @@ public final class $FrameSvm extends Foreign implements Frame {
             }
             squares(thread.isolateThread, id, transport, a1);
             thread.throwPendingException();
-            if (a0 != null && a0.length > 0) {
+            if (a0 != null) {
                 transport.position(Blocks.HEADER);
                 transport.asIntBuffer().get(a0);
             }
@@ -273,7 +269,7 @@ public final class $FrameSvm extends Foreign implements Frame {
         try {
             if (transport != null) {
                 Transport.setBlockHeader(transport, 0, n0, 4);
-                if (a0 != null && a0.length > 0) {
+                if (a0 != null) {
                     transport.position(Blocks.HEADER);
                     transport.asFloatBuffer().put(a0);
                 }
@@ -332,7 +328,7 @@ public final class $FrameSvm extends Foreign implements Frame {
         try {
             if (transport != null) {
                 Transport.setBlockHeader(transport, 0, n0, 2);
-                if (a0 != null && a0.length() > 0) {
+                if (a0 != null) {
                     char[] c0 = new char[a0.length()];
                     a0.getChars(0, c0.length, c0, 0);
                     transport.position(Blocks.HEADER);
@@ -362,13 +358,7 @@ public final class $FrameSvm extends Foreign implements Frame {
         Text16Result rb = Text16Result.current(thread);
         text16(thread.isolateThread, id, rb.address, a0);
         thread.throwPendingException();
-        int n = Transport.getBlockLength(rb.block, 0);
-        if (n == Blocks.NULL) {
-            return null;
-        }
-        rb.view.clear();
-        rb.view.get(rb.array, 0, n);
-        return new String(rb.array, 0, n);
+        return Transport.readStringBlock(rb.block, rb.view, rb.array);
     }
 
     @Override
@@ -381,7 +371,7 @@ public final class $FrameSvm extends Foreign implements Frame {
         try {
             if (transport != null) {
                 Transport.setBlockHeader(transport, 0, n0, 4);
-                if (a0 != null && a0.length > 0) {
+                if (a0 != null) {
                     transport.position(Blocks.HEADER);
                     transport.asIntBuffer().put(a0);
                 }

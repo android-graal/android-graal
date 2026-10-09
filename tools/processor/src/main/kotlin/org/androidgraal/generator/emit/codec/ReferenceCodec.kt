@@ -28,13 +28,7 @@ internal class ReferenceParameter(
 
     override val fields: List<FieldSpec> = listOf(handlesFieldOf(side))
 
-    override fun send(body: SenderBody): List<CodeBlock> {
-        if (side == Side.ART) {
-            body.prepare.addStatement("long $handle = HANDLES.send(${place.argument})")
-            return listOf(CodeBlock.of(handle))
-        }
-        return listOf(CodeBlock.of("HANDLES.send(${place.argument})"))
-    }
+    override fun send(body: SenderBody): List<CodeBlock> = listOf(CodeBlock.of("HANDLES.send(${place.argument})"))
 
     override fun receive(body: ReceiverBody): CodeBlock = objectOf(model, side, type, handle)
 }

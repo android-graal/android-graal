@@ -2,6 +2,7 @@ package org.androidgraal.art;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.CharBuffer;
 import org.androidgraal.art.Image.ThreadData;
 import org.androidgraal.shared.Blocks;
 
@@ -85,6 +86,17 @@ public final class Transport {
         view.position(at + Blocks.HEADER);
         view.asCharBuffer().get(chars);
         return new String(chars);
+    }
+
+    /** The string in {@code block}, null for a null block, read through {@code view} into {@code chars}. */
+    public static String readStringBlock(ByteBuffer block, CharBuffer view, char[] chars) {
+        int length = getBlockLength(block, 0);
+        if (length == Blocks.NULL) {
+            return null;
+        }
+        view.clear();
+        view.get(chars, 0, length);
+        return new String(chars, 0, length);
     }
 
     /** A copy of the bytes of the block at the start of {@code block}, its view left positioned after them. */

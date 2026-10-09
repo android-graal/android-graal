@@ -45,13 +45,7 @@ public final class $ProbeArt {
         try {
             Probe receiver = HANDLES.object(handle);
             Count16Buffer0 b0 = Count16Buffer0.at(a0);
-            int n0 = Transport.getBlockLength(b0.block, 0);
-            String v0 = null;
-            if (n0 != Blocks.NULL) {
-                b0.view.clear();
-                b0.view.get(b0.array, 0, n0);
-                v0 = new String(b0.array, 0, n0);
-            }
+            String v0 = Transport.readStringBlock(b0.block, b0.view, b0.array);
             return receiver.count16(v0);
         } catch (Throwable t) {
             Image.raiseException(t);
@@ -68,7 +62,7 @@ public final class $ProbeArt {
             int n0 = view == null ? Blocks.NULL : Transport.getBlockLength(view, 0);
             int[] v0 = n0 == Blocks.NULL ? null : new int[n0];
             receiver.fill(v0);
-            if (n0 > 0) {
+            if (v0 != null) {
                 view.position(Blocks.HEADER);
                 view.asIntBuffer().put(v0);
             }
@@ -82,10 +76,11 @@ public final class $ProbeArt {
         try {
             Probe receiver = HANDLES.object(handle);
             Fill16Buffer0 b0 = a0 == 0 ? null : Fill16Buffer0.at(a0);
-            receiver.fill16(b0 == null ? null : b0.array);
+            int[] v0 = b0 == null ? null : b0.array;
+            receiver.fill16(v0);
             if (b0 != null) {
                 b0.view.clear();
-                b0.view.put(b0.array);
+                b0.view.put(v0);
             }
         } catch (Throwable t) {
             Image.raiseException(t);
@@ -97,10 +92,11 @@ public final class $ProbeArt {
         try {
             Probe receiver = HANDLES.object(handle);
             Fill16TlsBuffer0 b0 = a0 == 0 ? null : Fill16TlsBuffer0.at(a0);
-            receiver.fill16Tls(b0 == null ? null : b0.array);
+            int[] v0 = b0 == null ? null : b0.array;
+            receiver.fill16Tls(v0);
             if (b0 != null) {
                 b0.view.clear();
-                b0.view.put(b0.array);
+                b0.view.put(v0);
             }
         } catch (Throwable t) {
             Image.raiseException(t);
@@ -126,7 +122,7 @@ public final class $ProbeArt {
             ByteBuffer view = transport == 0 ? null : Transport.view(thread, transport, bytes);
             int n0 = view == null ? Blocks.NULL : Transport.getBlockLength(view, 0);
             int[] v0 = n0 == Blocks.NULL ? null : new int[n0];
-            if (n0 > 0) {
+            if (v0 != null) {
                 view.position(Blocks.HEADER);
                 view.asIntBuffer().get(v0);
             }
@@ -138,12 +134,10 @@ public final class $ProbeArt {
                 return null;
             }
             ByteBuffer r = Transport.allocBlock(thread, result.length(), 2);
-            if (result.length() > 0) {
-                char[] chars = new char[result.length()];
-                result.getChars(0, chars.length, chars, 0);
-                r.position(Blocks.HEADER);
-                r.asCharBuffer().put(chars);
-            }
+            char[] chars = new char[result.length()];
+            result.getChars(0, chars.length, chars, 0);
+            r.position(Blocks.HEADER);
+            r.asCharBuffer().put(chars);
             return r;
         } catch (Throwable t) {
             Image.raiseException(t);
@@ -184,10 +178,8 @@ public final class $ProbeArt {
                 return null;
             }
             ByteBuffer r = Transport.allocBlock(thread, result.length, 4);
-            if (result.length > 0) {
-                r.position(Blocks.HEADER);
-                r.asIntBuffer().put(result);
-            }
+            r.position(Blocks.HEADER);
+            r.asIntBuffer().put(result);
             return r;
         } catch (Throwable t) {
             Image.raiseException(t);
@@ -215,7 +207,7 @@ public final class $ProbeArt {
             int n0 = view == null ? Blocks.NULL : Transport.getBlockLength(view, 0);
             int[] v0 = n0 == Blocks.NULL ? null : new int[n0];
             receiver.squares(v0, a1);
-            if (n0 > 0) {
+            if (v0 != null) {
                 view.position(Blocks.HEADER);
                 view.asIntBuffer().put(v0);
             }
@@ -243,7 +235,7 @@ public final class $ProbeArt {
             ByteBuffer view = transport == 0 ? null : Transport.view(thread, transport, bytes);
             int n0 = view == null ? Blocks.NULL : Transport.getBlockLength(view, 0);
             float[] v0 = n0 == Blocks.NULL ? null : new float[n0];
-            if (n0 > 0) {
+            if (v0 != null) {
                 view.position(Blocks.HEADER);
                 view.asFloatBuffer().get(v0);
             }
@@ -259,11 +251,12 @@ public final class $ProbeArt {
         try {
             Probe receiver = HANDLES.object(handle);
             Sum16Buffer0 b0 = a0 == 0 ? null : Sum16Buffer0.at(a0);
+            float[] v0 = b0 == null ? null : b0.array;
             if (b0 != null) {
                 b0.view.clear();
-                b0.view.get(b0.array);
+                b0.view.get(v0);
             }
-            return receiver.sum16(b0 == null ? null : b0.array);
+            return receiver.sum16(v0);
         } catch (Throwable t) {
             Image.raiseException(t);
             return 0;
@@ -283,12 +276,10 @@ public final class $ProbeArt {
                 return null;
             }
             ByteBuffer r = Transport.allocBlock(thread, result.length(), 2);
-            if (result.length() > 0) {
-                char[] chars = new char[result.length()];
-                result.getChars(0, chars.length, chars, 0);
-                r.position(Blocks.HEADER);
-                r.asCharBuffer().put(chars);
-            }
+            char[] chars = new char[result.length()];
+            result.getChars(0, chars.length, chars, 0);
+            r.position(Blocks.HEADER);
+            r.asCharBuffer().put(chars);
             return r;
         } catch (Throwable t) {
             Image.raiseException(t);
@@ -324,7 +315,7 @@ public final class $ProbeArt {
             ByteBuffer view = transport == 0 ? null : Transport.view(thread, transport, bytes);
             int n0 = view == null ? Blocks.NULL : Transport.getBlockLength(view, 0);
             int[] v0 = n0 == Blocks.NULL ? null : new int[n0];
-            if (n0 > 0) {
+            if (v0 != null) {
                 view.position(Blocks.HEADER);
                 view.asIntBuffer().get(v0);
             }
