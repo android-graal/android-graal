@@ -1,0 +1,1 @@
+-keepclasseswithmembernames class org.androidgraal.android.art.ArtHost { native <methods>; }

@@ -56,6 +56,7 @@ bytes: [1, 2, 3]
 fill16: [0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0, 13.0, 14.0, 15.0]
 sum16Tls: 10
 range: [0, 1, 2, 3]
+reverse: [c, null, a]
 length16: 15
 label16: label 42
 greet: hello catalogue
@@ -69,6 +70,7 @@ accepted 5
 samples16: [0.0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25, 2.5, 2.75, 3.0, 3.25, 3.5, 3.75]
 collected16 [0, 1, 4, 9, 16, 25, 36, 49, 64, 81, 100, 121, 144, 169, 196, 225]
 squares [0, 1, 4, 9]
+capitals [A, null, C]
 width16: from the image
 width16 14
 corners4 [0.0, 1.0, 1.0, 0.0]
@@ -136,6 +138,11 @@ Which pattern each `Patterns` method shows:
   the other direction, ART's 16 ints copied into the block, read by the image into its `int[16]`.
 - `range`: an `int[]` result: the image allocates a block of the array, returns its address, ART copies it into a
   fresh array and frees the block.
+- `reverse`: a `String[]` both ways, without a direction annotation like `String`: one block of bytes holding the
+  element count as an `int`, then one `String` block per element (its header -1 for null, no chars follow).
+  In: a block of the call's
+  transport, read by the image into a fresh array. Out: the image allocates a block for the result in the same
+  layout, ART reads it with `Transport.readStringArrayBlock` and frees it. The null element arrives as null.
 - `length16`: a `String` with `@StaticBuffer(capacity = 16)`: at most 16 chars (more throw on ART before the call),
   written into the calling thread's block of the position after its length, read by the image through a `char[16]`
   it keeps per thread.
@@ -173,6 +180,8 @@ Which pattern each `Sink` method shows, in the order `show` calls them:
   fills ART's `int[16]` for the thread, which is copied into the block and read back into the image's array.
 - `squares`: an `int[]` result from ART: `$SinkArt`'s end point takes a block from `Transport.alloc`, writes the array
   and returns the `ByteBuffer`, whose address the image reads before it drops the reference and frees the block.
+- `capitals`: a `String[]` both ways, in the blocks of `reverse`: the image's proxy writes the array into the call's
+  transport, ART's end point returns the result's block as `squares` does.
 - `width16`: a `String` with `@StaticBuffer(capacity = 16)`: the image writes it into its thread's block, ART reads it
   through a `char[16]` kept per thread.
 - `corners4`: a `float[]` result with `@StaticBuffer(capacity = 4)`: ART writes the length and floats into the image

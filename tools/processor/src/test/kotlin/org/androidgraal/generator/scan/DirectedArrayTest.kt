@@ -45,6 +45,7 @@ class DirectedArrayTest {
         val shapes = "    String name(String s, @$IN int[] values);\n" +
             "    int[] ints(int count);\n" +
             "    boolean[] flags(int count);\n" +
+            "    String[] texts(String[] a, String s);\n" +
             "    int count(@$STATIC_BUFFER(capacity = 32) String s);\n" +
             "    @$STATIC_BUFFER(capacity = 32)\n    String label(int value);\n" +
             "    @$STATIC_BUFFER(capacity = 8)\n    double[] values();\n"
@@ -56,6 +57,7 @@ class DirectedArrayTest {
             "  ints ints(int): (primitive) -> array int[]",
             "  label label(int): (primitive) -> String static 32",
             "  name name(java.lang.String, int[]): (String, array in) -> String",
+            "  texts texts(java.lang.String[], java.lang.String): (String[], String) -> String[]",
             "  values values(): () -> array double[] static 8",
         )
         assertEquals(
@@ -168,7 +170,9 @@ class DirectedArrayTest {
                 "    void plain(@$STATIC_BUFFER(capacity = 4) int[] values);\n" +
                 "    void text(@$STATIC_BUFFER(capacity = 0) String s);\n" +
                 "    @$STATIC_BUFFER(capacity = 4)\n    int size();\n" +
-                "    @$STATIC_BUFFER(capacity = -1)\n    String none();\n",
+                "    @$STATIC_BUFFER(capacity = -1)\n    String none();\n" +
+                "    void names(@$STATIC_BUFFER(capacity = 4) String[] names);\n" +
+                "    @$STATIC_BUFFER(capacity = 4)\n    String[] labels();\n",
         ).assertErrors(
             ErrorAt(
                 "fix.core.Service.count(int).n has @StaticBuffer, only a directed array or a String has a static" +
@@ -203,6 +207,17 @@ class DirectedArrayTest {
                 SERVICE,
                 "none()",
             ),
+            ErrorAt(
+                "fix.core.Service.names(java.lang.String[]).names has @StaticBuffer, only a directed array or a" +
+                    " String has a static buffer",
+                SERVICE,
+                "names(",
+            ),
+            ErrorAt(
+                "fix.core.Service.labels() has @StaticBuffer, only a directed array or a String has a static buffer",
+                SERVICE,
+                "labels()",
+            ),
         )
     }
 
@@ -210,7 +225,8 @@ class DirectedArrayTest {
     fun `a direction on a parameter that is no primitive array fails, and so do both directions`() {
         compile(
             service = "    void name(@$IN String s);\n    void both(@$IN @$OUT int[] values);\n" +
-                "    void mode(@$IN int n);\n",
+                "    void mode(@$IN int n);\n    void names(@$OUT String[] names);\n" +
+                "    void labels(@$IN String[] labels);\n",
         ).assertErrors(
             ErrorAt(
                 "fix.core.Service.name(java.lang.String).s has a direction, only a primitive array has one",
@@ -223,6 +239,16 @@ class DirectedArrayTest {
                 "both(",
             ),
             ErrorAt("fix.core.Service.mode(int).n has a direction, only a primitive array has one", SERVICE, "mode("),
+            ErrorAt(
+                "fix.core.Service.names(java.lang.String[]).names has a direction, only a primitive array has one",
+                SERVICE,
+                "names(",
+            ),
+            ErrorAt(
+                "fix.core.Service.labels(java.lang.String[]).labels has a direction, only a primitive array has one",
+                SERVICE,
+                "labels(",
+            ),
         )
     }
 

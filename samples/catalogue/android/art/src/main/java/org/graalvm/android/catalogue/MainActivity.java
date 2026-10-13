@@ -66,6 +66,7 @@ public class MainActivity extends Activity {
         Arrays.fill(counted, 2);
         sink.line("sum16Tls: " + patterns.sum16Tls(counted, 5));
         sink.line("range: " + Arrays.toString(patterns.range(4)));
+        sink.line("reverse: " + Arrays.toString(patterns.reverse(new String[] {"a", null, "c"})));
         sink.line("length16: " + patterns.length16("sixteen or less"));
         sink.line("label16: " + patterns.label16(42));
         sink.line("greet: " + patterns.greet("catalogue"));

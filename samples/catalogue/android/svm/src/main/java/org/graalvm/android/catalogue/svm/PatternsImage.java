@@ -120,6 +120,15 @@ public final class PatternsImage implements Patterns {
     }
 
     @Override
+    public String[] reverse(String[] words) {
+        String[] reversed = new String[words.length];
+        for (int i = 0; i < words.length; i++) {
+            reversed[i] = words[words.length - 1 - i];
+        }
+        return reversed;
+    }
+
+    @Override
     public int length16(String text) {
         return text.length();
     }
@@ -147,6 +156,7 @@ public final class PatternsImage implements Patterns {
         sink.collect16Tls(collected);
         sink.line("collected16 " + Arrays.toString(collected));
         sink.line("squares " + Arrays.toString(sink.squares(4)));
+        sink.line("capitals " + Arrays.toString(sink.capitals(new String[] {"a", null, "c"})));
         sink.line("width16 " + sink.width16("from the image"));
         sink.line("corners4 " + Arrays.toString(sink.corners4()));
         sink.place(new Placement("from the image", Mode.OFF, new Spot(5, 6)));

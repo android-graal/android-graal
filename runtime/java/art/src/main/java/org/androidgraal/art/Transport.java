@@ -99,6 +99,44 @@ public final class Transport {
         return new String(chars, 0, length);
     }
 
+    /** Writes the chars of {@code from} at the byte offset {@code at} of {@code view}. */
+    public static void write(String from, ByteBuffer view, int at) {
+        if (from == null) {
+            return;
+        }
+        char[] chars = new char[from.length()];
+        from.getChars(0, chars.length, chars, 0);
+        view.position(at);
+        view.asCharBuffer().put(chars);
+    }
+
+    /** Writes the elements of a block of {@code from} at the byte offset {@code at} of {@code view}. */
+    public static void write(String[] from, ByteBuffer view, int at) {
+        view.putInt(at, from.length);
+        at += Blocks.HEADER;
+        for (String s : from) {
+            int length = s == null ? Blocks.NULL : s.length();
+            setBlockHeader(view, at, length, 2);
+            write(s, view, at + Blocks.HEADER);
+            at += Blocks.size(length, 2);
+        }
+    }
+
+    /** The string array in the block at the byte offset {@code at} of {@code view}, null for a null block. */
+    public static String[] readStringArrayBlock(ByteBuffer view, int at) {
+        if (getBlockLength(view, at) == Blocks.NULL) {
+            return null;
+        }
+        at += Blocks.HEADER;
+        String[] a = new String[view.getInt(at)];
+        at += Blocks.HEADER;
+        for (int i = 0; i < a.length; i++) {
+            a[i] = readStringBlock(view, at);
+            at += Blocks.size(getBlockLength(view, at), 2);
+        }
+        return a;
+    }
+
     /** A copy of the bytes of the block at the start of {@code block}, its view left positioned after them. */
     public static byte[] readBlock(ByteBuffer block) {
         byte[] bytes = new byte[getBlockLength(block, 0)];

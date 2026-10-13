@@ -1,17 +1,20 @@
 package org.androidgraal.gradle
 
+import org.apache.commons.io.FileUtils
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ModuleDependency
-import org.gradle.api.artifacts.ProjectDependency
+import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.gradle.api.plugins.JavaLibraryPlugin
 import org.gradle.api.plugins.JavaPluginExtension
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.jvm.toolchain.JavaLanguageVersion
 import org.gradle.testfixtures.ProjectBuilder
+import java.io.File
+import kotlin.io.path.createTempDirectory
+import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFails
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -20,6 +23,11 @@ class SvmPluginTest {
     private val project: Project = ProjectBuilder.builder().build().also {
         it.pluginManager.apply("org.androidgraal.svm")
     }
+
+    private val dirs = mutableListOf<File>()
+
+    @AfterTest
+    fun cleanUp() = dirs.forEach(FileUtils::deleteDirectory)
 
     @Test
     fun `the plugin applies java-library`() {
@@ -72,6 +80,16 @@ class SvmPluginTest {
     }
 
     @Test
+    fun `the emulated Android classes are an implementation dependency at the plugin's version`() {
+        assertEquals(listOf(emptyList()), project.emulationSelectors("implementation"))
+    }
+
+    @Test
+    fun `the Android declarations are compile only at the plugin's version`() {
+        assertEquals(listOf(listOf("feature 'declarations'")), project.emulationSelectors("compileOnly"))
+    }
+
+    @Test
     fun `the hosted annotations are compile only at the plugin's version`() {
         val hosted = "org.androidgraal:hosted:$PLUGIN_VERSION"
         val compileOnly = project.declared("compileOnly")
@@ -82,44 +100,84 @@ class SvmPluginTest {
     }
 
     @Test
-    fun `a contract reaches the image module with its svm bridge at run time`() {
-        val root = ProjectBuilder.builder().build()
+    fun `SubstrateVM's shared annotations are compile only at the plugin's version`() {
+        val svmShared = "org.androidgraal.graal:svm-shared:$PLUGIN_VERSION"
+        val compileOnly = project.declared("compileOnly")
+        val implementation = project.declared("implementation")
+
+        assertTrue(svmShared in compileOnly, "$compileOnly")
+        assertFalse(svmShared in implementation, "$implementation")
+    }
+
+    @Test
+    fun `every source set's runtime classpath asks for the svm side, no compile classpath does`() {
+        val sourceSets = project.extensions.getByType(JavaPluginExtension::class.java).sourceSets
+        sourceSets.create("extra")
+
+        val sides = sourceSets
+            .flatMap { listOf(it.runtimeClasspathConfigurationName, it.compileClasspathConfigurationName) }
+            .associateWith { project.configurations.getByName(it).attributes.getAttribute(SIDE_ATTRIBUTE) }
+        assertEquals(
+            mapOf(
+                "extraCompileClasspath" to null,
+                "extraRuntimeClasspath" to "svm",
+                "compileClasspath" to null,
+                "runtimeClasspath" to "svm",
+                "testCompileClasspath" to null,
+                "testRuntimeClasspath" to "svm",
+            ),
+            sides,
+        )
+        assertTrue(project.dependencies.attributesSchema.hasAttribute(SIDE_ATTRIBUTE))
+    }
+
+    @Test
+    fun `a contract reaches the image module's runtime classpath with its svm bridge, its compile classpath alone`() {
+        val root = ProjectBuilder.builder().withProjectDir(createTempDirectory("svm-root").toFile().also { dirs += it })
+            .build()
+        val lib = "org.example:lib:1.0"
+        val repository = root.file("repository")
+        repository.resolve("org/example/lib/1.0").also { it.mkdirs() }.resolve("lib-1.0.pom").writeText(
+            "<project><modelVersion>4.0.0</modelVersion><groupId>org.example</groupId><artifactId>lib</artifactId>" +
+                "<version>1.0</version></project>",
+        )
         val contract = ProjectBuilder.builder().withParent(root).withName("contract").build()
+        contract.group = "org.example"
+        contract.pluginManager.apply("org.androidgraal.contract")
         val image = ProjectBuilder.builder().withParent(root).withName("image").build()
+        image.repositories.maven { it.url = repository.toURI() }
+        image.configurations.configureEach { c ->
+            c.resolutionStrategy.eachDependency { if (it.requested.name != contract.name) it.useTarget(lib) }
+        }
         image.pluginManager.apply("org.androidgraal.svm")
 
-        image.dependencies.add("contract", image.dependencies.project(mapOf("path" to contract.path)))
+        image.dependencies.add("implementation", image.dependencies.project(mapOf("path" to contract.path)))
 
-        fun selectors(configuration: String) = image.configurations.getByName(configuration).allDependencies
-            .withType(ProjectDependency::class.java).filter { it.path == ":contract" }
-            .map { d -> d.capabilitySelectors.map { it.displayName } }
-        assertEquals(listOf(emptyList()), selectors("implementation"))
-        assertEquals(listOf(listOf("feature 'svm'")), selectors("runtimeOnly"))
+        fun variants(classpath: String) = image.configurations.getByName(classpath).incoming.resolutionResult
+            .allComponents.filter { (it.id as? ProjectComponentIdentifier)?.projectPath == contract.path }
+            .flatMap { component -> component.variants.map { it.displayName } }
+        fun files(classpath: String) = image.configurations.getByName(classpath).incoming
+            .artifactView { view -> view.componentFilter { it is ProjectComponentIdentifier } }.files.toList()
+        assertEquals(listOf("svmRuntimeElements"), variants("runtimeClasspath"))
+        assertEquals(listOf("contract.jar", "contract-svm.jar"), files("runtimeClasspath").map { it.name })
+        assertEquals(listOf("apiElements"), variants("compileClasspath"))
+        val contractClasses = contract.layout.buildDirectory.dir("classes/java/main").get().asFile
+        assertEquals(listOf(contractClasses), files("compileClasspath"))
     }
 
     @Test
-    fun `a contract module reaches the image module with its svm bridge at run time`() {
-        project.dependencies.add("contract", "org.example:contract:1.0")
-
-        fun selectors(configuration: String) = project.configurations.getByName(configuration).allDependencies
-            .withType(ModuleDependency::class.java).filter { it.group == "org.example" && it.name == "contract" }
-            .map { d -> d.capabilitySelectors.map { it.displayName } }
-        assertEquals(listOf(emptyList()), selectors("implementation"))
-        assertEquals(listOf(listOf("feature 'svm'")), selectors("runtimeOnly"))
-    }
-
-    @Test
-    fun `a file on contract fails the runtime classpath`() {
-        project.dependencies.add("contract", project.files("contract.jar"))
-
-        val failure = assertFails { project.configurations.getByName("runtimeClasspath").files }
-
-        val messages = generateSequence(failure) { it.cause }.mapNotNull { it.message }.toList()
-        assertTrue(messages.any { "a contract is a project or a module" in it }, "$messages")
+    fun `the plugin registers no contract scope`() {
+        assertEquals(null, project.configurations.findByName("contract"))
     }
 
     private fun Project.languageVersion(): Property<JavaLanguageVersion> =
         extensions.getByType(JavaPluginExtension::class.java).toolchain.languageVersion
+
+    private fun Project.emulationSelectors(configuration: String): List<List<String>> {
+        return configurations.getByName(configuration).allDependencies.withType(ModuleDependency::class.java)
+            .filter { "${it.group}:${it.name}:${it.version}" == "org.androidgraal.emulation:svm:$PLUGIN_VERSION" }
+            .map { d -> d.capabilitySelectors.map { it.displayName } }
+    }
 
     private fun Project.declared(configuration: String): List<String> =
         configurations.getByName(configuration).allDependencies.map { "${it.group}:${it.name}:${it.version}" }

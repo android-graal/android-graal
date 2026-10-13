@@ -15,9 +15,9 @@ import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.api.artifacts.Configuration
+import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.attributes.Usage
-import org.gradle.api.file.FileCollection
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.JvmEcosystemPlugin
 import org.gradle.api.provider.Provider
@@ -38,6 +38,7 @@ class ArtPlugin : Plugin<Project> {
         extension.useLLVM.convention(true)
 
         project.pluginManager.apply(JvmEcosystemPlugin::class.java)
+        project.dependencies.attributesSchema.attribute(SIDE_ATTRIBUTE)
 
         val nativeImage = project.configurations.dependencyScope(NATIVE_IMAGE_CONFIGURATION_NAME) {
             it.description = "Dependencies compiled into the native image."
@@ -47,6 +48,7 @@ class ArtPlugin : Plugin<Project> {
         val runtimeClasspath = project.configurations.resolvable(NATIVE_IMAGE_RUNTIME_CLASSPATH_CONFIGURATION_NAME) {
             it.extendsFrom(nativeImage.get())
             it.configureAsRuntimeClasspath(project.objects)
+            it.requestSide(Side.SVM)
         }
 
         val toolchainBucket = project.configurations.dependencyScope(TOOLCHAIN_CONFIGURATION_NAME) {
@@ -79,9 +81,8 @@ class ArtPlugin : Plugin<Project> {
 
         project.plugins.withId(ANDROID_APPLICATION) {
             project.dependencies.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, Modules.runtime(Side.ART))
-            val contract = registerContractScope(project, Side.ART)
-            val contracts = registerContractJars(project, contract, Side.ART)
-            configureAndroid(project, extension, runtimeClasspath, toolchainClasspath, contracts)
+            project.dependencies.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, Modules.EMULATION_ART)
+            configureAndroid(project, extension, runtimeClasspath, toolchainClasspath)
         }
 
         project.afterEvaluate {
@@ -99,7 +100,6 @@ class ArtPlugin : Plugin<Project> {
         extension: AndroidGraalExtension,
         runtimeClasspath: NamedDomainObjectProvider<out Configuration>,
         toolchainClasspath: NamedDomainObjectProvider<out Configuration>,
-        contracts: FileCollection,
     ) {
         val androidComponents =
             project.extensions.getByType(ApplicationAndroidComponentsExtension::class.java)
@@ -108,6 +108,7 @@ class ArtPlugin : Plugin<Project> {
         val imageClasspath = project.files(runtimeClasspath)
 
         androidComponents.onVariants(androidComponents.selector().all()) { variant: ApplicationVariant ->
+            variant.components.forEach { it.runtimeConfiguration.requestSide(Side.ART) }
             val android = project.extensions.getByType(ApplicationExtension::class.java)
             val target = target(variant, android)
 
@@ -131,6 +132,10 @@ class ArtPlugin : Plugin<Project> {
             val java = variant.sources.java
                 ?: throw GradleException("variant '${variant.name}' has no Java sources")
             java.addGeneratedSourceDirectory(generateNativeImage, GenerateNativeImageTask::outputDir)
+            variant.sources.manifests.addGeneratedManifestFile(
+                generateNativeImage,
+                GenerateNativeImageTask::manifestFile,
+            )
 
             val compileTask = project.tasks.register(
                 "nativeImageCompile$capitalized",
@@ -157,10 +162,18 @@ class ArtPlugin : Plugin<Project> {
                 ?: throw GradleException("variant '${variant.name}' has no jniLibs sources")
             jniLibs.addGeneratedSourceDirectory(linkTask, NativeImageLinkTask::outputDir)
 
-            // AGP's incremental Java-resource merge names a project's jars by project path alone, so a contract jar
-            // and its bridge share one entry of its state; a change to a non-incremental input makes it run in full.
+            // AGP's incremental Java-resource merge keys a project's jars by project path alone, so a contract jar
+            // and its bridge share one entry of its state. So we supply the project files directly as input
+            val projectJars = project.configurations.named("${variant.name}RuntimeClasspath").map { classpath ->
+                classpath.incoming.artifactView { view ->
+                    view.componentFilter { id -> id is ProjectComponentIdentifier }
+                    view.attributes {
+                        it.attribute(ArtifactTypeDefinition.ARTIFACT_TYPE_ATTRIBUTE, JAVA_RESOURCES_ARTIFACT_TYPE)
+                    }
+                }.files
+            }
             project.tasks.named { it == "merge${capitalized}JavaResource" }.configureEach {
-                it.inputs.files(contracts).withPropertyName(CONTRACTS_INPUT_PROPERTY)
+                it.inputs.files(projectJars).withPropertyName(CONTRACTS_INPUT_PROPERTY)
                     .withNormalizer(ClasspathNormalizer::class.java)
             }
         }
@@ -253,6 +266,7 @@ class ArtPlugin : Plugin<Project> {
         private const val TOOLCHAIN_CLASSPATH_CONFIGURATION_NAME = "androidGraalToolchainClasspath"
 
         internal const val CONTRACTS_INPUT_PROPERTY = "androidgraal.contracts"
+        private const val JAVA_RESOURCES_ARTIFACT_TYPE = "android-java-res"
 
         private const val TOOLCHAIN_LOCAL_PROPERTY = "androidgraal.toolchain.dir"
         private const val TOOLCHAIN_ENV_VAR = "ANDROID_GRAAL_TOOLCHAIN"

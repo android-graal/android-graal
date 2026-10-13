@@ -20,5 +20,6 @@ internal class Operand(
     val label: String = base + capacityLabel
 
     val resultLabel: String =
-        base + (if (kind == Kind.VOID || kind == Kind.STRING) "" else " ${type.name()}") + capacityLabel
+        base + (if (kind == Kind.VOID || kind == Kind.STRING || kind == Kind.STRING_ARRAY) "" else " ${type.name()}") +
+            capacityLabel
 }

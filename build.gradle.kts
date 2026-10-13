@@ -6,8 +6,13 @@ plugins {
 
 tasks.register("publishToMavenLocal") {
     group = "publishing"
-    description = "Publishes the tools and runtime artifacts to the local Maven repository."
+    description = "Publishes the tools, runtime, emulation and integrations artifacts to the local Maven repository."
 }
 
-redirectToBuilds(listOf("build-logic", "tools", "runtime", "samples"), "build", "spotlessApply", "clean")
-redirectToBuilds(listOf("tools", "runtime"), "publishToMavenLocal")
+redirectToBuilds(
+    listOf("build-logic", "tools", "runtime", "emulation", "samples", "integrations"),
+    "build",
+    "spotlessApply",
+    "clean",
+)
+redirectToBuilds(listOf("tools", "runtime", "emulation", "integrations"), "publishToMavenLocal")

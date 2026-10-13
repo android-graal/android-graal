@@ -33,7 +33,7 @@ internal const val GENERATED = "fix/core/generated"
 internal const val SERVICE = "fix/core/Service.java"
 
 internal const val NO_KIND =
-    ", only primitives, String, enums, records, directed primitive arrays and registered interfaces cross"
+    ", only primitives, String, String[], enums, records, directed primitive arrays and registered interfaces cross"
 
 internal class GeneratorFixtures(private val root: File) {
 

@@ -10,4 +10,6 @@ rootProject.name = "android-graal"
 includeBuild("build-logic")
 includeBuild("tools")
 includeBuild("runtime")
+includeBuild("emulation")
 includeBuild("samples")
+includeBuild("integrations")

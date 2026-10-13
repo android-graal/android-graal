@@ -27,8 +27,8 @@ object Toolchain {
     /** The files native-image reads from `-H:CAPCacheDir`. */
     val CAP_CACHE: List<String> = listOf(
         "AArch64LibCHelperDirectives.cap", "AMD64LibCHelperDirectives.cap", "AndroidDirectives.cap",
-        "ARM32LibCHelperDirectives.cap", "BuiltinDirectives.cap", "ContainerLibraryDirectives.cap",
-        "JNI_JNIHeaderDirectives.cap", "JNIHeaderDirectives.cap", "LLVMDirectives.cap", "LocaleDirectives.cap",
-        "PosixDirectives.cap", "RISCV64LibCHelperDirectives.cap",
+        "ARM32LibCHelperDirectives.cap", "BionicDirectives.cap", "BuiltinDirectives.cap",
+        "ContainerLibraryDirectives.cap", "JNI_JNIHeaderDirectives.cap", "JNIHeaderDirectives.cap",
+        "LLVMDirectives.cap", "LocaleDirectives.cap", "PosixDirectives.cap", "RISCV64LibCHelperDirectives.cap",
     )
 }

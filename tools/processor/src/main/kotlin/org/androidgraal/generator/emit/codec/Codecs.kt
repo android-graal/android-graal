@@ -21,7 +21,9 @@ internal class Codecs(private val model: BridgeModel, private val side: Side) {
 
         Kind.RECORD -> RecordParameter(this, wire, operand, place)
 
-        Kind.ARRAY, Kind.STRING ->
+        Kind.STRING_ARRAY -> FreshParameter(side, operand, place)
+
+        Kind.PRIMITIVE_ARRAY, Kind.STRING ->
             if (operand.capacity == null) {
                 FreshParameter(side, operand, place)
             } else {
@@ -40,12 +42,14 @@ internal class Codecs(private val model: BridgeModel, private val side: Side) {
 
         Kind.REFERENCE -> ReferenceResult(model, side, operand)
 
-        Kind.ARRAY, Kind.STRING ->
+        Kind.PRIMITIVE_ARRAY, Kind.STRING ->
             if (operand.capacity == null) {
                 FreshResult(side, wire.proxy.implementation, operand)
             } else {
                 StaticResult(model, side, wire, operand)
             }
+
+        Kind.STRING_ARRAY -> FreshResult(side, wire.proxy.implementation, operand)
 
         Kind.RECORD -> fail("a record crosses as a parameter only")
     }

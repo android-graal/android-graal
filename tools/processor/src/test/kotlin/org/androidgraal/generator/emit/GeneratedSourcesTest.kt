@@ -14,6 +14,8 @@ import org.objectweb.asm.MethodVisitor
 import org.objectweb.asm.Opcodes
 import org.objectweb.asm.Type
 import java.io.File
+import java.lang.invoke.MethodHandles
+import java.lang.invoke.MethodType
 import java.lang.reflect.InvocationTargetException
 import java.net.URLClassLoader
 import java.util.zip.ZipFile
@@ -90,10 +92,10 @@ class GeneratedSourcesTest {
         val hello = loader.loadClass("org.graalvm.android.bridges.core.Hello")
         val image = loader.loadClass("org.androidgraal.art.Image")
 
-        val failure = assertFailsWith<InvocationTargetException> {
-            image.getMethod("createRoot", Class::class.java).invoke(null, hello)
-        }.targetException
-        assertTrue(failure is IllegalStateException, "$failure")
+        // A lookup resolves the types of this method alone; getMethod would load android.jar's for Image's others.
+        val createRoot = MethodHandles.publicLookup()
+            .findStatic(image, "createRoot", MethodType.methodType(Any::class.java, Class::class.java))
+        val failure = assertFailsWith<IllegalStateException> { createRoot.invokeWithArguments(hello) }
         assertEquals("the image has not started: call NativeImage.start() first", failure.message)
         val contract = bridges.getConstructor().newInstance()
         assertEquals(listOf(hello), (bridges.getMethod("roots").invoke(contract) as Array<*>).toList())
@@ -272,6 +274,7 @@ class GeneratedSourcesTest {
         val expected = sortedSetOf(
             "String",
             "String static 16",
+            "String[]",
             "array",
             "array in",
             "array in static 16",

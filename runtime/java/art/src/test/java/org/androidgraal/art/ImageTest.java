@@ -8,13 +8,20 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.lang.invoke.VarHandle;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import org.androidgraal.shared.Blocks;
 import org.androidgraal.shared.MarshalledException;
@@ -45,10 +52,9 @@ class ImageTest {
 
     @Test
     void createDelegatesToTheContractDeclaringTheRootAndNamesTheRootsOtherwise() throws ReflectiveOperationException {
-        Field started = Image.class.getDeclaredField("started");
-        started.setAccessible(true);
+        VarHandle started = started();
         Map<Class<?>, Contract> roots = roots();
-        started.setBoolean(null, true);
+        started.set(true);
         try {
             assertEquals("org.androidgraal.art.ImageTest$Root is no root of a loaded contract. Loaded roots: []",
                     assertThrows(IllegalArgumentException.class, () -> Image.createRoot(Root.class)).getMessage());
@@ -61,20 +67,17 @@ class ImageTest {
                             + " Loaded roots: [interface org.androidgraal.art.ImageTest$Root]",
                     assertThrows(IllegalArgumentException.class, () -> Image.createRoot(Runnable.class)).getMessage());
         } finally {
-            started.setBoolean(null, false);
+            started.set(false);
             roots.clear();
         }
     }
 
     @Test
     void aRootTwoContractsDeclareFailsTheStartNamingBoth() throws ReflectiveOperationException {
-        Method loadContracts = Image.class.getDeclaredMethod("loadContracts");
-        loadContracts.setAccessible(true);
+        MethodHandle loadContracts = endPoint("loadContracts", MethodType.methodType(void.class));
         try {
-            Throwable e = assertThrows(InvocationTargetException.class, () -> loadContracts.invoke(null))
-                    .getTargetException();
+            ImageStartException e = assertThrows(ImageStartException.class, () -> loadContracts.invoke());
 
-            assertInstanceOf(ImageStartException.class, e);
             assertEquals("root org.androidgraal.art.ImageTest$Root is declared by org.androidgraal.art.ImageTest$First"
                     + " and org.androidgraal.art.ImageTest$Second", e.getMessage());
         } finally {
@@ -83,29 +86,60 @@ class ImageTest {
     }
 
     @Test
+    void aThrowingStartupFailsTheStartNamingItAndThePhase() throws ReflectiveOperationException {
+        MethodHandle startServices = endPoint("startServices", MethodType.methodType(void.class));
+        try {
+            Failing.phase = "prepare";
+            ImageStartException prepare = assertThrows(ImageStartException.class, () -> startServices.invoke());
+            Failing.phase = "start";
+            ImageStartException start = assertThrows(ImageStartException.class, () -> startServices.invoke());
+
+            assertEquals("preparing org.androidgraal.art.ImageTest$Failing failed", prepare.getMessage());
+            assertEquals("failing", assertInstanceOf(IllegalStateException.class, prepare.getCause()).getMessage());
+            assertEquals("starting org.androidgraal.art.ImageTest$Failing failed", start.getMessage());
+            assertEquals("failing", assertInstanceOf(IllegalStateException.class, start.getCause()).getMessage());
+        } finally {
+            Failing.phase = null;
+        }
+    }
+
+    @Test
+    void everyStartupPreparesBeforeAnyStarts() throws Throwable {
+        Recording.CALLS.clear();
+
+        endPoint("startServices", MethodType.methodType(void.class)).invoke();
+
+        Set<String> prepared = new HashSet<>(
+                Arrays.asList(Recording.class.getName() + ".prepare", SecondRecording.class.getName() + ".prepare"));
+        Set<String> started = new HashSet<>(
+                Arrays.asList(Recording.class.getName() + ".start", SecondRecording.class.getName() + ".start"));
+        assertEquals(4, Recording.CALLS.size());
+        assertEquals(prepared, new HashSet<>(Recording.CALLS.subList(0, 2)));
+        assertEquals(started, new HashSet<>(Recording.CALLS.subList(2, 4)));
+    }
+
+    @Test
     void aSecondStartFails() throws ReflectiveOperationException {
-        Field started = Image.class.getDeclaredField("started");
-        started.setAccessible(true);
-        started.setBoolean(null, true);
+        VarHandle started = started();
+        started.set(true);
         try {
             IllegalStateException e = assertThrows(IllegalStateException.class, () -> Image.start("no-such-image"));
 
             assertEquals("the image has already started", e.getMessage());
         } finally {
-            started.setBoolean(null, false);
+            started.set(false);
         }
     }
 
     @Test
-    void handleUncaughtExceptionReadsTheLengthThenTheWireFromOffset8InNativeOrder()
-            throws ReflectiveOperationException {
+    void handleUncaughtExceptionReadsTheLengthThenTheWireFromOffset8InNativeOrder() throws Throwable {
         Thread thread = Thread.currentThread();
         Thread.UncaughtExceptionHandler previous = thread.getUncaughtExceptionHandler();
         AtomicReference<Throwable> received = new AtomicReference<>();
         thread.setUncaughtExceptionHandler((t, e) -> received.set(e));
         try {
-            endPoint("handleUncaughtException", ByteBuffer.class).invoke(null,
-                    block(new IllegalStateException("lost")));
+            endPoint("handleUncaughtException", MethodType.methodType(void.class, ByteBuffer.class))
+                    .invoke(block(new IllegalStateException("lost")));
         } finally {
             thread.setUncaughtExceptionHandler(previous);
         }
@@ -162,17 +196,22 @@ class ImageTest {
         return block.order(ByteOrder.BIG_ENDIAN);
     }
 
-    @SuppressWarnings("unchecked")
-    private static Map<Class<?>, Contract> roots() throws ReflectiveOperationException {
-        Field roots = Image.class.getDeclaredField("ROOTS");
-        roots.setAccessible(true);
-        return (Map<Class<?>, Contract>) roots.get(null);
+    /** Image's private members by lookup, which resolves only their own types, never android.jar's. */
+    private static MethodHandles.Lookup image() throws IllegalAccessException {
+        return MethodHandles.privateLookupIn(Image.class, MethodHandles.lookup());
     }
 
-    private static Method endPoint(String name, Class<?> parameter) throws NoSuchMethodException {
-        Method method = Image.class.getDeclaredMethod(name, parameter);
-        method.setAccessible(true);
-        return method;
+    private static VarHandle started() throws ReflectiveOperationException {
+        return image().findStaticVarHandle(Image.class, "started", boolean.class);
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<Class<?>, Contract> roots() throws ReflectiveOperationException {
+        return (Map<Class<?>, Contract>) image().findStaticVarHandle(Image.class, "ROOTS", HashMap.class).get();
+    }
+
+    private static MethodHandle endPoint(String name, MethodType type) throws ReflectiveOperationException {
+        return image().findStatic(Image.class, name, type);
     }
 
     public interface Root {}
@@ -196,4 +235,42 @@ class ImageTest {
     }
 
     public static final class Second extends First {}
+
+    public static final class Failing implements Startup {
+
+        private static String phase;
+
+        @Override
+        public void prepare() {
+            failIn("prepare");
+        }
+
+        @Override
+        public void start() {
+            failIn("start");
+        }
+
+        private static void failIn(String current) {
+            if (current.equals(phase)) {
+                throw new IllegalStateException("failing");
+            }
+        }
+    }
+
+    public static class Recording implements Startup {
+
+        private static final List<String> CALLS = new ArrayList<>();
+
+        @Override
+        public void prepare() {
+            CALLS.add(getClass().getName() + ".prepare");
+        }
+
+        @Override
+        public void start() {
+            CALLS.add(getClass().getName() + ".start");
+        }
+    }
+
+    public static final class SecondRecording extends Recording {}
 }

@@ -4,8 +4,6 @@ import org.apache.commons.io.FileUtils
 import org.gradle.api.Named
 import org.gradle.api.Project
 import org.gradle.api.artifacts.FileCollectionDependency
-import org.gradle.api.artifacts.ModuleDependency
-import org.gradle.api.artifacts.ProjectDependency
 import org.gradle.api.attributes.Attribute
 import org.gradle.api.attributes.AttributeContainer
 import org.gradle.api.attributes.Bundling
@@ -25,11 +23,11 @@ import org.gradle.internal.properties.PropertyValue
 import org.gradle.internal.properties.PropertyVisitor
 import org.gradle.testfixtures.ProjectBuilder
 import java.io.File
+import java.util.zip.ZipOutputStream
 import kotlin.io.path.createTempDirectory
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertFails
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -53,7 +51,7 @@ class ArtPluginTest {
     }
 
     @Test
-    fun `the image classpath asks for plain JVM runtime jars`() {
+    fun `the image classpath asks for plain JVM runtime jars of the svm side`() {
         val bucket = project.configurations.getByName("nativeImage")
         val classpath = project.configurations.getByName("nativeImageRuntimeClasspath")
 
@@ -71,7 +69,8 @@ class ArtPluginTest {
             TargetJvmEnvironment.STANDARD_JVM,
             attributes.named(TargetJvmEnvironment.TARGET_JVM_ENVIRONMENT_ATTRIBUTE),
         )
-        assertEquals(5, attributes.keySet().size, "${attributes.keySet()}")
+        assertEquals("svm", attributes.getAttribute(SIDE_ATTRIBUTE))
+        assertEquals(6, attributes.keySet().size, "${attributes.keySet()}")
     }
 
     @Test
@@ -137,39 +136,82 @@ class ArtPluginTest {
         assertEquals("a.b", generate.packageName.get())
         generate.run()
         assertTrue(generate.outputDir.get().asFile.resolve("a/b/NativeImage.java").isFile)
+        assertEquals(GenerateNativeImageTask.MANIFEST, generate.manifestFile.get().asFile.readText())
     }
 
     @Test
-    fun `a contract reaches the app with its art bridge at run time`() {
-        val root = ProjectBuilder.builder().withProjectDir(createTempDirectory("art-root").toFile().also { dirs += it })
-            .build()
-        val contract = ProjectBuilder.builder().withParent(root).withName("contract").build()
-        val app = ProjectBuilder.builder().withParent(root).withName("app").build()
-        app.pluginManager.apply("org.androidgraal.art")
-        app.pluginManager.apply("com.android.application")
-
-        app.dependencies.add("contract", app.dependencies.project(mapOf("path" to contract.path)))
-
-        fun selectors(configuration: String) = app.configurations.getByName(configuration).allDependencies
-            .withType(ProjectDependency::class.java).filter { it.path == ":contract" }
-            .map { d -> d.capabilitySelectors.map { it.displayName } }
-        assertEquals(listOf(emptyList()), selectors("implementation"))
-        assertEquals(listOf(listOf("feature 'art'")), selectors("runtimeOnly"))
-        assertEquals(setOf(emptyList(), listOf("feature 'art'")), selectors(CONTRACT_JARS_CONFIGURATION_NAME).toSet())
-        assertFalse(app.configurations.getByName(CONTRACT_JARS_CONFIGURATION_NAME).isTransitive)
-    }
-
-    @Test
-    fun `each variant's Java-resource merge takes the contract jars as a non-incremental input`() {
+    fun `each variant's main manifest merge depends on the generated manifest`() {
         evaluateAndroid("")
-        val jar = project.file("contract.jar")
-        val marker = project.configurations.dependencyScope("marker").get()
-        project.dependencies.add(marker.name, project.files(jar))
-        project.configurations.getByName(CONTRACT_JARS_CONFIGURATION_NAME).extendsFrom(marker)
 
         listOf("Debug", "Release").forEach { variant ->
-            val inputs = project.tasks.getByName("merge${variant}JavaResource").inputs as TaskInputsInternal
-            val contracts = mutableListOf<Pair<InputBehavior, Any?>>()
+            val generate = project.tasks.getByName("generateNativeImage$variant") as GenerateNativeImageTask
+            val merge = project.tasks.getByName("process${variant}MainManifest")
+            assertTrue(generate in merge.taskDependencies.getDependencies(merge))
+        }
+    }
+
+    @Test
+    fun `every runtime classpath of every variant and its tests asks for the art side, no compile classpath does`() {
+        evaluateAndroid("")
+
+        val sides = project.configurations.names
+            .filter { it.endsWith("RuntimeClasspath") || it.endsWith("CompileClasspath") }
+            .associateWith { project.configurations.getByName(it).attributes.getAttribute(SIDE_ATTRIBUTE) }
+        assertEquals(
+            mapOf(
+                "debugAndroidTestCompileClasspath" to null,
+                "debugAndroidTestRuntimeClasspath" to "art",
+                "debugCompileClasspath" to null,
+                "debugRuntimeClasspath" to "art",
+                "debugUnitTestCompileClasspath" to null,
+                "debugUnitTestRuntimeClasspath" to "art",
+                "nativeImageRuntimeClasspath" to "svm",
+                "releaseCompileClasspath" to null,
+                "releaseRuntimeClasspath" to "art",
+            ),
+            sides.toSortedMap(),
+        )
+        assertTrue(project.dependencies.attributesSchema.hasAttribute(SIDE_ATTRIBUTE))
+    }
+
+    @Test
+    fun `the plugin registers no contract scope`() {
+        project.pluginManager.apply("com.android.application")
+
+        assertEquals(null, project.configurations.findByName("contract"))
+    }
+
+    @Test
+    fun `each variant's Java-resource merge takes its runtime classpath's project jars, non-incrementally`() {
+        val root = ProjectBuilder.builder().withProjectDir(createTempDirectory("art-root").toFile().also { dirs += it })
+            .build()
+        val lib = "org.example:lib:1.0"
+        val repository = root.file("repository")
+        repository.resolve("org/example/lib/1.0").also { it.mkdirs() }.resolve("lib-1.0.pom").writeText(
+            "<project><modelVersion>4.0.0</modelVersion><groupId>org.example</groupId><artifactId>lib</artifactId>" +
+                "<version>1.0</version></project>",
+        )
+        val contract = ProjectBuilder.builder().withParent(root).withName("contract").build()
+        contract.group = "org.example"
+        contract.pluginManager.apply("org.androidgraal.contract")
+        val app = ProjectBuilder.builder().withParent(root).withName("app").build().also { it.projectDir.mkdirs() }
+        app.repositories.maven { it.url = repository.toURI() }
+        app.configurations.configureEach { c ->
+            c.resolutionStrategy.eachDependency { if (it.requested.name != contract.name) it.useTarget(lib) }
+        }
+        app.pluginManager.apply("org.androidgraal.art")
+        app.pluginManager.apply("com.android.application")
+        app.dependencies.add("implementation", app.dependencies.project(mapOf("path" to contract.path)))
+        app.dependencies.add("implementation", lib)
+        evaluateAndroid("", project = app)
+        // Resolving the merge input runs AGP's identity transform over the contract's jars, which must exist.
+        listOf("contract.jar", "contract-art.jar").forEach { name ->
+            ZipOutputStream(contract.file("build/libs/$name").also { it.parentFile.mkdirs() }.outputStream()).close()
+        }
+
+        listOf("Debug", "Release").forEach { variant ->
+            val inputs = app.tasks.getByName("merge${variant}JavaResource").inputs as TaskInputsInternal
+            val jars = mutableListOf<Pair<InputBehavior, Any?>>()
             inputs.visitRegisteredProperties(
                 object : PropertyVisitor {
                     override fun visitInputFileProperty(
@@ -182,38 +224,14 @@ class ArtPluginTest {
                         value: PropertyValue,
                         filePropertyType: InputFilePropertyType,
                     ) {
-                        if (propertyName == ArtPlugin.CONTRACTS_INPUT_PROPERTY) contracts += behavior to value.call()
+                        if (propertyName == ArtPlugin.CONTRACTS_INPUT_PROPERTY) jars += behavior to value.call()
                     }
                 },
             )
-            val (behavior, files) = contracts.single()
+            val (behavior, files) = jars.single()
             assertEquals(InputBehavior.NON_INCREMENTAL, behavior)
-            assertEquals(setOf(jar), project.files(files).files)
+            assertEquals(setOf("contract.jar", "contract-art.jar"), app.files(files).files.map { it.name }.toSet())
         }
-    }
-
-    @Test
-    fun `a contract module reaches the app with its art bridge at run time`() {
-        project.pluginManager.apply("com.android.application")
-
-        project.dependencies.add("contract", "org.example:contract:1.0")
-
-        fun selectors(configuration: String) = project.configurations.getByName(configuration).allDependencies
-            .withType(ModuleDependency::class.java).filter { it.group == "org.example" && it.name == "contract" }
-            .map { d -> d.capabilitySelectors.map { it.displayName } }
-        assertEquals(listOf(emptyList()), selectors("implementation"))
-        assertEquals(listOf(listOf("feature 'art'")), selectors("runtimeOnly"))
-    }
-
-    @Test
-    fun `a file on contract fails the app's configuration, where AGP reads runtimeOnly`() {
-        project.pluginManager.apply("com.android.application")
-        project.dependencies.add("contract", project.files("contract.jar"))
-
-        val failure = assertFails { evaluateAndroid("") }
-
-        val messages = generateSequence(failure) { it.cause }.mapNotNull { it.message }.toList()
-        assertTrue(messages.any { "a contract is a project or a module" in it }, "$messages")
     }
 
     @Test
@@ -224,14 +242,13 @@ class ArtPluginTest {
     }
 
     @Test
-    fun `the art runtime is an implementation dependency once com android application applies`() {
-        val art = "org.androidgraal:art:$PLUGIN_VERSION"
-
+    fun `the art runtime and emulation's art are implementation dependencies once com android application applies`() {
         project.pluginManager.apply("com.android.application")
 
         val implementation = project.configurations.getByName("implementation").dependencies
             .map { "${it.group}:${it.name}:${it.version}" }
-        assertTrue(art in implementation, "$implementation")
+        assertTrue("org.androidgraal:art:$PLUGIN_VERSION" in implementation, "$implementation")
+        assertTrue("org.androidgraal.emulation:art:$PLUGIN_VERSION" in implementation, "$implementation")
     }
 
     @Test

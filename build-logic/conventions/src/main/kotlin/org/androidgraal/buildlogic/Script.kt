@@ -46,6 +46,7 @@ abstract class Script :
     private val roots = linkedMapOf<String, String>()
 
     private val artifacts = linkedMapOf<String, FileCollection>()
+    private val classpaths = linkedMapOf<String, FileCollection>()
 
     private val reserved = mutableSetOf<String>()
 
@@ -108,6 +109,14 @@ abstract class Script :
     fun input(alias: String, files: FileCollection): String {
         inputFiles.from(files)
         artifacts[alias] = files
+        reserve(alias)
+        return sentinel(alias)
+    }
+
+    /** Other tasks' artifacts; the sentinel stands for their files joined by the path separator. */
+    fun classpath(alias: String, files: FileCollection): String {
+        inputFiles.from(files)
+        classpaths[alias] = files
         reserve(alias)
         return sentinel(alias)
     }
@@ -209,6 +218,12 @@ abstract class Script :
             val token = sentinel(name)
             if (result.contains(token)) {
                 result = result.replace(token, files.singleFile.absolutePath)
+            }
+        }
+        for ((name, files) in classpaths) {
+            val token = sentinel(name)
+            if (result.contains(token)) {
+                result = result.replace(token, files.files.joinToString(File.pathSeparator) { it.absolutePath })
             }
         }
         return result

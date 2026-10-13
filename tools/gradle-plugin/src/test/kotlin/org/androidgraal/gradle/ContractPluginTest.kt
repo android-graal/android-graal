@@ -3,8 +3,11 @@ package org.androidgraal.gradle
 import org.apache.commons.io.FileUtils
 import org.gradle.api.Project
 import org.gradle.api.artifacts.ProjectDependency
+import org.gradle.api.attributes.java.TargetJvmVersion
+import org.gradle.api.internal.component.SoftwareComponentInternal
 import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.plugins.JavaPluginExtension
+import org.gradle.api.publish.internal.component.MavenPublishingAwareVariant
 import org.gradle.api.tasks.compile.JavaCompile
 import org.gradle.testfixtures.ProjectBuilder
 import java.io.File
@@ -12,6 +15,7 @@ import kotlin.io.path.createTempDirectory
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
 class ContractPluginTest {
@@ -42,7 +46,9 @@ class ContractPluginTest {
             assertEquals(setOf(bridges.resolve("$it/resources")), sourceSet.resources.srcDirs)
             assertEquals(setOf(compileJava), sourceSet.resources.buildDependencies.getDependencies(null))
         }
-        assertTrue(project.tasks.getByName("assemble").dependsOn.containsAll(listOf("artJar", "svmJar")))
+        val assemble = project.tasks.getByName("assemble")
+        val built = assemble.taskDependencies.getDependencies(assemble).map { it.name }
+        assertTrue(built.containsAll(listOf("artJar", "svmJar")), "$built")
     }
 
     @Test
@@ -58,25 +64,57 @@ class ContractPluginTest {
     }
 
     @Test
-    fun `the bridges are feature variants under the contract's coordinates`() {
-        val capabilities = listOf("artApiElements", "artRuntimeElements", "svmApiElements", "svmRuntimeElements")
-            .associateWith { name ->
-                project.configurations.getByName(name).outgoing.capabilities.map { "${it.group}:${it.name}" }
-            }
+    fun `each bridge is a runtime variant of the contract carrying its side, both jars and its side's runtime`() {
+        project.dependencies.add("implementation", "org.example:dep:1.0")
+        project.dependencies.add("runtimeOnly", "org.example:rt:1.0")
+        val runtimeElements = project.configurations.getByName("runtimeElements")
+        val own = runtimeElements.attributes.keySet()
+        val jvmVersion = TargetJvmVersion.TARGET_JVM_VERSION_ATTRIBUTE
 
-        assertEquals(
-            mapOf(
-                "artApiElements" to listOf("org.example:contract-art"),
-                "artRuntimeElements" to listOf("org.example:contract-art"),
-                "svmApiElements" to listOf("org.example:contract-svm"),
-                "svmRuntimeElements" to listOf("org.example:contract-svm"),
-            ),
-            capabilities,
-        )
+        mapOf("art" to 17, "svm" to 25).forEach { (side, release) ->
+            val elements = project.configurations.getByName("${side}RuntimeElements")
+            assertTrue(elements.isCanBeConsumed)
+            assertFalse(elements.isCanBeResolved)
+            assertEquals(own + SIDE_ATTRIBUTE, elements.attributes.keySet())
+            (own - jvmVersion).forEach {
+                assertEquals(runtimeElements.attributes.getAttribute(it), elements.attributes.getAttribute(it))
+            }
+            assertEquals(side, elements.attributes.getAttribute(SIDE_ATTRIBUTE))
+            assertEquals(release, elements.attributes.getAttribute(jvmVersion))
+            assertEquals(
+                listOf("contract.jar", "contract-$side.jar"),
+                elements.outgoing.artifacts.files.map { it.name },
+            )
+            assertEquals(
+                listOf("org.androidgraal:$side", "org.example:dep", "org.example:rt"),
+                elements.allDependencies.map { "${it.group}:${it.name}" }.sorted(),
+            )
+            assertEquals(emptyList(), elements.outgoing.capabilities.toList())
+        }
+        assertEquals(null, runtimeElements.attributes.getAttribute(SIDE_ATTRIBUTE))
+        assertTrue(project.dependencies.attributesSchema.hasAttribute(SIDE_ATTRIBUTE))
     }
 
     @Test
-    fun `each bridge ships only the contract and its side's runtime, compiling against hosted too`() {
+    fun `the java component carries the two side variants as optional runtime dependencies, no other bridge variant`() {
+        val component = project.components.getByName("java") as SoftwareComponentInternal
+
+        assertEquals(
+            mapOf(
+                "apiElements" to "compile",
+                "artRuntimeElements" to "runtime_optional",
+                "runtimeElements" to "runtime",
+                "svmRuntimeElements" to "runtime_optional",
+            ),
+            component.usages.associate {
+                it.name to MavenPublishingAwareVariant.scopeForVariant(it).name
+            }.toSortedMap(),
+        )
+        assertTrue(project.configurations.names.none { it == "artApiElements" || it == "svmApiElements" })
+    }
+
+    @Test
+    fun `each bridge compiles against the contract, its side's runtime and hosted`() {
         fun declared(configuration: String): List<String> =
             project.configurations.getByName(configuration).allDependencies.map {
                 if (it is ProjectDependency) it.path else "${it.group}:${it.name}"
@@ -90,10 +128,8 @@ class ContractPluginTest {
             listOf(":contract", "org.androidgraal:hosted", "org.androidgraal:svm"),
             declared("svmCompileClasspath"),
         )
-        assertEquals(listOf(":contract", "org.androidgraal:art"), declared("artRuntimeClasspath"))
-        assertEquals(listOf(":contract", "org.androidgraal:svm"), declared("svmRuntimeClasspath"))
-        assertEquals(listOf(":contract", "org.androidgraal:art"), declared("artRuntimeElements"))
-        assertEquals(listOf(":contract", "org.androidgraal:svm"), declared("svmRuntimeElements"))
+        assertEquals(listOf("org.androidgraal:art"), declared("artRuntimeClasspath"))
+        assertEquals(listOf("org.androidgraal:svm"), declared("svmRuntimeClasspath"))
         assertEquals(listOf("org.androidgraal:hosted"), declared("compileClasspath"))
         assertEquals(emptyList(), declared("runtimeClasspath"))
     }

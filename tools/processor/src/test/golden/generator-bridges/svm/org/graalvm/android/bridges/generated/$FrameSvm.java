@@ -342,6 +342,26 @@ public final class $FrameSvm {
     }
 
     @CEntryPoint(
+            name = "Java_org_graalvm_android_bridges_generated__00024FrameSvm_texts"
+    )
+    private static long texts(JNI.JNIEnv env, JNI.JClass clazz,
+            @CEntryPoint.IsolateThreadContext long thread, long handle, JNI.JObject transport) {
+        try {
+            Frame receiver = HANDLES.object(handle);
+            long address = Art.address(env, transport);
+            int n0 = address == 0 ? Blocks.NULL : Transport.getBlockLength(address);
+            String[] v0 = address == 0 ? null : Transport.readStringArrayBlock(address);
+            String[] result = receiver.texts(v0);
+            long r = result == null ? 0 : Transport.allocBlock(Blocks.stringArrayLength(result), 1);
+            Transport.write(result, r + Blocks.HEADER);
+            return r;
+        } catch (Throwable t) {
+            Art.raiseException(env, t);
+            return 0;
+        }
+    }
+
+    @CEntryPoint(
             name = "Java_org_graalvm_android_bridges_generated__00024FrameSvm_total"
     )
     private static int total(JNI.JNIEnv env, JNI.JClass clazz,

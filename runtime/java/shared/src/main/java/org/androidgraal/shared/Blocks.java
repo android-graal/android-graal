@@ -26,4 +26,16 @@ public final class Blocks {
     public static int size(int length, int elementBytes) {
         return (HEADER + (length < 0 ? 0 : length * elementBytes) + 7) & ~7;
     }
+
+    /**
+     * The bytes a string array's block holds: the element count as an {@code int} in a slot of {@link #HEADER} bytes,
+     * then per element a string block.
+     */
+    public static int stringArrayLength(String[] a) {
+        int length = HEADER;
+        for (String s : a) {
+            length += size(s == null ? NULL : s.length(), 2);
+        }
+        return length;
+    }
 }

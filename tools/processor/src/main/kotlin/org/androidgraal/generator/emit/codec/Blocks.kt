@@ -13,11 +13,27 @@ import org.androidgraal.generator.model.fail
 internal class BlockElements(operand: Operand) {
     val isString: Boolean = operand.kind == Kind.STRING
 
-    val type: TypeName = if (isString) TypeName.CHAR else (TypeName.get(operand.type) as ArrayTypeName).componentType()
+    val isStringArray: Boolean = operand.kind == Kind.STRING_ARRAY
+
+    val reader: String? = when {
+        isString -> "readStringBlock"
+        isStringArray -> "readStringArrayBlock"
+        else -> null
+    }
+
+    val type: TypeName = when {
+        isString -> TypeName.CHAR
+        isStringArray -> TypeName.BYTE
+        else -> (TypeName.get(operand.type) as ArrayTypeName).componentType()
+    }
 
     val bytes: Int = type.elementBytes()
 
-    fun lengthOf(value: String): String = if (isString) "$value.length()" else "$value.length"
+    fun lengthOf(value: String): CodeBlock = when {
+        isString -> CodeBlock.of("\$L.length()", value)
+        isStringArray -> CodeBlock.of("\$T.stringArrayLength(\$L)", JavaNames.BLOCKS, value)
+        else -> CodeBlock.of("\$L.length", value)
+    }
 }
 
 internal fun TypeName.elementBytes(): Int = when (this) {
@@ -28,7 +44,7 @@ internal fun TypeName.elementBytes(): Int = when (this) {
     else -> fail("$this is no element type")
 }
 
-internal fun blockLengthOf(value: String, length: String): CodeBlock =
+internal fun blockLengthOf(value: String, length: CodeBlock): CodeBlock =
     CodeBlock.of("\$L == null ? \$L : \$L", value, JavaNames.BLOCK_NULL, length)
 
 internal fun sizeOf(length: String, elementBytes: Int): CodeBlock =
@@ -55,12 +71,12 @@ internal fun booleanCopyOf(buffer: String, start: CodeBlock, array: String, into
     return copy.endControlFlow().build()
 }
 
-internal fun copyInOf(elements: BlockElements, buffer: String, at: CodeBlock, value: String, chars: String): CodeBlock {
-    if (!elements.isString) return bufferCopyOf(elements.type, buffer, at, value, intoBuffer = true)
+internal fun copyInOf(elements: BlockElements, buffer: String, at: CodeBlock, value: String): CodeBlock {
+    if (!elements.isString && !elements.isStringArray) {
+        return bufferCopyOf(elements.type, buffer, at, value, intoBuffer = true)
+    }
     return CodeBlock.builder()
-        .addStatement("char[] $chars = new char[${elements.lengthOf(value)}]")
-        .addStatement("$value.getChars(0, $chars.length, $chars, 0)")
-        .add(bufferCopyOf(TypeName.CHAR, buffer, at, chars, intoBuffer = true))
+        .addStatement("\$T.write(\$L, \$L, \$L)", JavaNames.ART_TRANSPORT, value, buffer, at)
         .build()
 }
 

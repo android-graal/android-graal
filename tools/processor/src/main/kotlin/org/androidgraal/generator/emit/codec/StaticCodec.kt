@@ -174,13 +174,15 @@ internal class StaticBlock(
         val length = elements.lengthOf(argument)
         return CodeBlock.builder()
             .beginControlFlow(
-                "if ($argument != null && $length ${if (elements.isString) ">" else "!="} \$L)",
+                "if ($argument != null && \$L ${if (elements.isString) ">" else "!="} \$L)",
+                length,
                 capacity,
             )
             .addStatement(
-                "throw new \$T(\$S + $length + \$S)",
+                "throw new \$T(\$S + \$L + \$S)",
                 IllegalArgumentException::class.java,
                 "$method $subject ",
+                length,
                 " ${if (elements.isString) "chars" else "elements"}, its static buffer $capacity",
             )
             .endControlFlow()

@@ -1,0 +1,2075 @@
+/*
+ * Copyright (C) 2011 The Android Open Source Project
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+package android.system;
+
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
+import static android.system.OsConstants.AF_INET;
+import static android.system.OsConstants.AF_INET6;
+import static android.system.OsConstants.AF_PACKET;
+import static android.system.OsConstants.AF_UNIX;
+import static android.system.OsConstants.AF_VSOCK;
+import static android.system.OsConstants.EAFNOSUPPORT;
+import static android.system.OsConstants.EINTR;
+import static android.system.OsConstants.EINVAL;
+import static android.system.OsConstants.ERANGE;
+import static android.system.OsConstants.F_GETFL;
+import static android.system.OsConstants.O_NONBLOCK;
+import static java.nio.charset.StandardCharsets.UTF_8;
+
+import com.oracle.svm.core.annotate.Alias;
+import com.oracle.svm.core.annotate.TargetClass;
+import com.oracle.svm.shared.AlwaysInline;
+
+import org.androidgraal.android.CString;
+import org.androidgraal.android.FileDescriptors;
+import org.androidgraal.android.Pointer;
+import org.androidgraal.android.Scoped;
+import org.androidgraal.android.ScopedBytes;
+import org.androidgraal.android.ScopedUtfChars;
+import org.androidgraal.android.SocketAddresses;
+import org.androidgraal.bionic.Arpa;
+import org.androidgraal.bionic.Dlfcn;
+import org.androidgraal.bionic.Errno;
+import org.androidgraal.bionic.Fcntl;
+import org.androidgraal.bionic.Mman;
+import org.androidgraal.bionic.Net;
+import org.androidgraal.bionic.Netdb;
+import org.androidgraal.bionic.Netinet;
+import org.androidgraal.bionic.Poll;
+import org.androidgraal.bionic.Prctl;
+import org.androidgraal.bionic.Sendfile;
+import org.androidgraal.bionic.Signal;
+import org.androidgraal.bionic.Socket;
+import org.androidgraal.bionic.Stat;
+import org.androidgraal.bionic.Statvfs;
+import org.androidgraal.bionic.Stdio;
+import org.androidgraal.bionic.Stdlib;
+import org.androidgraal.bionic.Syscall;
+import org.androidgraal.bionic.Termios;
+import org.androidgraal.bionic.Time;
+import org.androidgraal.bionic.Uio;
+import org.androidgraal.bionic.Unistd;
+import org.androidgraal.bionic.Utsname;
+import org.androidgraal.bionic.Vm;
+import org.androidgraal.bionic.Xattr;
+import org.androidgraal.hosted.annotate.Emulated;
+import org.graalvm.nativeimage.PinnedObject;
+import org.graalvm.nativeimage.StackValue;
+import org.graalvm.nativeimage.UnmanagedMemory;
+import org.graalvm.nativeimage.c.struct.SizeOf;
+import org.graalvm.nativeimage.c.type.CCharPointer;
+import org.graalvm.nativeimage.c.type.CCharPointerPointer;
+import org.graalvm.nativeimage.c.type.CIntPointer;
+import org.graalvm.nativeimage.c.type.CLongPointer;
+import org.graalvm.nativeimage.c.type.CTypeConversion.CCharPointerPointerHolder;
+import org.graalvm.nativeimage.c.type.WordPointer;
+import org.graalvm.word.PointerBase;
+import org.graalvm.word.WordFactory;
+
+import java.io.FileDescriptor;
+import java.io.InterruptedIOException;
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.net.SocketException;
+import java.net.UnknownHostException;
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+import java.util.Objects;
+
+/**
+ * Access to low-level system functionality. Most of these are system calls. Most users will want
+ * to use higher-level APIs where available, but this class provides access to the underlying
+ * primitives used to implement the higher-level APIs.
+ *
+ * <p>The corresponding constants can be found in {@link OsConstants}.
+ */
+@Emulated
+public final class Os {
+    private Os() {}
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/accept.2.html">accept(2)</a>.
+     */
+    public static FileDescriptor accept(FileDescriptor fd, InetSocketAddress peerAddress) throws ErrnoException, SocketException {
+        if (isUnixSocket(fd)) {
+            isNonBlockingFile(fd);
+        }
+        Socket.sockaddr_storage ss = StackValue.get(Socket.sockaddr_storage.class);
+        zero(ss, SizeOf.get(Socket.sockaddr_storage.class));
+        CIntPointer sl = StackValue.get(CIntPointer.class);
+        sl.write(SizeOf.get(Socket.sockaddr_storage.class));
+        Scoped<Socket.sockaddr> peer =
+                Scoped.of(peerAddress != null ? (Socket.sockaddr) ss : WordFactory.nullPointer());
+        Scoped<CIntPointer> peerLength =
+                Scoped.of(peerAddress != null ? sl : WordFactory.nullPointer());
+        int clientFd = (int) retry("accept",
+                () -> Socket.accept(fd(fd), peer.get(), peerLength.get()));
+        try {
+            fillInetSocketAddress(peerAddress, ss);
+        } catch (RuntimeException e) {
+            Unistd.close(clientFd);
+            throw e;
+        }
+        FileDescriptor acceptFd = FileDescriptors.create(clientFd);
+        isInetSocket(acceptFd);
+        return acceptFd;
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/access.2.html">access(2)</a>.
+     */
+    public static boolean access(String path, int mode) throws ErrnoException {
+        try (ScopedUtfChars pathChars = new ScopedUtfChars(path)) {
+            int rc = (int) tempFailureRetry(() -> Unistd.access(pathChars.get(), mode));
+            if (rc == -1) {
+                throw new ErrnoException("access", errno());
+            }
+            return rc == 0;
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/bind.2.html">bind(2)</a>.
+     */
+    public static void bind(FileDescriptor fd, InetAddress address, int port) throws ErrnoException, SocketException {
+        Socket.sockaddr_storage ss = StackValue.get(Socket.sockaddr_storage.class);
+        int saLength = inetAddressToSockaddr(address, port, ss, true);
+        Scoped<Socket.sockaddr> sa = Scoped.of((Socket.sockaddr) ss);
+        try {
+            bindSockaddr(fd, sa, saLength);
+            return;
+        } catch (ErrnoException e) {
+            if (!retriesAsIPv4(e, sa.get(), saLength)) {
+                throw e;
+            }
+        }
+        bindSockaddr(fd, sa, inetAddressToSockaddr(address, port, ss, false));
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/bind.2.html">bind(2)</a>.
+     */
+    public static void bind(@NonNull FileDescriptor fd, @NonNull SocketAddress address) throws ErrnoException, SocketException {
+        if (address instanceof InetSocketAddress inet) {
+            bind(fd, inet.getAddress(), inet.getPort());
+            return;
+        }
+        Socket.sockaddr_storage ss = StackValue.get(Socket.sockaddr_storage.class);
+        int saLength = javaSocketAddressToSockaddr(address, ss);
+        bindSockaddr(fd, Scoped.of((Socket.sockaddr) ss), saLength);
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/chmod.2.html">chmod(2)</a>.
+     */
+    public static void chmod(String path, int mode) throws ErrnoException {
+        try (ScopedUtfChars pathChars = new ScopedUtfChars(path)) {
+            throwIfMinusOne("chmod",
+                    tempFailureRetry(() -> Stat.chmod(pathChars.get(), mode)), errno());
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/chown.2.html">chown(2)</a>.
+     */
+    public static void chown(String path, int uid, int gid) throws ErrnoException {
+        try (ScopedUtfChars pathChars = new ScopedUtfChars(path)) {
+            throwIfMinusOne("chown",
+                    tempFailureRetry(() -> Unistd.chown(pathChars.get(), uid, gid)), errno());
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/close.2.html">close(2)</a>.
+     */
+    public static void close(FileDescriptor fd) throws ErrnoException {
+        if (fd == null) {
+            throw new NullPointerException("null fd");
+        }
+        throwIfMinusOne("close", Unistd.close(FileDescriptors.release(fd)), errno());
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/connect.2.html">connect(2)</a>.
+     */
+    public static void connect(FileDescriptor fd, InetAddress address, int port) throws ErrnoException, SocketException {
+        Socket.sockaddr_storage ss = StackValue.get(Socket.sockaddr_storage.class);
+        int saLength = inetAddressToSockaddr(address, port, ss, true);
+        Scoped<Socket.sockaddr> sa = Scoped.of((Socket.sockaddr) ss);
+        try {
+            connectSockaddr(fd, sa, saLength);
+            return;
+        } catch (ErrnoException e) {
+            if (!retriesAsIPv4(e, sa.get(), saLength)) {
+                throw e;
+            }
+        }
+        connectSockaddr(fd, sa, inetAddressToSockaddr(address, port, ss, false));
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/connect.2.html">connect(2)</a>.
+     */
+    public static void connect(@NonNull FileDescriptor fd, @NonNull SocketAddress address) throws ErrnoException, SocketException {
+        if (address instanceof InetSocketAddress inet) {
+            connect(fd, inet.getAddress(), inet.getPort());
+            return;
+        }
+        Socket.sockaddr_storage ss = StackValue.get(Socket.sockaddr_storage.class);
+        int saLength = javaSocketAddressToSockaddr(address, ss);
+        connectSockaddr(fd, Scoped.of((Socket.sockaddr) ss), saLength);
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/dup.2.html">dup(2)</a>.
+     */
+    public static FileDescriptor dup(FileDescriptor oldFd) throws ErrnoException {
+        return FileDescriptors.create((int) throwIfMinusOne("dup",
+                tempFailureRetry(() -> Unistd.dup(fd(oldFd))), errno()));
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/dup2.2.html">dup2(2)</a>.
+     */
+    public static FileDescriptor dup2(FileDescriptor oldFd, int newFd) throws ErrnoException {
+        return FileDescriptors.create((int) throwIfMinusOne("dup2",
+                tempFailureRetry(() -> Unistd.dup2(fd(oldFd), newFd)), errno()));
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man3/environ.3.html">environ(3)</a>.
+     */
+    public static String[] environ() {
+        PointerBase symbol;
+        try (ScopedUtfChars nameChars = new ScopedUtfChars("environ")) {
+            symbol = Dlfcn.dlsym(Dlfcn.dlopen(WordFactory.nullPointer(), Dlfcn.RTLD_NOW()),
+                    nameChars.get());
+        }
+        return toStringArray(((WordPointer) symbol).read());
+    }
+
+    /**
+     * See <a href="https://man7.org/linux/man-pages/man3/execv.3.html">exec(3)</a>.
+     */
+    public static void execv(String filename, String[] argv) throws ErrnoException {
+        try (ScopedUtfChars filenameChars = new ScopedUtfChars(filename);
+                CCharPointerPointerHolder argvChars = strings(argv)) {
+            tempFailureRetry(() -> Unistd.execv(filenameChars.get(), vector(argvChars)));
+            throw new ErrnoException("execv", errno());
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/execve.2.html">execve(2)</a>.
+     */
+    public static void execve(String filename, String[] argv, String[] envp) throws ErrnoException {
+        try (ScopedUtfChars filenameChars = new ScopedUtfChars(filename);
+                CCharPointerPointerHolder argvChars = strings(argv);
+                CCharPointerPointerHolder envpChars = strings(envp)) {
+            tempFailureRetry(() -> Unistd.execve(filenameChars.get(), vector(argvChars),
+                    vector(envpChars)));
+            throw new ErrnoException("execve", errno());
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/fchmod.2.html">fchmod(2)</a>.
+     */
+    public static void fchmod(FileDescriptor fd, int mode) throws ErrnoException {
+        throwIfMinusOne("fchmod", tempFailureRetry(() -> Stat.fchmod(fd(fd), mode)), errno());
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/fchown.2.html">fchown(2)</a>.
+     */
+    public static void fchown(FileDescriptor fd, int uid, int gid) throws ErrnoException {
+        throwIfMinusOne("fchown",
+                tempFailureRetry(() -> Unistd.fchown(fd(fd), uid, gid)), errno());
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/fcntl.2.html">fcntl(2)</a>.
+     */
+    public static int fcntlInt(@NonNull FileDescriptor fd, int cmd, int arg) throws ErrnoException {
+        return (int) throwIfMinusOne("fcntl",
+                tempFailureRetry(() -> Fcntl.fcntl(fd(fd), cmd, arg)), errno());
+    }
+
+    /** @hide */
+    public static int fcntlVoid(FileDescriptor fd, int cmd) throws ErrnoException {
+        return (int) throwIfMinusOne("fcntl",
+                tempFailureRetry(() -> Fcntl.fcntl(fd(fd), cmd)), errno());
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/fdatasync.2.html">fdatasync(2)</a>.
+     */
+    public static void fdatasync(FileDescriptor fd) throws ErrnoException {
+        throwIfMinusOne("fdatasync", tempFailureRetry(() -> Unistd.fdatasync(fd(fd))), errno());
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/fstat.2.html">fstat(2)</a>.
+     */
+    public static StructStat fstat(FileDescriptor fd) throws ErrnoException {
+        Scoped<Stat.stat64> sb = Scoped.of(StackValue.get(Stat.stat64.class));
+        int rc = (int) tempFailureRetry(() -> Stat.fstat64(fd(fd), sb.get()));
+        if (rc == -1) {
+            throw new ErrnoException("fstat", errno());
+        }
+        return makeStructStat(sb.get());
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/fstatvfs.2.html">fstatvfs(2)</a>.
+     */
+    public static StructStatVfs fstatvfs(FileDescriptor fd) throws ErrnoException {
+        Scoped<Statvfs.statvfs> sb = Scoped.of(StackValue.get(Statvfs.statvfs.class));
+        int rc = (int) tempFailureRetry(() -> Statvfs.fstatvfs(fd(fd), sb.get()));
+        if (rc == -1) {
+            throw new ErrnoException("fstatvfs", errno());
+        }
+        return makeStructStatVfs(sb.get());
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/fsync.2.html">fsync(2)</a>.
+     */
+    public static void fsync(FileDescriptor fd) throws ErrnoException {
+        throwIfMinusOne("fsync", tempFailureRetry(() -> Unistd.fsync(fd(fd))), errno());
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/ftruncate.2.html">ftruncate(2)</a>.
+     */
+    public static void ftruncate(FileDescriptor fd, long length) throws ErrnoException {
+        throwIfMinusOne("ftruncate",
+                tempFailureRetry(() -> Unistd.ftruncate64(fd(fd), length)), errno());
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man3/gai_strerror.3.html">gai_strerror(3)</a>.
+     */
+    public static String gai_strerror(int error) { return CString.toJava(Netdb.gai_strerror(error)); }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/getegid.2.html">getegid(2)</a>.
+     */
+    public static int getegid() { return nativeGetegid(); }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/geteuid.2.html">geteuid(2)</a>.
+     */
+    public static int geteuid() { return nativeGeteuid(); }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/getgid.2.html">getgid(2)</a>.
+     */
+    public static int getgid() { return nativeGetgid(); }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man3/getenv.3.html">getenv(3)</a>.
+     */
+    public static String getenv(String name) {
+        try (ScopedUtfChars nameChars = new ScopedUtfChars(name)) {
+            return CString.toJava(Stdlib.getenv(nameChars.get()));
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/getpeername.2.html">getpeername(2)</a>.
+     */
+    public static SocketAddress getpeername(FileDescriptor fd) throws ErrnoException { return doGetSockName(fd, false); }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/getpid.2.html">getpid(2)</a>.
+     */
+    public static int getpid() { return nativeGetpid(); }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/getppid.2.html">getppid(2)</a>.
+     */
+    public static int getppid() { return nativeGetppid(); }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/getsockname.2.html">getsockname(2)</a>.
+     */
+    public static SocketAddress getsockname(FileDescriptor fd) throws ErrnoException { return doGetSockName(fd, true); }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/setsockopt.2.html">getsockopt(2)</a>.
+     *
+     * <p>Only for use with {@code option} values that return a {@code struct timeval} such as
+     * {@link OsConstants#SO_RCVTIMEO} and {@link OsConstants#SO_SNDTIMEO}. Use with other
+     * options may throw an {@code IllegalArgumentException} or return junk values.
+     */
+    public static @NonNull StructTimeval getsockoptTimeval(@NonNull FileDescriptor fd, int level, int option) throws ErrnoException {
+        Scoped<Time.timeval> tv = Scoped.of(StackValue.get(Time.timeval.class));
+        zero(tv.get(), SizeOf.get(Time.timeval.class));
+        Scoped<CIntPointer> size = Scoped.of(StackValue.get(CIntPointer.class));
+        size.get().write(SizeOf.get(Time.timeval.class));
+        int rc = (int) tempFailureRetry(
+                () -> Socket.getsockopt(fd(fd), level, option, tv.get(), size.get()));
+        if (rc == -1) {
+            throw new ErrnoException("getsockopt", errno());
+        }
+        if (size.get().read() != SizeOf.get(Time.timeval.class)) {
+            throw new IllegalArgumentException("getsockoptTimeval() unsupported with level " + level
+                    + " and option " + option);
+        }
+        return makeStructTimeval(tv.get());
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/gettid.2.html">gettid(2)</a>.
+     */
+    public static int gettid() { return nativeGettid(); }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/getuid.2.html">getuid(2)</a>.
+     */
+    public static int getuid() { return nativeGetuid(); }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/getxattr.2.html">getxattr(2)</a>
+     */
+    public static byte[] getxattr(String path, String name) throws ErrnoException {
+        try (ScopedUtfChars pathChars = new ScopedUtfChars(path);
+                ScopedUtfChars nameChars = new ScopedUtfChars(name)) {
+            while (true) {
+                long valueLength = Xattr.getxattr(pathChars.get(), nameChars.get(),
+                        WordFactory.nullPointer(), WordFactory.zero());
+                int errno = errno();
+                if (valueLength < 0) {
+                    throw new ErrnoException("getxattr", errno);
+                }
+                byte[] buf = new byte[(int) valueLength];
+                try (PinnedObject pin = PinnedObject.create(buf)) {
+                    valueLength = Xattr.getxattr(pathChars.get(), nameChars.get(),
+                            Pointer.address(pin, 0), WordFactory.unsigned(valueLength));
+                    errno = errno();
+                }
+                if (valueLength < 0) {
+                    if (errno == ERANGE) {
+                        continue;
+                    }
+                    throw new ErrnoException("getxattr", errno);
+                }
+                return Arrays.copyOf(buf, (int) valueLength);
+            }
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man3/if_indextoname.3.html">if_indextoname(3)</a>.
+     */
+    public static String if_indextoname(int index) {
+        byte[] buf = new byte[Net.IF_NAMESIZE()];
+        try (PinnedObject pin = PinnedObject.create(buf)) {
+            return CString.toJava(
+                    Net.if_indextoname(index, (CCharPointer) Pointer.address(pin, 0)));
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man3/if_nametoindex.3.html">if_nametoindex(3)</a>.
+     */
+    public static int if_nametoindex(String name) {
+        try (ScopedUtfChars nameChars = new ScopedUtfChars(name)) {
+            return Net.if_nametoindex(nameChars.get());
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man3/inet_pton.3.html">inet_pton(3)</a>.
+     */
+    public static InetAddress inet_pton(int family, String address) {
+        try (ScopedUtfChars addressChars = new ScopedUtfChars(address)) {
+            Socket.sockaddr_storage ss = StackValue.get(Socket.sockaddr_storage.class);
+            zero(ss, SizeOf.get(Socket.sockaddr_storage.class));
+            CCharPointer dst;
+            if (family == AF_INET) {
+                dst = ((Netinet.sockaddr_in) ss).sin_addr();
+            } else if (family == AF_INET6) {
+                dst = ((Netinet.sockaddr_in6) ss).sin6_addr();
+            } else {
+                return null;
+            }
+            if (Arpa.inet_pton(family, addressChars.get(), dst) != 1) {
+                return null;
+            }
+            ss.ss_family((short) family);
+            return sockaddrToInetAddress((Socket.sockaddr) ss);
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man3/isatty.3.html">isatty(3)</a>.
+     */
+    public static boolean isatty(FileDescriptor fd) {
+        return tempFailureRetry(() -> Unistd.isatty(fd(fd))) == 1;
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/kill.2.html">kill(2)</a>.
+     */
+    public static void kill(int pid, int signal) throws ErrnoException {
+        throwIfMinusOne("kill", tempFailureRetry(() -> Signal.kill(pid, signal)), errno());
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/lchown.2.html">lchown(2)</a>.
+     */
+    public static void lchown(String path, int uid, int gid) throws ErrnoException {
+        try (ScopedUtfChars pathChars = new ScopedUtfChars(path)) {
+            throwIfMinusOne("lchown",
+                    tempFailureRetry(() -> Unistd.lchown(pathChars.get(), uid, gid)), errno());
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/link.2.html">link(2)</a>.
+     */
+    public static void link(String oldPath, String newPath) throws ErrnoException {
+        try (ScopedUtfChars oldPathChars = new ScopedUtfChars(oldPath);
+                ScopedUtfChars newPathChars = new ScopedUtfChars(newPath)) {
+            throwIfMinusOne("link", tempFailureRetry(
+                    () -> Unistd.link(oldPathChars.get(), newPathChars.get())), errno());
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/listen.2.html">listen(2)</a>.
+     */
+    public static void listen(FileDescriptor fd, int backlog) throws ErrnoException {
+        throwIfMinusOne("listen", tempFailureRetry(() -> Socket.listen(fd(fd), backlog)), errno());
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/listxattr.2.html">listxattr(2)</a>
+     */
+    public static String[] listxattr(String path) throws ErrnoException {
+        try (ScopedUtfChars pathChars = new ScopedUtfChars(path)) {
+            while (true) {
+                long valueLength = Xattr.listxattr(pathChars.get(), WordFactory.nullPointer(),
+                        WordFactory.zero());
+                int errno = errno();
+                if (valueLength < 0) {
+                    throw new ErrnoException("listxattr", errno);
+                }
+                byte[] buf = new byte[(int) valueLength];
+                try (PinnedObject pin = PinnedObject.create(buf)) {
+                    valueLength = Xattr.listxattr(pathChars.get(),
+                            (CCharPointer) Pointer.address(pin, 0),
+                            WordFactory.unsigned(valueLength));
+                    errno = errno();
+                }
+                if (valueLength < 0) {
+                    if (errno == ERANGE) {
+                        continue;
+                    }
+                    throw new ErrnoException("listxattr", errno);
+                }
+                return new String(buf, 0, valueLength > 0 ? (int) valueLength - 1 : 0, UTF_8)
+                        .split("\0", -1);
+            }
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/lseek.2.html">lseek(2)</a>.
+     */
+    public static long lseek(FileDescriptor fd, long offset, int whence) throws ErrnoException {
+        return throwIfMinusOne("lseek",
+                tempFailureRetry(() -> Unistd.lseek64(fd(fd), offset, whence)), errno());
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/lstat.2.html">lstat(2)</a>.
+     */
+    public static StructStat lstat(String path) throws ErrnoException { return doStat(path, true); }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/memfd_create.2.html">memfd_create(2)</a>.
+     */
+    public static @NonNull FileDescriptor memfd_create(@NonNull String name, int flags) throws ErrnoException {
+        try (ScopedUtfChars nameChars = new ScopedUtfChars(name)) {
+            return FileDescriptors.create((int) throwIfMinusOne("memfd_create",
+                    Unistd.syscall(Syscall.__NR_memfd_create(), nameChars.get(), flags), errno()));
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/mincore.2.html">mincore(2)</a>.
+     */
+    public static void mincore(long address, long byteCount, byte[] vector) throws ErrnoException {
+        try (ScopedBytes vectorBytes = new ScopedBytes(vector)) {
+            throwIfMinusOne("mincore", tempFailureRetry(() -> Mman.mincore(
+                    WordFactory.pointer(address), WordFactory.unsigned(byteCount),
+                    (CCharPointer) vectorBytes.get())), errno());
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/mkdir.2.html">mkdir(2)</a>.
+     */
+    public static void mkdir(String path, int mode) throws ErrnoException {
+        try (ScopedUtfChars pathChars = new ScopedUtfChars(path)) {
+            throwIfMinusOne("mkdir",
+                    tempFailureRetry(() -> Stat.mkdir(pathChars.get(), mode)), errno());
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man3/mkfifo.3.html">mkfifo(3)</a>.
+     */
+    public static void mkfifo(String path, int mode) throws ErrnoException {
+        try (ScopedUtfChars pathChars = new ScopedUtfChars(path)) {
+            throwIfMinusOne("mkfifo",
+                    tempFailureRetry(() -> Stat.mkfifo(pathChars.get(), mode)), errno());
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/mlock.2.html">mlock(2)</a>.
+     */
+    public static void mlock(long address, long byteCount) throws ErrnoException {
+        throwIfMinusOne("mlock", tempFailureRetry(() -> Mman.mlock(WordFactory.pointer(address),
+                WordFactory.unsigned(byteCount))), errno());
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/mmap.2.html">mmap(2)</a>.
+     */
+    public static long mmap(long address, long byteCount, int prot, int flags, FileDescriptor fd, long offset) throws ErrnoException {
+        PointerBase ptr = Mman.mmap64(WordFactory.pointer(address),
+                WordFactory.unsigned(byteCount), prot, flags, fd(fd), offset);
+        if (ptr.rawValue() == -1) {
+            throw new ErrnoException("mmap", errno());
+        }
+        return ptr.rawValue();
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/msync.2.html">msync(2)</a>.
+     */
+    public static void msync(long address, long byteCount, int flags) throws ErrnoException {
+        throwIfMinusOne("msync", tempFailureRetry(() -> Mman.msync(WordFactory.pointer(address),
+                WordFactory.unsigned(byteCount), flags)), errno());
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/munlock.2.html">munlock(2)</a>.
+     */
+    public static void munlock(long address, long byteCount) throws ErrnoException {
+        throwIfMinusOne("munlock", tempFailureRetry(() -> Mman.munlock(
+                WordFactory.pointer(address), WordFactory.unsigned(byteCount))), errno());
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/munmap.2.html">munmap(2)</a>.
+     */
+    public static void munmap(long address, long byteCount) throws ErrnoException {
+        throwIfMinusOne("munmap", tempFailureRetry(() -> Mman.munmap(WordFactory.pointer(address),
+                WordFactory.unsigned(byteCount))), errno());
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/open.2.html">open(2)</a>.
+     */
+    public static FileDescriptor open(String path, int flags, int mode) throws ErrnoException {
+        try (ScopedUtfChars pathChars = new ScopedUtfChars(path)) {
+            return FileDescriptors.create((int) throwIfMinusOne("open",
+                    tempFailureRetry(() -> Fcntl.open(pathChars.get(), flags, mode)), errno()));
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/pipe.2.html">pipe(2)</a>.
+     */
+    public static FileDescriptor[] pipe() throws ErrnoException { return pipe2(0); }
+
+    /**
+     * Creates a pipe, a unidirectional data channel that can be used for interprocess communication.
+     *
+     * See <a href="http://man7.org/linux/man-pages/man2/pipe.2.html">pipe(2)</a>.
+     *
+     * @param flags bitmask of options, e.g. {@link OsConstants#O_CLOEXEC}, {@link OsConstants#O_DIRECT}
+     *              or {@link OsConstants#O_NONBLOCK}.
+     *              If {@code flags} is {@code 0}, then {@link pipe2(int)} is the same as {@link pipe()}.
+     * @return array of two file descriptors referring to the ends of the pipe, where
+     *         first file descriptor is the read end of the pipe, and second is a write end
+     * @throws ErrnoException if {@code flags} contains invalid value; or
+     *                        the per-process limit on the number of open file
+     *                        descriptors has been reached; or
+     *                        the system-wide limit on the total number of open files
+     *                        has been reached; or
+     *                        the user hard limit on memory that can be allocated for
+     *                        pipes has been reached and the caller is not privileged
+     *
+     * @hide
+     */
+    public static @Nullable FileDescriptor[] pipe2(int flags) throws ErrnoException {
+        Scoped<CIntPointer> fds = Scoped.of(StackValue.get(2, CIntPointer.class));
+        throwIfMinusOne("pipe2", tempFailureRetry(() -> Unistd.pipe2(fds.get(), flags)), errno());
+        return new FileDescriptor[] {FileDescriptors.create(fds.get().read(0)),
+                FileDescriptors.create(fds.get().read(1))};
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/poll.2.html">poll(2)</a>.
+     *
+     * <p>Note that in Lollipop this could throw an {@code ErrnoException} with {@code EINTR}.
+     * In later releases, the implementation will automatically just restart the system call with
+     * an appropriately reduced timeout.
+     */
+    public static int poll(StructPollfd[] fds, int timeoutMs) throws ErrnoException {
+        int arrayLength = fds.length;
+        Poll.pollfd pollFds = UnmanagedMemory.calloc(arrayLength * SizeOf.get(Poll.pollfd.class));
+        try {
+            int count = 0;
+            for (int i = 0; i < arrayLength; ++i) {
+                StructPollfd javaStruct = fds[i];
+                if (javaStruct == null || javaStruct.fd == null) {
+                    break;
+                }
+                Poll.pollfd pollFd = pollFds.addressOf(count);
+                pollFd.fd(fd(javaStruct.fd));
+                pollFd.events(javaStruct.events);
+                ++count;
+            }
+            Time.timespec before = StackValue.get(Time.timespec.class);
+            Time.timespec now = StackValue.get(Time.timespec.class);
+            int rc;
+            int errno;
+            while (true) {
+                Time.clock_gettime(Time.CLOCK_MONOTONIC(), before);
+                rc = Poll.poll(pollFds, count, timeoutMs);
+                errno = errno();
+                if (rc >= 0 || errno != EINTR) {
+                    break;
+                }
+                if (timeoutMs > 0) {
+                    Time.clock_gettime(Time.CLOCK_MONOTONIC(), now);
+                    long seconds = now.tv_sec() - before.tv_sec();
+                    long nanoseconds = now.tv_nsec() - before.tv_nsec();
+                    if (nanoseconds < 0) {
+                        --seconds;
+                        nanoseconds += 1_000_000_000L;
+                    }
+                    int elapsedMs = (int) (seconds * 1000 + nanoseconds / 1_000_000);
+                    if (elapsedMs >= timeoutMs) {
+                        rc = 0;
+                        break;
+                    }
+                    timeoutMs -= elapsedMs;
+                }
+            }
+            if (rc == -1) {
+                throw new ErrnoException("poll", errno);
+            }
+            for (int i = 0; i < count; ++i) {
+                Poll.pollfd pollFd = pollFds.addressOf(i);
+                fds[i].revents = pollFd.revents();
+            }
+            return rc;
+        } finally {
+            UnmanagedMemory.free(pollFds);
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man3/posix_fallocate.3.html">posix_fallocate(3)</a>.
+     */
+    public static void posix_fallocate(FileDescriptor fd, long offset, long length) throws ErrnoException {
+        int error;
+        do {
+            error = Fcntl.posix_fallocate64(fd(fd), offset, length);
+        } while (error == EINTR);
+        if (error != 0) {
+            throw new ErrnoException("posix_fallocate", error);
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/prctl.2.html">prctl(2)</a>.
+     */
+    public static int prctl(int option, long arg2, long arg3, long arg4, long arg5) throws ErrnoException {
+        return (int) throwIfMinusOne("prctl",
+                tempFailureRetry(() -> Prctl.prctl(option, arg2, arg3, arg4, arg5)), errno());
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/pread.2.html">pread(2)</a>.
+     */
+    public static int pread(FileDescriptor fd, ByteBuffer buffer, long offset) throws ErrnoException, InterruptedIOException {
+        final int position = buffer.position();
+        final int bytesRead;
+        if (buffer.isDirect()) {
+            bytesRead = preadBytes(fd, buffer, position, buffer.remaining(), offset);
+        } else {
+            bytesRead = preadBytes(fd, buffer.array(), buffer.arrayOffset() + position,
+                    buffer.remaining(), offset);
+        }
+        maybeUpdateBufferPosition(buffer, position, bytesRead);
+        return bytesRead;
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/pread.2.html">pread(2)</a>.
+     */
+    public static int pread(FileDescriptor fd, byte[] bytes, int byteOffset, int byteCount, long offset) throws ErrnoException, InterruptedIOException {
+        return preadBytes(fd, bytes, byteOffset, byteCount, offset);
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/pwrite.2.html">pwrite(2)</a>.
+     */
+    public static int pwrite(FileDescriptor fd, ByteBuffer buffer, long offset) throws ErrnoException, InterruptedIOException {
+        final int position = buffer.position();
+        final int bytesWritten;
+        if (buffer.isDirect()) {
+            bytesWritten = pwriteBytes(fd, buffer, position, buffer.remaining(), offset);
+        } else {
+            bytesWritten = pwriteBytes(fd, buffer.array(), buffer.arrayOffset() + position,
+                    buffer.remaining(), offset);
+        }
+        maybeUpdateBufferPosition(buffer, position, bytesWritten);
+        return bytesWritten;
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/pwrite.2.html">pwrite(2)</a>.
+     */
+    public static int pwrite(FileDescriptor fd, byte[] bytes, int byteOffset, int byteCount, long offset) throws ErrnoException, InterruptedIOException {
+        return pwriteBytes(fd, bytes, byteOffset, byteCount, offset);
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/read.2.html">read(2)</a>.
+     */
+    public static int read(FileDescriptor fd, ByteBuffer buffer) throws ErrnoException, InterruptedIOException {
+        final int position = buffer.position();
+        final int bytesRead;
+        if (buffer.isDirect()) {
+            bytesRead = readBytes(fd, buffer, position, buffer.remaining());
+        } else {
+            bytesRead = readBytes(fd, buffer.array(), buffer.arrayOffset() + position,
+                    buffer.remaining());
+        }
+        maybeUpdateBufferPosition(buffer, position, bytesRead);
+        return bytesRead;
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/read.2.html">read(2)</a>.
+     */
+    public static int read(FileDescriptor fd, byte[] bytes, int byteOffset, int byteCount) throws ErrnoException, InterruptedIOException {
+        return readBytes(fd, bytes, byteOffset, byteCount);
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/readlink.2.html">readlink(2)</a>.
+     */
+    public static String readlink(String path) throws ErrnoException {
+        try (ScopedUtfChars pathChars = new ScopedUtfChars(path)) {
+            byte[] buf = new byte[4096];
+            while (true) {
+                try (PinnedObject pin = PinnedObject.create(buf)) {
+                    CCharPointer buffer = (CCharPointer) Pointer.address(pin, 0);
+                    long size = Unistd.readlink(pathChars.get(), buffer,
+                            WordFactory.unsigned(buf.length));
+                    if (size == -1) {
+                        throw new ErrnoException("readlink", errno());
+                    }
+                    if (size < buf.length) {
+                        return CString.toJava(buffer);
+                    }
+                }
+                buf = new byte[buf.length * 2];
+            }
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/readv.2.html">readv(2)</a>.
+     */
+    public static int readv(FileDescriptor fd, Object[] buffers, int[] offsets, int[] byteCounts) throws ErrnoException, InterruptedIOException {
+        try (IoVec ioVec = new IoVec(buffers.length)) {
+            if (!ioVec.init(buffers, offsets, byteCounts)) {
+                return -1;
+            }
+            return (int) retry("readv", () -> Uio.readv(fd(fd), ioVec.get(), ioVec.size()));
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/recvfrom.2.html">recvfrom(2)</a>.
+     */
+    public static int recvfrom(FileDescriptor fd, ByteBuffer buffer, int flags, InetSocketAddress srcAddress) throws ErrnoException, SocketException {
+        final int position = buffer.position();
+        final int bytesReceived;
+        if (buffer.isDirect()) {
+            bytesReceived = recvfromBytes(fd, buffer, position, buffer.remaining(), flags,
+                    srcAddress);
+        } else {
+            bytesReceived = recvfromBytes(fd, buffer.array(), buffer.arrayOffset() + position,
+                    buffer.remaining(), flags, srcAddress);
+        }
+        maybeUpdateBufferPosition(buffer, position, bytesReceived);
+        return bytesReceived;
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/recvfrom.2.html">recvfrom(2)</a>.
+     */
+    public static int recvfrom(FileDescriptor fd, byte[] bytes, int byteOffset, int byteCount, int flags, InetSocketAddress srcAddress) throws ErrnoException, SocketException {
+        return recvfromBytes(fd, bytes, byteOffset, byteCount, flags, srcAddress);
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/recvmsg.2.html">recvmsg(2)</a>.
+     */
+    public static int recvmsg(@NonNull FileDescriptor fd, @NonNull StructMsghdr msg, int flags) throws ErrnoException, SocketException {
+        if (msg == null) {
+            throw new NullPointerException("missing structMsghdr");
+        }
+        ByteBuffer[] buffers = msg.msg_iov;
+        if (buffers == null) {
+            throw new NullPointerException("null StructMsghdr.msg_iov");
+        }
+        Scoped<Socket.msghdr> hdr = Scoped.of(StackValue.get(Socket.msghdr.class));
+        zero(hdr.get(), SizeOf.get(Socket.msghdr.class));
+        Socket.sockaddr_storage ss = StackValue.get(Socket.sockaddr_storage.class);
+        zero(ss, SizeOf.get(Socket.sockaddr_storage.class));
+        try (ScopedByteBufferArray scopedBytesArray = new ScopedByteBufferArray(true)) {
+            msghdrJavaToC(msg, hdr.get(), scopedBytesArray);
+            SocketAddress name = msg.msg_name;
+            if (name != null) {
+                hdr.get().msg_name(ss);
+                hdr.get().msg_namelen(SizeOf.get(Netinet.sockaddr_in6.class));
+            }
+            long rc = retry("recvmsg", () -> Socket.recvmsg(fd(fd), hdr.get(), flags));
+            if (name != null) {
+                int nameLength = hdr.get().msg_namelen();
+                if (nameLength != SizeOf.get(Netinet.sockaddr_in6.class)
+                        && nameLength != SizeOf.get(Netinet.sockaddr_in.class)) {
+                    throw new SocketException("unknown socket address type");
+                }
+                if (!fillSocketAddress(name, ss)) {
+                    return -1;
+                }
+            }
+            msgcontrolToStructCmsghdrArray(msg, hdr.get());
+            msg.msg_flags = hdr.get().msg_flags();
+            return (int) rc;
+        } finally {
+            UnmanagedMemory.free(hdr.get().msg_iov());
+            UnmanagedMemory.free(hdr.get().msg_control());
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man3/remove.3.html">remove(3)</a>.
+     */
+    public static void remove(String path) throws ErrnoException {
+        try (ScopedUtfChars pathChars = new ScopedUtfChars(path)) {
+            throwIfMinusOne("remove",
+                    tempFailureRetry(() -> Stdio.remove(pathChars.get())), errno());
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/removexattr.2.html">removexattr(2)</a>.
+     */
+    public static void removexattr(String path, String name) throws ErrnoException {
+        try (ScopedUtfChars pathChars = new ScopedUtfChars(path);
+                ScopedUtfChars nameChars = new ScopedUtfChars(name)) {
+            int rc = Xattr.removexattr(pathChars.get(), nameChars.get());
+            int errno = errno();
+            if (rc < 0) {
+                throw new ErrnoException("removexattr", errno);
+            }
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/rename.2.html">rename(2)</a>.
+     */
+    public static void rename(String oldPath, String newPath) throws ErrnoException {
+        try (ScopedUtfChars oldPathChars = new ScopedUtfChars(oldPath);
+                ScopedUtfChars newPathChars = new ScopedUtfChars(newPath)) {
+            throwIfMinusOne("rename", tempFailureRetry(
+                    () -> Stdio.rename(oldPathChars.get(), newPathChars.get())), errno());
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/sendfile.2.html">sendfile(2)</a>.
+     */
+    public static long sendfile(FileDescriptor outFd, FileDescriptor inFd, Int64Ref offset, long byteCount) throws ErrnoException {
+        CLongPointer slot = StackValue.get(CLongPointer.class);
+        Scoped<CLongPointer> offsetPtr =
+                Scoped.of(offset != null ? slot : WordFactory.nullPointer());
+        if (offset != null) {
+            slot.write(offset.value);
+        }
+        long rc = throwIfMinusOne("sendfile", tempFailureRetry(() -> Sendfile.sendfile64(fd(outFd),
+                fd(inFd), offsetPtr.get(), WordFactory.unsigned(byteCount))), errno());
+        if (offset != null) {
+            offset.value = slot.read();
+        }
+        return rc;
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/sendmsg.2.html">sendmsg(2)</a>.
+     */
+    public static int sendmsg(@NonNull FileDescriptor fd, @NonNull StructMsghdr msg, int flags) throws ErrnoException, SocketException {
+        if (msg == null) {
+            throw new NullPointerException("missing structMsghdr");
+        }
+        SocketAddress name = msg.msg_name;
+        ByteBuffer[] buffers = msg.msg_iov;
+        if (buffers == null) {
+            throw new NullPointerException("null StructMsghdr.msg_iov");
+        }
+        Scoped<Socket.msghdr> hdr = Scoped.of(StackValue.get(Socket.msghdr.class));
+        zero(hdr.get(), SizeOf.get(Socket.msghdr.class));
+        Socket.sockaddr_storage ss = StackValue.get(Socket.sockaddr_storage.class);
+        try (ScopedByteBufferArray scopedBytesArray = new ScopedByteBufferArray(false)) {
+            msghdrJavaToC(msg, hdr.get(), scopedBytesArray);
+            int saLength = name != null ? javaSocketAddressToSockaddr(name, ss) : 0;
+            boolean inet = name instanceof InetSocketAddress;
+            hdr.get().msg_name(saLength != 0 ? ss : WordFactory.nullPointer());
+            hdr.get().msg_namelen(saLength);
+            try {
+                return sendmsgMsghdr(fd, hdr, flags);
+            } catch (ErrnoException e) {
+                if (!inet || !retriesAsIPv4(e, (Socket.sockaddr) ss, saLength)) {
+                    throw e;
+                }
+            }
+            InetSocketAddress inetName = (InetSocketAddress) name;
+            hdr.get().msg_namelen(inetAddressToSockaddr(inetName.getAddress(), inetName.getPort(),
+                    ss, false));
+            return sendmsgMsghdr(fd, hdr, flags);
+        } finally {
+            UnmanagedMemory.free(hdr.get().msg_iov());
+            UnmanagedMemory.free(hdr.get().msg_control());
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/sendto.2.html">sendto(2)</a>.
+     */
+    public static int sendto(FileDescriptor fd, ByteBuffer buffer, int flags, InetAddress inetAddress, int port) throws ErrnoException, SocketException {
+        final int position = buffer.position();
+        final int bytesSent;
+        if (buffer.isDirect()) {
+            bytesSent = sendtoBytes(fd, buffer, position, buffer.remaining(), flags,
+                    inetAddress, port);
+        } else {
+            bytesSent = sendtoBytes(fd, buffer.array(), buffer.arrayOffset() + position,
+                    buffer.remaining(), flags, inetAddress, port);
+        }
+        maybeUpdateBufferPosition(buffer, position, bytesSent);
+        return bytesSent;
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/sendto.2.html">sendto(2)</a>.
+     */
+    public static int sendto(FileDescriptor fd, byte[] bytes, int byteOffset, int byteCount, int flags, InetAddress inetAddress, int port) throws ErrnoException, SocketException {
+        return sendtoBytes(fd, bytes, byteOffset, byteCount, flags, inetAddress, port);
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/sendto.2.html">sendto(2)</a>.
+     */
+    public static int sendto(@NonNull FileDescriptor fd, @NonNull byte[] bytes, int byteOffset, int byteCount, int flags, @Nullable SocketAddress address) throws ErrnoException, SocketException {
+        return sendtoBytes(fd, bytes, byteOffset, byteCount, flags, address);
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/setegid.2.html">setegid(2)</a>.
+     * @deprecated Android Applications do not have sufficient privileges to call this method.
+     */
+    @Deprecated
+    public static void setegid(int egid) throws ErrnoException {
+        throwIfMinusOne("setegid", tempFailureRetry(() -> Unistd.setegid(egid)), errno());
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man3/setenv.3.html">setenv(3)</a>.
+     */
+    public static void setenv(String name, String value, boolean overwrite) throws ErrnoException {
+        try (ScopedUtfChars nameChars = new ScopedUtfChars(name);
+                ScopedUtfChars valueChars = new ScopedUtfChars(value)) {
+            throwIfMinusOne("setenv", Stdlib.setenv(nameChars.get(), valueChars.get(),
+                    overwrite ? 1 : 0), errno());
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/seteuid.2.html">seteuid(2)</a>.
+     * @deprecated Android Applications do not have sufficient privileges to call this method.
+     */
+    @Deprecated
+    public static void seteuid(int euid) throws ErrnoException {
+        throwIfMinusOne("seteuid", tempFailureRetry(() -> Unistd.seteuid(euid)), errno());
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/setgid.2.html">setgid(2)</a>.
+     * @deprecated Android Applications do not have sufficient privileges to call this method.
+     */
+    @Deprecated
+    public static void setgid(int gid) throws ErrnoException {
+        throwIfMinusOne("setgid", tempFailureRetry(() -> Unistd.setgid(gid)), errno());
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/setsid.2.html">setsid(2)</a>.
+     */
+    public static int setsid() throws ErrnoException {
+        return (int) throwIfMinusOne("setsid", tempFailureRetry(() -> Unistd.setsid()), errno());
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/setsockopt.2.html">setsockopt(2)</a>.
+     */
+    public static void setsockoptInt(FileDescriptor fd, int level, int option, int value) throws ErrnoException {
+        Scoped<CIntPointer> v = Scoped.of(StackValue.get(CIntPointer.class));
+        v.get().write(value);
+        throwIfMinusOne("setsockopt", tempFailureRetry(
+                () -> Socket.setsockopt(fd(fd), level, option, v.get(), Integer.BYTES)), errno());
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/setsockopt.2.html">setsockopt(2)</a>.
+     *
+     * <p>Only for use with {@code option} values that take a {@code struct timeval} such as
+     * {@link OsConstants#SO_RCVTIMEO} and {@link OsConstants#SO_SNDTIMEO}. Use with other
+     * options is likely to cause incorrect behavior.
+     */
+    public static void setsockoptTimeval(@NonNull FileDescriptor fd, int level, int option, @NonNull StructTimeval value) throws ErrnoException {
+        if (value == null) {
+            throw new NullPointerException("null javaTimeval");
+        }
+        Scoped<Time.timeval> v = Scoped.of(StackValue.get(Time.timeval.class));
+        v.get().tv_sec(value.tv_sec);
+        v.get().tv_usec(value.tv_usec);
+        throwIfMinusOne("setsockopt", tempFailureRetry(() -> Socket.setsockopt(fd(fd), level,
+                option, v.get(), SizeOf.get(Time.timeval.class))), errno());
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/setuid.2.html">setuid(2)</a>.
+     * @deprecated Android Applications do not have sufficient privileges to call this method.
+     */
+    @Deprecated
+    public static void setuid(int uid) throws ErrnoException {
+        throwIfMinusOne("setuid", tempFailureRetry(() -> Unistd.setuid(uid)), errno());
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/setxattr.2.html">setxattr(2)</a>
+     */
+    public static void setxattr(String path, String name, byte[] value, int flags) throws ErrnoException {
+        try (ScopedUtfChars pathChars = new ScopedUtfChars(path);
+                ScopedUtfChars nameChars = new ScopedUtfChars(name);
+                ScopedBytes valueBytes = new ScopedBytes(value)) {
+            int rc = Xattr.setxattr(pathChars.get(), nameChars.get(), valueBytes.get(),
+                    WordFactory.unsigned(value.length), flags);
+            int errno = errno();
+            if (rc < 0) {
+                throw new ErrnoException("setxattr", errno);
+            }
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/shutdown.2.html">shutdown(2)</a>.
+     */
+    public static void shutdown(FileDescriptor fd, int how) throws ErrnoException {
+        throwIfMinusOne("shutdown", tempFailureRetry(() -> Socket.shutdown(fd(fd), how)), errno());
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/socket.2.html">socket(2)</a>.
+     */
+    public static FileDescriptor socket(int domain, int type, int protocol) throws ErrnoException {
+        if (domain == AF_PACKET) {
+            protocol = Short.toUnsignedInt(htons(protocol));
+        }
+        int socketProtocol = protocol;
+        return FileDescriptors.create((int) throwIfMinusOne("socket",
+                tempFailureRetry(() -> Socket.socket(domain, type, socketProtocol)), errno()));
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/socketpair.2.html">socketpair(2)</a>.
+     */
+    public static void socketpair(int domain, int type, int protocol, FileDescriptor fd1, FileDescriptor fd2) throws ErrnoException {
+        if (fd1 == null) {
+            throw new NullPointerException("null fd1");
+        }
+        if (fd2 == null) {
+            throw new NullPointerException("null fd2");
+        }
+        Scoped<CIntPointer> fds = Scoped.of(StackValue.get(2, CIntPointer.class));
+        throwIfMinusOne("socketpair", tempFailureRetry(
+                () -> Socket.socketpair(domain, type, protocol, fds.get())), errno());
+        FileDescriptors.setFd(fd1, fds.get().read(0));
+        FileDescriptors.setFd(fd2, fds.get().read(1));
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/stat.2.html">stat(2)</a>.
+     */
+    public static StructStat stat(String path) throws ErrnoException { return doStat(path, false); }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/statvfs.2.html">statvfs(2)</a>.
+     */
+    public static StructStatVfs statvfs(String path) throws ErrnoException {
+        try (ScopedUtfChars pathChars = new ScopedUtfChars(path)) {
+            Scoped<Statvfs.statvfs> sb = Scoped.of(StackValue.get(Statvfs.statvfs.class));
+            int rc = (int) tempFailureRetry(() -> Statvfs.statvfs(pathChars.get(), sb.get()));
+            if (rc == -1) {
+                throw new ErrnoException("statvfs", errno());
+            }
+            return makeStructStatVfs(sb.get());
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man3/strerror.3.html">strerror(2)</a>.
+     */
+    public static String strerror(int errno) { return CString.toJava(Errno.strerror(errno)); }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man3/strsignal.3.html">strsignal(3)</a>.
+     */
+    public static String strsignal(int signal) { return CString.toJava(Signal.strsignal(signal)); }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/symlink.2.html">symlink(2)</a>.
+     */
+    public static void symlink(String oldPath, String newPath) throws ErrnoException {
+        try (ScopedUtfChars oldPathChars = new ScopedUtfChars(oldPath);
+                ScopedUtfChars newPathChars = new ScopedUtfChars(newPath)) {
+            throwIfMinusOne("symlink", tempFailureRetry(
+                    () -> Unistd.symlink(oldPathChars.get(), newPathChars.get())), errno());
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man3/sysconf.3.html">sysconf(3)</a>.
+     */
+    public static long sysconf(int name) throws ErrnoException {
+        Errno.errno().write(0);
+        long result = Unistd.sysconf(name);
+        int errno = errno();
+        if (result == -1L && errno == EINVAL) {
+            throw new ErrnoException("sysconf", errno);
+        }
+        return result;
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man3/tcdrain.3.html">tcdrain(3)</a>.
+     */
+    public static void tcdrain(FileDescriptor fd) throws ErrnoException {
+        throwIfMinusOne("tcdrain", tempFailureRetry(() -> Termios.tcdrain(fd(fd))), errno());
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man3/tcsendbreak.3.html">tcsendbreak(3)</a>.
+     */
+    public static void tcsendbreak(FileDescriptor fd, int duration) throws ErrnoException {
+        throwIfMinusOne("tcsendbreak",
+                tempFailureRetry(() -> Termios.tcsendbreak(fd(fd), duration)), errno());
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/umask.2.html">umask(2)</a>.
+     */
+    public static int umask(int mask) {
+        if ((mask & 0777) != mask) {
+            throw new IllegalArgumentException("Invalid umask: " + mask);
+        }
+        return umaskImpl(mask);
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/uname.2.html">uname(2)</a>.
+     */
+    public static StructUtsname uname() {
+        Scoped<Utsname.utsname> buf = Scoped.of(StackValue.get(Utsname.utsname.class));
+        if (tempFailureRetry(() -> Utsname.uname(buf.get())) == -1) {
+            return null;
+        }
+        return makeStructUtsname(buf.get());
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man3/unsetenv.3.html">unsetenv(3)</a>.
+     */
+    public static void unsetenv(String name) throws ErrnoException {
+        try (ScopedUtfChars nameChars = new ScopedUtfChars(name)) {
+            throwIfMinusOne("unsetenv", Stdlib.unsetenv(nameChars.get()), errno());
+        }
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/write.2.html">write(2)</a>.
+     */
+    public static int write(FileDescriptor fd, ByteBuffer buffer) throws ErrnoException, InterruptedIOException {
+        final int position = buffer.position();
+        final int bytesWritten;
+        if (buffer.isDirect()) {
+            bytesWritten = writeBytes(fd, buffer, position, buffer.remaining());
+        } else {
+            bytesWritten = writeBytes(fd, buffer.array(), buffer.arrayOffset() + position,
+                    buffer.remaining());
+        }
+        maybeUpdateBufferPosition(buffer, position, bytesWritten);
+        return bytesWritten;
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/write.2.html">write(2)</a>.
+     */
+    public static int write(FileDescriptor fd, byte[] bytes, int byteOffset, int byteCount) throws ErrnoException, InterruptedIOException {
+        return writeBytes(fd, bytes, byteOffset, byteCount);
+    }
+
+    /**
+     * See <a href="http://man7.org/linux/man-pages/man2/writev.2.html">writev(2)</a>.
+     */
+    public static int writev(FileDescriptor fd, Object[] buffers, int[] offsets, int[] byteCounts) throws ErrnoException, InterruptedIOException {
+        try (IoVec ioVec = new IoVec(buffers.length)) {
+            if (!ioVec.init(buffers, offsets, byteCounts)) {
+                return -1;
+            }
+            return (int) retry("writev", () -> Uio.writev(fd(fd), ioVec.get(), ioVec.size()));
+        }
+    }
+
+    private static int errno() {
+        return Errno.errno().read();
+    }
+
+    private static int throwIfMinusOne(String name, int rc, int errno) throws ErrnoException {
+        if (rc == -1) {
+            throw new ErrnoException(name, errno);
+        }
+        return rc;
+    }
+
+    private static long throwIfMinusOne(String name, long rc, int errno) throws ErrnoException {
+        if (rc == -1) {
+            throw new ErrnoException(name, errno);
+        }
+        return rc;
+    }
+
+    @AlwaysInline("the closure is scalar-replaced only when inlined")
+    private static long retry(String name, SystemCall call) throws ErrnoException {
+        long rc;
+        int errno;
+        do {
+            rc = call.call();
+            errno = errno();
+        } while (rc == -1 && errno == EINTR);
+        return throwIfMinusOne(name, rc, errno);
+    }
+
+    @AlwaysInline("the closure is scalar-replaced only when inlined")
+    private static long tempFailureRetry(SystemCall call) {
+        long rc;
+        do {
+            rc = call.call();
+        } while (rc == -1 && errno() == EINTR);
+        return rc;
+    }
+
+    private static int fd(FileDescriptor fd) {
+        return fd == null ? -1 : FileDescriptors.getFd(fd);
+    }
+
+    private static CCharPointerPointerHolder strings(String[] values) {
+        return values == null ? null : CString.of(values);
+    }
+
+    private static CCharPointerPointer vector(CCharPointerPointerHolder holder) {
+        return holder == null ? WordFactory.nullPointer() : holder.get();
+    }
+
+    private static String[] toStringArray(CCharPointerPointer strings) {
+        int count = 0;
+        while (strings.read(count).isNonNull()) {
+            ++count;
+        }
+        String[] result = new String[count];
+        for (int i = 0; i < count; ++i) {
+            result[i] = CString.toJava(strings.read(i));
+        }
+        return result;
+    }
+
+    private static boolean isNonBlockingFile(FileDescriptor fd) throws ErrnoException {
+        int flag = fcntlInt(fd, F_GETFL, 0);
+        if ((flag & O_NONBLOCK) != 0) {
+            return true;
+        }
+        return false;
+    }
+
+    private static boolean isUnixSocket(FileDescriptor fd) throws ErrnoException {
+        return getsockoptInt(fd, Socket.SOL_SOCKET(), Socket.SO_DOMAIN()) == AF_UNIX;
+    }
+
+    private static boolean isInetSocket(FileDescriptor fd) throws ErrnoException {
+        int domain = getsockoptInt(fd, Socket.SOL_SOCKET(), Socket.SO_DOMAIN());
+        return domain == AF_INET || domain == AF_INET6;
+    }
+
+    private static int getsockoptInt(FileDescriptor fd, int level, int option)
+            throws ErrnoException {
+        Scoped<CIntPointer> result = Scoped.of(StackValue.get(CIntPointer.class));
+        result.get().write(0);
+        Scoped<CIntPointer> size = Scoped.of(StackValue.get(CIntPointer.class));
+        size.get().write(Integer.BYTES);
+        throwIfMinusOne("getsockopt", tempFailureRetry(() -> Socket.getsockopt(fd(fd), level,
+                option, result.get(), size.get())), errno());
+        return result.get().read();
+    }
+
+    private static int nativeGetegid() {
+        return Unistd.getegid();
+    }
+
+    private static int nativeGeteuid() {
+        return Unistd.geteuid();
+    }
+
+    private static int nativeGetgid() {
+        return Unistd.getgid();
+    }
+
+    private static int nativeGetpid() {
+        return (int) tempFailureRetry(() -> Unistd.getpid());
+    }
+
+    private static int nativeGetppid() {
+        return (int) tempFailureRetry(() -> Unistd.getppid());
+    }
+
+    private static int nativeGettid() {
+        return (int) tempFailureRetry(() -> Unistd.gettid());
+    }
+
+    private static int nativeGetuid() {
+        return Unistd.getuid();
+    }
+
+    private static int umaskImpl(int mask) {
+        return Stat.umask(mask);
+    }
+
+    private static int readBytes(FileDescriptor fd, Object javaBytes, int byteOffset,
+            int byteCount) throws ErrnoException {
+        try (ScopedBytes bytes = new ScopedBytes(javaBytes, byteOffset, byteCount)) {
+            if (bytes.get().isNull()) {
+                return -1;
+            }
+            return (int) retry("read", () -> Unistd.read(fd(fd), bytes.get().add(byteOffset),
+                    WordFactory.unsigned(byteCount)));
+        }
+    }
+
+    private static int writeBytes(FileDescriptor fd, Object javaBytes, int byteOffset,
+            int byteCount) throws ErrnoException {
+        try (ScopedBytes bytes = new ScopedBytes(javaBytes, byteOffset, byteCount)) {
+            if (bytes.get().isNull()) {
+                return -1;
+            }
+            return (int) retry("write", () -> Unistd.write(fd(fd), bytes.get().add(byteOffset),
+                    WordFactory.unsigned(byteCount)));
+        }
+    }
+
+    private static int preadBytes(FileDescriptor fd, Object javaBytes, int byteOffset,
+            int byteCount, long offset) throws ErrnoException {
+        try (ScopedBytes bytes = new ScopedBytes(javaBytes, byteOffset, byteCount)) {
+            if (bytes.get().isNull()) {
+                return -1;
+            }
+            return (int) retry("pread64", () -> Unistd.pread64(fd(fd),
+                    bytes.get().add(byteOffset), WordFactory.unsigned(byteCount), offset));
+        }
+    }
+
+    private static int pwriteBytes(FileDescriptor fd, Object javaBytes, int byteOffset,
+            int byteCount, long offset) throws ErrnoException {
+        try (ScopedBytes bytes = new ScopedBytes(javaBytes, byteOffset, byteCount)) {
+            if (bytes.get().isNull()) {
+                return -1;
+            }
+            return (int) retry("pwrite64", () -> Unistd.pwrite64(fd(fd),
+                    bytes.get().add(byteOffset), WordFactory.unsigned(byteCount), offset));
+        }
+    }
+
+    private static int recvfromBytes(FileDescriptor fd, Object javaBytes, int byteOffset,
+            int byteCount, int flags, InetSocketAddress srcAddress) throws ErrnoException {
+        try (ScopedBytes bytes = new ScopedBytes(javaBytes, byteOffset, byteCount)) {
+            if (bytes.get().isNull()) {
+                return -1;
+            }
+            Socket.sockaddr_storage ss = StackValue.get(Socket.sockaddr_storage.class);
+            zero(ss, SizeOf.get(Socket.sockaddr_storage.class));
+            CIntPointer sl = StackValue.get(CIntPointer.class);
+            sl.write(SizeOf.get(Socket.sockaddr_storage.class));
+            Scoped<Socket.sockaddr> from = Scoped.of(
+                    srcAddress != null ? (Socket.sockaddr) ss : WordFactory.nullPointer());
+            Scoped<CIntPointer> fromLength =
+                    Scoped.of(srcAddress != null ? sl : WordFactory.nullPointer());
+            long rc = retry("recvfrom",
+                    () -> recvfromCall(fd, bytes, byteOffset, byteCount, flags, from, fromLength));
+            int family = Short.toUnsignedInt(ss.ss_family());
+            if (family == AF_INET || family == AF_INET6) {
+                fillInetSocketAddress(srcAddress, ss);
+            }
+            return (int) rc;
+        }
+    }
+
+    @AlwaysInline("a closure is inlined only while it is a trivial method, so it forwards here")
+    private static long recvfromCall(FileDescriptor fd, ScopedBytes bytes, int byteOffset,
+            int byteCount, int flags, Scoped<Socket.sockaddr> from,
+            Scoped<CIntPointer> fromLength) {
+        return Socket.recvfrom(fd(fd), bytes.get().add(byteOffset),
+                WordFactory.unsigned(byteCount), flags, from.get(), fromLength.get());
+    }
+
+    private static int sendtoBytes(FileDescriptor fd, Object javaBytes, int byteOffset,
+            int byteCount, int flags, InetAddress inetAddress, int port) throws ErrnoException {
+        try (ScopedBytes bytes = new ScopedBytes(javaBytes, byteOffset, byteCount)) {
+            if (bytes.get().isNull()) {
+                return -1;
+            }
+            Socket.sockaddr_storage ss = StackValue.get(Socket.sockaddr_storage.class);
+            int saLength =
+                    inetAddress == null ? 0 : inetAddressToSockaddr(inetAddress, port, ss, true);
+            Scoped<Socket.sockaddr> sa =
+                    Scoped.of(saLength != 0 ? (Socket.sockaddr) ss : WordFactory.nullPointer());
+            try {
+                return sendtoSockaddr(fd, bytes, byteOffset, byteCount, flags, sa, saLength);
+            } catch (ErrnoException e) {
+                if (!retriesAsIPv4(e, sa.get(), saLength)) {
+                    throw e;
+                }
+            }
+            return sendtoSockaddr(fd, bytes, byteOffset, byteCount, flags, sa,
+                    inetAddressToSockaddr(inetAddress, port, ss, false));
+        }
+    }
+
+    private static int sendtoBytes(FileDescriptor fd, Object javaBytes, int byteOffset,
+            int byteCount, int flags, SocketAddress address) throws ErrnoException {
+        if (address instanceof InetSocketAddress inet) {
+            return sendtoBytes(fd, javaBytes, byteOffset, byteCount, flags, inet.getAddress(),
+                    inet.getPort());
+        }
+        try (ScopedBytes bytes = new ScopedBytes(javaBytes, byteOffset, byteCount)) {
+            if (bytes.get().isNull()) {
+                return -1;
+            }
+            Socket.sockaddr_storage ss = StackValue.get(Socket.sockaddr_storage.class);
+            int saLength = address != null ? javaSocketAddressToSockaddr(address, ss) : 0;
+            Scoped<Socket.sockaddr> sa =
+                    Scoped.of(address != null ? (Socket.sockaddr) ss : WordFactory.nullPointer());
+            return sendtoSockaddr(fd, bytes, byteOffset, byteCount, flags, sa, saLength);
+        }
+    }
+
+    @AlwaysInline("the holders and the closure are scalar-replaced only when inlined")
+    private static int sendmsgMsghdr(FileDescriptor fd, Scoped<Socket.msghdr> hdr, int flags)
+            throws ErrnoException {
+        return (int) retry("sendmsg", () -> Socket.sendmsg(fd(fd), hdr.get(), flags));
+    }
+
+    private static void maybeUpdateBufferPosition(ByteBuffer buffer, int originalPosition,
+            int bytesReadOrWritten) {
+        if (bytesReadOrWritten > 0) {
+            buffer.position(bytesReadOrWritten + originalPosition);
+        }
+    }
+
+    private static int inetAddressToSockaddr(InetAddress inetAddress, int port,
+            Socket.sockaddr_storage ss, boolean map) {
+        zero(ss, SizeOf.get(Socket.sockaddr_storage.class));
+        byte[] addressBytes = Objects.requireNonNull(inetAddress).getAddress();
+        Netinet.sockaddr_in6 sin6 = (Netinet.sockaddr_in6) ss;
+        sin6.sin6_port(htons(port));
+        if (inetAddress instanceof Inet6Address inet6) {
+            sin6.sin6_family((short) AF_INET6);
+            bytesToC(addressBytes, sin6.sin6_addr());
+            sin6.sin6_scope_id(inet6.getScopeId());
+            return SizeOf.get(Netinet.sockaddr_in6.class);
+        }
+        if (map) {
+            sin6.sin6_family((short) AF_INET6);
+            bytesToC(addressBytes, sin6.sin6_addr().addressOf(12));
+            if (!isUnspecified(sin6.sin6_addr())) {
+                sin6.sin6_addr().write(10, (byte) 0xff);
+                sin6.sin6_addr().write(11, (byte) 0xff);
+            }
+            return SizeOf.get(Netinet.sockaddr_in6.class);
+        }
+        Netinet.sockaddr_in sin = (Netinet.sockaddr_in) ss;
+        sin.sin_family((short) AF_INET);
+        sin.sin_port(htons(port));
+        bytesToC(addressBytes, sin.sin_addr());
+        return SizeOf.get(Netinet.sockaddr_in.class);
+    }
+
+    private static int javaSocketAddressToSockaddr(SocketAddress address,
+            Socket.sockaddr_storage ss) {
+        Objects.requireNonNull(address);
+        if (address instanceof InetSocketAddress inet) {
+            return javaInetSocketAddressToSockaddr(inet, ss);
+        }
+        if (address instanceof VmSocketAddress vm) {
+            return javaVmSocketAddressToSockaddr(vm, ss);
+        }
+        throw new UnsupportedOperationException("unsupported SocketAddress subclass");
+    }
+
+    private static int javaInetSocketAddressToSockaddr(InetSocketAddress address,
+            Socket.sockaddr_storage ss) {
+        return inetAddressToSockaddr(address.getAddress(), address.getPort(), ss, true);
+    }
+
+    private static int javaVmSocketAddressToSockaddr(VmSocketAddress address,
+            Socket.sockaddr_storage ss) {
+        zero(ss, SizeOf.get(Socket.sockaddr_storage.class));
+        Vm.sockaddr_vm svm = (Vm.sockaddr_vm) ss;
+        svm.svm_family((short) AF_VSOCK);
+        svm.svm_port(address.getSvmPort());
+        svm.svm_cid(address.getSvmCid());
+        return SizeOf.get(Vm.sockaddr_vm.class);
+    }
+
+    private static boolean fillSocketAddress(SocketAddress address, Socket.sockaddr_storage ss) {
+        if (address instanceof InetSocketAddress inet) {
+            fillInetSocketAddress(inet, ss);
+            return true;
+        }
+        if (address instanceof VmSocketAddress vm) {
+            return fillVmSocketAddress(vm, ss);
+        }
+        throw new UnsupportedOperationException("unsupported SocketAddress subclass");
+    }
+
+    private static void fillInetSocketAddress(InetSocketAddress address,
+            Socket.sockaddr_storage ss) {
+        if (address == null) {
+            return;
+        }
+        InetAddress sender = sockaddrToInetAddress((Socket.sockaddr) ss);
+        SocketAddresses.fill(address, sender, port((Socket.sockaddr) ss));
+    }
+
+    private static boolean fillVmSocketAddress(VmSocketAddress address,
+            Socket.sockaddr_storage ss) {
+        if (Short.toUnsignedInt(ss.ss_family()) != AF_VSOCK) {
+            return false;
+        }
+        Vm.sockaddr_vm svm = (Vm.sockaddr_vm) ss;
+        SocketAddresses.fill(address, svm.svm_port(), svm.svm_cid());
+        return true;
+    }
+
+    private static SocketAddress makeSocketAddress(Socket.sockaddr_storage ss) {
+        int family = Short.toUnsignedInt(ss.ss_family());
+        if (family == AF_INET || family == AF_INET6) {
+            return new InetSocketAddress(sockaddrToInetAddress((Socket.sockaddr) ss),
+                    port((Socket.sockaddr) ss));
+        }
+        throw new IllegalArgumentException("unsupported ss_family: " + family);
+    }
+
+    private static InetAddress sockaddrToInetAddress(Socket.sockaddr sa) {
+        int family = Short.toUnsignedInt(sa.sa_family());
+        CCharPointer sin6Addr = ((Netinet.sockaddr_in6) sa).sin6_addr();
+        byte[] addressBytes;
+        int scopeId = 0;
+        if (family == AF_INET6 && isV4Mapped(sin6Addr)) {
+            addressBytes = bytesFromC(sin6Addr.addressOf(12), 4);
+        } else if (family == AF_INET) {
+            addressBytes = bytesFromC(((Netinet.sockaddr_in) sa).sin_addr(), 4);
+        } else if (family == AF_INET6) {
+            addressBytes = bytesFromC(sin6Addr, 16);
+            scopeId = ((Netinet.sockaddr_in6) sa).sin6_scope_id();
+        } else {
+            throw new IllegalArgumentException("sockaddrToInetAddress unsupported family: "
+                    + family);
+        }
+        try {
+            return scopeId > 0
+                    ? Inet6Address.getByAddress(null, addressBytes, scopeId)
+                    : InetAddress.getByAddress(addressBytes);
+        } catch (UnknownHostException e) {
+            throw new AssertionError(e);
+        }
+    }
+
+    private static int port(Socket.sockaddr sa) {
+        if (Short.toUnsignedInt(sa.sa_family()) == AF_INET) {
+            return ntohs(((Netinet.sockaddr_in) sa).sin_port());
+        }
+        return ntohs(((Netinet.sockaddr_in6) sa).sin6_port());
+    }
+
+    private static StructStat doStat(String path, boolean isLstat) throws ErrnoException {
+        try (ScopedUtfChars pathChars = new ScopedUtfChars(path)) {
+            Scoped<Stat.stat64> sb = Scoped.of(StackValue.get(Stat.stat64.class));
+            int rc = (int) (isLstat
+                    ? tempFailureRetry(() -> Stat.lstat64(pathChars.get(), sb.get()))
+                    : tempFailureRetry(() -> Stat.stat64(pathChars.get(), sb.get())));
+            if (rc == -1) {
+                throw new ErrnoException(isLstat ? "lstat" : "stat", errno());
+            }
+            return makeStructStat(sb.get());
+        }
+    }
+
+    private static SocketAddress doGetSockName(FileDescriptor fd, boolean isSockName)
+            throws ErrnoException {
+        Socket.sockaddr_storage ss = StackValue.get(Socket.sockaddr_storage.class);
+        Scoped<Socket.sockaddr> sa = Scoped.of((Socket.sockaddr) ss);
+        zero(ss, SizeOf.get(Socket.sockaddr_storage.class));
+        Scoped<CIntPointer> byteCount = Scoped.of(StackValue.get(CIntPointer.class));
+        byteCount.get().write(SizeOf.get(Socket.sockaddr_storage.class));
+        int rc = (int) (isSockName
+                ? tempFailureRetry(() -> Socket.getsockname(fd(fd), sa.get(), byteCount.get()))
+                : tempFailureRetry(() -> Socket.getpeername(fd(fd), sa.get(), byteCount.get())));
+        if (rc == -1) {
+            throw new ErrnoException(isSockName ? "getsockname" : "getpeername", errno());
+        }
+        return makeSocketAddress(ss);
+    }
+
+    @AlwaysInline("the holders and the closure are scalar-replaced only when inlined")
+    private static void bindSockaddr(FileDescriptor fd, Scoped<Socket.sockaddr> sa,
+            int saLength) throws ErrnoException {
+        retry("bind", () -> Socket.bind(fd(fd), sa.get(), saLength));
+    }
+
+    @AlwaysInline("the holders and the closure are scalar-replaced only when inlined")
+    private static void connectSockaddr(FileDescriptor fd, Scoped<Socket.sockaddr> sa,
+            int saLength) throws ErrnoException {
+        retry("connect", () -> Socket.connect(fd(fd), sa.get(), saLength));
+    }
+
+    @AlwaysInline("the holders and the closure are scalar-replaced only when inlined")
+    private static int sendtoSockaddr(FileDescriptor fd, ScopedBytes bytes, int byteOffset,
+            int byteCount, int flags, Scoped<Socket.sockaddr> sa, int saLength)
+            throws ErrnoException {
+        return (int) retry("sendto", () -> Socket.sendto(fd(fd), bytes.get().add(byteOffset),
+                WordFactory.unsigned(byteCount), flags, sa.get(), saLength));
+    }
+
+    private static boolean retriesAsIPv4(ErrnoException e, Socket.sockaddr sa, int saLength) {
+        return e.errno == EAFNOSUPPORT && saLength != 0 && isIPv4MappedAddress(sa);
+    }
+
+    private static boolean isIPv4MappedAddress(Socket.sockaddr sa) {
+        if (sa.isNull() || Short.toUnsignedInt(sa.sa_family()) != AF_INET6) {
+            return false;
+        }
+        CCharPointer address = ((Netinet.sockaddr_in6) sa).sin6_addr();
+        return isV4Mapped(address) || isUnspecified(address);
+    }
+
+    private static boolean isV4Mapped(CCharPointer in6Address) {
+        for (int i = 0; i < 10; ++i) {
+            if (in6Address.read(i) != 0) {
+                return false;
+            }
+        }
+        return in6Address.read(10) == (byte) 0xff && in6Address.read(11) == (byte) 0xff;
+    }
+
+    private static boolean isUnspecified(CCharPointer in6Address) {
+        for (int i = 0; i < 16; ++i) {
+            if (in6Address.read(i) != 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private static short htons(int value) {
+        return Short.reverseBytes((short) value);
+    }
+
+    private static int ntohs(short value) {
+        return Short.toUnsignedInt(Short.reverseBytes(value));
+    }
+
+    private static void msghdrJavaToC(StructMsghdr msg, Socket.msghdr hdr,
+            ScopedByteBufferArray scopedBufArray) {
+        byteBufferArrayToIOV(msg.msg_iov, hdr, scopedBufArray);
+        if (!scopedBufArray.isRW()) {
+            StructCmsghdr[] control = msg.msg_control;
+            if (control != null && control.length > 0) {
+                structCmsghdrArrayToMsgcontrol(control, hdr);
+            }
+        } else {
+            hdr.msg_control(UnmanagedMemory.malloc(512));
+            hdr.msg_controllen(WordFactory.unsigned(512));
+        }
+        hdr.msg_flags(msg.msg_flags);
+    }
+
+    private static void structCmsghdrArrayToMsgcontrol(StructCmsghdr[] cmsgs, Socket.msghdr hdr) {
+        long controlLength = 0;
+        for (StructCmsghdr cmsg : cmsgs) {
+            controlLength += cmsgSpace(cmsg.cmsg_data.length);
+        }
+        hdr.msg_control(UnmanagedMemory.calloc(WordFactory.unsigned(controlLength)));
+        hdr.msg_controllen(WordFactory.unsigned(controlLength));
+        int i = 0;
+        for (Socket.cmsghdr cm = cmsgFirstHdr(hdr); cm.isNonNull();
+                cm = Socket.__cmsg_nxthdr(hdr, cm), ++i) {
+            StructCmsghdr cmsg = cmsgs[i];
+            cm.cmsg_level(cmsg.cmsg_level);
+            cm.cmsg_type(cmsg.cmsg_type);
+            cm.cmsg_len(WordFactory.unsigned(cmsgLen(cmsg.cmsg_data.length)));
+            bytesToC(cmsg.cmsg_data, cmsgData(cm));
+        }
+    }
+
+    private static void msgcontrolToStructCmsghdrArray(StructMsghdr msg, Socket.msghdr hdr) {
+        int count = 0;
+        for (Socket.cmsghdr cm = cmsgFirstHdr(hdr); cm.isNonNull();
+                cm = Socket.__cmsg_nxthdr(hdr, cm)) {
+            ++count;
+        }
+        if (count == 0) {
+            return;
+        }
+        StructCmsghdr[] cmsgs = new StructCmsghdr[count];
+        int i = 0;
+        for (Socket.cmsghdr cm = cmsgFirstHdr(hdr); cm.isNonNull();
+                cm = Socket.__cmsg_nxthdr(hdr, cm), ++i) {
+            byte[] data = bytesFromC(cmsgData(cm),
+                    (int) (cm.cmsg_len().rawValue() - SizeOf.get(Socket.cmsghdr.class)));
+            cmsgs[i] = new StructCmsghdr(cm.cmsg_level(), cm.cmsg_type(), data);
+        }
+        msg.msg_control = cmsgs;
+    }
+
+    private static long cmsgAlign(long length) {
+        return (length + 7) & ~7L;
+    }
+
+    private static long cmsgSpace(long length) {
+        return cmsgAlign(SizeOf.get(Socket.cmsghdr.class)) + cmsgAlign(length);
+    }
+
+    private static long cmsgLen(long length) {
+        return cmsgAlign(SizeOf.get(Socket.cmsghdr.class)) + length;
+    }
+
+    private static CCharPointer cmsgData(Socket.cmsghdr cmsg) {
+        return WordFactory.pointer(cmsg.rawValue() + cmsgAlign(SizeOf.get(Socket.cmsghdr.class)));
+    }
+
+    private static Socket.cmsghdr cmsgFirstHdr(Socket.msghdr msg) {
+        return msg.msg_controllen().aboveOrEqual(SizeOf.get(Socket.cmsghdr.class))
+                ? (Socket.cmsghdr) msg.msg_control()
+                : WordFactory.nullPointer();
+    }
+
+    private static void byteBufferArrayToIOV(ByteBuffer[] buffers, Socket.msghdr hdr,
+            ScopedByteBufferArray scopedBufArray) {
+        Uio.iovec iov = UnmanagedMemory.calloc(buffers.length * SizeOf.get(Uio.iovec.class));
+        hdr.msg_iov(iov);
+        hdr.msg_iovlen(WordFactory.unsigned(buffers.length));
+        scopedBufArray.initArray(buffers.length);
+        for (int i = 0; i < buffers.length; ++i) {
+            ByteBuffer buffer = buffers[i];
+            int byteLength = buffer.remaining();
+            ScopedBytes bytes = new ScopedBytes(buffer.isDirect() ? buffer : buffer.array());
+            scopedBufArray.setArrayItem(i, bytes);
+            Uio.iovec entry = iov.addressOf(i);
+            entry.iov_base(bytes.get());
+            entry.iov_len(WordFactory.unsigned(byteLength));
+        }
+    }
+
+    private static StructTimespec makeStructTimespec(Time.timespec ts) {
+        return new StructTimespec(ts.tv_sec(), ts.tv_nsec());
+    }
+
+    private static StructStat makeStructStat(Stat.stat64 sb) {
+        return new StructStat(sb.st_dev(), sb.st_ino(), sb.st_mode(),
+                Integer.toUnsignedLong(sb.st_nlink()), sb.st_uid(), sb.st_gid(), sb.st_rdev(),
+                sb.st_size(), makeStructTimespec(sb.st_atim()), makeStructTimespec(sb.st_mtim()),
+                makeStructTimespec(sb.st_ctim()), sb.st_blksize(), sb.st_blocks());
+    }
+
+    private static StructStatVfs makeStructStatVfs(Statvfs.statvfs sb) {
+        return new StructStatVfs(sb.f_bsize(), sb.f_frsize(), sb.f_blocks(), sb.f_bfree(),
+                sb.f_bavail(), sb.f_files(), sb.f_ffree(), sb.f_favail(), sb.f_fsid(), sb.f_flag(),
+                sb.f_namemax());
+    }
+
+    private static StructTimeval makeStructTimeval(Time.timeval tv) {
+        return (StructTimeval) (Object) new Target_android_system_StructTimeval(tv.tv_sec(),
+                tv.tv_usec());
+    }
+
+    private static StructUtsname makeStructUtsname(Utsname.utsname buf) {
+        String sysname = CString.toJava(buf.sysname());
+        String nodename = CString.toJava(buf.nodename());
+        String release = CString.toJava(buf.release());
+        String version = CString.toJava(buf.version());
+        String machine = CString.toJava(buf.machine());
+        return new StructUtsname(sysname, nodename, release, version, machine);
+    }
+
+    private static void zero(PointerBase memory, int size) {
+        CLongPointer longs = (CLongPointer) memory;
+        for (int i = 0; i < size / Long.BYTES; ++i) {
+            longs.write(i, 0L);
+        }
+    }
+
+    private static void bytesToC(byte[] from, CCharPointer to) {
+        for (int i = 0; i < from.length; ++i) {
+            to.write(i, from[i]);
+        }
+    }
+
+    private static byte[] bytesFromC(CCharPointer from, int length) {
+        byte[] result = new byte[length];
+        for (int i = 0; i < length; ++i) {
+            result[i] = from.read(i);
+        }
+        return result;
+    }
+
+    private interface SystemCall {
+        long call();
+    }
+
+    private static final class IoVec implements AutoCloseable {
+        private final Uio.iovec ioVec;
+        private final ScopedBytes[] scopedBuffers;
+
+        private IoVec(int bufferCount) {
+            ioVec = UnmanagedMemory.calloc(bufferCount * SizeOf.get(Uio.iovec.class));
+            scopedBuffers = new ScopedBytes[bufferCount];
+        }
+
+        private boolean init(Object[] buffers, int[] offsets, int[] byteCounts) {
+            Objects.requireNonNull(offsets);
+            Objects.requireNonNull(byteCounts);
+            for (int i = 0; i < scopedBuffers.length; ++i) {
+                ScopedBytes bytes = new ScopedBytes(buffers[i], offsets[i], byteCounts[i]);
+                scopedBuffers[i] = bytes;
+                if (bytes.get().isNull()) {
+                    return false;
+                }
+                Uio.iovec iov = ioVec.addressOf(i);
+                iov.iov_base(bytes.get().add(offsets[i]));
+                iov.iov_len(WordFactory.unsigned((long) byteCounts[i]));
+            }
+            return true;
+        }
+
+        private Uio.iovec get() {
+            return ioVec;
+        }
+
+        private int size() {
+            return scopedBuffers.length;
+        }
+
+        @Override
+        public void close() {
+            for (ScopedBytes bytes : scopedBuffers) {
+                if (bytes != null) {
+                    bytes.close();
+                }
+            }
+            UnmanagedMemory.free(ioVec);
+        }
+    }
+
+    private static final class ScopedByteBufferArray implements AutoCloseable {
+        private final boolean isRW;
+        private ScopedBytes[] array;
+
+        private ScopedByteBufferArray(boolean isRW) {
+            this.isRW = isRW;
+        }
+
+        private void initArray(int size) {
+            array = new ScopedBytes[size];
+        }
+
+        private boolean isRW() {
+            return isRW;
+        }
+
+        private void setArrayItem(int itemNo, ScopedBytes item) {
+            array[itemNo] = item;
+        }
+
+        @Override
+        public void close() {
+            if (array == null) {
+                return;
+            }
+            for (ScopedBytes item : array) {
+                if (item != null) {
+                    item.close();
+                }
+            }
+        }
+    }
+
+    @TargetClass(StructTimeval.class)
+    private static final class Target_android_system_StructTimeval {
+        @Alias
+        public Target_android_system_StructTimeval(long tv_sec, long tv_usec) {
+        }
+    }
+}

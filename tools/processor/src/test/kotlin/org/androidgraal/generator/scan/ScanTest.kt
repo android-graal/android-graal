@@ -477,12 +477,14 @@ class ScanTest {
     fun `a method that cannot cross fails naming why`() {
         val core = mapOf(
             "fix/core/Service.java" to "package fix.core;\n\n$ROOT\npublic interface Service {\n    void ping();\n" +
-                "    void fill(Object[] values);\n}\n",
+                "    void fill(Object[] values);\n    String[][] table(String[][] rows);\n}\n",
         )
 
         assertErrors(
             fixtures.compile("object-array", core).process(),
             "fix.core.Service.fill(java.lang.Object[]).values cannot cross java.lang.Object[]$NO_KIND",
+            "fix.core.Service.table(java.lang.String[][]).rows cannot cross java.lang.String[][]$NO_KIND",
+            "fix.core.Service.table(java.lang.String[][]) cannot cross java.lang.String[][]$NO_KIND",
         )
     }
 

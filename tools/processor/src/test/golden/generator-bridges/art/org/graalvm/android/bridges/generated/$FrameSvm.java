@@ -143,10 +143,7 @@ public final class $FrameSvm extends Foreign implements Frame {
                 }
                 Transport.setBlockHeader(transport, o1, n1, 2);
                 if (a1 != null) {
-                    char[] c1 = new char[a1.length()];
-                    a1.getChars(0, c1.length, c1, 0);
-                    transport.position(o1 + Blocks.HEADER);
-                    transport.asCharBuffer().put(c1);
+                    Transport.write(a1, transport, o1 + Blocks.HEADER);
                 }
             }
             long r = join(thread.isolateThread, id, transport);
@@ -329,10 +326,7 @@ public final class $FrameSvm extends Foreign implements Frame {
             if (transport != null) {
                 Transport.setBlockHeader(transport, 0, n0, 2);
                 if (a0 != null) {
-                    char[] c0 = new char[a0.length()];
-                    a0.getChars(0, c0.length, c0, 0);
-                    transport.position(Blocks.HEADER);
-                    transport.asCharBuffer().put(c0);
+                    Transport.write(a0, transport, Blocks.HEADER);
                 }
             }
             long r = text(thread.isolateThread, id, transport);
@@ -359,6 +353,36 @@ public final class $FrameSvm extends Foreign implements Frame {
         text16(thread.isolateThread, id, rb.address, a0);
         thread.throwPendingException();
         return Transport.readStringBlock(rb.block, rb.view, rb.array);
+    }
+
+    @Override
+    public String[] texts(String[] a0) {
+        foreignCheck();
+        Image.ThreadData thread = Image.thread();
+        int n0 = a0 == null ? Blocks.NULL : Blocks.stringArrayLength(a0);
+        int bytes = Blocks.size(n0, 1);
+        ByteBuffer transport = a0 == null ? null : Transport.alloc(thread, bytes);
+        try {
+            if (transport != null) {
+                Transport.setBlockHeader(transport, 0, n0, 1);
+                if (a0 != null) {
+                    Transport.write(a0, transport, Blocks.HEADER);
+                }
+            }
+            long r = texts(thread.isolateThread, id, transport);
+            thread.throwPendingException();
+            if (r == 0) {
+                return null;
+            }
+            ByteBuffer block = Transport.viewBlock(thread, r);
+            String[] result = Transport.readStringArrayBlock(block, 0);
+            Transport.free(thread, block);
+            return result;
+        } finally {
+            if (transport != null) {
+                Transport.free(thread, transport);
+            }
+        }
     }
 
     @Override
@@ -423,6 +447,8 @@ public final class $FrameSvm extends Foreign implements Frame {
     private static native long text(long thread, long handle, ByteBuffer transport);
 
     private static native void text16(long thread, long handle, long block, int a0);
+
+    private static native long texts(long thread, long handle, ByteBuffer transport);
 
     private static native int total(long thread, long handle, ByteBuffer transport, int a1);
 

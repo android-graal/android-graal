@@ -10,9 +10,10 @@ internal enum class Kind(val label: String, val inRecord: Boolean) {
     VOID("void", false),
     PRIMITIVE("primitive", true),
     STRING("String", true),
+    STRING_ARRAY("String[]", false),
     ENUM("ordinal", true),
     REFERENCE("reference", false),
-    ARRAY("array", false),
+    PRIMITIVE_ARRAY("array", false),
     RECORD("record", true),
     ;
 
@@ -22,7 +23,12 @@ internal enum class Kind(val label: String, val inRecord: Boolean) {
             if (type.kind.isPrimitive) return PRIMITIVE
             if (type.isString()) return STRING
             if (type.kind == TypeKind.ARRAY) {
-                return if ((type as ArrayType).componentType.kind.isPrimitive) ARRAY else null
+                val component = (type as ArrayType).componentType
+                return when {
+                    component.kind.isPrimitive -> PRIMITIVE_ARRAY
+                    component.isString() -> STRING_ARRAY
+                    else -> null
+                }
             }
             if (type.kind != TypeKind.DECLARED || (type as DeclaredType).typeArguments.isNotEmpty()) return null
             return when (type.element().kind) {

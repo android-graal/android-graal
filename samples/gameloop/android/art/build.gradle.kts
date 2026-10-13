@@ -46,6 +46,6 @@ androidGraal {
 }
 
 dependencies {
-    contract(project(":android:contract"))
+    implementation(project(":android:contract"))
     nativeImage(project(":android:svm"))
 }

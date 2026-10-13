@@ -3,4 +3,5 @@
 -keepclasseswithmembernames class org.androidgraal.art.Image { native <methods>; }
 -keepclasseswithmembernames class org.androidgraal.art.Transport { native <methods>; }
 -keep class * implements org.androidgraal.art.Contract { <init>(); }
+-keep class * implements org.androidgraal.art.Startup { <init>(); }
 -dontwarn org.androidgraal.hosted.annotate.**

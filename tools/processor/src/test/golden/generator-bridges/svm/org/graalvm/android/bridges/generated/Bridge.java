@@ -9,7 +9,7 @@ import org.graalvm.android.bridges.core.Hello;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 
 public final class Bridge {
-    private static final long FINGERPRINT = 0xa0d9ef77f36343d6L;
+    private static final long FINGERPRINT = 0xdbec6d91665f8556L;
 
     private static final Handles HANDLES = Art.handles();
 

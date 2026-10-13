@@ -1,0 +1,35 @@
+{
+  "reflection": [
+    {
+      "type": "android.content.res.AssetManager",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": [
+            "boolean"
+          ]
+        }
+      ]
+    },
+    {
+      "type": "android.os.health.PackageHealthStats",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "android.os.health.PidHealthStats",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "android.os.health.ProcessHealthStats",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "android.os.health.ServiceHealthStats",
+      "allDeclaredFields": true
+    },
+    {
+      "type": "android.os.health.UidHealthStats",
+      "allDeclaredFields": true
+    }
+  ]
+}

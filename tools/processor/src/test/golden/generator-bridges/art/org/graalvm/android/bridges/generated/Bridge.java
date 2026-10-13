@@ -8,7 +8,7 @@ import org.androidgraal.shared.Handles;
 import org.graalvm.android.bridges.core.Hello;
 
 public final class Bridge implements Contract {
-    private static final long FINGERPRINT = 0xa0d9ef77f36343d6L;
+    private static final long FINGERPRINT = 0xdbec6d91665f8556L;
 
     private static final AtomicBoolean INITIALIZED = new AtomicBoolean();
 

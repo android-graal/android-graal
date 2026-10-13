@@ -9,9 +9,10 @@ tasks.register("publishToMavenLocal") {
         ":java:hosted:publishToMavenLocal",
         ":java:shared:publishToMavenLocal",
         ":java:svm:publishToMavenLocal",
+        ":java:bionic:publishToMavenLocal",
         ":java:art:publishToMavenLocal",
-        ":java:gles:publishToMavenLocal",
         ":java:graal:word:publishToMavenLocal",
         ":java:graal:nativeimage:publishToMavenLocal",
+        ":java:graal:svm-shared:publishToMavenLocal",
     )
 }

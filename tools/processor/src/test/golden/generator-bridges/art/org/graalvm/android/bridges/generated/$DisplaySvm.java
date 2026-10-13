@@ -30,10 +30,7 @@ public final class $DisplaySvm extends Foreign implements Display {
             if (transport != null) {
                 Transport.setBlockHeader(transport, 0, n0, 2);
                 if (a0 != null) {
-                    char[] c0 = new char[a0.length()];
-                    a0.getChars(0, c0.length, c0, 0);
-                    transport.position(Blocks.HEADER);
-                    transport.asCharBuffer().put(c0);
+                    Transport.write(a0, transport, Blocks.HEADER);
                 }
             }
             char r = initial(thread.isolateThread, id, transport);
@@ -92,10 +89,7 @@ public final class $DisplaySvm extends Foreign implements Display {
             if (transport != null) {
                 Transport.setBlockHeader(transport, 0, n0_label, 2);
                 if (a0_label != null) {
-                    char[] c0_label = new char[a0_label.length()];
-                    a0_label.getChars(0, c0_label.length, c0_label, 0);
-                    transport.position(Blocks.HEADER);
-                    transport.asCharBuffer().put(c0_label);
+                    Transport.write(a0_label, transport, Blocks.HEADER);
                 }
             }
             place(thread.isolateThread, id, transport, p0, a0_x, a0_y, a0_mode == null ? -1 : a0_mode.ordinal(), p0_size, a0_size_width, a0_size_height, a1);
@@ -118,10 +112,7 @@ public final class $DisplaySvm extends Foreign implements Display {
             if (transport != null) {
                 Transport.setBlockHeader(transport, 0, n0, 2);
                 if (a0 != null) {
-                    char[] c0 = new char[a0.length()];
-                    a0.getChars(0, c0.length, c0, 0);
-                    transport.position(Blocks.HEADER);
-                    transport.asCharBuffer().put(c0);
+                    Transport.write(a0, transport, Blocks.HEADER);
                 }
             }
             show$0(thread.isolateThread, id, transport);
@@ -144,10 +135,7 @@ public final class $DisplaySvm extends Foreign implements Display {
             if (transport != null) {
                 Transport.setBlockHeader(transport, 0, n0, 2);
                 if (a0 != null) {
-                    char[] c0 = new char[a0.length()];
-                    a0.getChars(0, c0.length, c0, 0);
-                    transport.position(Blocks.HEADER);
-                    transport.asCharBuffer().put(c0);
+                    Transport.write(a0, transport, Blocks.HEADER);
                 }
             }
             show$1(thread.isolateThread, id, transport, a1);

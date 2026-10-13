@@ -65,7 +65,7 @@ internal class Interfaces(
         }
         collectType(kind, type, parameter)
         val direction = directionOf(parameter, kind)
-        if (kind == Kind.ARRAY && direction == null) {
+        if (kind == Kind.PRIMITIVE_ARRAY && direction == null) {
             errors.add(
                 "${parameter.qualifiedName()} crosses ${type.name()} without a direction, annotate it @In or @Out",
                 parameter,
@@ -104,7 +104,7 @@ internal class Interfaces(
         if (!input && !output) return null
         if (input && output) {
             errors.add("${parameter.qualifiedName()} is both @In and @Out, a directed array crosses one way", parameter)
-        } else if (kind != Kind.ARRAY) {
+        } else if (kind != Kind.PRIMITIVE_ARRAY) {
             errors.add("${parameter.qualifiedName()} has a direction, only a primitive array has one", parameter)
         }
         return if (input) Direction.IN else Direction.OUT
@@ -113,7 +113,7 @@ internal class Interfaces(
     private fun capacityOf(at: Element, kind: Kind): Int? {
         val buffer = at.annotation(Annotations.STATIC_BUFFER) ?: return null
         val capacity = buffer.intValue(Annotations.CAPACITY)
-        if (kind != Kind.ARRAY && kind != Kind.STRING) {
+        if (kind != Kind.PRIMITIVE_ARRAY && kind != Kind.STRING) {
             errors.add(
                 "${at.qualifiedName()} has @StaticBuffer, only a directed array or a String has a static buffer",
                 at,
@@ -189,8 +189,8 @@ internal class Interfaces(
 
     private fun reportNoKind(type: TypeMirror, at: Element) {
         errors.add(
-            "${at.qualifiedName()} cannot cross ${type.name()}, only primitives, String, enums, records, directed" +
-                " primitive arrays and registered interfaces cross",
+            "${at.qualifiedName()} cannot cross ${type.name()}, only primitives, String, String[], enums, records," +
+                " directed primitive arrays and registered interfaces cross",
             at,
         )
     }

@@ -68,10 +68,7 @@ public final class $HelloSvm extends Foreign implements Hello {
             if (transport != null) {
                 Transport.setBlockHeader(transport, 0, n0, 2);
                 if (a0 != null) {
-                    char[] c0 = new char[a0.length()];
-                    a0.getChars(0, c0.length, c0, 0);
-                    transport.position(Blocks.HEADER);
-                    transport.asCharBuffer().put(c0);
+                    Transport.write(a0, transport, Blocks.HEADER);
                 }
             }
             long r = echo(thread.isolateThread, id, transport);
@@ -101,10 +98,7 @@ public final class $HelloSvm extends Foreign implements Hello {
             if (transport != null) {
                 Transport.setBlockHeader(transport, 0, n0, 2);
                 if (a0 != null) {
-                    char[] c0 = new char[a0.length()];
-                    a0.getChars(0, c0.length, c0, 0);
-                    transport.position(Blocks.HEADER);
-                    transport.asCharBuffer().put(c0);
+                    Transport.write(a0, transport, Blocks.HEADER);
                 }
             }
             fail(thread.isolateThread, id, transport);
@@ -127,10 +121,7 @@ public final class $HelloSvm extends Foreign implements Hello {
             if (transport != null) {
                 Transport.setBlockHeader(transport, 0, n0, 2);
                 if (a0 != null) {
-                    char[] c0 = new char[a0.length()];
-                    a0.getChars(0, c0.length, c0, 0);
-                    transport.position(Blocks.HEADER);
-                    transport.asCharBuffer().put(c0);
+                    Transport.write(a0, transport, Blocks.HEADER);
                 }
             }
             failTyped(thread.isolateThread, id, transport);
@@ -206,10 +197,7 @@ public final class $HelloSvm extends Foreign implements Hello {
             if (transport != null) {
                 Transport.setBlockHeader(transport, 0, n0, 2);
                 if (a0 != null) {
-                    char[] c0 = new char[a0.length()];
-                    a0.getChars(0, c0.length, c0, 0);
-                    transport.position(Blocks.HEADER);
-                    transport.asCharBuffer().put(c0);
+                    Transport.write(a0, transport, Blocks.HEADER);
                 }
             }
             refuse(thread.isolateThread, id, transport);

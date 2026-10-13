@@ -21,6 +21,7 @@ dependencyResolutionManagement {
 
 includeBuild("../../build-logic")
 includeBuild("../../tools")
+includeBuild("../../emulation")
 
 rootProject.name = "gl"
 

@@ -134,10 +134,7 @@ public final class $ProbeArt {
                 return null;
             }
             ByteBuffer r = Transport.allocBlock(thread, result.length(), 2);
-            char[] chars = new char[result.length()];
-            result.getChars(0, chars.length, chars, 0);
-            r.position(Blocks.HEADER);
-            r.asCharBuffer().put(chars);
+            Transport.write(result, r, Blocks.HEADER);
             return r;
         } catch (Throwable t) {
             Image.raiseException(t);
@@ -276,10 +273,7 @@ public final class $ProbeArt {
                 return null;
             }
             ByteBuffer r = Transport.allocBlock(thread, result.length(), 2);
-            char[] chars = new char[result.length()];
-            result.getChars(0, chars.length, chars, 0);
-            r.position(Blocks.HEADER);
-            r.asCharBuffer().put(chars);
+            Transport.write(result, r, Blocks.HEADER);
             return r;
         } catch (Throwable t) {
             Image.raiseException(t);
@@ -304,6 +298,27 @@ public final class $ProbeArt {
             }
         } catch (Throwable t) {
             Image.raiseException(t);
+        }
+    }
+
+    @EndPoint
+    private static ByteBuffer texts(long handle, long transport, int bytes) {
+        try {
+            Probe receiver = HANDLES.object(handle);
+            Image.ThreadData thread = Image.thread();
+            ByteBuffer view = transport == 0 ? null : Transport.view(thread, transport, bytes);
+            int n0 = view == null ? Blocks.NULL : Transport.getBlockLength(view, 0);
+            String[] v0 = view == null ? null : Transport.readStringArrayBlock(view, 0);
+            String[] result = receiver.texts(v0);
+            if (result == null) {
+                return null;
+            }
+            ByteBuffer r = Transport.allocBlock(thread, Blocks.stringArrayLength(result), 1);
+            Transport.write(result, r, Blocks.HEADER);
+            return r;
+        } catch (Throwable t) {
+            Image.raiseException(t);
+            return null;
         }
     }
 

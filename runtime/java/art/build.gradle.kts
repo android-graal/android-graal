@@ -8,6 +8,7 @@ description = "The ART side of android-graal's runtime: starting the image, the 
 
 dependencies {
     api(project(":java:shared"))
+    compileOnly(files(nativeHost.sdk.androidJar(nativeHost.androidApi)))
 }
 
 tasks.compileJava {

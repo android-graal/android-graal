@@ -40,6 +40,7 @@ org.graalvm.android.bridges.core.Frame implemented on the image
   sum16Tls sum16Tls(float[]): (array in static 16) -> primitive float
   text text(java.lang.String): (String) -> String
   text16 text16(int): (primitive) -> String static 16
+  texts texts(java.lang.String[]): (String[]) -> String[]
   total total(int[], int): (array in, primitive) -> primitive int
 org.graalvm.android.bridges.core.Hello implemented on the image
   callbacks callbacks(org.graalvm.android.bridges.core.Display, int, boolean): (reference, primitive, primitive) -> primitive long
@@ -83,6 +84,7 @@ org.graalvm.android.bridges.core.Probe implemented on ART
   sum16 sum16(float[]): (array in static 16) -> primitive float
   text text(java.lang.String): (String) -> String
   text16 text16(int): (primitive) -> String static 16
+  texts texts(java.lang.String[]): (String[]) -> String[]
   total total(int[], int): (array in, primitive) -> primitive int
   x x(): () -> primitive float
   y y(): () -> primitive float

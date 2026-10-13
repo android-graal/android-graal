@@ -23,6 +23,8 @@ public interface Sink {
 
     int[] squares(int count);
 
+    String[] capitals(String[] words);
+
     int width16(@StaticBuffer(capacity = 16) String text);
 
     @StaticBuffer(capacity = 4)

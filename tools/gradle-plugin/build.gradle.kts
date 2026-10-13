@@ -57,6 +57,8 @@ tasks.shadowJar {
     mergeServiceFiles()
     enableAutoRelocation = true
     relocationPrefix = "org.androidgraal.gradle.shadow"
+    // build-logic's unshaded copy may share a loader with this jar in the composite.
+    relocate("org.androidgraal.common", "org.androidgraal.gradle.shadow.org.androidgraal.common")
     // Keeps own packages out of the auto-relocation.
     relocate("org.androidgraal", "org.androidgraal")
     exclude("META-INF/versions/**")

@@ -4,6 +4,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.widget.TextView;
 import java.util.Arrays;
+import java.util.Locale;
 
 final class TextSink implements Sink {
 
@@ -63,6 +64,15 @@ final class TextSink implements Sink {
             values[i] = i * i;
         }
         return values;
+    }
+
+    @Override
+    public String[] capitals(String[] words) {
+        String[] capitals = new String[words.length];
+        for (int i = 0; i < words.length; i++) {
+            capitals[i] = words[i] == null ? null : words[i].toUpperCase(Locale.ROOT);
+        }
+        return capitals;
     }
 
     @Override

@@ -37,11 +37,11 @@ Logcat shows `Hello from the image`, the image's `System.out`.
 
 `android/contract` applies `org.androidgraal.contract` and marks its package in a `package-info.java`,
 `@Bridge package org.graalvm.android.bridges;`; the generated classes live in its `generated` subpackage. Both
-modules depend on it through the
-`contract` scope, `contract(project(":android:contract"))`, which brings the contract's jar to compile against and,
-at run time only, the bridge of their side: the image module gets the image bridge, the app the ART bridge. The
-`generated` subpackage holds nothing of the contract; every contract type is public, and
-user code names no generated class.
+modules depend on it like on any library, `implementation(project(":android:contract"))`, and compile against the
+contract's jar alone. At run time each gets the bridge of its side too: the contract publishes one runtime variant per
+side, its jar plus that side's bridge, and the plugins ask every runtime classpath for its side, so the image module
+gets the image bridge, the app the ART bridge. The `generated` subpackage holds nothing of the contract; every contract
+type is public, and user code names no generated class.
 
 ## Annotations
 

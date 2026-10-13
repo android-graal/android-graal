@@ -4,6 +4,5 @@ plugins {
 }
 
 dependencies {
-    contract(project(":android:contract"))
-    implementation("org.androidgraal:gles")
+    implementation(project(":android:contract"))
 }

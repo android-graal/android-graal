@@ -71,6 +71,8 @@ public final class $ProbeArt extends Foreign implements Probe {
 
     private static JNI.JMethodID text16Method;
 
+    private static JNI.JMethodID textsMethod;
+
     private static JNI.JMethodID totalMethod;
 
     private static JNI.JMethodID xMethod;
@@ -100,6 +102,7 @@ public final class $ProbeArt extends Foreign implements Probe {
         sum16Method = Art.staticMethod(env, endPoints, "sum16", "(JJ)F");
         textMethod = Art.staticMethod(env, endPoints, "text", "(JJI)Ljava/nio/ByteBuffer;");
         text16Method = Art.staticMethod(env, endPoints, "text16", "(JJI)V");
+        textsMethod = Art.staticMethod(env, endPoints, "texts", "(JJI)Ljava/nio/ByteBuffer;");
         totalMethod = Art.staticMethod(env, endPoints, "total", "(JJII)I");
         xMethod = Art.staticMethod(env, endPoints, "x", "(J)F");
         yMethod = Art.staticMethod(env, endPoints, "y", "(J)F");
@@ -400,6 +403,35 @@ public final class $ProbeArt extends Foreign implements Probe {
         args.addressOf(2).setInt(a0);
         Art.callVoid(thread, endPoints, text16Method, args);
         return Transport.readStringBlock(rb, text16ResultArray.get());
+    }
+
+    @Override
+    public String[] texts(String[] a0) {
+        foreignCheck();
+        Art.ThreadData thread = Art.thread();
+        int n0 = a0 == null ? Blocks.NULL : Blocks.stringArrayLength(a0);
+        int bytes = Blocks.size(n0, 1);
+        long transport = a0 == null ? 0 : Transport.alloc(bytes);
+        try {
+            if (transport != 0) {
+                Transport.setBlockHeader(transport, n0, 1);
+                Transport.write(a0, transport + Blocks.HEADER);
+            }
+            JNI.JValue args = StackValue.get(3, JNI.JValue.class);
+            args.addressOf(0).setLong(id);
+            args.addressOf(1).setLong(transport);
+            args.addressOf(2).setInt(bytes);
+            JNI.JObject view = Art.callObject(thread, endPoints, textsMethod, args);
+            long r = Art.address(thread.env, view);
+            Art.deleteLocal(thread.env, view);
+            String[] result = Transport.readStringArrayBlock(r);
+            Transport.free(r);
+            return result;
+        } finally {
+            if (transport != 0) {
+                Transport.free(transport);
+            }
+        }
     }
 
     @Override

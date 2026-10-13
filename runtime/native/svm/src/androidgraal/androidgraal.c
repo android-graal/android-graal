@@ -1,4 +1,5 @@
 #include <jni.h>
+#include <malloc.h>
 #include <pthread.h>
 #include <stdlib.h>
 
@@ -79,4 +80,8 @@ void *androidgraal_thread_alloc(size_t bytes) {
     b->next = pthread_getspecific(transportKey);
     pthread_setspecific(transportKey, b);
     return b->data;
+}
+
+void androidgraal_mallinfo(struct mallinfo *info) {
+    *info = mallinfo();
 }

@@ -356,6 +356,26 @@ class ScriptTest {
     }
 
     @Test
+    fun `a classpath resolves to a path list`() {
+        val svm = File(tmp, "svm.jar")
+        val bionic = File(tmp, "bionic.jar")
+        val script = script()
+
+        script.classpath("classpath", project.files(svm, bionic))
+
+        assertEquals("$svm${File.pathSeparator}$bionic", script.unwrap("@{classpath}"))
+    }
+
+    @Test
+    fun `an input of several files fails on unwrap`() {
+        val script = script()
+
+        script.input("jar", project.files(File(tmp, "svm.jar"), File(tmp, "bionic.jar")))
+
+        assertFailsWith<IllegalStateException> { script.unwrap("@{jar}") }
+    }
+
+    @Test
     fun `an output is empty before the first step`() {
         val lib = File(tmp, "build/lib")
         lib.mkdirs()

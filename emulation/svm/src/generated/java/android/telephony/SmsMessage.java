@@ -1,0 +1,62 @@
+package android.telephony;
+
+/**
+ * A Short Message Service message.
+ * @see android.provider.Telephony.Sms.Intents#getMessagesFromIntent
+ */
+public final class SmsMessage {
+    public static final int ENCODING_16BIT = 3;
+
+    public static final int ENCODING_7BIT = 1;
+
+    public static final int ENCODING_8BIT = 2;
+
+    /**
+     * This value is not defined in global standard. Only in Korea, this is used.
+     */
+    public static final int ENCODING_KSC5601 = 4;
+
+    /**
+     * User data text encoding code unit size
+     */
+    public static final int ENCODING_UNKNOWN = 0;
+
+    /**
+     * Indicates a 3GPP format SMS message.
+     * @see SmsManager#injectSmsPdu(byte[], String, PendingIntent)
+     */
+    public static final String FORMAT_3GPP = "3gpp";
+
+    /**
+     * Indicates a 3GPP2 format SMS message.
+     * @see SmsManager#injectSmsPdu(byte[], String, PendingIntent)
+     */
+    public static final String FORMAT_3GPP2 = "3gpp2";
+
+    /**
+     * The maximum number of payload bytes per message
+     */
+    public static final int MAX_USER_DATA_BYTES = 140;
+
+    /**
+     * The maximum number of payload bytes per message if a user data header
+     * is present.  This assumes the header only contains the
+     * CONCATENATED_8_BIT_REFERENCE element.
+     */
+    public static final int MAX_USER_DATA_BYTES_WITH_HEADER = 134;
+
+    /**
+     * The maximum number of payload septets per message
+     */
+    public static final int MAX_USER_DATA_SEPTETS = 160;
+
+    /**
+     * The maximum number of payload septets per message if a user data header
+     * is present.  This assumes the header only contains the
+     * CONCATENATED_8_BIT_REFERENCE element.
+     */
+    public static final int MAX_USER_DATA_SEPTETS_WITH_HEADER = 153;
+
+    private SmsMessage() {
+    }
+}

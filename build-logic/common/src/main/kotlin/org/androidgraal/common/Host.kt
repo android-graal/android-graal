@@ -30,7 +30,7 @@ enum class Host(val os: Os, val architecture: Architecture, val bitness: Bitness
     override fun toString(): String = "${osFamily()}-${machineArchitecture()}"
 
     companion object {
-        val PUBLISHED: Set<Host> = setOf(MACOS_AARCH64)
+        val PUBLISHED: Set<Host> = setOf(MACOS_AARCH64, LINUX_X86_64)
 
         fun current(): Host = of(HostDetection.os, HostDetection.architecture, HostDetection.bitness)
 

@@ -22,6 +22,7 @@ final class GameFrame implements Frame {
     public String text(String s) { return s; }
     public int[] range(int count) { return new int[count]; }
     public String join(int[] values, String separator) { return separator; }
+    public String[] texts(String[] a) { return a; }
     public int count16(String s) { return s.length(); }
     public String text16(int value) { return String.valueOf(value); }
     public float[] corners4() { return new float[4]; }

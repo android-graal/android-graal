@@ -45,6 +45,8 @@ public interface Patterns {
 
     int[] range(int count);
 
+    String[] reverse(String[] words);
+
     int length16(@StaticBuffer(capacity = 16) String text);
 
     @StaticBuffer(capacity = 16)

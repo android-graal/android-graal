@@ -41,7 +41,8 @@ down the balls swing towards it and gather there.
 
 `android/contract` marks its package in a `package-info.java`, `@Bridge package org.graalvm.android.gameloop;`, and
 the generated classes live in its `generated` subpackage; both modules depend on it with
-`contract(project(":android:contract"))`. `NativeImage.start()`, generated into the app's namespace, loads
-`libgameloop.so` and starts the image once per process; `NativeImage.createRoot(Game.class)` creates a new `Balls` in the image
-on every call. `MainActivity` keeps its `Game` in a static field, so the balls survive a recreated Activity. The other
-generated class, `$GameSvm`, is ART's proxy of the image's `Balls` and is not called by user code.
+`implementation(project(":android:contract"))`, and each gets the bridge of its side at run time.
+`NativeImage.start()`, generated into the app's namespace, loads `libgameloop.so` and starts the image once per
+process; `NativeImage.createRoot(Game.class)` creates a new `Balls` in the image on every call. `MainActivity` keeps
+its `Game` in a static field, so the balls survive a recreated Activity. The other generated class, `$GameSvm`, is
+ART's proxy of the image's `Balls` and is not called by user code.

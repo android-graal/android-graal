@@ -8,6 +8,8 @@ plugins {
 val graalModule = extensions.create<GraalModule>("graalModule")
 val nativeHost = the<NativeHost>()
 
+group = "${nativeHost.settings.group}.graal"
+
 sourceSets.main {
     val dirs = graalModule.sdkProjects.map { projects ->
         projects.map { nativeHost.vendor.graal.resolve("sdk/src/$it/src") }

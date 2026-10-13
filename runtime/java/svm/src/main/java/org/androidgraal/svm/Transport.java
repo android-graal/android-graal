@@ -104,6 +104,38 @@ public final class Transport {
         }
     }
 
+    public static void write(String[] from, long address) {
+        if (from == null) {
+            return;
+        }
+        WordFactory.<Pointer>pointer(address).writeInt(0, from.length);
+        long at = address + Blocks.HEADER;
+        for (String s : from) {
+            int length = s == null ? Blocks.NULL : s.length();
+            setBlockHeader(at, length, 2);
+            write(s, at + Blocks.HEADER);
+            at += Blocks.size(length, 2);
+        }
+    }
+
+    /** The string array in the block, null for a null block. */
+    public static String[] readStringArrayBlock(long block) {
+        if (block == 0) {
+            return null;
+        }
+        if (getBlockLength(block) == Blocks.NULL) {
+            return null;
+        }
+        long address = block + Blocks.HEADER;
+        String[] a = new String[WordFactory.<Pointer>pointer(address).readInt(0)];
+        long at = address + Blocks.HEADER;
+        for (int i = 0; i < a.length; i++) {
+            a[i] = readStringBlock(at);
+            at += Blocks.size(getBlockLength(at), 2);
+        }
+        return a;
+    }
+
     public static void read(long address, boolean[] into) {
         if (into == null) {
             return;

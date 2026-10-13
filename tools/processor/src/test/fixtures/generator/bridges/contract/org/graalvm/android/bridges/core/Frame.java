@@ -41,6 +41,8 @@ public interface Frame {
 
     String join(@In int[] values, String separator);
 
+    String[] texts(String[] a);
+
     int count16(@StaticBuffer(capacity = 16) String s);
 
     @StaticBuffer(capacity = 16)

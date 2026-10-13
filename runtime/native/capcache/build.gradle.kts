@@ -38,8 +38,9 @@ val capQueryPath = configurations.resolvable("capQueryPath") {
 }
 dependencies {
     capQueryScope(project(":java:svm"))
+    capQueryScope(project(":java:bionic"))
 }
-val capQueryJar: FileCollection = files(capQueryPath)
+val capQueryClasspath: FileCollection = files(capQueryPath)
 
 val queryOutput = "query"
 val binOutput = "bin"
@@ -50,7 +51,7 @@ val generateCapQueries = tasks.register<Script>("generateCapQueries") {
 
     val graalvmHome = input("graalvmHome", graalvmHomeDir)
     val llvmBin = input("llvmBin", llvmBinDir)
-    val capQuery = input("capQuery", capQueryJar)
+    val capQuery = classpath("capQuery", capQueryClasspath)
     val query = output(queryOutput, dir("query"))
 
     progress("native-image -H:+ExitAfterQueryCodeGeneration")

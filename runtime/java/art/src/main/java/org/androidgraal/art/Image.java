@@ -1,8 +1,10 @@
 package org.androidgraal.art;
 
+import android.content.Context;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.HashMap;
+import java.util.List;
 import java.util.ServiceConfigurationError;
 import org.androidgraal.shared.Blocks;
 import org.androidgraal.shared.Handles;
@@ -17,14 +19,17 @@ public final class Image {
     private static final HashMap<Class<?>, Contract> ROOTS = new HashMap<>();
     private static volatile long isolate;
     private static volatile boolean started;
+    private static volatile Context application;
 
     private Image() {
     }
 
     /**
-     * Loads {@code lib<name>.so}, creates the isolate and initialises every {@link Contract} the app's class loader
-     * provides, once per process: a second start after a successful one throws an {@link IllegalStateException}, every
-     * failure is an {@link ImageStartException}.
+     * Loads {@code lib<name>.so}, creates the isolate, initialises every {@link Contract} the app's class loader
+     * provides and runs every {@link Startup}, once per process: a second start after one that reached the startup
+     * services throws an {@link IllegalStateException}, every failure is an {@link ImageStartException}. Needs the
+     * application context the art plugin's provider hands over, so it runs in the app's main process, after the
+     * providers are created.
      */
     public static synchronized void start(String name) {
         if (started) {
@@ -33,6 +38,19 @@ public final class Image {
         load(name);
         loadContracts();
         started = true;
+        startServices();
+    }
+
+    public static void application(Context context) {
+        application = context;
+    }
+
+    public static Context application() {
+        Context context = application;
+        if (context == null) {
+            throw new IllegalStateException("no application: the provider of the art plugin's manifest did not run");
+        }
+        return context;
     }
 
     public static boolean started() {
@@ -121,6 +139,29 @@ public final class Image {
             }
         } catch (ServiceConfigurationError e) {
             throw new ImageStartException("loading a contract failed", e);
+        }
+    }
+
+    private static void startServices() {
+        List<Startup> services;
+        try {
+            services = Services.all(Startup.class);
+        } catch (ServiceConfigurationError e) {
+            throw new ImageStartException("loading a startup service failed", e);
+        }
+        for (Startup service : services) {
+            try {
+                service.prepare();
+            } catch (Throwable t) {
+                throw new ImageStartException("preparing " + service.getClass().getName() + " failed", t);
+            }
+        }
+        for (Startup service : services) {
+            try {
+                service.start();
+            } catch (Throwable t) {
+                throw new ImageStartException("starting " + service.getClass().getName() + " failed", t);
+            }
         }
     }
 

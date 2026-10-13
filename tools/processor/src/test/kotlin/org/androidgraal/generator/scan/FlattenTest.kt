@@ -79,12 +79,15 @@ class FlattenTest {
                 " and records only",
             "fix.core.Box.text is java.lang.StringBuilder, a record crossing by value holds primitives, String," +
                 " enums and records only",
+            "fix.core.Box.names is java.lang.String[], a record crossing by value holds primitives, String, enums" +
+                " and records only",
         ).map { ErrorAt(it, "fix/core/Box.java", "record Box(") }
         compile(
             "    void take(Box box);\n    void pair(Odd odd);\n",
             "",
             mapOf(
-                "Box" to "public record Box(int[] values, Service service, StringBuilder text, Box self) {\n}\n",
+                "Box" to
+                    "public record Box(int[] values, Service service, StringBuilder text, String[] names, Box self) {\n}\n",
                 "Odd" to "public record Odd(Even even) {\n}\n",
                 "Even" to "public record Even(Odd odd) {\n}\n",
             ),

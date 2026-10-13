@@ -15,6 +15,8 @@ internal class FreshParameter(private val side: Side, override val operand: Oper
 
     private val direction = operand.direction ?: Direction.IN
 
+    private val type = TypeName.get(operand.type)
+
     override val length: String = "n${place.suffix}"
 
     override val offset: String = "o${place.suffix}"
@@ -47,7 +49,7 @@ internal class FreshParameter(private val side: Side, override val operand: Oper
         )
         if (direction == Direction.IN) {
             body.inside.beginControlFlow("if (${place.argument} != null)")
-                .add(copyInOf(elements, "transport", start, place.argument, "c${place.suffix}"))
+                .add(copyInOf(elements, "transport", start, place.argument))
                 .endControlFlow()
         } else {
             body.after.beginControlFlow("if (${place.argument} != null)")
@@ -68,10 +70,13 @@ internal class FreshParameter(private val side: Side, override val operand: Oper
     }
 
     private fun receiveArt(body: ReceiverBody, at: String) {
-        if (elements.isString) {
+        val reader = elements.reader
+        if (reader != null) {
             body.statements.addStatement(
-                "String ${place.value} = view == null ? null : \$T.readStringBlock(view, \$L)",
+                "\$T ${place.value} = view == null ? null : \$T.\$L(view, \$L)",
+                type,
                 JavaNames.ART_TRANSPORT,
+                reader,
                 at,
             )
             return
@@ -84,10 +89,13 @@ internal class FreshParameter(private val side: Side, override val operand: Oper
     }
 
     private fun receiveImage(body: ReceiverBody, at: String) {
-        if (elements.isString) {
+        val reader = elements.reader
+        if (reader != null) {
             body.statements.addStatement(
-                "String ${place.value} = address == 0 ? null : \$T.readStringBlock(\$L)",
+                "\$T ${place.value} = address == 0 ? null : \$T.\$L(\$L)",
+                type,
                 JavaNames.TRANSPORT,
+                reader,
                 plus("address", at),
             )
             return
@@ -134,8 +142,9 @@ internal class FreshResult(private val side: Side, implementation: Side, operand
             .addStatement("return null")
             .endControlFlow()
             .addStatement("\$T block = \$T.viewBlock(thread, r)", JavaNames.BYTE_BUFFER, JavaNames.ART_TRANSPORT)
-        if (elements.isString) {
-            code.addStatement("String result = \$T.readStringBlock(block, 0)", JavaNames.ART_TRANSPORT)
+        val reader = elements.reader
+        if (reader != null) {
+            code.addStatement("\$T result = \$T.\$L(block, 0)", type, JavaNames.ART_TRANSPORT, reader)
         } else {
             code.addStatement(
                 "\$T result = new \$T[\$T.getBlockLength(block, 0)]",
@@ -154,8 +163,9 @@ internal class FreshResult(private val side: Side, implementation: Side, operand
             addStatement("long r = \$T.address(thread.env, view)", JavaNames.ART)
             addStatement("\$T.deleteLocal(thread.env, view)", JavaNames.ART)
         }
-        if (elements.isString) {
-            code.addStatement("String result = \$T.readStringBlock(r)", JavaNames.TRANSPORT)
+        val reader = elements.reader
+        if (reader != null) {
+            code.addStatement("\$T result = \$T.\$L(r)", type, JavaNames.TRANSPORT, reader)
         } else {
             code.addStatement(
                 "\$T result = r == 0 ? null : new \$T[\$T.getBlockLength(r)]",
@@ -180,7 +190,7 @@ internal class FreshResult(private val side: Side, implementation: Side, operand
                 elements.lengthOf("result"),
                 elements.bytes,
             )
-            .add(copyInOf(elements, "r", JavaNames.HEADER, "result", "chars"))
+            .add(copyInOf(elements, "r", JavaNames.HEADER, "result"))
             .addStatement("return r")
     }
 
