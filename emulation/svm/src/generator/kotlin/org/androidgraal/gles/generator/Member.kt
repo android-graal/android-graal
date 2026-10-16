@@ -48,7 +48,8 @@ internal class Wrapper(
 
     override val resources: List<CodeBlock> = args.mapNotNull { it.resource }
 
-    override val statement: CodeBlock = result.statementOf(callOf(target, args.map { it.argument }))
+    override val statement: CodeBlock =
+        result.statementOf(valueOf(function.result, callOf(target, args.map { it.argument })))
 }
 
 internal class ByHand(
@@ -64,6 +65,9 @@ internal class ByHand(
         callOf(CodeBlock.of("\$T.\$N", JavaNames.HANDWRITTEN, name), parameters.map { CodeBlock.of("\$N", it) }),
     )
 }
+
+private fun valueOf(type: CType, invocation: CodeBlock): CodeBlock =
+    if (type.base == GlType.SYNC) CodeBlock.of("\$L.rawValue()", invocation) else invocation
 
 private fun callOf(target: CodeBlock, arguments: List<CodeBlock>): CodeBlock =
     CodeBlock.of("\$L(\$L)", target, CodeBlock.join(arguments, ",\$W"))

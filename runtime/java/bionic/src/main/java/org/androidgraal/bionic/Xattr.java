@@ -4,6 +4,7 @@ import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.function.CFunction;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.word.PointerBase;
+import org.graalvm.word.SignedWord;
 import org.graalvm.word.UnsignedWord;
 
 @CContext(BionicDirectives.class)
@@ -13,10 +14,11 @@ public final class Xattr {
     }
 
     @CFunction
-    public static native long getxattr(CCharPointer path, CCharPointer name, PointerBase value, UnsignedWord size);
+    public static native SignedWord getxattr(CCharPointer path, CCharPointer name, PointerBase value,
+            UnsignedWord size);
 
     @CFunction
-    public static native long listxattr(CCharPointer path, CCharPointer list, UnsignedWord size);
+    public static native SignedWord listxattr(CCharPointer path, CCharPointer list, UnsignedWord size);
 
     @CFunction
     public static native int removexattr(CCharPointer path, CCharPointer name);

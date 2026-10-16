@@ -4,6 +4,7 @@ import org.androidgraal.common.Host
 import org.androidgraal.common.Target
 import org.androidgraal.common.ToolchainLayout
 import org.androidgraal.substrate.SubstrateExecutor
+import org.gradle.api.GradleException
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
 import org.gradle.api.file.FileCollection
@@ -80,6 +81,7 @@ abstract class NativeImageCompileTask : BaseTask("native-image") {
         group = "build"
         description = "Compiles the native image into relocatable objects for ${target.abi.abiString} ($variantName)."
         this.variantName.convention(variantName)
+        this.abi.convention(target.abi.abiString)
         this.workDir.convention(taskDir.dir("work"))
         this.objectsDir.convention(taskDir.dir("objects"))
         this.toolchain.convention(toolchain)
@@ -96,6 +98,12 @@ abstract class NativeImageCompileTask : BaseTask("native-image") {
     }
 
     override fun execute() {
+        if (!useLLVM.get() && !target.get().lirBackend) {
+            throw GradleException(
+                "useLLVM = false selects native-image's LIR backend, which does not compile for" +
+                    " ${target.get().abi.abiString}",
+            )
+        }
         val config = SubstrateExecutor.Config(
             toolchain = toolchain.get(),
             imageName = imageName.get(),

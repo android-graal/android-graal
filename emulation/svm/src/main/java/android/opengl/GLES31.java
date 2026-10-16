@@ -5,6 +5,7 @@ import java.nio.FloatBuffer;
 import java.nio.IntBuffer;
 import org.androidgraal.android.CString;
 import org.androidgraal.android.Pointer;
+import org.androidgraal.android.Words;
 import org.androidgraal.gles.Counts;
 import org.androidgraal.gles.GLESv3;
 import org.androidgraal.gles.Handwritten;
@@ -377,7 +378,7 @@ public class GLES31 extends GLES30 {
     }
 
     public static void glBindVertexBuffer(int bindingindex, int buffer, long offset, int stride) {
-        GLESv3.glBindVertexBuffer(bindingindex, buffer, offset, stride);
+        GLESv3.glBindVertexBuffer(bindingindex, buffer, Words.checkedSigned(offset), stride);
     }
 
     public static int glCreateShaderProgramv(int type, String[] strings) {
@@ -401,15 +402,15 @@ public class GLES31 extends GLES30 {
     }
 
     public static void glDispatchComputeIndirect(long indirect) {
-        GLESv3.glDispatchComputeIndirect(indirect);
+        GLESv3.glDispatchComputeIndirect(Words.checkedSigned(indirect));
     }
 
     public static void glDrawArraysIndirect(int mode, long indirectOffset) {
-        GLESv3.glDrawArraysIndirect(mode, Pointer.address(indirectOffset));
+        GLESv3.glDrawArraysIndirect(mode, Words.checkedPointer(indirectOffset));
     }
 
     public static void glDrawElementsIndirect(int mode, int type, long indirectOffset) {
-        GLESv3.glDrawElementsIndirect(mode, type, Pointer.address(indirectOffset));
+        GLESv3.glDrawElementsIndirect(mode, type, Words.checkedPointer(indirectOffset));
     }
 
     public static void glFramebufferParameteri(int target, int pname, int param) {

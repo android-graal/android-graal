@@ -35,6 +35,7 @@ import org.androidgraal.bionic.Errno;
 import org.androidgraal.bionic.SystemProperties.SystemPropertyReadCallback;
 import org.androidgraal.hosted.annotate.Emulated;
 import org.graalvm.nativeimage.CurrentIsolate;
+import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.PinnedObject;
 import org.graalvm.nativeimage.StackValue;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
@@ -393,7 +394,7 @@ public class SystemProperties {
     }
 
     @CEntryPoint(publishAs = Publish.NotPublished)
-    private static void thunk(@IsolateThreadContext long cookie, CCharPointer name,
+    private static void thunk(@IsolateThreadContext IsolateThread cookie, CCharPointer name,
             CCharPointer value, int serial) {
         try {
             sCallback.get().functor.accept(value);
@@ -481,7 +482,7 @@ public class SystemProperties {
 
     private static final class Thunk {
         private static final CEntryPointLiteral<CFunctionPointer> LITERAL =
-                CEntryPointLiteral.create(SystemProperties.class, "thunk", long.class,
+                CEntryPointLiteral.create(SystemProperties.class, "thunk", IsolateThread.class,
                         CCharPointer.class, CCharPointer.class, int.class);
     }
 }

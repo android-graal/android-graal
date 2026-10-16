@@ -1,6 +1,6 @@
 package org.androidgraal.shared;
 
-/** The key 0 cannot be stored; not thread-safe. */
+/** The key 0 cannot be stored. Not thread-safe. */
 // Purely AI gened, I did not care to check. Will be replaced at a later time.
 final class LongIndex<V> {
 

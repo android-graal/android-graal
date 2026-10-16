@@ -2,10 +2,12 @@ package org.androidgraal.gradle
 
 import org.androidgraal.common.Target
 import org.androidgraal.common.ToolchainLayout
+import org.gradle.api.GradleException
 import org.gradle.api.Project
 import org.gradle.testfixtures.ProjectBuilder
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
 
@@ -40,10 +42,22 @@ class NativeImageCompileTaskTest {
     }
 
     @Test
-    fun `the task directory is below the variant's build directory`() {
-        assertEquals(project.file("build/androidgraal/debug/native-image"), task.taskDir.get().asFile)
-        assertEquals(project.file("build/androidgraal/debug/native-image/work"), task.workDir.get().asFile)
-        assertEquals(project.file("build/androidgraal/debug/native-image/objects"), task.objectsDir.get().asFile)
+    fun `the task directory is below the variant's and the ABI's build directory`() {
+        assertEquals(project.file("build/androidgraal/debug/arm64-v8a/native-image"), task.taskDir.get().asFile)
+        assertEquals(project.file("build/androidgraal/debug/arm64-v8a/native-image/work"), task.workDir.get().asFile)
+        assertEquals(
+            project.file("build/androidgraal/debug/arm64-v8a/native-image/objects"),
+            task.objectsDir.get().asFile,
+        )
+    }
+
+    @Test
+    fun `each target has its own task directory`() {
+        val arm32 = project.tasks.register("compileArm32", NativeImageCompileTask::class.java) {
+            it.setup("debug", extension, project.files(jar), project.provider { toolchain }, Target.ARM32)
+        }.get()
+
+        assertEquals(project.file("build/androidgraal/debug/armeabi-v7a/native-image"), arm32.taskDir.get().asFile)
     }
 
     @Test
@@ -84,6 +98,21 @@ class NativeImageCompileTaskTest {
 
         task.verbose.set(null as Boolean?)
         assertTrue(task.verbose.get())
+    }
+
+    @Test
+    fun `a task-level LIR backend fails a target it cannot compile for`() {
+        val arm32 = project.tasks.register("compileArm32", NativeImageCompileTask::class.java) {
+            it.setup("debug", extension, project.files(jar), project.provider { toolchain }, Target.ARM32)
+        }.get()
+        arm32.useLLVM.set(false)
+
+        val failure = assertFailsWith<GradleException> { arm32.run() }
+
+        assertEquals(
+            "useLLVM = false selects native-image's LIR backend, which does not compile for armeabi-v7a",
+            failure.cause?.message,
+        )
     }
 
     @Test

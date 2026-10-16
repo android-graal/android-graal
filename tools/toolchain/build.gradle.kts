@@ -22,9 +22,9 @@ description = "Assembles the android-graal toolchain from the projects under run
 
 val graalvmHomeInput = nativeInput(Native.Graal.home)
 val llvmBinInput = nativeInput(Native.Llvm.bin)
-val jdkStaticLibsInput = nativeInput(Native.Jdk.staticLibs)
-val svmStaticLibsInput = nativeInput(Native.Svm.staticLibs)
-val capCacheInput = nativeInput(Native.CapCache.dir)
+val jdkStaticLibsInputs = Target.entries.associateWith { nativeInput(Native.Jdk.staticLibs.getValue(it)) }
+val svmStaticLibsInputs = Target.entries.associateWith { nativeInput(Native.Svm.staticLibs.getValue(it)) }
+val capCacheInputs = Target.entries.associateWith { nativeInput(Native.CapCache.dir.getValue(it)) }
 
 fun cloneCommit(clone: File): String {
     val exec = providers.exec {
@@ -33,8 +33,6 @@ fun cloneCommit(clone: File): String {
     }
     return exec.standardOutput.asText.get().trim()
 }
-
-val target = Target.AARCH64
 
 val writeVersion = tasks.register<WriteProperties>("writeVersion") {
     group = "android-graal"
@@ -72,17 +70,19 @@ val assembleToolchain = tasks.register<Sync>("assembleToolchain") {
         into("graalvm/lib/llvm/bin")
         include(Toolchain.LLVM_TOOLS)
     }
-    from(jdkStaticLibsInput) {
-        into("targets/${target.triple}/lib")
-        include(Toolchain.JDK_LIBS)
-    }
-    from(svmStaticLibsInput) {
-        into("targets/${target.triple}/svm")
-        include(Toolchain.SVM_LIBS)
-    }
-    from(capCacheInput) {
-        into("targets/${target.triple}/capcache")
-        include(Toolchain.CAP_CACHE)
+    for (target in Target.entries) {
+        from(jdkStaticLibsInputs.getValue(target)) {
+            into("targets/${target.triple}/lib")
+            include(Toolchain.JDK_LIBS)
+        }
+        from(svmStaticLibsInputs.getValue(target)) {
+            into("targets/${target.triple}/svm")
+            include(Toolchain.SVM_LIBS)
+        }
+        from(capCacheInputs.getValue(target)) {
+            into("targets/${target.triple}/capcache")
+            include(Toolchain.CAP_CACHE)
+        }
     }
     from(writeVersion)
     // The GraalVM home carries read-only files that a copy cannot overwrite in place.
@@ -156,8 +156,8 @@ publishing {
         withType<MavenPublication>().configureEach {
             pom {
                 name = "android-graal toolchain"
-                description = "GraalVM Native Image with the LLVM backend plus the aarch64-linux-android" +
-                    " target libraries used by the org.androidgraal.art plugin."
+                description = "GraalVM Native Image with the LLVM backend plus the target libraries for" +
+                    " ${Target.entries.joinToString { it.triple }} used by the org.androidgraal.art plugin."
             }
         }
     }

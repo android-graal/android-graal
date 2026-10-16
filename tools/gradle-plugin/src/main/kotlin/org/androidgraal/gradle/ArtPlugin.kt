@@ -110,7 +110,14 @@ class ArtPlugin : Plugin<Project> {
         androidComponents.onVariants(androidComponents.selector().all()) { variant: ApplicationVariant ->
             variant.components.forEach { it.runtimeConfiguration.requestSide(Side.ART) }
             val android = project.extensions.getByType(ApplicationExtension::class.java)
-            val target = target(variant, android)
+            val targets = targets(variant, android)
+            val withoutLir = targets.filter { !it.lirBackend }.map { it.abi.abiString }
+            if (!extension.useLLVM.get() && withoutLir.isNotEmpty()) {
+                throw GradleException(
+                    "$ANDROID_GRAAL_EXTENSION_NAME { useLLVM = false } selects native-image's LIR backend," +
+                        " which does not compile for $withoutLir of variant '${variant.name}'",
+                )
+            }
 
             val capitalized = variant.name.replaceFirstChar { it.titlecase(Locale.ROOT) }
             val toolchain = toolchain(project, extension, toolchainClasspath, variant.minSdk.apiLevel)
@@ -137,30 +144,36 @@ class ArtPlugin : Plugin<Project> {
                 GenerateNativeImageTask::manifestFile,
             )
 
-            val compileTask = project.tasks.register(
-                "nativeImageCompile$capitalized",
-                NativeImageCompileTask::class.java,
-            ) {
-                it.setup(variant.name, extension, imageClasspath, toolchain, target)
-                it.dependsOn(checkImageClasspath)
-            }
-
-            val linkTask = project.tasks.register("nativeImageLink$capitalized", NativeImageLinkTask::class.java) {
-                it.setup(
-                    variant.name,
-                    extension,
-                    toolchain,
-                    target,
-                    ndk,
-                    variant.minSdk.apiLevel,
-                    compileTask.flatMap { c -> c.objectsDir },
-                )
-            }
-
             // AGP packages every .so under <dir>/<abi>/ of a generated jniLibs directory.
             val jniLibs = variant.sources.jniLibs
                 ?: throw GradleException("variant '${variant.name}' has no jniLibs sources")
-            jniLibs.addGeneratedSourceDirectory(linkTask, NativeImageLinkTask::outputDir)
+
+            for (target in targets) {
+                val compileTask = project.tasks.register(
+                    "nativeImageCompile$capitalized${target.title}",
+                    NativeImageCompileTask::class.java,
+                ) {
+                    it.setup(variant.name, extension, imageClasspath, toolchain, target)
+                    it.dependsOn(checkImageClasspath)
+                }
+
+                val linkTask = project.tasks.register(
+                    "nativeImageLink$capitalized${target.title}",
+                    NativeImageLinkTask::class.java,
+                ) {
+                    it.setup(
+                        variant.name,
+                        extension,
+                        toolchain,
+                        target,
+                        ndk,
+                        variant.minSdk.apiLevel,
+                        compileTask.flatMap { c -> c.objectsDir },
+                    )
+                }
+
+                jniLibs.addGeneratedSourceDirectory(linkTask, NativeImageLinkTask::outputDir)
+            }
 
             // AGP's incremental Java-resource merge keys a project's jars by project path alone, so a contract jar
             // and its bridge share one entry of its state. So we supply the project files directly as input
@@ -234,7 +247,7 @@ class ArtPlugin : Plugin<Project> {
     }
 
     /** AGP packages the union of the `abiFilters` of `defaultConfig`, flavors and build type. */
-    private fun target(variant: Variant, android: ApplicationExtension): Target {
+    private fun targets(variant: Variant, android: ApplicationExtension): List<Target> {
         val abis = linkedSetOf<String>()
         abis.addAll(android.defaultConfig.ndk.abiFilters)
         variant.productFlavors.forEach { (_, flavor) ->
@@ -244,8 +257,8 @@ class ArtPlugin : Plugin<Project> {
         val supported = Target.entries.map { it.abi.abiString }
         if (abis.isEmpty()) {
             throw GradleException(
-                "org.androidgraal.art needs the module's ABI:" +
-                    " set ndk { abiFilters += \"<abi>\" } to one of $supported",
+                "org.androidgraal.art needs the module's ABIs:" +
+                    " add them to ndk { abiFilters }, out of $supported",
             )
         }
         val unsupported = abis - supported
@@ -255,7 +268,7 @@ class ArtPlugin : Plugin<Project> {
                     " $unsupported in the ndk.abiFilters of its defaultConfig, flavors or build type",
             )
         }
-        return Target.entries.single { it.abi.abiString in abis }
+        return Target.entries.filter { it.abi.abiString in abis }
     }
 
     companion object {

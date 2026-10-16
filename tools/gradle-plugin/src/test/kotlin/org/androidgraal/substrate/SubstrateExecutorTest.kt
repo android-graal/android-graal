@@ -112,6 +112,42 @@ class SubstrateExecutorTest {
     }
 
     @Test
+    fun `command is the pinned LLVM flag set for ARM32`() {
+        val config = minimalConfig(File("/toolchain")).copy(
+            workDir = File("/build/work"),
+            objectsDir = File("/build/objects"),
+            target = Target.ARM32,
+        )
+
+        assertEquals(
+            listOf(
+                "/toolchain/graalvm/lib/svm/bin/native-image",
+                "--shared",
+                "--tool:llvm-backend",
+                "-H:+UnlockExperimentalVMOptions",
+                "-Dsvm.platform=org.graalvm.nativeimage.Platform\$ANDROID_ARM32",
+                "-Dsvm.targetArch=arm",
+                "-Djdk.internal.foreign.CABI=UNSUPPORTED",
+                "-H:+UseCAPCache",
+                "-H:CAPCacheDir=/toolchain/targets/arm-linux-androideabi/capcache",
+                "-H:TempDirectory=/build/work",
+                "-o",
+                "/build/work/hello",
+                "-march=armv7-a",
+                "-H:+ReportExceptionStackTraces",
+                "-H:+AddAllCharsets",
+                "-H:+IncludeAllLocales",
+                "--initialize-at-run-time=java.net.DefaultInterface",
+                "--link-at-build-time",
+                "-H:+ExitAfterRelocatableImageWrite",
+                "-cp",
+                "/build/nativeImage.jar",
+            ),
+            SubstrateExecutor(config, noRunner).command(),
+        )
+    }
+
+    @Test
     fun `the optional flags are absent by default`() {
         val command = SubstrateExecutor(minimalConfig(File("/toolchain")), noRunner).command()
 

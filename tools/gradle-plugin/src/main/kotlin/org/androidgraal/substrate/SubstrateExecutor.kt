@@ -52,7 +52,7 @@ class SubstrateExecutor(private val config: Config, private val runner: ProcessR
             "-H:+AddAllCharsets",
             "-H:+IncludeAllLocales",
             // The builder runs on the host JDK, whose macOS `DefaultInterface` caches the host's default
-            // `NetworkInterface`; graal initializes it at run time only for Darwin targets.
+            // `NetworkInterface`, and graal initializes it at run time only for Darwin targets.
             "--initialize-at-run-time=java.net.DefaultInterface",
             "--link-at-build-time",
             "-H:+ExitAfterRelocatableImageWrite",

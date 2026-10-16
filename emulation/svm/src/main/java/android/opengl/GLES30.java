@@ -15,6 +15,7 @@ import org.androidgraal.gles.Handwritten;
 import org.androidgraal.hosted.annotate.Emulated;
 import org.graalvm.nativeimage.PinnedObject;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
+import org.graalvm.word.WordFactory;
 
 @Emulated
 public class GLES30 extends GLES20 {
@@ -644,7 +645,7 @@ public class GLES30 extends GLES20 {
     }
 
     public static void glBindBufferRange(int target, int index, int buffer, int offset, int size) {
-        GLESv3.glBindBufferRange(target, index, buffer, offset, size);
+        GLESv3.glBindBufferRange(target, index, buffer, WordFactory.signed(offset), WordFactory.signed(size));
     }
 
     public static void glBindSampler(int unit, int sampler) {
@@ -705,13 +706,13 @@ public class GLES30 extends GLES20 {
     }
 
     public static int glClientWaitSync(long sync, int flags, long timeout) {
-        return GLESv3.glClientWaitSync(sync, flags, timeout);
+        return GLESv3.glClientWaitSync(WordFactory.pointer(sync), flags, timeout);
     }
 
     public static void glCompressedTexImage3D(int target, int level, int internalformat, int width, int height,
             int depth, int border, int imageSize, int dataOffset) {
         GLESv3.glCompressedTexImage3D(target, level, internalformat, width, height, depth, border, imageSize,
-                Pointer.address(dataOffset));
+                WordFactory.pointer(dataOffset));
     }
 
     public static void glCompressedTexImage3D(int target, int level, int internalformat, int width, int height,
@@ -725,7 +726,7 @@ public class GLES30 extends GLES20 {
     public static void glCompressedTexSubImage3D(int target, int level, int xoffset, int yoffset, int zoffset,
             int width, int height, int depth, int format, int imageSize, int dataOffset) {
         GLESv3.glCompressedTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format,
-                imageSize, Pointer.address(dataOffset));
+                imageSize, WordFactory.pointer(dataOffset));
     }
 
     public static void glCompressedTexSubImage3D(int target, int level, int xoffset, int yoffset, int zoffset,
@@ -737,7 +738,8 @@ public class GLES30 extends GLES20 {
     }
 
     public static void glCopyBufferSubData(int readTarget, int writeTarget, int readOffset, int writeOffset, int size) {
-        GLESv3.glCopyBufferSubData(readTarget, writeTarget, readOffset, writeOffset, size);
+        GLESv3.glCopyBufferSubData(readTarget, writeTarget, WordFactory.signed(readOffset),
+                WordFactory.signed(writeOffset), WordFactory.signed(size));
     }
 
     public static void glCopyTexSubImage3D(int target, int level, int xoffset, int yoffset, int zoffset, int x, int y,
@@ -770,7 +772,7 @@ public class GLES30 extends GLES20 {
     }
 
     public static void glDeleteSync(long sync) {
-        GLESv3.glDeleteSync(sync);
+        GLESv3.glDeleteSync(WordFactory.pointer(sync));
     }
 
     public static void glDeleteTransformFeedbacks(int n, IntBuffer ids) {
@@ -814,7 +816,7 @@ public class GLES30 extends GLES20 {
     }
 
     public static void glDrawElementsInstanced(int mode, int count, int type, int indicesOffset, int instancecount) {
-        GLESv3.glDrawElementsInstanced(mode, count, type, Pointer.address(indicesOffset), instancecount);
+        GLESv3.glDrawElementsInstanced(mode, count, type, WordFactory.pointer(indicesOffset), instancecount);
     }
 
     public static void glDrawElementsInstanced(int mode, int count, int type, Buffer indices, int instancecount) {
@@ -824,7 +826,7 @@ public class GLES30 extends GLES20 {
     }
 
     public static void glDrawRangeElements(int mode, int start, int end, int count, int type, int indicesOffset) {
-        GLESv3.glDrawRangeElements(mode, start, end, count, type, Pointer.address(indicesOffset));
+        GLESv3.glDrawRangeElements(mode, start, end, count, type, WordFactory.pointer(indicesOffset));
     }
 
     public static void glDrawRangeElements(int mode, int start, int end, int count, int type, Buffer indices) {
@@ -842,11 +844,11 @@ public class GLES30 extends GLES20 {
     }
 
     public static long glFenceSync(int condition, int flags) {
-        return GLESv3.glFenceSync(condition, flags);
+        return GLESv3.glFenceSync(condition, flags).rawValue();
     }
 
     public static void glFlushMappedBufferRange(int target, int offset, int length) {
-        GLESv3.glFlushMappedBufferRange(target, offset, length);
+        GLESv3.glFlushMappedBufferRange(target, WordFactory.signed(offset), WordFactory.signed(length));
     }
 
     public static void glFramebufferTextureLayer(int target, int attachment, int texture, int level, int layer) {
@@ -1102,7 +1104,7 @@ public class GLES30 extends GLES20 {
     public static void glGetSynciv(long sync, int pname, int bufSize, IntBuffer length, IntBuffer values) {
         try (PinnedObject lengthPin = Pointer.pinNullable(length, 4);
                 PinnedObject valuesPin = Pointer.pin(values, bufSize * 4L)) {
-            GLESv3.glGetSynciv(sync, pname, bufSize, Pointer.address(length, lengthPin),
+            GLESv3.glGetSynciv(WordFactory.pointer(sync), pname, bufSize, Pointer.address(length, lengthPin),
                     Pointer.address(values, valuesPin));
         }
     }
@@ -1111,7 +1113,7 @@ public class GLES30 extends GLES20 {
             int valuesOffset) {
         try (PinnedObject lengthPin = Pointer.pinNullable(length, lengthOffset, 4);
                 PinnedObject valuesPin = Pointer.pin(values, valuesOffset, bufSize * 4L)) {
-            GLESv3.glGetSynciv(sync, pname, bufSize, Pointer.address(lengthPin, lengthOffset),
+            GLESv3.glGetSynciv(WordFactory.pointer(sync), pname, bufSize, Pointer.address(lengthPin, lengthOffset),
                     Pointer.address(valuesPin, valuesOffset));
         }
     }
@@ -1242,7 +1244,7 @@ public class GLES30 extends GLES20 {
     }
 
     public static boolean glIsSync(long sync) {
-        return GLESv3.glIsSync(sync);
+        return GLESv3.glIsSync(WordFactory.pointer(sync));
     }
 
     public static boolean glIsTransformFeedback(int id) {
@@ -1276,7 +1278,7 @@ public class GLES30 extends GLES20 {
     }
 
     public static void glReadPixels(int x, int y, int width, int height, int format, int type, int pixelsOffset) {
-        GLESv2.glReadPixels(x, y, width, height, format, type, Pointer.address(pixelsOffset));
+        GLESv2.glReadPixels(x, y, width, height, format, type, WordFactory.pointer(pixelsOffset));
     }
 
     public static void glRenderbufferStorageMultisample(int target, int samples, int internalformat, int width,
@@ -1323,7 +1325,7 @@ public class GLES30 extends GLES20 {
     public static void glTexImage3D(int target, int level, int internalformat, int width, int height, int depth,
             int border, int format, int type, int pixelsOffset) {
         GLESv3.glTexImage3D(target, level, internalformat, width, height, depth, border, format, type,
-                Pointer.address(pixelsOffset));
+                WordFactory.pointer(pixelsOffset));
     }
 
     public static void glTexImage3D(int target, int level, int internalformat, int width, int height, int depth,
@@ -1345,7 +1347,7 @@ public class GLES30 extends GLES20 {
     public static void glTexSubImage3D(int target, int level, int xoffset, int yoffset, int zoffset, int width,
             int height, int depth, int format, int type, int pixelsOffset) {
         GLESv3.glTexSubImage3D(target, level, xoffset, yoffset, zoffset, width, height, depth, format, type,
-                Pointer.address(pixelsOffset));
+                WordFactory.pointer(pixelsOffset));
     }
 
     public static void glTexSubImage3D(int target, int level, int xoffset, int yoffset, int zoffset, int width,
@@ -1547,7 +1549,7 @@ public class GLES30 extends GLES20 {
     }
 
     public static void glVertexAttribIPointer(int index, int size, int type, int stride, int pointerOffset) {
-        GLESv3.glVertexAttribIPointer(index, size, type, stride, Pointer.address(pointerOffset));
+        GLESv3.glVertexAttribIPointer(index, size, type, stride, WordFactory.pointer(pointerOffset));
     }
 
     public static void glVertexAttribIPointer(int index, int size, int type, int stride, Buffer pointer) {
@@ -1555,6 +1557,6 @@ public class GLES30 extends GLES20 {
     }
 
     public static void glWaitSync(long sync, int flags, long timeout) {
-        GLESv3.glWaitSync(sync, flags, timeout);
+        GLESv3.glWaitSync(WordFactory.pointer(sync), flags, timeout);
     }
 }

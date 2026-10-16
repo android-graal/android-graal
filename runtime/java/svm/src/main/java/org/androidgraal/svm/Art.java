@@ -245,7 +245,7 @@ public final class Art {
 
         public final JNIEnv env;
 
-        /** The serialized exception ART threw on this thread; 0 when none is pending. */
+        /** The serialized exception ART threw on this thread, 0 when none is pending. */
         public long pendingException;
 
         private ThreadData(JNIEnv env) {

@@ -32,6 +32,7 @@ import org.graalvm.nativeimage.StackValue;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
+import org.graalvm.word.SignedWord;
 import org.graalvm.word.WordFactory;
 
 import dalvik.system.VMRuntime;
@@ -869,12 +870,12 @@ public class Process {
 
                 final int BUFFER_SIZE = 4096;
                 CCharPointer buffer = UnmanagedMemory.malloc(BUFFER_SIZE);
-                int len = (int) Unistd.read(fd, buffer, WordFactory.unsigned(BUFFER_SIZE - 1));
+                SignedWord len = Unistd.read(fd, buffer, WordFactory.unsigned(BUFFER_SIZE - 1));
                 Unistd.close(fd);
 
-                if (len < 0) {
+                if (len.lessThan(0)) {
                     Log.w(LOG_TAG, "Unable to read " + file);
-                    len = 0;
+                    len = WordFactory.zero();
                 }
                 buffer.write(len, (byte) 0);
 

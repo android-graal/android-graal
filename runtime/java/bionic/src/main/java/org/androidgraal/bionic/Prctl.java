@@ -3,6 +3,7 @@ package org.androidgraal.bionic;
 import org.graalvm.nativeimage.c.CContext;
 import org.graalvm.nativeimage.c.constant.CConstant;
 import org.graalvm.nativeimage.c.function.CFunction;
+import org.graalvm.word.UnsignedWord;
 
 @CContext(BionicDirectives.class)
 public final class Prctl {
@@ -20,5 +21,6 @@ public final class Prctl {
     public static native int PR_SET_NO_NEW_PRIVS();
 
     @CFunction
-    public static native int prctl(int option, long arg2, long arg3, long arg4, long arg5);
+    public static native int prctl(int option, UnsignedWord arg2, UnsignedWord arg3, UnsignedWord arg4,
+            UnsignedWord arg5);
 }

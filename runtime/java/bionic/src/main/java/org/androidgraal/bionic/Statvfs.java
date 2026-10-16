@@ -7,6 +7,7 @@ import org.graalvm.nativeimage.c.struct.CField;
 import org.graalvm.nativeimage.c.struct.CStruct;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.word.PointerBase;
+import org.graalvm.word.UnsignedWord;
 
 @CContext(BionicDirectives.class)
 public final class Statvfs {
@@ -44,37 +45,37 @@ public final class Statvfs {
     @CStruct(addStructKeyword = true)
     public interface statvfs extends PointerBase {
         @CField
-        long f_bsize();
+        UnsignedWord f_bsize();
 
         @CField
-        long f_frsize();
+        UnsignedWord f_frsize();
 
         @CField
-        long f_blocks();
+        UnsignedWord f_blocks();
 
         @CField
-        long f_bfree();
+        UnsignedWord f_bfree();
 
         @CField
-        long f_bavail();
+        UnsignedWord f_bavail();
 
         @CField
-        long f_files();
+        UnsignedWord f_files();
 
         @CField
-        long f_ffree();
+        UnsignedWord f_ffree();
 
         @CField
-        long f_favail();
+        UnsignedWord f_favail();
 
         @CField
-        long f_fsid();
+        UnsignedWord f_fsid();
 
         @CField
-        long f_flag();
+        UnsignedWord f_flag();
 
         @CField
-        long f_namemax();
+        UnsignedWord f_namemax();
     }
 
     @CFunction

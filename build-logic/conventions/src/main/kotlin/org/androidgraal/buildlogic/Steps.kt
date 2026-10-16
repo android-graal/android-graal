@@ -80,6 +80,18 @@ data class CaptureStep(val name: String, val command: List<String>) : Step {
     }
 }
 
+data class ExpectStep(val value: String, val regex: String, val message: String) : Step {
+
+    override fun run(context: RunContext) {
+        if (Regex(regex).matches(context.unwrap(value))) {
+            return
+        }
+        val failure = context.unwrap(message)
+        context.log.line("=== $failure")
+        throw GradleException("${context.script.name}: $failure")
+    }
+}
+
 data class MkdirStep(val path: String) : Step {
 
     override fun run(context: RunContext) {

@@ -29,9 +29,7 @@ final class Threads {
     @CFunction("androidgraal_detach_thread_on_exit")
     public static native void detachThreadOnExit(IsolateThread thread);
 
-    /**
-     * {@code bytes} of memory, 16-byte aligned, freed when the calling thread exits. Returns null on failure.
-     */
+    /** {@code bytes} of memory, freed when the calling thread exits. Returns null on failure. */
     @CFunction("androidgraal_thread_alloc")
     public static native VoidPointer threadAlloc(UnsignedWord bytes);
 }

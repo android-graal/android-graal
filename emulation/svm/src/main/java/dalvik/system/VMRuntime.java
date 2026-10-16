@@ -16,8 +16,7 @@
 
 package dalvik.system;
 
-import org.graalvm.nativeimage.c.struct.SizeOf;
-import org.graalvm.nativeimage.c.type.WordPointer;
+import org.androidgraal.android.Words;
 
 import java.lang.reflect.Array;
 import java.util.HashMap;
@@ -77,7 +76,7 @@ public final class VMRuntime {
      * @hide
      */
     public boolean is64Bit() {
-        return SizeOf.get(WordPointer.class) == Long.BYTES;
+        return Words.is64Bit();
     }
 
     /**

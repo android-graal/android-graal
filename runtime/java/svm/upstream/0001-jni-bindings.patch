@@ -1,5 +1,5 @@
 diff --git a/runtime/java/svm/src/main/java/org/androidgraal/svm/jni/JNI.java b/runtime/java/svm/src/main/java/org/androidgraal/svm/jni/JNI.java
-index 8bd81b3..a86e46a 100644
+index 8bd81b3..421be21 100644
 --- a/runtime/java/svm/src/main/java/org/androidgraal/svm/jni/JNI.java
 +++ b/runtime/java/svm/src/main/java/org/androidgraal/svm/jni/JNI.java
 @@ -38,7 +38,7 @@
@@ -103,6 +103,15 @@ index 8bd81b3..a86e46a 100644
      public interface CallObjectMethodA extends CFunctionPointer {
          @InvokeCFunctionPointer
          JObject call(JNIEnv env, JObject object, JMethodID methodID, JValue args);
+@@ -684,7 +729,7 @@ public final class JNI {
+ 
+     public interface DefineClass extends CFunctionPointer {
+         @InvokeCFunctionPointer
+-        JClass call(JNIEnv env, CCharPointer name, JObject loader, CCharPointer buf, long bufLen);
++        JClass call(JNIEnv env, CCharPointer name, JObject loader, CCharPointer buf, int bufLen);
+     }
+ 
+     public interface GetArrayLength extends CFunctionPointer {
 @@ -1012,11 +1057,21 @@ public final class JNI {
          int callNoTransition(JNIEnv env, JThrowable throwable);
      }

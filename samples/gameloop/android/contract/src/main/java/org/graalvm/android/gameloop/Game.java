@@ -27,8 +27,8 @@ public interface Game {
 
     /**
      * Applies the pointer events in the first {@code touchInts} ints of {@code touches}, three per event: the action
-     * ({@link #DOWN}, {@link #MOVE} or {@link #UP}), then x and y as {@code Float.floatToRawIntBits}; then advances the
-     * game to {@code frameNanos} and writes x, y and radius of each ball into {@code balls}; returns how many balls it
+     * ({@link #DOWN}, {@link #MOVE} or {@link #UP}), then x and y as {@code Float.floatToRawIntBits}. Then advances the
+     * game to {@code frameNanos}, writes x, y and radius of each ball into {@code balls} and returns how many balls it
      * wrote.
      */
     int render(long frameNanos, @In @StaticBuffer(capacity = TOUCH_INTS) int[] touches, int touchInts,

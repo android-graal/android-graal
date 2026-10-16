@@ -8,6 +8,7 @@ import org.graalvm.nativeimage.c.function.InvokeCFunctionPointer;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
 import org.graalvm.word.PointerBase;
+import org.graalvm.word.SignedWord;
 import org.graalvm.word.WordFactory;
 
 @CLibrary("EGL")
@@ -727,7 +728,7 @@ public final class GLESv32 {
 
     public interface GlTexBufferRange extends CFunctionPointer {
         @InvokeCFunctionPointer
-        void call(int target, int internalformat, int buffer, long offset, long size);
+        void call(int target, int internalformat, int buffer, SignedWord offset, SignedWord size);
     }
 
     public interface GlTexStorage3DMultisample extends CFunctionPointer {

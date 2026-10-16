@@ -15,6 +15,7 @@ enum class Target(
     val march: String,
     /** The `jdk.internal.foreign.CABI` constant SVM's FFM downcalls follow. */
     val cabi: String,
+    val lirBackend: Boolean,
 ) {
     AARCH64(
         AndroidABI.ABI_ARM64_V8A,
@@ -24,5 +25,19 @@ enum class Target(
         "aarch64",
         "armv8-a",
         "LINUX_AARCH_64",
+        true,
     ),
+    ARM32(
+        AndroidABI.ABI_ARMEABI_V7A,
+        "arm-linux-androideabi",
+        "armv7a-linux-androideabi",
+        "org.graalvm.nativeimage.Platform\$ANDROID_ARM32",
+        "arm",
+        "armv7-a",
+        "UNSUPPORTED",
+        false,
+    ),
+    ;
+
+    val title: String = name.lowercase().replaceFirstChar(Char::uppercase)
 }

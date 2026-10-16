@@ -4,7 +4,7 @@ import com.palantir.javapoet.ClassName
 import com.palantir.javapoet.TypeName
 import java.io.File
 
-internal enum class GlType(private val spelling: String, val binding: TypeName, val size: Int) {
+internal enum class GlType(private val spelling: String, val binding: TypeName, val size: Int?) {
     VOID("void", TypeName.VOID, 1),
     BOOLEAN("GLboolean", TypeName.BOOLEAN, 1),
     CHAR("GLchar", TypeName.BYTE, 1),
@@ -15,12 +15,12 @@ internal enum class GlType(private val spelling: String, val binding: TypeName, 
     UINT("GLuint", TypeName.INT, 4),
     SIZEI("GLsizei", TypeName.INT, 4),
     FLOAT("GLfloat", TypeName.FLOAT, 4),
-    INTPTR("GLintptr", TypeName.LONG, 8),
-    SIZEIPTR("GLsizeiptr", TypeName.LONG, 8),
+    INTPTR("GLintptr", JavaNames.SIGNED_WORD, null),
+    SIZEIPTR("GLsizeiptr", JavaNames.SIGNED_WORD, null),
     INT64("GLint64", TypeName.LONG, 8),
     UINT64("GLuint64", TypeName.LONG, 8),
-    SYNC("GLsync", TypeName.LONG, 8),
-    DEBUGPROC("GLDEBUGPROC", JavaNames.POINTER_BASE, 8),
+    SYNC("GLsync", JavaNames.POINTER_BASE, null),
+    DEBUGPROC("GLDEBUGPROC", JavaNames.POINTER_BASE, null),
     ;
 
     fun isCharacter(): Boolean = this == CHAR || this == UBYTE

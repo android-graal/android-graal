@@ -15,7 +15,18 @@ internal sealed interface Arg {
 internal class Scalar(param: CParam, typeName: TypeName) : Arg {
     override val parameters: List<ParameterSpec> = listOf(ParameterSpec.builder(typeName, param.name).build())
 
-    override val argument: CodeBlock = CodeBlock.of("\$N", param.name)
+    override val argument: CodeBlock = when (param.type.base) {
+        GlType.INTPTR, GlType.SIZEIPTR ->
+            if (typeName == TypeName.LONG) {
+                CodeBlock.of("\$T.checkedSigned(\$N)", JavaNames.WORDS, param.name)
+            } else {
+                CodeBlock.of("\$T.signed(\$N)", JavaNames.WORD_FACTORY, param.name)
+            }
+
+        GlType.SYNC -> CodeBlock.of("\$T.pointer(\$N)", JavaNames.WORD_FACTORY, param.name)
+
+        else -> CodeBlock.of("\$N", param.name)
+    }
 }
 
 internal class Offset(param: CParam, typeName: TypeName) : Arg {
@@ -23,7 +34,11 @@ internal class Offset(param: CParam, typeName: TypeName) : Arg {
 
     override val parameters: List<ParameterSpec> = listOf(ParameterSpec.builder(typeName, offset).build())
 
-    override val argument: CodeBlock = CodeBlock.of("\$T.address(\$N)", JavaNames.POINTER, offset)
+    override val argument: CodeBlock = if (typeName == TypeName.LONG) {
+        CodeBlock.of("\$T.checkedPointer(\$N)", JavaNames.WORDS, offset)
+    } else {
+        CodeBlock.of("\$T.pointer(\$N)", JavaNames.WORD_FACTORY, offset)
+    }
 }
 
 internal class Text(param: CParam, typeName: TypeName, passing: Passing.Counted?) : Arg {
@@ -82,7 +97,7 @@ private fun pinOf(pin: String, param: CParam, passing: Passing.Pinned, vararg na
     CodeBlock.join(
         listOfNotNull(
             *names.map { CodeBlock.of("\$N", it) }.toTypedArray(),
-            bytesOf(passing.count, param.type.base.size),
+            bytesOf(passing.count, param.type.base.size!!),
         ),
         ",\$W",
     ),

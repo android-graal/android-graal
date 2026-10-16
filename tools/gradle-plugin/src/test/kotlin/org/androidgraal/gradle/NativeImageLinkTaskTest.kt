@@ -42,9 +42,26 @@ class NativeImageLinkTaskTest {
     }
 
     @Test
-    fun `the task directory is below the variant's build directory`() {
-        assertEquals(project.file("build/androidgraal/debug/link"), task.taskDir.get().asFile)
-        assertEquals(project.file("build/androidgraal/debug/link/jniLibs"), task.outputDir.get().asFile)
+    fun `the task directory is below the variant's and the ABI's build directory`() {
+        assertEquals(project.file("build/androidgraal/debug/arm64-v8a/link"), task.taskDir.get().asFile)
+        assertEquals(project.file("build/androidgraal/debug/arm64-v8a/link/jniLibs"), task.outputDir.get().asFile)
+    }
+
+    @Test
+    fun `each target has its own task directory`() {
+        val arm32 = project.tasks.register("linkArm32", NativeImageLinkTask::class.java) {
+            it.setup(
+                "debug",
+                extension,
+                project.provider { toolchain },
+                Target.ARM32,
+                project.provider { Ndk(ndkRoot) },
+                26,
+                project.provider { objects },
+            )
+        }.get()
+
+        assertEquals(project.file("build/androidgraal/debug/armeabi-v7a/link"), arm32.taskDir.get().asFile)
     }
 
     @Test

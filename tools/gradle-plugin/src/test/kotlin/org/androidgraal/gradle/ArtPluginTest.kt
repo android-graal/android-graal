@@ -87,14 +87,56 @@ class ArtPluginTest {
         assertEquals(
             listOf("Debug", "Release").flatMap { variant ->
                 listOf(
-                    "checkImageClasspath",
-                    "nativeImageCompile",
-                    "nativeImageLink",
-                    "generateNativeImage",
-                ).map { it + variant }
+                    "checkImageClasspath$variant",
+                    "nativeImageCompile${variant}Aarch64",
+                    "nativeImageLink${variant}Aarch64",
+                    "generateNativeImage$variant",
+                )
             }.sorted(),
             project.tasks.names.filter { name -> ours.any { name.startsWith(it) } }.sorted(),
         )
+    }
+
+    @Test
+    fun `two ABIs give each variant an image per ABI, both linked into the variant's jniLibs`() {
+        evaluateAndroid("", abis = listOf("arm64-v8a", "armeabi-v7a"))
+
+        val build = project.layout.buildDirectory.get().asFile
+        listOf("Debug", "Release").forEach { variant ->
+            val merge = project.tasks.getByName("merge${variant}JniLibFolders")
+            val links = listOf("Aarch64" to "arm64-v8a", "Arm32" to "armeabi-v7a").map { (title, abi) ->
+                val compile = project.tasks.getByName("nativeImageCompile$variant$title") as NativeImageCompileTask
+                val link = project.tasks.getByName("nativeImageLink$variant$title") as NativeImageLinkTask
+                assertEquals(abi, compile.target.get().abi.abiString)
+                assertEquals(abi, link.target.get().abi.abiString)
+                val abiDir = build.resolve("androidgraal/${variant.lowercase()}/$abi")
+                assertEquals(abiDir.resolve("native-image"), compile.taskDir.get().asFile)
+                assertEquals(abiDir.resolve("link"), link.taskDir.get().asFile)
+                assertEquals(compile.objectsDir.get().asFile, link.objectsDir.get().asFile)
+                assertTrue(link in merge.taskDependencies.getDependencies(merge), "${merge.name} needs ${link.name}")
+                link
+            }
+            assertEquals(2, links.map { it.outputDir.get().asFile }.toSet().size)
+        }
+    }
+
+    @Test
+    fun `the LIR backend fails a variant with an ABI it cannot compile for, naming both`() {
+        project.extensions.getByType(AndroidGraalExtension::class.java).useLLVM.set(false)
+
+        val failure = runCatching { evaluateAndroid("", abis = listOf("arm64-v8a", "armeabi-v7a")) }.exceptionOrNull()
+
+        val messages = generateSequence(failure) { it.cause }.mapNotNull { it.message }.toList()
+        assertTrue(messages.any { "useLLVM = false" in it && "[armeabi-v7a]" in it }, "$messages")
+    }
+
+    @Test
+    fun `the LIR backend builds an ABI it compiles for`() {
+        project.extensions.getByType(AndroidGraalExtension::class.java).useLLVM.set(false)
+
+        evaluateAndroid("")
+
+        assertTrue("nativeImageCompileDebugAarch64" in project.tasks.names)
     }
 
     @Test
@@ -120,7 +162,7 @@ class ArtPluginTest {
         val build = project.layout.buildDirectory.get().asFile
         assertEquals(setOf(project.file("image.jar")), check.imageClasspath.files)
         assertEquals(build.resolve("androidgraal/debug/checkImageClasspath/report.txt"), check.report.get().asFile)
-        val image = project.tasks.getByName("nativeImageCompileDebug") as NativeImageCompileTask
+        val image = project.tasks.getByName("nativeImageCompileDebugAarch64") as NativeImageCompileTask
         assertEquals(setOf(project.file("image.jar")), image.imageClasspath.files)
         assertTrue(check in image.taskDependencies.getDependencies(image))
     }
@@ -238,7 +280,7 @@ class ArtPluginTest {
     fun `a debuggable variant configures at Java 11`() {
         evaluateAndroid("", "VERSION_11")
 
-        assertTrue("nativeImageCompileDebug" in project.tasks.names)
+        assertTrue("nativeImageCompileDebugAarch64" in project.tasks.names)
     }
 
     @Test
@@ -266,6 +308,7 @@ class ArtPluginTest {
         source: String = "VERSION_17",
         target: String = source,
         project: Project = this.project,
+        abis: List<String> = listOf("arm64-v8a"),
     ) {
         project.pluginManager.apply("com.android.application")
         val script = project.file("android.gradle")
@@ -276,7 +319,7 @@ class ArtPluginTest {
                 compileSdk = 36
                 defaultConfig {
                     minSdk = 21
-                    ndk { abiFilters 'arm64-v8a' }
+                    ndk { abiFilters ${abis.joinToString { "'$it'" }} }
                 }
                 compileOptions {
                     sourceCompatibility = JavaVersion.$source

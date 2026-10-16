@@ -1,5 +1,6 @@
 package org.androidgraal.buildlogic
 
+import org.androidgraal.common.Target
 import org.gradle.api.GradleException
 import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.Project
@@ -15,6 +16,9 @@ sealed class NativeProject(val name: String) {
     val path = ":native:$name"
 
     protected fun artifact(name: String) = NativeArtifact(this, name)
+
+    protected fun targetArtifacts(name: String): Map<Target, NativeArtifact> =
+        Target.entries.associateWith { artifact(name + it.title) }
 }
 
 class NativeArtifact(val project: NativeProject, val name: String) {
@@ -38,16 +42,16 @@ object Native {
     }
 
     object Jdk : NativeProject("jdk") {
-        val staticLibs = artifact("staticLibs")
-        val include = artifact("include")
+        val staticLibs = targetArtifacts("staticLibs")
+        val include = targetArtifacts("include")
     }
 
     object Svm : NativeProject("svm") {
-        val staticLibs = artifact("staticLibs")
+        val staticLibs = targetArtifacts("staticLibs")
     }
 
     object CapCache : NativeProject("capcache") {
-        val dir = artifact("dir")
+        val dir = targetArtifacts("dir")
     }
 }
 

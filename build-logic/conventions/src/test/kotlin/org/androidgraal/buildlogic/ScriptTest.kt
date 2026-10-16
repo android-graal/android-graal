@@ -479,6 +479,40 @@ class ScriptTest {
     }
 
     @Test
+    fun `expect collects the step`() {
+        val builder = StepBuilder({}, {})
+
+        builder.expect("@{exit}", "0", "exited with @{exit}")
+
+        assertEquals(listOf(ExpectStep("@{exit}", "0", "exited with @{exit}")), builder.steps)
+    }
+
+    @Test
+    fun `a value that matches the whole expression lets the script go on`() {
+        val script = script()
+        val abis = script.capture("abis", "/bin/echo", "arm64-v8a,armeabi-v7a,armeabi")
+        script.expect(abis, "(.*,)?armeabi-v7a(,.*)?", "the device runs $abis")
+        script.progress("after the expectation")
+
+        script.runScript()
+
+        assertEquals("=== after the expectation", script.logFile.readLines().last())
+    }
+
+    @Test
+    fun `a value that does not match fails the script with the bound message, also in the log`() {
+        val script = script()
+        val abis = script.capture("abis", "/bin/echo", "arm64-v8a")
+        script.expect(abis, "(.*,)?armeabi(,.*)?", "the device runs $abis, not armeabi")
+        script.progress("never reached")
+
+        val failure = assertFailsWith<GradleException> { script.runScript() }
+
+        assertEquals("${script.name}: the device runs arm64-v8a, not armeabi", failure.cause!!.message)
+        assertEquals("=== the device runs arm64-v8a, not armeabi", script.logFile.readLines().last())
+    }
+
+    @Test
     fun `standard output and standard error both land in the log`() {
         val present = File(tmp, "present.txt").apply { writeText("") }
         val missing = File(tmp, "missing.txt")

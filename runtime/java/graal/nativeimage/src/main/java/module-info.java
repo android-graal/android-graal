@@ -19,6 +19,7 @@ module org.graalvm.nativeimage {
             org.graalvm.nativeimage.Platform.LINUX_RISCV64,
             org.graalvm.nativeimage.Platform.LINUX_ARM32,
             org.graalvm.nativeimage.Platform.ANDROID_AARCH64,
+            org.graalvm.nativeimage.Platform.ANDROID_ARM32,
             org.graalvm.nativeimage.Platform.IOS_AMD64,
             org.graalvm.nativeimage.Platform.IOS_AARCH64,
             org.graalvm.nativeimage.Platform.MACOS_AMD64,

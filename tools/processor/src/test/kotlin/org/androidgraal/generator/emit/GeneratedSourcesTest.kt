@@ -92,7 +92,7 @@ class GeneratedSourcesTest {
         val hello = loader.loadClass("org.graalvm.android.bridges.core.Hello")
         val image = loader.loadClass("org.androidgraal.art.Image")
 
-        // A lookup resolves the types of this method alone; getMethod would load android.jar's for Image's others.
+        // A lookup resolves the types of this method alone, getMethod would load android.jar's for Image's others.
         val createRoot = MethodHandles.publicLookup()
             .findStatic(image, "createRoot", MethodType.methodType(Any::class.java, Class::class.java))
         val failure = assertFailsWith<IllegalStateException> { createRoot.invokeWithArguments(hello) }
@@ -408,5 +408,5 @@ internal fun assertGolden(name: String, actual: Map<String, String>) {
         file.parentFile.mkdirs()
         file.writeText(text)
     }
-    fail("golden $name differs in $differing; the actual files are in ${out.absolutePath}")
+    fail("golden $name differs in $differing, the actual files are in ${out.absolutePath}")
 }

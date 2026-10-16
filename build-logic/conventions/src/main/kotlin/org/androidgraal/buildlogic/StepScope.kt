@@ -11,7 +11,7 @@ interface StepScope {
     /** Added to the inherited environment of every following [exec]. */
     fun env(key: String, value: String)
 
-    /** Working directory of every following [exec]; the task directory by default. */
+    /** Working directory of every following [exec], the task directory by default. */
     fun workDir(path: String)
 
     fun mkdir(path: String)
@@ -19,7 +19,7 @@ interface StepScope {
     fun delete(path: String)
 
     /**
-     * With [include] patterns the matching files are copied flat into [into]; without them [from]
+     * With [include] patterns the matching files are copied flat into [into]. Without them [from]
      * follows Gradle's copy semantics, so a directory contributes its contents and a file itself.
      */
     fun copy(from: String, into: String, vararg include: String)
@@ -27,7 +27,7 @@ interface StepScope {
     /** `rsync -a --delete --exclude=<x>... <from>/ <into>/`. */
     fun rsync(from: String, into: String, vararg exclude: String)
 
-    /** Each [sources] entry is a file or a directory walked for `*.c` and `*.cpp`; [cxxflags] are added for C++. */
+    /** Each [sources] entry is a file or a directory walked for `*.c` and `*.cpp`. [cxxflags] are added for C++. */
     fun staticLib(
         archive: String,
         objDir: String,
@@ -38,11 +38,14 @@ interface StepScope {
         cxxflags: List<String>,
     )
 
-    /** Runs [command] like [exec]; the returned sentinel stands for the last non-empty line of its output. */
+    /** Runs [command] like [exec]. The returned sentinel stands for the last non-empty line of its output. */
     fun capture(name: String, vararg command: String): String
 
+    /** Fails the task with [message] unless [value] matches [regex] as a whole. [value] and [message] are bound. */
+    fun expect(value: String, regex: String, message: String)
+
     /**
-     * Runs [body] once per direct child of [dir] whose file name matches [glob], in name order; what it
+     * Runs [body] once per direct child of [dir] whose file name matches [glob], in name order. What it
      * sets with [env] or [workDir] ends with the iteration.
      */
     fun forEach(dir: String, glob: String, body: StepScope.(Each) -> Unit)
@@ -137,6 +140,13 @@ class StepBuilder(private val check: (String) -> Unit, private val reserve: (Str
         command.forEach(check)
         stepList += CaptureStep(name, command.toList())
         return sentinel(name)
+    }
+
+    override fun expect(value: String, regex: String, message: String) {
+        check(value)
+        check(regex)
+        check(message)
+        stepList += ExpectStep(value, regex, message)
     }
 
     override fun forEach(dir: String, glob: String, body: StepScope.(Each) -> Unit) {

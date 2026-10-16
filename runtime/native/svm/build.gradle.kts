@@ -9,14 +9,13 @@ plugins {
     id("androidgraal.native")
 }
 
-description = "liblibchelper.a, libjvm.a, libsvm_container.a and libandroidgraal.a compiled for aarch64-linux-android."
+description = "liblibchelper.a, libjvm.a, libsvm_container.a and libandroidgraal.a compiled for every target."
 
 val substratevm: File = nativeHost.vendor.graal.resolve("substratevm")
 
-val target = Target.AARCH64
-
 val fallbacksDir: FileCollection = nativeInput(Native.Graal.jvmFuncsFallbacks)
-val jdkIncludeDir: FileCollection = nativeInput(Native.Jdk.include)
+val jdkIncludeDirs: Map<Target, FileCollection> =
+    Target.entries.associateWith { nativeInput(Native.Jdk.include.getValue(it)) }
 
 // commonCFlags and the two container lists are the "linux" cflags of jvm.posix and libcontainer in
 // vendor/graal/substratevm/mx.substratevm/suite.py, minus -g and -gdwarf-5.
@@ -47,66 +46,64 @@ val containerIncludes = listOf(
     "src/svm/share",
 )
 
-val buildSvmStaticLibs = tasks.register<Script>("buildSvmStaticLibs") {
-    group = "android-graal"
-    description = "Compiles the three SubstrateVM support libraries and libandroidgraal.a for ${target.triple}."
+for (target in Target.entries) {
+    val task = tasks.register<Script>("buildSvmStaticLibs${target.title}") {
+        group = "android-graal"
+        description = "Compiles the three SubstrateVM support libraries and libandroidgraal.a for ${target.triple}."
 
-    val fallbacks = input("fallbacks", fallbacksDir)
-    val jdkInclude = input("jdkInclude", jdkIncludeDir)
-    val chelperDir = source("libchelper", substratevm.resolve("src/com.oracle.svm.native.libchelper"))
-    val jvmPosixDir = source("jvmPosix", substratevm.resolve("src/com.oracle.svm.native.jvm.posix"))
-    val containerDir = source("libcontainer", substratevm.resolve("src/com.oracle.svm.native.libcontainer"))
-    val androidgraalDir = source("androidgraal", file("src/androidgraal"))
-    source("ndk", nativeHost.ndk.root)
-    val obj = root("obj", dir("obj"))
-    val lib = output(Native.Svm.staticLibs, dir("lib"))
+        val fallbacks = input("fallbacks", fallbacksDir)
+        val jdkInclude = input("jdkInclude", jdkIncludeDirs.getValue(target))
+        val chelperDir = source("libchelper", substratevm.resolve("src/com.oracle.svm.native.libchelper"))
+        val jvmPosixDir = source("jvmPosix", substratevm.resolve("src/com.oracle.svm.native.jvm.posix"))
+        val containerDir = source("libcontainer", substratevm.resolve("src/com.oracle.svm.native.libcontainer"))
+        val androidgraalDir = source("androidgraal", file("src/androidgraal"))
+        source("ndk", nativeHost.ndk.root)
+        val obj = root("obj", dir("obj"))
+        val lib = output(Native.Svm.staticLibs.getValue(target), dir("lib"))
 
-    val toolchain = rel(nativeHost.ndk.toolchain)
-    val clang = Compiler("$toolchain/bin/clang", "$toolchain/bin/clang++", "$toolchain/bin/llvm-ar")
-    val targetFlag = "--target=${target.clangTarget}${nativeHost.androidApi}"
+        val toolchain = rel(nativeHost.ndk.toolchain)
+        val clang = Compiler("$toolchain/bin/clang", "$toolchain/bin/clang++", "$toolchain/bin/llvm-ar")
+        val targetFlag = "--target=${target.clangTarget}${nativeHost.androidApi}"
 
-    progress("Compiling with NDK ${nativeHost.ndk.version()}")
-    delete(obj)
-    staticLib(
-        "$lib/liblibchelper.a",
-        "$obj/libchelper",
-        listOf("$chelperDir/src"),
-        clang,
-        listOf("$chelperDir/include"),
-        listOf(targetFlag) + commonCFlags + listOf("-D_LITTLE_ENDIAN"),
-        emptyList(),
-    )
-    staticLib(
-        "$lib/libjvm.a",
-        "$obj/jvm",
-        listOf("$jvmPosixDir/src", fallbacks),
-        clang,
-        listOf(jdkInclude, "$jdkInclude/android"),
-        listOf(targetFlag) + commonCFlags,
-        emptyList(),
-    )
-    staticLib(
-        "$lib/libsvm_container.a",
-        "$obj/container",
-        listOf("$containerDir/src"),
-        clang,
-        containerIncludes.map { "$containerDir/$it" },
-        listOf(targetFlag) + containerCFlags,
-        containerCxxFlags,
-    )
-    staticLib(
-        "$lib/libandroidgraal.a",
-        "$obj/androidgraal",
-        listOf(androidgraalDir),
-        clang,
-        emptyList(),
-        listOf(targetFlag) + commonCFlags,
-        emptyList(),
-    )
-}
-
-nativeOutput(Native.Svm.staticLibs, buildSvmStaticLibs)
-
-tasks.assemble {
-    dependsOn(buildSvmStaticLibs)
+        progress("Compiling with NDK ${nativeHost.ndk.version()}")
+        delete(obj)
+        staticLib(
+            "$lib/liblibchelper.a",
+            "$obj/libchelper",
+            listOf("$chelperDir/src"),
+            clang,
+            listOf("$chelperDir/include"),
+            listOf(targetFlag) + commonCFlags + listOf("-D_LITTLE_ENDIAN"),
+            emptyList(),
+        )
+        staticLib(
+            "$lib/libjvm.a",
+            "$obj/jvm",
+            listOf("$jvmPosixDir/src", fallbacks),
+            clang,
+            listOf(jdkInclude, "$jdkInclude/android"),
+            listOf(targetFlag) + commonCFlags,
+            emptyList(),
+        )
+        staticLib(
+            "$lib/libsvm_container.a",
+            "$obj/container",
+            listOf("$containerDir/src"),
+            clang,
+            containerIncludes.map { "$containerDir/$it" },
+            listOf(targetFlag) + containerCFlags,
+            containerCxxFlags,
+        )
+        staticLib(
+            "$lib/libandroidgraal.a",
+            "$obj/androidgraal",
+            listOf(androidgraalDir),
+            clang,
+            emptyList(),
+            listOf(targetFlag) + commonCFlags,
+            emptyList(),
+        )
+    }
+    nativeOutput(Native.Svm.staticLibs.getValue(target), task)
+    tasks.assemble { dependsOn(task) }
 }

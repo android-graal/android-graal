@@ -105,7 +105,7 @@ abstract class Script :
         return root(alias, file)
     }
 
-    /** Another task's artifact; the sentinel stands for its single file. */
+    /** Another task's artifact. The sentinel stands for its single file. */
     fun input(alias: String, files: FileCollection): String {
         inputFiles.from(files)
         artifacts[alias] = files
@@ -113,7 +113,7 @@ abstract class Script :
         return sentinel(alias)
     }
 
-    /** Other tasks' artifacts; the sentinel stands for their files joined by the path separator. */
+    /** Other tasks' artifacts. The sentinel stands for their files joined by the path separator. */
     fun classpath(alias: String, files: FileCollection): String {
         inputFiles.from(files)
         classpaths[alias] = files
@@ -181,6 +181,8 @@ abstract class Script :
     ) = builder.staticLib(archive, objDir, sources, compiler, includes, cflags, cxxflags)
 
     override fun capture(name: String, vararg command: String): String = builder.capture(name, *command)
+
+    override fun expect(value: String, regex: String, message: String) = builder.expect(value, regex, message)
 
     override fun forEach(dir: String, glob: String, body: StepScope.(Each) -> Unit) = builder.forEach(dir, glob, body)
 

@@ -1090,7 +1090,7 @@ public final class Debug
     public static long getNativeHeapSize() {
         Malloc.mallinfo info = StackValue.get(Malloc.mallinfo.class);
         Malloc.mallinfo(info);
-        return info.usmblks();
+        return info.usmblks().rawValue();
     }
 
     /**
@@ -1100,7 +1100,7 @@ public final class Debug
     public static long getNativeHeapAllocatedSize() {
         Malloc.mallinfo info = StackValue.get(Malloc.mallinfo.class);
         Malloc.mallinfo(info);
-        return info.uordblks();
+        return info.uordblks().rawValue();
     }
 
     /**
@@ -1110,7 +1110,7 @@ public final class Debug
     public static long getNativeHeapFreeSize() {
         Malloc.mallinfo info = StackValue.get(Malloc.mallinfo.class);
         Malloc.mallinfo(info);
-        return info.fordblks();
+        return info.fordblks().rawValue();
     }
 
     /** @hide */

@@ -16,6 +16,7 @@ internal object JavaNames {
     val GLES_V3: ClassName = ClassName.get(PACKAGE, "GLESv3")
     val GLES_V32: ClassName = ClassName.get(PACKAGE, "GLESv32")
     val POINTER: ClassName = ClassName.get(HELPER_PACKAGE, "Pointer")
+    val WORDS: ClassName = ClassName.get(HELPER_PACKAGE, "Words")
     val COUNTS: ClassName = ClassName.get(PACKAGE, "Counts")
     val C_STRING: ClassName = ClassName.get(HELPER_PACKAGE, "CString")
     val HANDWRITTEN: ClassName = ClassName.get(PACKAGE, "Handwritten")
@@ -31,5 +32,6 @@ internal object JavaNames {
     val C_TYPE_CONVERSION: ClassName = ClassName.get(C_TYPE_PACKAGE, "CTypeConversion")
     val C_CHAR_POINTER_HOLDER: ClassName = C_TYPE_CONVERSION.nestedClass("CCharPointerHolder")
     val POINTER_BASE: ClassName = ClassName.get("org.graalvm.word", "PointerBase")
+    val SIGNED_WORD: ClassName = ClassName.get("org.graalvm.word", "SignedWord")
     val WORD_FACTORY: ClassName = ClassName.get("org.graalvm.word", "WordFactory")
 }

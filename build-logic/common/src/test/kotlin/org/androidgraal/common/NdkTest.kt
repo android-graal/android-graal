@@ -33,6 +33,18 @@ class NdkTest {
     }
 
     @Test
+    fun `validate names every target's missing level`() {
+        for (target in Target.entries) {
+            val root = ndk(tmp.resolve("ndk-${target.title}"))
+            val level = Ndk(root).toolchain.resolve("sysroot/usr/lib/${target.triple}/23")
+            level.delete()
+
+            val failure = assertFailsWith<IllegalStateException> { Ndk(root).validate(23) }
+            assertEquals("the NDK cannot link for API level 23: no $level", failure.message)
+        }
+    }
+
+    @Test
     fun `validate fails without the host toolchain`() {
         val root = tmp.resolve("bare")
         root.mkdirs()
@@ -45,7 +57,7 @@ class NdkTest {
     private fun ndk(root: File): File {
         val toolchain = root.resolve("toolchains/llvm/prebuilt/${Host.current().ndkTag}")
         toolchain.resolve("bin").mkdirs()
-        toolchain.resolve("sysroot/usr/lib/${Target.AARCH64.triple}/23").mkdirs()
+        Target.entries.forEach { toolchain.resolve("sysroot/usr/lib/${it.triple}/23").mkdirs() }
         root.mkdirs()
         root.resolve("source.properties").writeText("Pkg.Revision = 30.0.16248370\n")
         return root

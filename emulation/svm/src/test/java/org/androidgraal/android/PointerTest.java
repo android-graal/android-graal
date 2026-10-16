@@ -123,12 +123,6 @@ class PointerTest {
                 message(() -> Pointer.checkRange(ByteBuffer.allocateDirect(8).asIntBuffer(), 4, 5)));
     }
 
-    @Test
-    void anOffsetIsTheAddressInTheBoundBuffer() {
-        assertEquals(64, Pointer.address(64).rawValue());
-        assertEquals(1L << 40, Pointer.address(1L << 40).rawValue());
-    }
-
     private static String message(Runnable check) {
         return assertThrows(IllegalArgumentException.class, check::run).getMessage();
     }

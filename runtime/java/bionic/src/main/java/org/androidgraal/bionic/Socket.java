@@ -7,6 +7,7 @@ import org.graalvm.nativeimage.c.struct.CField;
 import org.graalvm.nativeimage.c.struct.CStruct;
 import org.graalvm.nativeimage.c.type.CIntPointer;
 import org.graalvm.word.PointerBase;
+import org.graalvm.word.SignedWord;
 import org.graalvm.word.UnsignedWord;
 
 @CContext(BionicDirectives.class)
@@ -271,17 +272,17 @@ public final class Socket {
     public static native int listen(int fd, int backlog);
 
     @CFunction
-    public static native long recvfrom(int fd, PointerBase buffer, UnsignedWord length, int flags, sockaddr address,
-            CIntPointer addressLength);
+    public static native SignedWord recvfrom(int fd, PointerBase buffer, UnsignedWord length, int flags,
+            sockaddr address, CIntPointer addressLength);
 
     @CFunction
-    public static native long recvmsg(int fd, msghdr message, int flags);
+    public static native SignedWord recvmsg(int fd, msghdr message, int flags);
 
     @CFunction
-    public static native long sendmsg(int fd, msghdr message, int flags);
+    public static native SignedWord sendmsg(int fd, msghdr message, int flags);
 
     @CFunction
-    public static native long sendto(int fd, PointerBase buffer, UnsignedWord length, int flags, sockaddr address,
+    public static native SignedWord sendto(int fd, PointerBase buffer, UnsignedWord length, int flags, sockaddr address,
             int addressLength);
 
     @CFunction

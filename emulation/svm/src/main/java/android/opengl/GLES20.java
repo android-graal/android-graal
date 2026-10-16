@@ -12,6 +12,7 @@ import org.androidgraal.gles.Handwritten;
 import org.androidgraal.hosted.annotate.Emulated;
 import org.graalvm.nativeimage.PinnedObject;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
+import org.graalvm.word.WordFactory;
 
 @Emulated
 public class GLES20 {
@@ -675,13 +676,14 @@ public class GLES20 {
 
     public static void glBufferData(int target, int size, Buffer data, int usage) {
         try (PinnedObject dataPin = Pointer.pinNullable(data, size)) {
-            GLESv2.glBufferData(target, size, Pointer.address(data, dataPin), usage);
+            GLESv2.glBufferData(target, WordFactory.signed(size), Pointer.address(data, dataPin), usage);
         }
     }
 
     public static void glBufferSubData(int target, int offset, int size, Buffer data) {
         try (PinnedObject dataPin = Pointer.pin(data, size)) {
-            GLESv2.glBufferSubData(target, offset, size, Pointer.address(data, dataPin));
+            GLESv2.glBufferSubData(target, WordFactory.signed(offset), WordFactory.signed(size),
+                    Pointer.address(data, dataPin));
         }
     }
 
@@ -836,7 +838,7 @@ public class GLES20 {
     }
 
     public static void glDrawElements(int mode, int count, int type, int indicesOffset) {
-        GLESv2.glDrawElements(mode, count, type, Pointer.address(indicesOffset));
+        GLESv2.glDrawElements(mode, count, type, WordFactory.pointer(indicesOffset));
     }
 
     public static void glDrawElements(int mode, int count, int type, Buffer indices) {
@@ -1613,7 +1615,7 @@ public class GLES20 {
 
     public static void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride,
             int pointerOffset) {
-        GLESv2.glVertexAttribPointer(index, size, type, normalized, stride, Pointer.address(pointerOffset));
+        GLESv2.glVertexAttribPointer(index, size, type, normalized, stride, WordFactory.pointer(pointerOffset));
     }
 
     public static void glVertexAttribPointer(int index, int size, int type, boolean normalized, int stride,

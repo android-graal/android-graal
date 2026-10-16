@@ -8,12 +8,12 @@ import org.gradle.api.provider.Property
 
 abstract class AndroidGraalExtension {
 
-    /** Required; the plugin produces `lib<imageName>.so`. */
+    /** Required. The plugin produces `lib<imageName>.so`. */
     abstract val imageName: Property<String>
 
     /**
      * `androidgraal.toolchain.dir` in the build's `local.properties` and `ANDROID_GRAAL_TOOLCHAIN` take
-     * precedence; unset, it is the `org.androidgraal:toolchain` dependency.
+     * precedence. Unset, it is the `org.androidgraal:toolchain` dependency.
      */
     abstract val toolchainDir: DirectoryProperty
 
@@ -32,7 +32,7 @@ abstract class AndroidGraalExtension {
     /** `-Ob`: a faster build for a slower image. */
     abstract val quickBuild: Property<Boolean>
 
-    /** Default `true`; `false` selects graal's own LIR backend. */
+    /** Default `true`, `false` selects graal's own LIR backend. */
     abstract val useLLVM: Property<Boolean>
 }
 

@@ -5,7 +5,7 @@ import android.content.ContentValues;
 import android.database.Cursor;
 import android.net.Uri;
 
-/** Merged into the app's manifest by the art plugin; Android creates it before {@code Application.onCreate}. */
+/** Merged into the app's manifest by the art plugin. Android creates it before {@code Application.onCreate}. */
 public final class ApplicationProvider extends ContentProvider {
 
     @Override

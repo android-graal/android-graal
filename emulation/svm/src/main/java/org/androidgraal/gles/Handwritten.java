@@ -156,7 +156,9 @@ public final class Handwritten {
     }
 
     public static Buffer glMapBufferRange(int target, int offset, int length, int access) {
-        return mappedBuffer(GLESv3.glMapBufferRange(target, offset, length, access), length);
+        return mappedBuffer(
+                GLESv3.glMapBufferRange(target, WordFactory.signed(offset), WordFactory.signed(length), access),
+                length);
     }
 
     public static void glGetTransformFeedbackVarying(int program, int index, int bufSize, IntBuffer length,

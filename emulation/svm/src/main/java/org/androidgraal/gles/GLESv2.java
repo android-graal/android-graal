@@ -6,6 +6,7 @@ import org.graalvm.nativeimage.c.function.CLibrary;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.word.PointerBase;
+import org.graalvm.word.SignedWord;
 
 @CLibrary("GLESv2")
 public final class GLESv2 {
@@ -49,10 +50,10 @@ public final class GLESv2 {
     public static native void glBlendFuncSeparate(int sfactorRGB, int dfactorRGB, int sfactorAlpha, int dfactorAlpha);
 
     @CFunction("glBufferData")
-    public static native void glBufferData(int target, long size, PointerBase data, int usage);
+    public static native void glBufferData(int target, SignedWord size, PointerBase data, int usage);
 
     @CFunction("glBufferSubData")
-    public static native void glBufferSubData(int target, long offset, long size, PointerBase data);
+    public static native void glBufferSubData(int target, SignedWord offset, SignedWord size, PointerBase data);
 
     @CFunction("glCheckFramebufferStatus")
     public static native int glCheckFramebufferStatus(int target);

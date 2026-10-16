@@ -70,6 +70,7 @@ abstract class NativeImageLinkTask : BaseTask("link") {
         group = "build"
         description = "Links the native image for ${target.abi.abiString} ($variantName)."
         this.variantName.convention(variantName)
+        this.abi.convention(target.abi.abiString)
         this.outputDir.convention(taskDir.dir("jniLibs"))
         this.toolchain.convention(toolchain)
         this.target.convention(target)

@@ -729,7 +729,7 @@ public final class JNI {
 
     public interface DefineClass extends CFunctionPointer {
         @InvokeCFunctionPointer
-        JClass call(JNIEnv env, CCharPointer name, JObject loader, CCharPointer buf, long bufLen);
+        JClass call(JNIEnv env, CCharPointer name, JObject loader, CCharPointer buf, int bufLen);
     }
 
     public interface GetArrayLength extends CFunctionPointer {

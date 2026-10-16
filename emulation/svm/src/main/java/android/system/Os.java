@@ -43,6 +43,7 @@ import org.androidgraal.android.Scoped;
 import org.androidgraal.android.ScopedBytes;
 import org.androidgraal.android.ScopedUtfChars;
 import org.androidgraal.android.SocketAddresses;
+import org.androidgraal.android.Words;
 import org.androidgraal.bionic.Arpa;
 import org.androidgraal.bionic.Dlfcn;
 import org.androidgraal.bionic.Errno;
@@ -60,6 +61,7 @@ import org.androidgraal.bionic.Stat;
 import org.androidgraal.bionic.Statvfs;
 import org.androidgraal.bionic.Stdio;
 import org.androidgraal.bionic.Stdlib;
+import org.androidgraal.bionic.Strings;
 import org.androidgraal.bionic.Syscall;
 import org.androidgraal.bionic.Termios;
 import org.androidgraal.bionic.Time;
@@ -80,6 +82,8 @@ import org.graalvm.nativeimage.c.type.CLongPointer;
 import org.graalvm.nativeimage.c.type.CTypeConversion.CCharPointerPointerHolder;
 import org.graalvm.nativeimage.c.type.WordPointer;
 import org.graalvm.word.PointerBase;
+import org.graalvm.word.SignedWord;
+import org.graalvm.word.UnsignedWord;
 import org.graalvm.word.WordFactory;
 
 import java.io.FileDescriptor;
@@ -113,15 +117,15 @@ public final class Os {
             isNonBlockingFile(fd);
         }
         Socket.sockaddr_storage ss = StackValue.get(Socket.sockaddr_storage.class);
-        zero(ss, SizeOf.get(Socket.sockaddr_storage.class));
+        Strings.memset(ss, 0, SizeOf.unsigned(Socket.sockaddr_storage.class));
         CIntPointer sl = StackValue.get(CIntPointer.class);
         sl.write(SizeOf.get(Socket.sockaddr_storage.class));
         Scoped<Socket.sockaddr> peer =
                 Scoped.of(peerAddress != null ? (Socket.sockaddr) ss : WordFactory.nullPointer());
         Scoped<CIntPointer> peerLength =
                 Scoped.of(peerAddress != null ? sl : WordFactory.nullPointer());
-        int clientFd = (int) retry("accept",
-                () -> Socket.accept(fd(fd), peer.get(), peerLength.get()));
+        int clientFd = (int) Words.signExtended(retry("accept", () -> WordFactory.signed(
+                Socket.accept(fd(fd), peer.get(), peerLength.get()))));
         try {
             fillInetSocketAddress(peerAddress, ss);
         } catch (RuntimeException e) {
@@ -423,7 +427,7 @@ public final class Os {
      */
     public static @NonNull StructTimeval getsockoptTimeval(@NonNull FileDescriptor fd, int level, int option) throws ErrnoException {
         Scoped<Time.timeval> tv = Scoped.of(StackValue.get(Time.timeval.class));
-        zero(tv.get(), SizeOf.get(Time.timeval.class));
+        Strings.memset(tv.get(), 0, SizeOf.unsigned(Time.timeval.class));
         Scoped<CIntPointer> size = Scoped.of(StackValue.get(CIntPointer.class));
         size.get().write(SizeOf.get(Time.timeval.class));
         int rc = (int) tempFailureRetry(
@@ -455,25 +459,25 @@ public final class Os {
         try (ScopedUtfChars pathChars = new ScopedUtfChars(path);
                 ScopedUtfChars nameChars = new ScopedUtfChars(name)) {
             while (true) {
-                long valueLength = Xattr.getxattr(pathChars.get(), nameChars.get(),
+                SignedWord valueLength = Xattr.getxattr(pathChars.get(), nameChars.get(),
                         WordFactory.nullPointer(), WordFactory.zero());
                 int errno = errno();
-                if (valueLength < 0) {
+                if (valueLength.lessThan(0)) {
                     throw new ErrnoException("getxattr", errno);
                 }
-                byte[] buf = new byte[(int) valueLength];
+                byte[] buf = new byte[(int) Words.signExtended(valueLength)];
                 try (PinnedObject pin = PinnedObject.create(buf)) {
                     valueLength = Xattr.getxattr(pathChars.get(), nameChars.get(),
-                            Pointer.address(pin, 0), WordFactory.unsigned(valueLength));
+                            Pointer.address(pin, 0), (UnsignedWord) valueLength);
                     errno = errno();
                 }
-                if (valueLength < 0) {
+                if (valueLength.lessThan(0)) {
                     if (errno == ERANGE) {
                         continue;
                     }
                     throw new ErrnoException("getxattr", errno);
                 }
-                return Arrays.copyOf(buf, (int) valueLength);
+                return Arrays.copyOf(buf, (int) Words.signExtended(valueLength));
             }
         }
     }
@@ -504,7 +508,7 @@ public final class Os {
     public static InetAddress inet_pton(int family, String address) {
         try (ScopedUtfChars addressChars = new ScopedUtfChars(address)) {
             Socket.sockaddr_storage ss = StackValue.get(Socket.sockaddr_storage.class);
-            zero(ss, SizeOf.get(Socket.sockaddr_storage.class));
+            Strings.memset(ss, 0, SizeOf.unsigned(Socket.sockaddr_storage.class));
             CCharPointer dst;
             if (family == AF_INET) {
                 dst = ((Netinet.sockaddr_in) ss).sin_addr();
@@ -569,26 +573,26 @@ public final class Os {
     public static String[] listxattr(String path) throws ErrnoException {
         try (ScopedUtfChars pathChars = new ScopedUtfChars(path)) {
             while (true) {
-                long valueLength = Xattr.listxattr(pathChars.get(), WordFactory.nullPointer(),
-                        WordFactory.zero());
+                SignedWord valueLength = Xattr.listxattr(pathChars.get(),
+                        WordFactory.nullPointer(), WordFactory.zero());
                 int errno = errno();
-                if (valueLength < 0) {
+                if (valueLength.lessThan(0)) {
                     throw new ErrnoException("listxattr", errno);
                 }
-                byte[] buf = new byte[(int) valueLength];
+                byte[] buf = new byte[(int) Words.signExtended(valueLength)];
                 try (PinnedObject pin = PinnedObject.create(buf)) {
                     valueLength = Xattr.listxattr(pathChars.get(),
-                            (CCharPointer) Pointer.address(pin, 0),
-                            WordFactory.unsigned(valueLength));
+                            (CCharPointer) Pointer.address(pin, 0), (UnsignedWord) valueLength);
                     errno = errno();
                 }
-                if (valueLength < 0) {
+                if (valueLength.lessThan(0)) {
                     if (errno == ERANGE) {
                         continue;
                     }
                     throw new ErrnoException("listxattr", errno);
                 }
-                return new String(buf, 0, valueLength > 0 ? (int) valueLength - 1 : 0, UTF_8)
+                return new String(buf, 0, valueLength.greaterThan(0)
+                        ? (int) Words.signExtended(valueLength) - 1 : 0, UTF_8)
                         .split("\0", -1);
             }
         }
@@ -612,8 +616,9 @@ public final class Os {
      */
     public static @NonNull FileDescriptor memfd_create(@NonNull String name, int flags) throws ErrnoException {
         try (ScopedUtfChars nameChars = new ScopedUtfChars(name)) {
-            return FileDescriptors.create((int) throwIfMinusOne("memfd_create",
-                    Unistd.syscall(Syscall.__NR_memfd_create(), nameChars.get(), flags), errno()));
+            SignedWord number = WordFactory.signed(Syscall.__NR_memfd_create());
+            return FileDescriptors.create((int) Words.signExtended(throwIfMinusOne(
+                    "memfd_create", Unistd.syscall(number, nameChars.get(), flags), errno())));
         }
     }
 
@@ -662,7 +667,7 @@ public final class Os {
     public static long mmap(long address, long byteCount, int prot, int flags, FileDescriptor fd, long offset) throws ErrnoException {
         PointerBase ptr = Mman.mmap64(WordFactory.pointer(address),
                 WordFactory.unsigned(byteCount), prot, flags, fd(fd), offset);
-        if (ptr.rawValue() == -1) {
+        if (ptr.equal(WordFactory.signed(-1))) {
             throw new ErrnoException("mmap", errno());
         }
         return ptr.rawValue();
@@ -769,8 +774,9 @@ public final class Os {
                 }
                 if (timeoutMs > 0) {
                     Time.clock_gettime(Time.CLOCK_MONOTONIC(), now);
-                    long seconds = now.tv_sec() - before.tv_sec();
-                    long nanoseconds = now.tv_nsec() - before.tv_nsec();
+                    long seconds = Words.signExtended(now.tv_sec().subtract(before.tv_sec()));
+                    long nanoseconds =
+                            Words.signExtended(now.tv_nsec().subtract(before.tv_nsec()));
                     if (nanoseconds < 0) {
                         --seconds;
                         nanoseconds += 1_000_000_000L;
@@ -814,7 +820,9 @@ public final class Os {
      */
     public static int prctl(int option, long arg2, long arg3, long arg4, long arg5) throws ErrnoException {
         return (int) throwIfMinusOne("prctl",
-                tempFailureRetry(() -> Prctl.prctl(option, arg2, arg3, arg4, arg5)), errno());
+                tempFailureRetry(() -> Prctl.prctl(option, WordFactory.unsigned(arg2),
+                        WordFactory.unsigned(arg3), WordFactory.unsigned(arg4),
+                        WordFactory.unsigned(arg5))), errno());
     }
 
     /**
@@ -895,12 +903,12 @@ public final class Os {
             while (true) {
                 try (PinnedObject pin = PinnedObject.create(buf)) {
                     CCharPointer buffer = (CCharPointer) Pointer.address(pin, 0);
-                    long size = Unistd.readlink(pathChars.get(), buffer,
+                    SignedWord size = Unistd.readlink(pathChars.get(), buffer,
                             WordFactory.unsigned(buf.length));
-                    if (size == -1) {
+                    if (size.equal(-1)) {
                         throw new ErrnoException("readlink", errno());
                     }
-                    if (size < buf.length) {
+                    if (size.lessThan(buf.length)) {
                         return CString.toJava(buffer);
                     }
                 }
@@ -917,7 +925,8 @@ public final class Os {
             if (!ioVec.init(buffers, offsets, byteCounts)) {
                 return -1;
             }
-            return (int) retry("readv", () -> Uio.readv(fd(fd), ioVec.get(), ioVec.size()));
+            return (int) Words.signExtended(
+                    retry("readv", () -> Uio.readv(fd(fd), ioVec.get(), ioVec.size())));
         }
     }
 
@@ -957,9 +966,9 @@ public final class Os {
             throw new NullPointerException("null StructMsghdr.msg_iov");
         }
         Scoped<Socket.msghdr> hdr = Scoped.of(StackValue.get(Socket.msghdr.class));
-        zero(hdr.get(), SizeOf.get(Socket.msghdr.class));
+        Strings.memset(hdr.get(), 0, SizeOf.unsigned(Socket.msghdr.class));
         Socket.sockaddr_storage ss = StackValue.get(Socket.sockaddr_storage.class);
-        zero(ss, SizeOf.get(Socket.sockaddr_storage.class));
+        Strings.memset(ss, 0, SizeOf.unsigned(Socket.sockaddr_storage.class));
         try (ScopedByteBufferArray scopedBytesArray = new ScopedByteBufferArray(true)) {
             msghdrJavaToC(msg, hdr.get(), scopedBytesArray);
             SocketAddress name = msg.msg_name;
@@ -967,7 +976,7 @@ public final class Os {
                 hdr.get().msg_name(ss);
                 hdr.get().msg_namelen(SizeOf.get(Netinet.sockaddr_in6.class));
             }
-            long rc = retry("recvmsg", () -> Socket.recvmsg(fd(fd), hdr.get(), flags));
+            SignedWord rc = retry("recvmsg", () -> Socket.recvmsg(fd(fd), hdr.get(), flags));
             if (name != null) {
                 int nameLength = hdr.get().msg_namelen();
                 if (nameLength != SizeOf.get(Netinet.sockaddr_in6.class)
@@ -980,7 +989,7 @@ public final class Os {
             }
             msgcontrolToStructCmsghdrArray(msg, hdr.get());
             msg.msg_flags = hdr.get().msg_flags();
-            return (int) rc;
+            return (int) Words.signExtended(rc);
         } finally {
             UnmanagedMemory.free(hdr.get().msg_iov());
             UnmanagedMemory.free(hdr.get().msg_control());
@@ -1032,12 +1041,12 @@ public final class Os {
         if (offset != null) {
             slot.write(offset.value);
         }
-        long rc = throwIfMinusOne("sendfile", tempFailureRetry(() -> Sendfile.sendfile64(fd(outFd),
-                fd(inFd), offsetPtr.get(), WordFactory.unsigned(byteCount))), errno());
+        SignedWord rc = throwIfMinusOne("sendfile", tempFailureRetry(() -> Sendfile.sendfile64(
+                fd(outFd), fd(inFd), offsetPtr.get(), WordFactory.unsigned(byteCount))), errno());
         if (offset != null) {
             offset.value = slot.read();
         }
-        return rc;
+        return Words.signExtended(rc);
     }
 
     /**
@@ -1053,7 +1062,7 @@ public final class Os {
             throw new NullPointerException("null StructMsghdr.msg_iov");
         }
         Scoped<Socket.msghdr> hdr = Scoped.of(StackValue.get(Socket.msghdr.class));
-        zero(hdr.get(), SizeOf.get(Socket.msghdr.class));
+        Strings.memset(hdr.get(), 0, SizeOf.unsigned(Socket.msghdr.class));
         Socket.sockaddr_storage ss = StackValue.get(Socket.sockaddr_storage.class);
         try (ScopedByteBufferArray scopedBytesArray = new ScopedByteBufferArray(false)) {
             msghdrJavaToC(msg, hdr.get(), scopedBytesArray);
@@ -1176,8 +1185,8 @@ public final class Os {
             throw new NullPointerException("null javaTimeval");
         }
         Scoped<Time.timeval> v = Scoped.of(StackValue.get(Time.timeval.class));
-        v.get().tv_sec(value.tv_sec);
-        v.get().tv_usec(value.tv_usec);
+        v.get().tv_sec(WordFactory.signed(value.tv_sec));
+        v.get().tv_usec(WordFactory.signed(value.tv_usec));
         throwIfMinusOne("setsockopt", tempFailureRetry(() -> Socket.setsockopt(fd(fd), level,
                 option, v.get(), SizeOf.get(Time.timeval.class))), errno());
     }
@@ -1288,12 +1297,12 @@ public final class Os {
      */
     public static long sysconf(int name) throws ErrnoException {
         Errno.errno().write(0);
-        long result = Unistd.sysconf(name);
+        SignedWord result = Unistd.sysconf(name);
         int errno = errno();
-        if (result == -1L && errno == EINVAL) {
+        if (result.equal(-1) && errno == EINVAL) {
             throw new ErrnoException("sysconf", errno);
         }
-        return result;
+        return Words.signExtended(result);
     }
 
     /**
@@ -1372,7 +1381,8 @@ public final class Os {
             if (!ioVec.init(buffers, offsets, byteCounts)) {
                 return -1;
             }
-            return (int) retry("writev", () -> Uio.writev(fd(fd), ioVec.get(), ioVec.size()));
+            return (int) Words.signExtended(
+                    retry("writev", () -> Uio.writev(fd(fd), ioVec.get(), ioVec.size())));
         }
     }
 
@@ -1394,19 +1404,36 @@ public final class Os {
         return rc;
     }
 
+    private static SignedWord throwIfMinusOne(String name, SignedWord rc, int errno)
+            throws ErrnoException {
+        if (rc.equal(-1)) {
+            throw new ErrnoException(name, errno);
+        }
+        return rc;
+    }
+
     @AlwaysInline("the closure is scalar-replaced only when inlined")
-    private static long retry(String name, SystemCall call) throws ErrnoException {
-        long rc;
+    private static SignedWord retry(String name, SystemCall call) throws ErrnoException {
+        SignedWord rc;
         int errno;
         do {
             rc = call.call();
             errno = errno();
-        } while (rc == -1 && errno == EINTR);
+        } while (rc.equal(-1) && errno == EINTR);
         return throwIfMinusOne(name, rc, errno);
     }
 
     @AlwaysInline("the closure is scalar-replaced only when inlined")
-    private static long tempFailureRetry(SystemCall call) {
+    private static SignedWord tempFailureRetry(SystemCall call) {
+        SignedWord rc;
+        do {
+            rc = call.call();
+        } while (rc.equal(-1) && errno() == EINTR);
+        return rc;
+    }
+
+    @AlwaysInline("the closure is scalar-replaced only when inlined")
+    private static long tempFailureRetry(LongSystemCall call) {
         long rc;
         do {
             rc = call.call();
@@ -1504,8 +1531,8 @@ public final class Os {
             if (bytes.get().isNull()) {
                 return -1;
             }
-            return (int) retry("read", () -> Unistd.read(fd(fd), bytes.get().add(byteOffset),
-                    WordFactory.unsigned(byteCount)));
+            return (int) Words.signExtended(retry("read", () -> Unistd.read(fd(fd),
+                    bytes.get().add(byteOffset), WordFactory.unsigned(byteCount))));
         }
     }
 
@@ -1515,8 +1542,8 @@ public final class Os {
             if (bytes.get().isNull()) {
                 return -1;
             }
-            return (int) retry("write", () -> Unistd.write(fd(fd), bytes.get().add(byteOffset),
-                    WordFactory.unsigned(byteCount)));
+            return (int) Words.signExtended(retry("write", () -> Unistd.write(fd(fd),
+                    bytes.get().add(byteOffset), WordFactory.unsigned(byteCount))));
         }
     }
 
@@ -1526,8 +1553,8 @@ public final class Os {
             if (bytes.get().isNull()) {
                 return -1;
             }
-            return (int) retry("pread64", () -> Unistd.pread64(fd(fd),
-                    bytes.get().add(byteOffset), WordFactory.unsigned(byteCount), offset));
+            return (int) Words.signExtended(retry("pread64", () -> Unistd.pread64(fd(fd),
+                    bytes.get().add(byteOffset), WordFactory.unsigned(byteCount), offset)));
         }
     }
 
@@ -1537,8 +1564,8 @@ public final class Os {
             if (bytes.get().isNull()) {
                 return -1;
             }
-            return (int) retry("pwrite64", () -> Unistd.pwrite64(fd(fd),
-                    bytes.get().add(byteOffset), WordFactory.unsigned(byteCount), offset));
+            return (int) Words.signExtended(retry("pwrite64", () -> Unistd.pwrite64(fd(fd),
+                    bytes.get().add(byteOffset), WordFactory.unsigned(byteCount), offset)));
         }
     }
 
@@ -1549,25 +1576,25 @@ public final class Os {
                 return -1;
             }
             Socket.sockaddr_storage ss = StackValue.get(Socket.sockaddr_storage.class);
-            zero(ss, SizeOf.get(Socket.sockaddr_storage.class));
+            Strings.memset(ss, 0, SizeOf.unsigned(Socket.sockaddr_storage.class));
             CIntPointer sl = StackValue.get(CIntPointer.class);
             sl.write(SizeOf.get(Socket.sockaddr_storage.class));
             Scoped<Socket.sockaddr> from = Scoped.of(
                     srcAddress != null ? (Socket.sockaddr) ss : WordFactory.nullPointer());
             Scoped<CIntPointer> fromLength =
                     Scoped.of(srcAddress != null ? sl : WordFactory.nullPointer());
-            long rc = retry("recvfrom",
+            SignedWord rc = retry("recvfrom",
                     () -> recvfromCall(fd, bytes, byteOffset, byteCount, flags, from, fromLength));
             int family = Short.toUnsignedInt(ss.ss_family());
             if (family == AF_INET || family == AF_INET6) {
                 fillInetSocketAddress(srcAddress, ss);
             }
-            return (int) rc;
+            return (int) Words.signExtended(rc);
         }
     }
 
     @AlwaysInline("a closure is inlined only while it is a trivial method, so it forwards here")
-    private static long recvfromCall(FileDescriptor fd, ScopedBytes bytes, int byteOffset,
+    private static SignedWord recvfromCall(FileDescriptor fd, ScopedBytes bytes, int byteOffset,
             int byteCount, int flags, Scoped<Socket.sockaddr> from,
             Scoped<CIntPointer> fromLength) {
         return Socket.recvfrom(fd(fd), bytes.get().add(byteOffset),
@@ -1618,7 +1645,8 @@ public final class Os {
     @AlwaysInline("the holders and the closure are scalar-replaced only when inlined")
     private static int sendmsgMsghdr(FileDescriptor fd, Scoped<Socket.msghdr> hdr, int flags)
             throws ErrnoException {
-        return (int) retry("sendmsg", () -> Socket.sendmsg(fd(fd), hdr.get(), flags));
+        return (int) Words.signExtended(
+                retry("sendmsg", () -> Socket.sendmsg(fd(fd), hdr.get(), flags)));
     }
 
     private static void maybeUpdateBufferPosition(ByteBuffer buffer, int originalPosition,
@@ -1630,7 +1658,7 @@ public final class Os {
 
     private static int inetAddressToSockaddr(InetAddress inetAddress, int port,
             Socket.sockaddr_storage ss, boolean map) {
-        zero(ss, SizeOf.get(Socket.sockaddr_storage.class));
+        Strings.memset(ss, 0, SizeOf.unsigned(Socket.sockaddr_storage.class));
         byte[] addressBytes = Objects.requireNonNull(inetAddress).getAddress();
         Netinet.sockaddr_in6 sin6 = (Netinet.sockaddr_in6) ss;
         sin6.sin6_port(htons(port));
@@ -1675,7 +1703,7 @@ public final class Os {
 
     private static int javaVmSocketAddressToSockaddr(VmSocketAddress address,
             Socket.sockaddr_storage ss) {
-        zero(ss, SizeOf.get(Socket.sockaddr_storage.class));
+        Strings.memset(ss, 0, SizeOf.unsigned(Socket.sockaddr_storage.class));
         Vm.sockaddr_vm svm = (Vm.sockaddr_vm) ss;
         svm.svm_family((short) AF_VSOCK);
         svm.svm_port(address.getSvmPort());
@@ -1771,7 +1799,7 @@ public final class Os {
             throws ErrnoException {
         Socket.sockaddr_storage ss = StackValue.get(Socket.sockaddr_storage.class);
         Scoped<Socket.sockaddr> sa = Scoped.of((Socket.sockaddr) ss);
-        zero(ss, SizeOf.get(Socket.sockaddr_storage.class));
+        Strings.memset(ss, 0, SizeOf.unsigned(Socket.sockaddr_storage.class));
         Scoped<CIntPointer> byteCount = Scoped.of(StackValue.get(CIntPointer.class));
         byteCount.get().write(SizeOf.get(Socket.sockaddr_storage.class));
         int rc = (int) (isSockName
@@ -1786,21 +1814,22 @@ public final class Os {
     @AlwaysInline("the holders and the closure are scalar-replaced only when inlined")
     private static void bindSockaddr(FileDescriptor fd, Scoped<Socket.sockaddr> sa,
             int saLength) throws ErrnoException {
-        retry("bind", () -> Socket.bind(fd(fd), sa.get(), saLength));
+        retry("bind", () -> WordFactory.signed(Socket.bind(fd(fd), sa.get(), saLength)));
     }
 
     @AlwaysInline("the holders and the closure are scalar-replaced only when inlined")
     private static void connectSockaddr(FileDescriptor fd, Scoped<Socket.sockaddr> sa,
             int saLength) throws ErrnoException {
-        retry("connect", () -> Socket.connect(fd(fd), sa.get(), saLength));
+        retry("connect", () -> WordFactory.signed(Socket.connect(fd(fd), sa.get(), saLength)));
     }
 
     @AlwaysInline("the holders and the closure are scalar-replaced only when inlined")
     private static int sendtoSockaddr(FileDescriptor fd, ScopedBytes bytes, int byteOffset,
             int byteCount, int flags, Scoped<Socket.sockaddr> sa, int saLength)
             throws ErrnoException {
-        return (int) retry("sendto", () -> Socket.sendto(fd(fd), bytes.get().add(byteOffset),
-                WordFactory.unsigned(byteCount), flags, sa.get(), saLength));
+        return (int) Words.signExtended(retry("sendto", () -> Socket.sendto(fd(fd),
+                bytes.get().add(byteOffset), WordFactory.unsigned(byteCount), flags, sa.get(),
+                saLength)));
     }
 
     private static boolean retriesAsIPv4(ErrnoException e, Socket.sockaddr sa, int saLength) {
@@ -1895,7 +1924,8 @@ public final class Os {
     }
 
     private static long cmsgAlign(long length) {
-        return (length + 7) & ~7L;
+        long alignment = SizeOf.get(WordPointer.class);
+        return (length + alignment - 1) & ~(alignment - 1);
     }
 
     private static long cmsgSpace(long length) {
@@ -1934,7 +1964,8 @@ public final class Os {
     }
 
     private static StructTimespec makeStructTimespec(Time.timespec ts) {
-        return new StructTimespec(ts.tv_sec(), ts.tv_nsec());
+        return new StructTimespec(Words.signExtended(ts.tv_sec()),
+                Words.signExtended(ts.tv_nsec()));
     }
 
     private static StructStat makeStructStat(Stat.stat64 sb) {
@@ -1945,14 +1976,15 @@ public final class Os {
     }
 
     private static StructStatVfs makeStructStatVfs(Statvfs.statvfs sb) {
-        return new StructStatVfs(sb.f_bsize(), sb.f_frsize(), sb.f_blocks(), sb.f_bfree(),
-                sb.f_bavail(), sb.f_files(), sb.f_ffree(), sb.f_favail(), sb.f_fsid(), sb.f_flag(),
-                sb.f_namemax());
+        return new StructStatVfs(sb.f_bsize().rawValue(), sb.f_frsize().rawValue(),
+                sb.f_blocks().rawValue(), sb.f_bfree().rawValue(), sb.f_bavail().rawValue(),
+                sb.f_files().rawValue(), sb.f_ffree().rawValue(), sb.f_favail().rawValue(),
+                sb.f_fsid().rawValue(), sb.f_flag().rawValue(), sb.f_namemax().rawValue());
     }
 
     private static StructTimeval makeStructTimeval(Time.timeval tv) {
-        return (StructTimeval) (Object) new Target_android_system_StructTimeval(tv.tv_sec(),
-                tv.tv_usec());
+        return (StructTimeval) (Object) new Target_android_system_StructTimeval(
+                Words.signExtended(tv.tv_sec()), Words.signExtended(tv.tv_usec()));
     }
 
     private static StructUtsname makeStructUtsname(Utsname.utsname buf) {
@@ -1962,13 +1994,6 @@ public final class Os {
         String version = CString.toJava(buf.version());
         String machine = CString.toJava(buf.machine());
         return new StructUtsname(sysname, nodename, release, version, machine);
-    }
-
-    private static void zero(PointerBase memory, int size) {
-        CLongPointer longs = (CLongPointer) memory;
-        for (int i = 0; i < size / Long.BYTES; ++i) {
-            longs.write(i, 0L);
-        }
     }
 
     private static void bytesToC(byte[] from, CCharPointer to) {
@@ -1986,6 +2011,10 @@ public final class Os {
     }
 
     private interface SystemCall {
+        SignedWord call();
+    }
+
+    private interface LongSystemCall {
         long call();
     }
 

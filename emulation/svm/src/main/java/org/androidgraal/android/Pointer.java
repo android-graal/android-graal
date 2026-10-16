@@ -81,10 +81,6 @@ public final class Pointer {
         return pin == null ? WordFactory.nullPointer() : pin.addressOfArrayElement(offset);
     }
 
-    public static PointerBase address(long offset) {
-        return WordFactory.pointer(offset);
-    }
-
     public static PointerBase direct(Buffer buffer) {
         if (buffer == null) {
             throw new IllegalArgumentException("null buffer");

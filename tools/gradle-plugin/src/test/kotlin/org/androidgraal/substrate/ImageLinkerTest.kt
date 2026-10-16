@@ -90,6 +90,40 @@ class ImageLinkerTest {
     }
 
     @Test
+    fun `command is the pinned link line for ARM32, from its own target directory`() {
+        val toolchain = fakeToolchain()
+        val targetLayout = ToolchainLayout(toolchain).target(Target.ARM32)
+        val objects = tmp.resolve("objects")
+
+        assertEquals(
+            listOf(
+                "$tmp/ndk/clang",
+                "--target=armv7a-linux-androideabi23",
+                "-shared",
+                "-o",
+                "$tmp/jniLibs/armeabi-v7a/libhello.so",
+                "$objects/hello.o",
+                "$objects/llvm.o",
+                "-Wl,--version-script,$objects/exported_symbols.list",
+                "-Wl,--no-undefined",
+                "-Wl,--start-group",
+                "${targetLayout.jdkLibs}/libjava.a",
+                "${targetLayout.svmLibs}/libjvm.a",
+                "-Wl,--end-group",
+                "-Wl,-soname,libhello.so",
+                "-lm",
+                "-ldl",
+                "-lz",
+            ),
+            ImageLinker(
+                config(toolchain, objects, staticLibraries = listOf("java", "jvm"), target = Target.ARM32),
+                noRunner,
+            ).command(),
+        )
+        assertEquals(toolchain.resolve("targets/arm-linux-androideabi"), targetLayout.root)
+    }
+
+    @Test
     fun `section garbage collection only without LLVM`() {
         val toolchain = fakeToolchain()
         val objects = tmp.resolve("objects")
@@ -174,6 +208,7 @@ class ImageLinkerTest {
         useLLVM: Boolean = true,
         staticLibraries: List<String> = listOf("libchelper", "svm_container", "m", "nio", "net", "java", "zip", "jvm"),
         libraries: List<String> = listOf("m", "dl", "z"),
+        target: Target = Target.AARCH64,
     ): ImageLinker.Config {
         val compiled = CompiledImage(
             objects = listOfObjects(objects, useLLVM),
@@ -189,7 +224,7 @@ class ImageLinkerTest {
             compiled = compiled,
             useLLVM = useLLVM,
             outputDir = tmp.resolve("jniLibs"),
-            target = Target.AARCH64,
+            target = target,
         )
     }
 

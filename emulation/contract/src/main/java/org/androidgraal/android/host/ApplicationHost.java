@@ -5,7 +5,7 @@ import org.androidgraal.hosted.annotate.Art;
 @Art
 public interface ApplicationHost {
 
-    /** {@code AssetManager.list(path)}; its {@code IOException} crosses as the cause. */
+    /** {@code AssetManager.list(path)}. Its {@code IOException} crosses as the cause. */
     String[] listAssets(String path);
 
     /** {@code AssetManager.getLocales()}. */

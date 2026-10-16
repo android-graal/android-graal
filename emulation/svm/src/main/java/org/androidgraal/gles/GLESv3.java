@@ -6,6 +6,7 @@ import org.graalvm.nativeimage.c.function.CLibrary;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.word.PointerBase;
+import org.graalvm.word.SignedWord;
 
 @CLibrary("GLESv3")
 public final class GLESv3 {
@@ -99,10 +100,10 @@ public final class GLESv3 {
     public static native void glFramebufferTextureLayer(int target, int attachment, int texture, int level, int layer);
 
     @CFunction("glMapBufferRange")
-    public static native PointerBase glMapBufferRange(int target, long offset, long length, int access);
+    public static native PointerBase glMapBufferRange(int target, SignedWord offset, SignedWord length, int access);
 
     @CFunction("glFlushMappedBufferRange")
-    public static native void glFlushMappedBufferRange(int target, long offset, long length);
+    public static native void glFlushMappedBufferRange(int target, SignedWord offset, SignedWord length);
 
     @CFunction("glBindVertexArray")
     public static native void glBindVertexArray(int array);
@@ -126,7 +127,7 @@ public final class GLESv3 {
     public static native void glEndTransformFeedback();
 
     @CFunction("glBindBufferRange")
-    public static native void glBindBufferRange(int target, int index, int buffer, long offset, long size);
+    public static native void glBindBufferRange(int target, int index, int buffer, SignedWord offset, SignedWord size);
 
     @CFunction("glBindBufferBase")
     public static native void glBindBufferBase(int target, int index, int buffer);
@@ -206,8 +207,8 @@ public final class GLESv3 {
     public static native CCharPointer glGetStringi(int name, int index);
 
     @CFunction("glCopyBufferSubData")
-    public static native void glCopyBufferSubData(int readTarget, int writeTarget, long readOffset, long writeOffset,
-            long size);
+    public static native void glCopyBufferSubData(int readTarget, int writeTarget, SignedWord readOffset,
+            SignedWord writeOffset, SignedWord size);
 
     @CFunction("glGetUniformIndices")
     public static native void glGetUniformIndices(int program, int uniformCount, CCharPointerPointer uniformNames,
@@ -239,25 +240,26 @@ public final class GLESv3 {
             int instancecount);
 
     @CFunction("glFenceSync")
-    public static native long glFenceSync(int condition, int flags);
+    public static native PointerBase glFenceSync(int condition, int flags);
 
     @CFunction("glIsSync")
-    public static native boolean glIsSync(long sync);
+    public static native boolean glIsSync(PointerBase sync);
 
     @CFunction("glDeleteSync")
-    public static native void glDeleteSync(long sync);
+    public static native void glDeleteSync(PointerBase sync);
 
     @CFunction("glClientWaitSync")
-    public static native int glClientWaitSync(long sync, int flags, long timeout);
+    public static native int glClientWaitSync(PointerBase sync, int flags, long timeout);
 
     @CFunction("glWaitSync")
-    public static native void glWaitSync(long sync, int flags, long timeout);
+    public static native void glWaitSync(PointerBase sync, int flags, long timeout);
 
     @CFunction("glGetInteger64v")
     public static native void glGetInteger64v(int pname, PointerBase data);
 
     @CFunction("glGetSynciv")
-    public static native void glGetSynciv(long sync, int pname, int bufSize, PointerBase length, PointerBase values);
+    public static native void glGetSynciv(PointerBase sync, int pname, int bufSize, PointerBase length,
+            PointerBase values);
 
     @CFunction("glGetInteger64i_v")
     public static native void glGetInteger64i_v(int target, int index, PointerBase data);
@@ -348,7 +350,7 @@ public final class GLESv3 {
     public static native void glDispatchCompute(int num_groups_x, int num_groups_y, int num_groups_z);
 
     @CFunction("glDispatchComputeIndirect")
-    public static native void glDispatchComputeIndirect(long indirect);
+    public static native void glDispatchComputeIndirect(SignedWord indirect);
 
     @CFunction("glDrawArraysIndirect")
     public static native void glDrawArraysIndirect(int mode, PointerBase indirect);
@@ -548,7 +550,7 @@ public final class GLESv3 {
     public static native void glGetTexLevelParameterfv(int target, int level, int pname, PointerBase params);
 
     @CFunction("glBindVertexBuffer")
-    public static native void glBindVertexBuffer(int bindingindex, int buffer, long offset, int stride);
+    public static native void glBindVertexBuffer(int bindingindex, int buffer, SignedWord offset, int stride);
 
     @CFunction("glVertexAttribFormat")
     public static native void glVertexAttribFormat(int attribindex, int size, int type, boolean normalized,

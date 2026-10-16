@@ -31,6 +31,9 @@ abstract class BaseTask(private val dirName: String) : DefaultTask() {
     abstract val variantName: Property<String>
 
     @get:Internal
+    abstract val abi: Property<String>
+
+    @get:Internal
     abstract val console: Property<Boolean>
 
     @get:Inject
@@ -52,7 +55,9 @@ abstract class BaseTask(private val dirName: String) : DefaultTask() {
         console.convention(providers.gradleProperty(CONSOLE_PROPERTY).map { it != "false" }.orElse(false))
         taskDir.convention(
             layout.buildDirectory.dir(
-                providers.provider { listOfNotNull("androidgraal", variantName.orNull, dirName).joinToString("/") },
+                providers.provider {
+                    listOfNotNull("androidgraal", variantName.orNull, abi.orNull, dirName).joinToString("/")
+                },
             ),
         )
     }

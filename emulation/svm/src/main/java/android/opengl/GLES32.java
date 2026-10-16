@@ -13,6 +13,7 @@ import org.androidgraal.gles.Handwritten;
 import org.androidgraal.hosted.annotate.Emulated;
 import org.graalvm.nativeimage.PinnedObject;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
+import org.graalvm.word.WordFactory;
 
 @Emulated
 public class GLES32 extends GLES31 {
@@ -500,7 +501,7 @@ public class GLES32 extends GLES31 {
 
     public static void glDrawElementsInstancedBaseVertex(int mode, int count, int type, int indicesOffset,
             int instancecount, int basevertex) {
-        GLESv32.glDrawElementsInstancedBaseVertex().call(mode, count, type, Pointer.address(indicesOffset),
+        GLESv32.glDrawElementsInstancedBaseVertex().call(mode, count, type, WordFactory.pointer(indicesOffset),
                 instancecount, basevertex);
     }
 
@@ -724,7 +725,8 @@ public class GLES32 extends GLES31 {
     }
 
     public static void glTexBufferRange(int target, int internalformat, int buffer, int offset, int size) {
-        GLESv32.glTexBufferRange().call(target, internalformat, buffer, offset, size);
+        GLESv32.glTexBufferRange().call(target, internalformat, buffer, WordFactory.signed(offset),
+                WordFactory.signed(size));
     }
 
     public static void glTexParameterIiv(int target, int pname, IntBuffer params) {

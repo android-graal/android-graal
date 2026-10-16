@@ -7,6 +7,7 @@ import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.nativeimage.c.type.CIntPointer;
 import org.graalvm.word.PointerBase;
+import org.graalvm.word.SignedWord;
 import org.graalvm.word.UnsignedWord;
 
 @CContext(BionicDirectives.class)
@@ -385,16 +386,16 @@ public final class Unistd {
     public static native int pipe2(CIntPointer fds, int flags);
 
     @CFunction
-    public static native long pread64(int fd, PointerBase buffer, UnsignedWord count, long offset);
+    public static native SignedWord pread64(int fd, PointerBase buffer, UnsignedWord count, long offset);
 
     @CFunction
-    public static native long pwrite64(int fd, PointerBase buffer, UnsignedWord count, long offset);
+    public static native SignedWord pwrite64(int fd, PointerBase buffer, UnsignedWord count, long offset);
 
     @CFunction
-    public static native long read(int fd, PointerBase buffer, UnsignedWord count);
+    public static native SignedWord read(int fd, PointerBase buffer, UnsignedWord count);
 
     @CFunction
-    public static native long readlink(CCharPointer path, CCharPointer buffer, UnsignedWord size);
+    public static native SignedWord readlink(CCharPointer path, CCharPointer buffer, UnsignedWord size);
 
     @CFunction
     public static native int setegid(int egid);
@@ -415,11 +416,11 @@ public final class Unistd {
     public static native int symlink(CCharPointer oldPath, CCharPointer newPath);
 
     @CFunction
-    public static native long syscall(long number, CCharPointer name, int flags);
+    public static native SignedWord syscall(SignedWord number, CCharPointer name, int flags);
 
     @CFunction
-    public static native long sysconf(int name);
+    public static native SignedWord sysconf(int name);
 
     @CFunction
-    public static native long write(int fd, PointerBase buffer, UnsignedWord count);
+    public static native SignedWord write(int fd, PointerBase buffer, UnsignedWord count);
 }

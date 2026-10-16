@@ -92,7 +92,7 @@ class NativeHostTest {
     private fun ndk(root: File, revision: String): File {
         val toolchain = File(root, "toolchains/llvm/prebuilt/${Host.current().ndkTag}")
         File(toolchain, "bin").mkdirs()
-        File(toolchain, "sysroot/usr/lib/${Target.AARCH64.triple}/23").mkdirs()
+        Target.entries.forEach { File(toolchain, "sysroot/usr/lib/${it.triple}/23").mkdirs() }
         File(root, "source.properties").writeText("Pkg.Revision = $revision\n")
         return root
     }
