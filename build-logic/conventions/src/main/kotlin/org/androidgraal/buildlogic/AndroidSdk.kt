@@ -36,8 +36,6 @@ class AndroidSdk(val root: File) {
 
     fun androidJar(api: Int): File = root.resolve("platforms/android-$api/android.jar")
 
-    fun androidSources(api: Int): File = root.resolve("sources/android-$api")
-
     private val cmakeDir: File = root.resolve("cmake")
 
     fun cmakes(): Map<Semver, File> {

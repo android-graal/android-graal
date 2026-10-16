@@ -26,8 +26,8 @@ public final class ScopedBytes implements AutoCloseable {
 
     @AlwaysInline("the holder is scalar-replaced only when its constructor is inlined")
     public ScopedBytes(Object bytes, long byteOffset, long byteCount) {
-        this(bytes);
         Pointer.checkRange(bytes, byteOffset, byteCount);
+        this(bytes);
     }
 
     public org.graalvm.word.Pointer get() {
