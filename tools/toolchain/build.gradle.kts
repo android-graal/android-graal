@@ -162,3 +162,8 @@ publishing {
         }
     }
 }
+
+tasks.withType<PublishToMavenRepository>().named { it.startsWith("publishToolchainPublicationTo") }.configureEach {
+    val mainHost = nativeHost.settings.mainHost
+    onlyIf("MAIN_HOST is set") { mainHost }
+}

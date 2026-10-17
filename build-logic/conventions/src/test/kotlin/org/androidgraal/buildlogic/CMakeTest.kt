@@ -124,7 +124,7 @@ class CMakeTest {
     }
 
     private fun settings(local: String = ""): BuildSettings = BuildSettings(
-        "androidgraal.group=org.androidgraal\nandroidgraal.version=0.1.0-SNAPSHOT\nandroidgraal.android.api=23\n",
+        "androidgraal.group=org.androidgraal\nandroidgraal.version=0.1.0\nandroidgraal.android.api=23\n",
         "sdk.dir=${sdk.root}\n$local\n",
         { null },
         { null },

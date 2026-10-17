@@ -6,7 +6,9 @@ import java.io.File
 import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
+import kotlin.test.assertFalse
 import kotlin.test.assertNull
+import kotlin.test.assertTrue
 
 class BuildSettingsTest {
 
@@ -17,13 +19,37 @@ class BuildSettingsTest {
         val settings = settings(gradleProperty = { if (it == "androidgraal.version") "9.9.9" else null })
 
         assertEquals("org.androidgraal", settings.group)
-        assertEquals("9.9.9", settings.version)
+        assertEquals("9.9.9-SNAPSHOT", settings.version)
+    }
+
+    @Test
+    fun `the version is a snapshot unless RELEASE is present`() {
+        assertEquals("0.1.0-SNAPSHOT", settings().version)
+        assertEquals("0.1.0", settings(gradleProperty = { if (it == "RELEASE") "" else null }).version)
+    }
+
+    @Test
+    fun `a version carrying -SNAPSHOT fails naming the key`() {
+        val failure = assertFailsWith<GradleException> {
+            settings(
+                gradleProperties = "androidgraal.group=org.androidgraal\nandroidgraal.version=0.1.0-SNAPSHOT\n" +
+                    "androidgraal.android.api=23\n",
+            )
+        }
+
+        assertEquals("androidgraal.version: \"0.1.0-SNAPSHOT\" carries -SNAPSHOT, -PRELEASE decides", failure.message)
+    }
+
+    @Test
+    fun `the main host follows MAIN_HOST`() {
+        assertFalse(settings().mainHost)
+        assertTrue(settings(gradleProperty = { if (it == "MAIN_HOST") "" else null }).mainHost)
     }
 
     @Test
     fun `a missing group fails naming the key`() {
         val failure = assertFailsWith<GradleException> {
-            settings(gradleProperties = "androidgraal.version=0.1.0-SNAPSHOT\nandroidgraal.android.api=23\n")
+            settings(gradleProperties = "androidgraal.version=0.1.0\nandroidgraal.android.api=23\n")
         }
 
         assertEquals("no androidgraal.group in the root gradle.properties", failure.message)
@@ -169,6 +195,6 @@ class BuildSettingsTest {
     }
 
     private companion object {
-        const val GLOBAL = "androidgraal.group=org.androidgraal\nandroidgraal.version=0.1.0-SNAPSHOT\n"
+        const val GLOBAL = "androidgraal.group=org.androidgraal\nandroidgraal.version=0.1.0\n"
     }
 }

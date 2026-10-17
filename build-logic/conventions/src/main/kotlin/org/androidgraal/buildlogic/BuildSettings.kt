@@ -28,7 +28,11 @@ class BuildSettings(
 
     val group: String = required("androidgraal.group")
 
-    val version: String = required("androidgraal.version")
+    val release: Boolean = gradleProperty("RELEASE") != null
+
+    val mainHost: Boolean = gradleProperty("MAIN_HOST") != null
+
+    val version: String = version()
 
     val androidApi: Int = int("androidgraal.android.api")
 
@@ -42,6 +46,14 @@ class BuildSettings(
     val cmakeDir: File? = directory("cmake.dir", "CMAKE_HOME")
 
     val cmakeVersion: Semver? = semver("androidgraal.cmake.version")
+
+    private fun version(): String {
+        val base = required("androidgraal.version")
+        if (base.endsWith("-SNAPSHOT")) {
+            throw GradleException("androidgraal.version: \"$base\" carries -SNAPSHOT, -PRELEASE decides")
+        }
+        return if (release) base else "$base-SNAPSHOT"
+    }
 
     private fun int(key: String): Int {
         val text = required(key)

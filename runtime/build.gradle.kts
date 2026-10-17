@@ -16,3 +16,18 @@ tasks.register("publishToMavenLocal") {
         ":java:graal:svm-shared:publishToMavenLocal",
     )
 }
+
+tasks.register("publish") {
+    group = "publishing"
+    description = "Publishes every runtime library to the androidgraal repository."
+    dependsOn(
+        ":java:hosted:publish",
+        ":java:shared:publish",
+        ":java:svm:publish",
+        ":java:bionic:publish",
+        ":java:art:publish",
+        ":java:graal:word:publish",
+        ":java:graal:nativeimage:publish",
+        ":java:graal:svm-shared:publish",
+    )
+}

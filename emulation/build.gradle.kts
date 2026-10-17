@@ -10,4 +10,9 @@ tasks.register("publishToMavenLocal") {
     description = "Publishes the Android emulation to the local Maven repository."
 }
 
-redirectToSubprojects("publishToMavenLocal")
+tasks.register("publish") {
+    group = "publishing"
+    description = "Publishes the Android emulation to the androidgraal repository."
+}
+
+redirectToSubprojects("publishToMavenLocal", "publish")

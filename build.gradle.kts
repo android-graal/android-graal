@@ -9,10 +9,15 @@ tasks.register("publishToMavenLocal") {
     description = "Publishes the tools, runtime and emulation artifacts to the local Maven repository."
 }
 
+tasks.register("publish") {
+    group = "publishing"
+    description = "Publishes the tools, runtime and emulation artifacts to the declared repositories."
+}
+
 redirectToBuilds(
     listOf("build-logic", "tools", "runtime", "emulation", "samples"),
     "build",
     "spotlessApply",
     "clean",
 )
-redirectToBuilds(listOf("tools", "runtime", "emulation"), "publishToMavenLocal")
+redirectToBuilds(listOf("tools", "runtime", "emulation"), "publishToMavenLocal", "publish")

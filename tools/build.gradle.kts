@@ -9,4 +9,9 @@ tasks.register("publishToMavenLocal") {
     description = "Publishes every tools artifact to the local Maven repository."
 }
 
-redirectToSubprojects("publishToMavenLocal")
+tasks.register("publish") {
+    group = "publishing"
+    description = "Publishes every tools artifact to the androidgraal repository."
+}
+
+redirectToSubprojects("publishToMavenLocal", "publish")
