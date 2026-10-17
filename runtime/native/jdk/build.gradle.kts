@@ -42,6 +42,8 @@ for (target in Target.entries) {
             "--with-sysroot=$toolchain/sysroot",
             "--with-jvm-variants=minimal",
             "--openjdk-target=${target.clangTarget}$androidApi",
+            "--with-build-user=android-graal",
+            "--with-version-opt=android-graal",
         )
         progress("make static-libs")
         exec("make", "static-libs")
