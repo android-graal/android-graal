@@ -514,16 +514,16 @@ class ScriptTest {
 
     @Test
     fun `standard output and standard error both land in the log`() {
-        val present = File(tmp, "present.txt").apply { writeText("") }
-        val missing = File(tmp, "missing.txt")
+        val java = ProcessHandle.current().info().command().get()
+        val classes = File(ScriptTest::class.java.protectionDomain.codeSource.location.toURI())
         val script = script()
-        script.exec("/bin/ls", present.path, missing.path)
+        script.exec(java, "-cp", classes.path, "org.androidgraal.buildlogic.BothStreams")
 
         assertFailsWith<GradleException> { script.runScript() }
 
         val log = script.logFile.readLines()
-        assertTrue(present.path in log, "$log")
-        assertTrue(log.any { missing.path in it && it.startsWith("ls:") }, "$log")
+        assertTrue("to standard output" in log, "$log")
+        assertTrue("to standard error" in log, "$log")
     }
 
     @Test

@@ -54,18 +54,19 @@ class BaseTaskTest {
 
     @Test
     fun `standard output and standard error both land in the log`() {
-        val existing = tmp.resolve("present.txt").apply { writeText("") }
-        val missing = tmp.resolve("missing.txt")
+        val java = ProcessHandle.current().info().command().get()
+        val classes = File(BaseTaskTest::class.java.protectionDomain.codeSource.location.toURI())
+        val main = "org.androidgraal.gradle.BothStreams"
         var exit = -1
-        task.action = { exit = it.run(listOf(LS, existing.path, missing.path), tmp) }
+        task.action = { exit = it.run(listOf(java, "-cp", classes.path, main), tmp) }
 
         task.run()
 
-        assertTrue(exit != 0, "ls must fail on $missing")
+        assertEquals(1, exit)
         val lines = task.logFile.readLines()
-        assertEquals("=== $tmp$ $LS $existing $missing", lines.first())
-        assertTrue(existing.path in lines, "$lines")
-        assertTrue(lines.any { missing.path in it && it.startsWith("ls:") }, "$lines")
+        assertEquals("=== $tmp$ $java -cp $classes $main", lines.first())
+        assertTrue("to standard output" in lines, "$lines")
+        assertTrue("to standard error" in lines, "$lines")
     }
 
     @Test
@@ -160,5 +161,3 @@ abstract class ToolTask : BaseTask("tool") {
 private const val ECHO = "/bin/echo"
 
 private const val FALSE = "/usr/bin/false"
-
-private const val LS = "/bin/ls"
