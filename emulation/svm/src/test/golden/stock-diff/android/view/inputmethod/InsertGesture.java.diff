@@ -1,0 +1,23 @@
+--- a/emulation/svm/src/main/java/android/view/inputmethod/InsertGesture.java
++++ b/emulation/svm/src/main/java/android/view/inputmethod/InsertGesture.java
+@@ -21,10 +21,11 @@
+ import android.graphics.PointF;
+ import android.os.Parcel;
+ import android.os.Parcelable;
+-import android.widget.TextView;
+ 
+ import androidx.annotation.Nullable;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.util.Objects;
+ 
+ /**
+@@ -32,6 +33,7 @@
+  * This class holds the information required for insertion of text in
+  * toolkit widgets like {@link TextView}.
+  */
++@Emulated
+ public final class InsertGesture extends HandwritingGesture implements Parcelable {
+ 
+     private String mTextToInsert;

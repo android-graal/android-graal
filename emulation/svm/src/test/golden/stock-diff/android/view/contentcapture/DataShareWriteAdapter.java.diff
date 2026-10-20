@@ -1,0 +1,24 @@
+--- a/emulation/svm/src/main/java/android/view/contentcapture/DataShareWriteAdapter.java
++++ b/emulation/svm/src/main/java/android/view/contentcapture/DataShareWriteAdapter.java
+@@ -18,9 +18,11 @@
+ 
+ import android.annotation.NonNull;
+ import android.os.ParcelFileDescriptor;
+-import android.view.contentcapture.ContentCaptureManager.DataShareError;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ /** Adapter class used by apps to share data with the Content Capture service. */
++@Emulated
+ public interface DataShareWriteAdapter {
+ 
+     /**
+@@ -43,7 +45,7 @@
+      *
+      * @param errorCode the error code corresponding to an ERROR_* value.
+      */
+-    default void onError(@DataShareError int errorCode) {
++    default void onError(int errorCode) {
+         /* do nothing - stub */
+     }
+ }

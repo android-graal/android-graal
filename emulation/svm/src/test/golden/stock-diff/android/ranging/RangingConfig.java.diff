@@ -1,0 +1,24 @@
+--- a/emulation/svm/src/main/java/android/ranging/RangingConfig.java
++++ b/emulation/svm/src/main/java/android/ranging/RangingConfig.java
+@@ -22,11 +22,11 @@
+ import android.os.Parcelable;
+ import android.ranging.oob.OobInitiatorRangingConfig;
+ import android.ranging.oob.OobResponderRangingConfig;
+-import android.ranging.raw.RawInitiatorRangingConfig;
+-import android.ranging.raw.RawResponderRangingConfig;
+ 
+ import com.android.ranging.flags.Flags;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+ 
+@@ -43,6 +43,7 @@
+  */
+ @FlaggedApi(Flags.FLAG_RANGING_STACK_ENABLED)
+ @SuppressLint({"ParcelCreator", "ParcelNotFinal"})
++@Emulated
+ public abstract class RangingConfig implements Parcelable {
+     /**
+      * @hide

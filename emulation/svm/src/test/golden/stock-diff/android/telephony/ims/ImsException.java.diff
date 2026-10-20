@@ -1,0 +1,23 @@
+--- a/emulation/svm/src/main/java/android/telephony/ims/ImsException.java
++++ b/emulation/svm/src/main/java/android/telephony/ims/ImsException.java
+@@ -19,10 +19,10 @@
+ import android.annotation.IntDef;
+ import android.annotation.Nullable;
+ import android.annotation.SystemApi;
+-import android.content.pm.PackageManager;
+-import android.telephony.SubscriptionManager;
+ import android.text.TextUtils;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+ 
+@@ -30,6 +30,7 @@
+  * This class defines an IMS-related exception that has been thrown while interacting with a
+  * device or carrier provided ImsService implementation.
+  */
++@Emulated
+ public final class ImsException extends Exception {
+ 
+     /**

@@ -1,0 +1,23 @@
+--- a/emulation/svm/src/main/java/android/speech/ModelDownloadListener.java
++++ b/emulation/svm/src/main/java/android/speech/ModelDownloadListener.java
+@@ -16,10 +16,13 @@
+ 
+ package android.speech;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ /**
+  * Listener for model download events. It makes {@link RecognitionService} let callers know about
+  * the progress of model download for a single recognition request.
+  */
++@Emulated
+ public interface ModelDownloadListener {
+     /**
+      * Called by {@link RecognitionService} only if the download has started after the request.
+@@ -52,5 +55,5 @@
+      *
+      * @param error code is defined in {@link SpeechRecognizer}
+      */
+-    void onError(@SpeechRecognizer.RecognitionError int error);
++    void onError(int error);
+ }

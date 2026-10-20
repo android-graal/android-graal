@@ -1,0 +1,22 @@
+--- a/emulation/svm/src/main/java/android/media/VolumeProvider.java
++++ b/emulation/svm/src/main/java/android/media/VolumeProvider.java
+@@ -17,9 +17,9 @@
+ 
+ import android.annotation.IntDef;
+ import android.annotation.Nullable;
+-import android.media.MediaRouter2.RoutingController;
+-import android.media.session.MediaSession;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+ 
+@@ -31,6 +31,7 @@
+  * You can set a volume provider on a session by calling
+  * {@link MediaSession#setPlaybackToRemote}.
+  */
++@Emulated
+ public abstract class VolumeProvider {
+ 
+     /**

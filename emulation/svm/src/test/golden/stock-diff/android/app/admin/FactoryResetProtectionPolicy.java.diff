@@ -1,0 +1,91 @@
+--- a/emulation/svm/src/main/java/android/app/admin/FactoryResetProtectionPolicy.java
++++ b/emulation/svm/src/main/java/android/app/admin/FactoryResetProtectionPolicy.java
+@@ -16,23 +16,15 @@
+ 
+ package android.app.admin;
+ 
+-import static org.xmlpull.v1.XmlPullParser.END_DOCUMENT;
+-import static org.xmlpull.v1.XmlPullParser.END_TAG;
+-import static org.xmlpull.v1.XmlPullParser.TEXT;
+-
+ import android.annotation.NonNull;
+ import android.annotation.Nullable;
+-import android.content.ComponentName;
+ import android.os.Parcel;
+ import android.os.Parcelable;
+ import android.util.IndentingPrintWriter;
+ import android.util.Log;
+ 
+-import com.android.modules.utils.TypedXmlPullParser;
+-import com.android.modules.utils.TypedXmlSerializer;
++import org.androidgraal.hosted.annotate.Emulated;
+ 
+-import org.xmlpull.v1.XmlPullParserException;
+-
+ import java.io.IOException;
+ import java.util.ArrayList;
+ import java.util.List;
+@@ -55,6 +47,7 @@
+  * @see DevicePolicyManager#setFactoryResetProtectionPolicy
+  * @see DevicePolicyManager#getFactoryResetProtectionPolicy
+  */
++@Emulated
+ public final class FactoryResetProtectionPolicy implements Parcelable {
+ 
+     private static final String LOG_TAG = "FactoryResetProtectionPolicy";
+@@ -196,55 +189,6 @@
+     };
+ 
+     /**
+-     * Restore a previously saved FactoryResetProtectionPolicy from XML.
+-     * <p>
+-     * No validation is required on the reconstructed policy since the XML was previously
+-     * created by the system server from a validated policy.
+-     * @hide
+-     */
+-    @Nullable
+-    public static FactoryResetProtectionPolicy readFromXml(@NonNull TypedXmlPullParser parser) {
+-        try {
+-            boolean factoryResetProtectionEnabled = parser.getAttributeBoolean(null,
+-                    KEY_FACTORY_RESET_PROTECTION_ENABLED, false);
+-
+-            List<String> factoryResetProtectionAccounts = new ArrayList<>();
+-            int outerDepth = parser.getDepth();
+-            int type;
+-            while ((type = parser.next()) != END_DOCUMENT
+-                    && (type != END_TAG || parser.getDepth() > outerDepth)) {
+-                if (type == END_TAG || type == TEXT) {
+-                    continue;
+-                }
+-                if (!parser.getName().equals(KEY_FACTORY_RESET_PROTECTION_ACCOUNT)) {
+-                    continue;
+-                }
+-                factoryResetProtectionAccounts.add(
+-                        parser.getAttributeValue(null, ATTR_VALUE));
+-            }
+-
+-            return new FactoryResetProtectionPolicy(factoryResetProtectionAccounts,
+-                    factoryResetProtectionEnabled);
+-        } catch (XmlPullParserException | IOException e) {
+-            Log.w(LOG_TAG, "Reading from xml failed", e);
+-        }
+-        return null;
+-    }
+-
+-    /**
+-     * @hide
+-     */
+-    public void writeToXml(@NonNull TypedXmlSerializer out) throws IOException {
+-        out.attributeBoolean(null, KEY_FACTORY_RESET_PROTECTION_ENABLED,
+-                mFactoryResetProtectionEnabled);
+-        for (String account : mFactoryResetProtectionAccounts) {
+-            out.startTag(null, KEY_FACTORY_RESET_PROTECTION_ACCOUNT);
+-            out.attribute(null, ATTR_VALUE, account);
+-            out.endTag(null, KEY_FACTORY_RESET_PROTECTION_ACCOUNT);
+-        }
+-    }
+-
+-    /**
+      * Returns if the policy will result in factory reset protection being locked to
+      * admin-specified accounts.
+      * <p>

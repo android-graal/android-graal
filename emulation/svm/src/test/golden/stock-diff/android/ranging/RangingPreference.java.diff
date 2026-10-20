@@ -1,0 +1,24 @@
+--- a/emulation/svm/src/main/java/android/ranging/RangingPreference.java
++++ b/emulation/svm/src/main/java/android/ranging/RangingPreference.java
+@@ -24,11 +24,11 @@
+ import android.os.Parcelable;
+ import android.ranging.oob.OobInitiatorRangingConfig;
+ import android.ranging.oob.OobResponderRangingConfig;
+-import android.ranging.raw.RawInitiatorRangingConfig;
+-import android.ranging.raw.RawResponderRangingConfig;
+ 
+ import com.android.ranging.flags.Flags;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+ import java.util.Objects;
+@@ -42,6 +42,7 @@
+  * an instance with custom configurations.</p>
+  */
+ @FlaggedApi(Flags.FLAG_RANGING_STACK_ENABLED)
++@Emulated
+ public final class RangingPreference implements Parcelable {
+ 
+     /**

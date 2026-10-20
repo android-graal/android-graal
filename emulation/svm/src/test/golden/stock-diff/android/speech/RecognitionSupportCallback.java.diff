@@ -1,0 +1,22 @@
+--- a/emulation/svm/src/main/java/android/speech/RecognitionSupportCallback.java
++++ b/emulation/svm/src/main/java/android/speech/RecognitionSupportCallback.java
+@@ -18,15 +18,18 @@
+ 
+ import android.annotation.NonNull;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ /**
+  * Used for receiving notifications from the SpeechRecognizer about the device support status for
+  * the given recognition request.
+  */
++@Emulated
+ public interface RecognitionSupportCallback {
+ 
+     /** Notifies the caller about the support for the given request. */
+     void onSupportResult(@NonNull RecognitionSupport recognitionSupport);
+ 
+     /** Notifies the caller about an error during the recognition support request */
+-    void onError(@SpeechRecognizer.RecognitionError int error);
++    void onError(int error);
+ }

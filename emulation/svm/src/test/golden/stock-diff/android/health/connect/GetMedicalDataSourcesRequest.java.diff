@@ -1,0 +1,24 @@
+--- a/emulation/svm/src/main/java/android/health/connect/GetMedicalDataSourcesRequest.java
++++ b/emulation/svm/src/main/java/android/health/connect/GetMedicalDataSourcesRequest.java
+@@ -23,11 +23,12 @@
+ 
+ import android.annotation.FlaggedApi;
+ import android.annotation.NonNull;
+-import android.health.connect.datatypes.MedicalDataSource;
+ import android.os.Parcel;
+ import android.os.Parcelable;
+ import android.util.ArraySet;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.util.ArrayList;
+ import java.util.HashSet;
+ import java.util.Objects;
+@@ -43,6 +44,7 @@
+  * requested package names.
+  */
+ @FlaggedApi(FLAG_PERSONAL_HEALTH_RECORD)
++@Emulated
+ public final class GetMedicalDataSourcesRequest implements Parcelable {
+     @NonNull private final Set<String> mPackageNames;
+ 

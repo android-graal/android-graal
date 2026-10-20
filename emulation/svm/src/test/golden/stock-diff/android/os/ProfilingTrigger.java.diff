@@ -1,0 +1,40 @@
+--- a/emulation/svm/src/main/java/android/os/ProfilingTrigger.java
++++ b/emulation/svm/src/main/java/android/os/ProfilingTrigger.java
+@@ -20,6 +20,8 @@
+ import android.annotation.NonNull;
+ import android.os.profiling.Flags;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+ 
+@@ -27,6 +29,7 @@
+  * Encapsulates a single profiling trigger.
+  */
+ @FlaggedApi(Flags.FLAG_SYSTEM_TRIGGERED_PROFILING_NEW)
++@Emulated
+ public final class ProfilingTrigger {
+ 
+     /** No trigger. Used in {@link ProfilingResult} for non trigger caused results. */
+@@ -139,20 +142,6 @@
+     }
+ 
+     /**
+-     * Convert to value parcel. Used for binder.
+-     *
+-     * @hide
+-     */
+-    public ProfilingTriggerValueParcel toValueParcel() {
+-        ProfilingTriggerValueParcel valueParcel = new ProfilingTriggerValueParcel();
+-
+-        valueParcel.triggerType = mTriggerType;
+-        valueParcel.rateLimitingPeriodHours = mRateLimitingPeriodHours;
+-
+-        return valueParcel;
+-    }
+-
+-    /**
+      * Check whether the trigger type is valid for request use. Note that this means that a value of
+      * {@link TRIGGER_TYPE_NONE} will return false.
+      *

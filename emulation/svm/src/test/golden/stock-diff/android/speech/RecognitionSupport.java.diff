@@ -1,0 +1,25 @@
+--- a/emulation/svm/src/main/java/android/speech/RecognitionSupport.java
++++ b/emulation/svm/src/main/java/android/speech/RecognitionSupport.java
+@@ -17,12 +17,12 @@
+ package android.speech;
+ 
+ import android.annotation.NonNull;
+-import android.content.Context;
+-import android.content.Intent;
+ import android.os.Parcelable;
+ 
+ import com.android.internal.util.DataClass;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.util.List;
+ 
+ /** Encodes the level of support for a given speech recognition request */
+@@ -34,6 +34,7 @@
+         genParcelable = true,
+         genToString = true
+ )
++@Emulated
+ public final class RecognitionSupport implements Parcelable {
+ 
+     /** Support for this request is ready for use on this device for the returned languages. */

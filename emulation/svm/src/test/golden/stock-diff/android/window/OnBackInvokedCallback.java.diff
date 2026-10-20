@@ -1,0 +1,22 @@
+--- a/emulation/svm/src/main/java/android/window/OnBackInvokedCallback.java
++++ b/emulation/svm/src/main/java/android/window/OnBackInvokedCallback.java
+@@ -16,10 +16,7 @@
+ 
+ package android.window;
+ 
+-import android.app.Activity;
+-import android.app.Dialog;
+-import android.view.View;
+-import android.view.Window;
++import org.androidgraal.hosted.annotate.Emulated;
+ 
+ /**
+  * Callback allowing applications to handle back events in place of the system.
+@@ -44,6 +41,7 @@
+  * to specify callback priority.
+  */
+ @SuppressWarnings("deprecation")
++@Emulated
+ public interface OnBackInvokedCallback {
+     /**
+      * Called when a back gesture has been completed and committed, or back button pressed

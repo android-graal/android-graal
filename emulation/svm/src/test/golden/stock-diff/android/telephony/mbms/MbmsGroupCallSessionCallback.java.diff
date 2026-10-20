@@ -1,0 +1,22 @@
+--- a/emulation/svm/src/main/java/android/telephony/mbms/MbmsGroupCallSessionCallback.java
++++ b/emulation/svm/src/main/java/android/telephony/mbms/MbmsGroupCallSessionCallback.java
+@@ -19,9 +19,9 @@
+ import android.annotation.IntDef;
+ import android.annotation.NonNull;
+ import android.annotation.Nullable;
+-import android.content.Context;
+-import android.telephony.MbmsGroupCallSession;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+ import java.util.List;
+@@ -32,6 +32,7 @@
+  * services. An instance of this object should be passed into
+  * {@link MbmsGroupCallSession#create(Context, int, Executor, MbmsGroupCallSessionCallback)}.
+  */
++@Emulated
+ public interface MbmsGroupCallSessionCallback {
+     /** @hide */
+     @Retention(RetentionPolicy.SOURCE)

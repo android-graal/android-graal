@@ -1,0 +1,30 @@
+--- a/emulation/svm/src/main/java/android/telephony/mbms/GroupCallCallback.java
++++ b/emulation/svm/src/main/java/android/telephony/mbms/GroupCallCallback.java
+@@ -20,6 +20,8 @@
+ import android.annotation.IntRange;
+ import android.annotation.Nullable;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+ 
+@@ -27,6 +29,7 @@
+  * A callback class for use when the application is in a group call. The middleware
+  * will provide updates on the status of the call via this callback.
+  */
++@Emulated
+ public interface GroupCallCallback {
+     /** @hide */
+     @Retention(RetentionPolicy.SOURCE)
+@@ -65,8 +68,8 @@
+      * See {@link GroupCall#STATE_STOPPED}, {@link GroupCall#STATE_STARTED}
+      * and {@link GroupCall#STATE_STALLED}.
+      */
+-    default void onGroupCallStateChanged(@GroupCall.GroupCallState int state,
+-            @GroupCall.GroupCallStateChangeReason int reason) {}
++    default void onGroupCallStateChanged(int state,
++            int reason) {}
+ 
+     /**
+      * Broadcast Signal Strength updated.

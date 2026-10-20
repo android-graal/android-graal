@@ -1,0 +1,19 @@
+--- a/emulation/svm/src/main/java/android/view/inputmethod/PreviewableHandwritingGesture.java
++++ b/emulation/svm/src/main/java/android/view/inputmethod/PreviewableHandwritingGesture.java
+@@ -16,7 +16,7 @@
+ 
+ package android.view.inputmethod;
+ 
+-import android.os.CancellationSignal;
++import org.androidgraal.hosted.annotate.Emulated;
+ 
+ import java.util.Set;
+ 
+@@ -31,6 +31,7 @@
+  * @see EditorInfo#setSupportedHandwritingGesturePreviews(Set)
+  * @see EditorInfo#getSupportedHandwritingGesturePreviews()
+  */
++@Emulated
+ public abstract class PreviewableHandwritingGesture extends HandwritingGesture {
+     PreviewableHandwritingGesture() {
+         // intentionally empty.

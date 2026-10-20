@@ -1,0 +1,37 @@
+--- a/emulation/svm/src/main/java/android/media/tv/SignalingDataInfo.java
++++ b/emulation/svm/src/main/java/android/media/tv/SignalingDataInfo.java
+@@ -21,6 +21,8 @@
+ import android.media.tv.flags.Flags;
+ import android.os.Parcelable;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+ 
+@@ -28,6 +30,7 @@
+  * Describes a metadata object of a {@link SignalingDataResponse}.
+  */
+ @FlaggedApi(Flags.FLAG_TIAF_V_APIS)
++@Emulated
+ public final class SignalingDataInfo implements Parcelable {
+     public static final @NonNull Parcelable.Creator<SignalingDataInfo> CREATOR =
+             new Parcelable.Creator<SignalingDataInfo>() {
+@@ -43,7 +46,7 @@
+             };
+ 
+     private final @NonNull String mTable;
+-    private final @NonNull @SignalingDataRequest.SignalingMetadata String mSignalingDataType;
++    private final @NonNull String mSignalingDataType;
+     private final int mVersion;
+     private final int mGroup;
+     private final @NonNull String mEncoding;
+@@ -125,7 +128,7 @@
+      * @return the type of metadata in this metadata object
+      */
+     @NonNull
+-    public @SignalingDataRequest.SignalingMetadata String getSignalingDataType() {
++    public String getSignalingDataType() {
+         return mSignalingDataType;
+     }
+ 

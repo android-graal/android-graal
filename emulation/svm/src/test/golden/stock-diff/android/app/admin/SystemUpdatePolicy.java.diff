@@ -1,0 +1,94 @@
+--- a/emulation/svm/src/main/java/android/app/admin/SystemUpdatePolicy.java
++++ b/emulation/svm/src/main/java/android/app/admin/SystemUpdatePolicy.java
+@@ -16,10 +16,6 @@
+ 
+ package android.app.admin;
+ 
+-import static org.xmlpull.v1.XmlPullParser.END_DOCUMENT;
+-import static org.xmlpull.v1.XmlPullParser.END_TAG;
+-import static org.xmlpull.v1.XmlPullParser.TEXT;
+-
+ import android.annotation.IntDef;
+ import android.annotation.SystemApi;
+ import android.os.Parcel;
+@@ -27,11 +23,8 @@
+ import android.util.Log;
+ import android.util.Pair;
+ 
+-import com.android.modules.utils.TypedXmlPullParser;
+-import com.android.modules.utils.TypedXmlSerializer;
++import org.androidgraal.hosted.annotate.Emulated;
+ 
+-import org.xmlpull.v1.XmlPullParserException;
+-
+ import java.io.IOException;
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+@@ -87,6 +80,7 @@
+  * @see DevicePolicyManager#setSystemUpdatePolicy
+  * @see DevicePolicyManager#getSystemUpdatePolicy
+  */
++@Emulated
+ public final class SystemUpdatePolicy implements Parcelable {
+     private static final String TAG = "SystemUpdatePolicy";
+ 
+@@ -740,59 +734,5 @@
+                     return new SystemUpdatePolicy[size];
+                 }
+     };
+-
+-    /**
+-     * Restore a previously saved SystemUpdatePolicy from XML. No need to validate
+-     * the reconstructed policy since the XML is supposed to be created by the
+-     * system server from a validated policy object previously.
+-     * @hide
+-     */
+-    public static SystemUpdatePolicy restoreFromXml(TypedXmlPullParser parser) {
+-        try {
+-            SystemUpdatePolicy policy = new SystemUpdatePolicy();
+-            policy.mPolicyType =
+-                    parser.getAttributeInt(null, KEY_POLICY_TYPE, TYPE_UNKNOWN);
+-            policy.mMaintenanceWindowStart =
+-                    parser.getAttributeInt(null, KEY_INSTALL_WINDOW_START, 0);
+-            policy.mMaintenanceWindowEnd =
+-                    parser.getAttributeInt(null, KEY_INSTALL_WINDOW_END, 0);
+-
+-            int outerDepth = parser.getDepth();
+-            int type;
+-            while ((type = parser.next()) != END_DOCUMENT
+-                    && (type != END_TAG || parser.getDepth() > outerDepth)) {
+-                if (type == END_TAG || type == TEXT) {
+-                    continue;
+-                }
+-                if (!parser.getName().equals(KEY_FREEZE_TAG)) {
+-                    continue;
+-                }
+-                policy.mFreezePeriods.add(new FreezePeriod(
+-                        MonthDay.parse(parser.getAttributeValue(null, KEY_FREEZE_START)),
+-                        MonthDay.parse(parser.getAttributeValue(null, KEY_FREEZE_END))));
+-            }
+-            return policy;
+-        } catch (NumberFormatException | XmlPullParserException | IOException e) {
+-            // Fail through
+-            Log.w(TAG, "Load xml failed", e);
+-        }
+-        return null;
+-    }
+-
+-    /**
+-     * @hide
+-     */
+-    public void saveToXml(TypedXmlSerializer out) throws IOException {
+-        out.attributeInt(null, KEY_POLICY_TYPE, mPolicyType);
+-        out.attributeInt(null, KEY_INSTALL_WINDOW_START, mMaintenanceWindowStart);
+-        out.attributeInt(null, KEY_INSTALL_WINDOW_END, mMaintenanceWindowEnd);
+-        for (int i = 0; i < mFreezePeriods.size(); i++) {
+-            FreezePeriod interval = mFreezePeriods.get(i);
+-            out.startTag(null, KEY_FREEZE_TAG);
+-            out.attribute(null, KEY_FREEZE_START, interval.getStart().toString());
+-            out.attribute(null, KEY_FREEZE_END, interval.getEnd().toString());
+-            out.endTag(null, KEY_FREEZE_TAG);
+-        }
+-    }
+ }
+ 

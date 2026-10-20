@@ -1,0 +1,21 @@
+--- a/emulation/svm/src/main/java/android/net/eap/EapAkaInfo.java
++++ b/emulation/svm/src/main/java/android/net/eap/EapAkaInfo.java
+@@ -20,15 +20,17 @@
+ 
+ import android.annotation.NonNull;
+ import android.annotation.Nullable;
+-import android.net.ipsec.ike.IkeSessionConfiguration;
+ 
+ import com.android.internal.annotations.VisibleForTesting;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.util.Objects;
+ 
+ /**
+  * EapAkaInfo represents data provided by the server during EAP AKA authentication
+  */
++@Emulated
+ public final class EapAkaInfo extends EapInfo {
+     /**
+      * Re-authentication ID for next use

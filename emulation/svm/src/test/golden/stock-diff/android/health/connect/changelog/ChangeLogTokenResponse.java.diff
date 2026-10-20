@@ -1,0 +1,23 @@
+--- a/emulation/svm/src/main/java/android/health/connect/changelog/ChangeLogTokenResponse.java
++++ b/emulation/svm/src/main/java/android/health/connect/changelog/ChangeLogTokenResponse.java
+@@ -17,10 +17,11 @@
+ package android.health.connect.changelog;
+ 
+ import android.annotation.NonNull;
+-import android.health.connect.HealthConnectManager;
+ import android.os.Parcel;
+ import android.os.Parcelable;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.util.Objects;
+ 
+ /**
+@@ -28,6 +29,7 @@
+  *
+  * @see HealthConnectManager#getChangeLogToken
+  */
++@Emulated
+ public final class ChangeLogTokenResponse implements Parcelable {
+     private final String mToken;
+ 

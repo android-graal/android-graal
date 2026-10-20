@@ -1,0 +1,73 @@
+--- a/emulation/svm/src/main/java/android/graphics/ImageFormat.java
++++ b/emulation/svm/src/main/java/android/graphics/ImageFormat.java
+@@ -21,10 +21,13 @@
+ 
+ import com.android.internal.camera.flags.Flags;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+ 
+ @android.ravenwood.annotation.RavenwoodKeepWholeClass
++@Emulated
+ public class ImageFormat {
+      /** @hide */
+      @Retention(RetentionPolicy.SOURCE)
+@@ -895,56 +898,4 @@
+         }
+         return -1;
+     }
+-
+-    /**
+-     * Determine whether or not this is a public-visible {@code format}.
+-     *
+-     * <p>In particular, {@code @hide} formats will return {@code false}.</p>
+-     *
+-     * <p>Any other formats (including UNKNOWN) will return {@code false}.</p>
+-     *
+-     * @param format an integer format
+-     * @return a boolean
+-     *
+-     * @hide
+-     */
+-    public static boolean isPublicFormat(@Format int format) {
+-        switch (format) {
+-            case RGB_565:
+-            case NV16:
+-            case YUY2:
+-            case YV12:
+-            case JPEG:
+-            case NV21:
+-            case YUV_420_888:
+-            case YUV_422_888:
+-            case YUV_444_888:
+-            case YCBCR_P010:
+-            case FLEX_RGB_888:
+-            case FLEX_RGBA_8888:
+-            case RAW_SENSOR:
+-            case RAW_PRIVATE:
+-            case RAW10:
+-            case RAW12:
+-            case DEPTH16:
+-            case DEPTH_POINT_CLOUD:
+-            case PRIVATE:
+-            case RAW_DEPTH:
+-            case RAW_DEPTH10:
+-            case Y8:
+-            case DEPTH_JPEG:
+-            case HEIC:
+-            case JPEG_R:
+-                return true;
+-        }
+-        if (android.media.codec.Flags.p210FormatSupport() && format == YCBCR_P210) {
+-            return true;
+-        }
+-        if (Flags.cameraHeifGainmap()){
+-            if (format == HEIC_ULTRAHDR) {
+-                return true;
+-            }
+-        }
+-        return false;
+-    }
+ }

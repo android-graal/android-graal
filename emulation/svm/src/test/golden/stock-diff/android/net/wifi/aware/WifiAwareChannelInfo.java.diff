@@ -1,0 +1,35 @@
+--- a/emulation/svm/src/main/java/android/net/wifi/aware/WifiAwareChannelInfo.java
++++ b/emulation/svm/src/main/java/android/net/wifi/aware/WifiAwareChannelInfo.java
+@@ -17,13 +17,13 @@
+ package android.net.wifi.aware;
+ 
+ import android.annotation.IntRange;
+-import android.net.wifi.ScanResult;
+-import android.net.wifi.WifiAnnotations;
+ import android.os.Parcel;
+ import android.os.Parcelable;
+ 
+ import androidx.annotation.NonNull;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.util.Objects;
+ 
+ /**
+@@ -32,6 +32,7 @@
+  * Wi-Fi Aware data-path channel information includes the channel frequency, bandwidth and num of
+  * the spatial streams.
+  */
++@Emulated
+ public final class WifiAwareChannelInfo implements Parcelable {
+     private final int mChannelFreq;
+     private final int mChannelBandwidth;
+@@ -61,7 +62,7 @@
+      * or {@link ScanResult #CHANNEL_WIDTH_80MHZ_PLUS_MHZ}.
+      */
+     @IntRange(from = 0)
+-    public @WifiAnnotations.ChannelWidth int getChannelBandwidth() {
++    public int getChannelBandwidth() {
+         return mChannelBandwidth;
+     }
+ 

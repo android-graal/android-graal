@@ -1,0 +1,23 @@
+--- a/emulation/svm/src/main/java/android/app/slice/SliceSpec.java
++++ b/emulation/svm/src/main/java/android/app/slice/SliceSpec.java
+@@ -18,10 +18,11 @@
+ 
+ import android.annotation.NonNull;
+ import android.annotation.Nullable;
+-import android.net.Uri;
+ import android.os.Parcel;
+ import android.os.Parcelable;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ /**
+  * Class describing the structure of the data contained within a slice.
+  * <p>
+@@ -44,6 +45,7 @@
+  *          {@link android.app.appsearch.AppSearchManager}.
+  */
+ @Deprecated
++@Emulated
+ public final class SliceSpec implements Parcelable {
+ 
+     private final String mType;

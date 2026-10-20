@@ -1,0 +1,32 @@
+--- a/emulation/svm/src/main/java/android/net/ipsec/ike/exceptions/IkeException.java
++++ b/emulation/svm/src/main/java/android/net/ipsec/ike/exceptions/IkeException.java
+@@ -15,11 +15,12 @@
+  */
+ package android.net.ipsec.ike.exceptions;
+ 
+-import com.android.internal.net.ipsec.ike.shim.ShimUtils;
++import org.androidgraal.hosted.annotate.Emulated;
+ 
+ /**
+  * IkeException represents a generic exception that includes internal and protocol exceptions.
+  */
++@Emulated
+ public abstract class IkeException extends Exception {
+     /** @hide */
+     protected IkeException() {
+@@ -42,15 +43,6 @@
+     }
+ 
+     /**
+-     * Wrap Exception as an IkeException or do nothing if the input is already an IkeException.
+-     *
+-     * @hide
+-     */
+-    public static IkeException wrapAsIkeException(Exception exception) {
+-        return ShimUtils.getInstance().getWrappedIkeException(exception);
+-    }
+-
+-    /**
+      * Returns the error code for metrics
+      *
+      * @hide

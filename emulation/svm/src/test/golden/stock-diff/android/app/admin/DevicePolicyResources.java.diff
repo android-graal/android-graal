@@ -1,0 +1,20 @@
+--- a/emulation/svm/src/main/java/android/app/admin/DevicePolicyResources.java
++++ b/emulation/svm/src/main/java/android/app/admin/DevicePolicyResources.java
+@@ -17,14 +17,16 @@
+ package android.app.admin;
+ 
+ import android.annotation.SystemApi;
+-import android.os.UserHandle;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ /**
+  * Class containing the required identifiers to update device management resources.
+  *
+  * <p>See {@link DevicePolicyResourcesManager#getDrawable} and
+  * {@link DevicePolicyResourcesManager#getString}.
+  */
++@Emulated
+ public final class DevicePolicyResources {
+ 
+     private DevicePolicyResources() {}

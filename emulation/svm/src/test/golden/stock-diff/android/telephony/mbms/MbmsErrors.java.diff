@@ -1,0 +1,17 @@
+--- a/emulation/svm/src/main/java/android/telephony/mbms/MbmsErrors.java
++++ b/emulation/svm/src/main/java/android/telephony/mbms/MbmsErrors.java
+@@ -17,11 +17,13 @@
+ package android.telephony.mbms;
+ 
+ import android.annotation.IntDef;
+-import android.telephony.MbmsStreamingSession;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+ 
++@Emulated
+ public class MbmsErrors {
+     /**
+      * Indicates that the middleware has sent an error code that is not defined in the version of

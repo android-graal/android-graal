@@ -1,0 +1,19 @@
+--- a/emulation/svm/src/main/java/android/view/CollapsibleActionView.java
++++ b/emulation/svm/src/main/java/android/view/CollapsibleActionView.java
+@@ -16,7 +16,7 @@
+ 
+ package android.view;
+ 
+-import android.view.MenuItem.OnActionExpandListener;
++import org.androidgraal.hosted.annotate.Emulated;
+ 
+ /**
+  * When a {@link View} implements this interface it will receive callbacks
+@@ -26,6 +26,7 @@
+  * <p>See {@link MenuItem} for more information about action views.
+  * See {@link android.app.ActionBar} for more information about the action bar.
+  */
++@Emulated
+ public interface CollapsibleActionView {
+     /**
+      * Called when this view is expanded as an action view.

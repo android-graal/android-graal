@@ -1,0 +1,21 @@
+--- a/emulation/svm/src/main/java/android/os/vibrator/VibratorEnvelopeEffectInfo.java
++++ b/emulation/svm/src/main/java/android/os/vibrator/VibratorEnvelopeEffectInfo.java
+@@ -20,8 +20,9 @@
+ import android.annotation.NonNull;
+ import android.os.Parcel;
+ import android.os.Parcelable;
+-import android.os.VibrationEffect;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.util.Objects;
+ 
+ /**
+@@ -42,6 +43,7 @@
+  * @see VibratorFrequencyProfile
+  */
+ @FlaggedApi(Flags.FLAG_NORMALIZED_PWLE_EFFECTS)
++@Emulated
+ public final class VibratorEnvelopeEffectInfo implements Parcelable {
+     private final int mMaxSize;
+     private final long mMinControlPointDurationMillis;

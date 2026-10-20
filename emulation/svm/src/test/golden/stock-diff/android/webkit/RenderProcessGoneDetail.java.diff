@@ -1,0 +1,23 @@
+--- a/emulation/svm/src/main/java/android/webkit/RenderProcessGoneDetail.java
++++ b/emulation/svm/src/main/java/android/webkit/RenderProcessGoneDetail.java
+@@ -16,10 +16,13 @@
+ 
+ package android.webkit;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ /**
+  * This class provides more specific information about why the render process
+  * exited. The application may use this to decide how to handle the situation.
+  **/
++@Emulated
+ public abstract class RenderProcessGoneDetail {
+     /**
+      * @deprecated This class should not be constructed by applications.
+@@ -48,6 +51,5 @@
+      *
+      * @return the priority of the renderer at exit.
+      **/
+-    @WebView.RendererPriority
+     public abstract int rendererPriorityAtExit();
+ }

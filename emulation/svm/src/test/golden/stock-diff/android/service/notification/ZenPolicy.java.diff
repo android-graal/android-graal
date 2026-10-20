@@ -1,0 +1,98 @@
+--- a/emulation/svm/src/main/java/android/service/notification/ZenPolicy.java
++++ b/emulation/svm/src/main/java/android/service/notification/ZenPolicy.java
+@@ -21,14 +21,14 @@
+ import android.annotation.Nullable;
+ import android.annotation.SuppressLint;
+ import android.annotation.TestApi;
+-import android.app.Notification;
+-import android.app.NotificationChannel;
+ import android.os.Parcel;
+ import android.os.Parcelable;
+ import android.util.proto.ProtoOutputStream;
+ 
+ import androidx.annotation.VisibleForTesting;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.io.ByteArrayOutputStream;
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+@@ -43,6 +43,7 @@
+  * ZenPolicy also dictates the visual effects of notifications that are intercepted when
+  * a device is in Do Not Disturb mode.
+  */
++@Emulated
+ public final class ZenPolicy implements Parcelable {
+ 
+     /**
+@@ -1476,70 +1477,6 @@
+     }
+ 
+     /**
+-     * @hide
+-     */
+-    public void dumpDebug(ProtoOutputStream proto, long fieldId) {
+-        final long token = proto.start(fieldId);
+-
+-        proto.write(ZenPolicyProto.REMINDERS, getPriorityCategoryReminders());
+-        proto.write(ZenPolicyProto.EVENTS, getPriorityCategoryEvents());
+-        proto.write(ZenPolicyProto.MESSAGES, getPriorityCategoryMessages());
+-        proto.write(ZenPolicyProto.CALLS, getPriorityCategoryCalls());
+-        proto.write(ZenPolicyProto.REPEAT_CALLERS, getPriorityCategoryRepeatCallers());
+-        proto.write(ZenPolicyProto.ALARMS, getPriorityCategoryAlarms());
+-        proto.write(ZenPolicyProto.MEDIA, getPriorityCategoryMedia());
+-        proto.write(ZenPolicyProto.SYSTEM, getPriorityCategorySystem());
+-
+-        proto.write(ZenPolicyProto.FULL_SCREEN_INTENT, getVisualEffectFullScreenIntent());
+-        proto.write(ZenPolicyProto.LIGHTS, getVisualEffectLights());
+-        proto.write(ZenPolicyProto.PEEK, getVisualEffectPeek());
+-        proto.write(ZenPolicyProto.STATUS_BAR, getVisualEffectStatusBar());
+-        proto.write(ZenPolicyProto.BADGE, getVisualEffectBadge());
+-        proto.write(ZenPolicyProto.AMBIENT, getVisualEffectAmbient());
+-        proto.write(ZenPolicyProto.NOTIFICATION_LIST, getVisualEffectNotificationList());
+-
+-        proto.write(ZenPolicyProto.PRIORITY_MESSAGES, getPriorityMessageSenders());
+-        proto.write(ZenPolicyProto.PRIORITY_CALLS, getPriorityCallSenders());
+-        proto.end(token);
+-    }
+-
+-    /**
+-     * Converts a policy to a statsd proto.
+-     * @hide
+-     */
+-    public byte[] toProto() {
+-        // TODO: b/308672510 - log user-customized ZenPolicy fields to DNDPolicyProto.
+-        ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+-        ProtoOutputStream proto = new ProtoOutputStream(bytes);
+-
+-        proto.write(DNDPolicyProto.CALLS, getPriorityCategoryCalls());
+-        proto.write(DNDPolicyProto.REPEAT_CALLERS, getPriorityCategoryRepeatCallers());
+-        proto.write(DNDPolicyProto.MESSAGES, getPriorityCategoryMessages());
+-        proto.write(DNDPolicyProto.CONVERSATIONS, getPriorityCategoryConversations());
+-        proto.write(DNDPolicyProto.REMINDERS, getPriorityCategoryReminders());
+-        proto.write(DNDPolicyProto.EVENTS, getPriorityCategoryEvents());
+-        proto.write(DNDPolicyProto.ALARMS, getPriorityCategoryAlarms());
+-        proto.write(DNDPolicyProto.MEDIA, getPriorityCategoryMedia());
+-        proto.write(DNDPolicyProto.SYSTEM, getPriorityCategorySystem());
+-
+-        proto.write(DNDPolicyProto.FULLSCREEN, getVisualEffectFullScreenIntent());
+-        proto.write(DNDPolicyProto.LIGHTS, getVisualEffectLights());
+-        proto.write(DNDPolicyProto.PEEK, getVisualEffectPeek());
+-        proto.write(DNDPolicyProto.STATUS_BAR, getVisualEffectStatusBar());
+-        proto.write(DNDPolicyProto.BADGE, getVisualEffectBadge());
+-        proto.write(DNDPolicyProto.AMBIENT, getVisualEffectAmbient());
+-        proto.write(DNDPolicyProto.NOTIFICATION_LIST, getVisualEffectNotificationList());
+-
+-        proto.write(DNDPolicyProto.ALLOW_CALLS_FROM, getPriorityCallSenders());
+-        proto.write(DNDPolicyProto.ALLOW_MESSAGES_FROM, getPriorityMessageSenders());
+-        proto.write(DNDPolicyProto.ALLOW_CONVERSATIONS_FROM, getPriorityConversationSenders());
+-        proto.write(DNDPolicyProto.ALLOW_CHANNELS, getPriorityChannelsAllowed());
+-
+-        proto.flush();
+-        return bytes.toByteArray();
+-    }
+-
+-    /**
+      * Makes deep copy of this ZenPolicy.
+      * @hide
+      */

@@ -1,0 +1,59 @@
+--- a/emulation/svm/src/main/java/android/app/admin/SystemUpdateInfo.java
++++ b/emulation/svm/src/main/java/android/app/admin/SystemUpdateInfo.java
+@@ -23,11 +23,8 @@
+ import android.os.Parcelable;
+ import android.util.Log;
+ 
+-import com.android.modules.utils.TypedXmlPullParser;
+-import com.android.modules.utils.TypedXmlSerializer;
++import org.androidgraal.hosted.annotate.Emulated;
+ 
+-import org.xmlpull.v1.XmlPullParserException;
+-
+ import java.io.IOException;
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+@@ -36,6 +33,7 @@
+ /**
+  * A class containing information about a pending system update.
+  */
++@Emulated
+ public final class SystemUpdateInfo implements Parcelable {
+     private static final String TAG = "SystemUpdateInfo";
+ 
+@@ -128,35 +126,6 @@
+                 }
+             };
+ 
+-    /** @hide */
+-    public void writeToXml(TypedXmlSerializer out, String tag) throws IOException {
+-        out.startTag(null, tag);
+-        out.attributeLong(null, ATTR_RECEIVED_TIME, mReceivedTime);
+-        out.attributeInt(null, ATTR_SECURITY_PATCH_STATE, mSecurityPatchState);
+-        out.attribute(null, ATTR_ORIGINAL_BUILD , Build.FINGERPRINT);
+-        out.endTag(null, tag);
+-    }
+-
+-    /** @hide */
+-    @Nullable
+-    public static SystemUpdateInfo readFromXml(TypedXmlPullParser parser) {
+-        // If an OTA has been applied (build fingerprint has changed), discard stale info.
+-        final String buildFingerprint = parser.getAttributeValue(null, ATTR_ORIGINAL_BUILD );
+-        if (!Build.FINGERPRINT.equals(buildFingerprint)) {
+-            return null;
+-        }
+-        try {
+-            final long receivedTime =
+-                    parser.getAttributeLong(null, ATTR_RECEIVED_TIME);
+-            final int securityPatchState =
+-                    parser.getAttributeInt(null, ATTR_SECURITY_PATCH_STATE);
+-            return new SystemUpdateInfo(receivedTime, securityPatchState);
+-        } catch (XmlPullParserException e) {
+-            Log.w(TAG, "Load xml failed", e);
+-            return null;
+-        }
+-    }
+-
+     @Override
+     public int describeContents() {
+         return 0;

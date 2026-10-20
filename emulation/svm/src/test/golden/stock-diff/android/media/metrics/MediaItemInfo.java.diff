@@ -1,0 +1,24 @@
+--- a/emulation/svm/src/main/java/android/media/metrics/MediaItemInfo.java
++++ b/emulation/svm/src/main/java/android/media/metrics/MediaItemInfo.java
+@@ -26,11 +26,12 @@
+ import android.annotation.Nullable;
+ import android.annotation.SuppressLint;
+ import android.hardware.DataSpace;
+-import android.media.MediaCodec;
+ import android.os.Parcel;
+ import android.os.Parcelable;
+ import android.util.Size;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.lang.annotation.Retention;
+ import java.util.ArrayList;
+ import java.util.List;
+@@ -38,6 +39,7 @@
+ 
+ /** Represents information about a piece of media (for example, an audio or video file). */
+ @FlaggedApi(FLAG_ADD_MEDIA_METRICS_EDITING)
++@Emulated
+ public final class MediaItemInfo implements Parcelable {
+ 
+     /** @hide */

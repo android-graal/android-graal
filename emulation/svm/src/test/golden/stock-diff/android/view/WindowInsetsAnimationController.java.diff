@@ -1,0 +1,32 @@
+--- a/emulation/svm/src/main/java/android/view/WindowInsetsAnimationController.java
++++ b/emulation/svm/src/main/java/android/view/WindowInsetsAnimationController.java
+@@ -21,10 +21,10 @@
+ import android.annotation.Nullable;
+ import android.annotation.SuppressLint;
+ import android.graphics.Insets;
+-import android.view.WindowInsets.Type.InsetsType;
+-import android.view.WindowInsetsAnimation.Bounds;
+ import android.view.animation.Interpolator;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ /**
+  * Controller for app-driven animation of system windows.
+  *  <p>
+@@ -36,6 +36,7 @@
+  *  Control is obtained through {@link WindowInsetsController#controlWindowInsetsAnimation}.
+  */
+ @SuppressLint("NotCloseable")
++@Emulated
+ public interface WindowInsetsAnimationController {
+ 
+     /**
+@@ -102,7 +103,7 @@
+     /**
+      * @return The {@link WindowInsets.Type}s this object is currently controlling.
+      */
+-    @InsetsType int getTypes();
++    int getTypes();
+ 
+     /**
+      * Modifies the insets for the frame being drawn by indirectly moving the windows around in the

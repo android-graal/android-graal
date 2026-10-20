@@ -1,0 +1,159 @@
+--- a/emulation/svm/src/main/java/android/telephony/DataFailCause.java
++++ b/emulation/svm/src/main/java/android/telephony/DataFailCause.java
+@@ -17,11 +17,9 @@
+ 
+ import android.annotation.NonNull;
+ import android.annotation.SystemApi;
+-import android.content.Context;
+ import android.os.PersistableBundle;
+-import android.telephony.Annotation.DataFailureCause;
+ 
+-import com.android.internal.telephony.util.ArrayUtils;
++import org.androidgraal.hosted.annotate.Emulated;
+ 
+ import java.util.Arrays;
+ import java.util.HashMap;
+@@ -32,6 +30,7 @@
+ /**
+  * DataFailCause collects data connection failure causes code from different sources.
+  */
++@Emulated
+ public final class DataFailCause {
+     /** There is no failure */
+     public static final int NONE = 0;
+@@ -1614,109 +1613,8 @@
+     private static final HashMap<Integer, Set<Integer>> sPermanentFailureCache =
+             new HashMap<>();
+ 
+-    /**
+-     * Returns whether or not the fail cause is a failure that requires a modem restart
+-     *
+-     * @param context device context
+-     * @param cause data disconnect cause
+-     * @param subId subscription index
+-     * @return true if the fail cause code needs platform to trigger a modem restart.
+-     *
+-     * @hide
+-     */
+-    public static boolean isRadioRestartFailure(@NonNull Context context,
+-                                                @DataFailureCause int cause,
+-                                                int subId) {
+-        CarrierConfigManager configManager = (CarrierConfigManager)
+-                context.getSystemService(Context.CARRIER_CONFIG_SERVICE);
+-        if (configManager != null) {
+-            PersistableBundle b = configManager.getConfigForSubId(subId);
+-
+-            if (b != null) {
+-                if (cause == REGULAR_DEACTIVATION
+-                        && b.getBoolean(CarrierConfigManager
+-                        .KEY_RESTART_RADIO_ON_PDP_FAIL_REGULAR_DEACTIVATION_BOOL)) {
+-                    // This is for backward compatibility support. We need to continue support this
+-                    // old configuration until it gets removed in the future.
+-                    return true;
+-                }
+-                // Check the current configurations.
+-                int[] causeCodes = b.getIntArray(CarrierConfigManager
+-                        .KEY_RADIO_RESTART_FAILURE_CAUSES_INT_ARRAY);
+-                if (causeCodes != null) {
+-                    return Arrays.stream(causeCodes).anyMatch(i -> i == cause);
+-                }
+-            }
+-        }
+-
+-        return false;
+-    }
+-
+     /** @hide */
+-    // TODO: Migrated to DataConfigManager
+-    public static boolean isPermanentFailure(@NonNull Context context,
+-                                             @DataFailureCause int failCause,
+-                                             int subId) {
+-        synchronized (sPermanentFailureCache) {
+-
+-            Set<Integer> permanentFailureSet = sPermanentFailureCache.get(subId);
+-
+-            // In case of cache miss, we need to look up the settings from carrier config.
+-            if (permanentFailureSet == null) {
+-                // Retrieve the permanent failure from carrier config
+-                CarrierConfigManager configManager = (CarrierConfigManager)
+-                        context.getSystemService(Context.CARRIER_CONFIG_SERVICE);
+-                if (configManager != null) {
+-                    PersistableBundle b = configManager.getConfigForSubId(subId);
+-                    if (b != null) {
+-                        String[] permanentFailureStrings = b.getStringArray(CarrierConfigManager
+-                                .KEY_CARRIER_DATA_CALL_PERMANENT_FAILURE_STRINGS);
+-                        if (permanentFailureStrings != null) {
+-                            permanentFailureSet = new HashSet<>();
+-                            for (Map.Entry<Integer, String> e : sFailCauseMap.entrySet()) {
+-                                if (ArrayUtils.contains(permanentFailureStrings, e.getValue())) {
+-                                    permanentFailureSet.add(e.getKey());
+-                                }
+-                            }
+-                        }
+-                    }
+-                }
+-
+-                // If we are not able to find the configuration from carrier config, use the default
+-                // ones.
+-                if (permanentFailureSet == null) {
+-                    permanentFailureSet = new HashSet<Integer>();
+-                    permanentFailureSet.add(OPERATOR_BARRED);
+-                    permanentFailureSet.add(MISSING_UNKNOWN_APN);
+-                    permanentFailureSet.add(UNKNOWN_PDP_ADDRESS_TYPE);
+-                    permanentFailureSet.add(USER_AUTHENTICATION);
+-                    permanentFailureSet.add(ACTIVATION_REJECT_GGSN);
+-                    permanentFailureSet.add(SERVICE_OPTION_NOT_SUPPORTED);
+-                    permanentFailureSet.add(SERVICE_OPTION_NOT_SUBSCRIBED);
+-                    permanentFailureSet.add(NSAPI_IN_USE);
+-                    permanentFailureSet.add(ONLY_IPV4_ALLOWED);
+-                    permanentFailureSet.add(ONLY_IPV6_ALLOWED);
+-                    permanentFailureSet.add(PROTOCOL_ERRORS);
+-                    permanentFailureSet.add(RADIO_POWER_OFF);
+-                    permanentFailureSet.add(TETHERED_CALL_ACTIVE);
+-                    permanentFailureSet.add(RADIO_NOT_AVAILABLE);
+-                    permanentFailureSet.add(UNACCEPTABLE_NETWORK_PARAMETER);
+-                    permanentFailureSet.add(SIGNAL_LOST);
+-                    permanentFailureSet.add(DUPLICATE_CID);
+-                    permanentFailureSet.add(MATCH_ALL_RULE_NOT_ALLOWED);
+-                    permanentFailureSet.add(ALL_MATCHING_RULES_FAILED);
+-                }
+-
+-                permanentFailureSet.add(NO_RETRY_FAILURE);
+-                sPermanentFailureCache.put(subId, permanentFailureSet);
+-            }
+-
+-            return permanentFailureSet.contains(failCause);
+-        }
+-    }
+-
+-    /** @hide */
+-    public static boolean isEventLoggable(@DataFailureCause int dataFailCause) {
++    public static boolean isEventLoggable(int dataFailCause) {
+         return (dataFailCause == OPERATOR_BARRED) || (dataFailCause == INSUFFICIENT_RESOURCES)
+                 || (dataFailCause == UNKNOWN_PDP_ADDRESS_TYPE)
+                 || (dataFailCause == USER_AUTHENTICATION)
+@@ -1736,13 +1634,13 @@
+     }
+ 
+     /** @hide */
+-    public static String toString(@DataFailureCause int dataFailCause) {
++    public static String toString(int dataFailCause) {
+         return sFailCauseMap.getOrDefault(dataFailCause, "UNKNOWN") + "(0x"
+                 + Integer.toHexString(dataFailCause) + ")";
+     }
+ 
+     /** @hide */
+-    public static int getFailCause(@DataFailureCause int failCause) {
++    public static int getFailCause(int failCause) {
+         if (sFailCauseMap.containsKey(failCause)) {
+             return failCause;
+         } else {
+@@ -1751,7 +1649,7 @@
+     }
+ 
+     /** @hide */
+-    public static boolean isFailCauseExisting(@DataFailureCause int failCause) {
++    public static boolean isFailCauseExisting(int failCause) {
+         return sFailCauseMap.containsKey(failCause);
+     }
+ }

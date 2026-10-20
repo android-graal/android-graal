@@ -1,0 +1,31 @@
+--- a/emulation/svm/src/main/java/android/view/WindowInsetsAnimationControlListener.java
++++ b/emulation/svm/src/main/java/android/view/WindowInsetsAnimationControlListener.java
+@@ -18,9 +18,9 @@
+ 
+ import android.annotation.NonNull;
+ import android.annotation.Nullable;
+-import android.view.WindowInsets.Type.InsetsType;
+-import android.view.inputmethod.EditorInfo;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ /**
+  * Listener that encapsulates a request to
+  * {@link WindowInsetsController#controlWindowInsetsAnimation}.
+@@ -39,6 +39,7 @@
+  *
+  * @see WindowInsetsController#controlWindowInsetsAnimation
+  */
++@Emulated
+ public interface WindowInsetsAnimationControlListener {
+ 
+     /**
+@@ -53,7 +54,7 @@
+      *              currently the window that's controlling the system bars.
+      * @see WindowInsetsAnimationController#isReady
+      */
+-    void onReady(@NonNull WindowInsetsAnimationController controller, @InsetsType int types);
++    void onReady(@NonNull WindowInsetsAnimationController controller, int types);
+ 
+     /**
+      * Called when the request for control over the insets has

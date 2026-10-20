@@ -1,0 +1,28 @@
+--- a/emulation/svm/src/main/java/android/media/AudioDescriptor.java
++++ b/emulation/svm/src/main/java/android/media/AudioDescriptor.java
+@@ -22,6 +22,8 @@
+ import android.os.Parcel;
+ import android.os.Parcelable;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+ import java.util.Arrays;
+@@ -32,6 +34,7 @@
+  * capabilities. The capabilities are described by a byte array, which is defined by a
+  * particular standard. This is used when the format is unrecognized to the platform.
+  */
++@Emulated
+ public class AudioDescriptor implements Parcelable {
+     /**
+      * The audio standard is not specified.
+@@ -107,7 +110,7 @@
+      * @see AudioProfile#AUDIO_ENCAPSULATION_TYPE_NONE
+      * @see AudioProfile#AUDIO_ENCAPSULATION_TYPE_IEC61937
+      */
+-    public @AudioProfile.EncapsulationType int getEncapsulationType() {
++    public int getEncapsulationType() {
+         return mEncapsulationType;
+     }
+ 

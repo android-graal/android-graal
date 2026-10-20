@@ -1,0 +1,81 @@
+--- a/emulation/svm/src/main/java/android/graphics/Rect.java
++++ b/emulation/svm/src/main/java/android/graphics/Rect.java
+@@ -24,10 +24,10 @@
+ import android.os.Parcel;
+ import android.os.Parcelable;
+ import android.text.TextUtils;
+-import android.util.proto.ProtoInputStream;
+ import android.util.proto.ProtoOutputStream;
+-import android.util.proto.WireTypeMismatchException;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.io.IOException;
+ import java.io.PrintWriter;
+ import java.util.regex.Matcher;
+@@ -46,6 +46,7 @@
+  * those of its bottom and right.
+  */
+ @android.ravenwood.annotation.RavenwoodKeepWholeClass
++@Emulated
+ public final class Rect implements Parcelable {
+     public int left;
+     public int top;
+@@ -234,57 +235,6 @@
+     }
+ 
+     /**
+-     * Write to a protocol buffer output stream.
+-     * Protocol buffer message definition at {@link android.graphics.RectProto}
+-     *
+-     * @param protoOutputStream Stream to write the Rect object to.
+-     * @param fieldId           Field Id of the Rect as defined in the parent message
+-     * @hide
+-     */
+-    public void dumpDebug(@NonNull ProtoOutputStream protoOutputStream, long fieldId) {
+-        final long token = protoOutputStream.start(fieldId);
+-        protoOutputStream.write(RectProto.LEFT, left);
+-        protoOutputStream.write(RectProto.TOP, top);
+-        protoOutputStream.write(RectProto.RIGHT, right);
+-        protoOutputStream.write(RectProto.BOTTOM, bottom);
+-        protoOutputStream.end(token);
+-    }
+-
+-    /**
+-     * Read from a protocol buffer input stream.
+-     * Protocol buffer message definition at {@link android.graphics.RectProto}
+-     *
+-     * @param proto     Stream to read the Rect object from.
+-     * @param fieldId   Field Id of the Rect as defined in the parent message
+-     * @hide
+-     */
+-    public void readFromProto(@NonNull ProtoInputStream proto, long fieldId) throws IOException,
+-            WireTypeMismatchException {
+-        final long token = proto.start(fieldId);
+-        try {
+-            while (proto.nextField() != ProtoInputStream.NO_MORE_FIELDS) {
+-                switch (proto.getFieldNumber()) {
+-                    case (int) RectProto.LEFT:
+-                        left = proto.readInt(RectProto.LEFT);
+-                        break;
+-                    case (int) RectProto.TOP:
+-                        top = proto.readInt(RectProto.TOP);
+-                        break;
+-                    case (int) RectProto.RIGHT:
+-                        right = proto.readInt(RectProto.RIGHT);
+-                        break;
+-                    case (int) RectProto.BOTTOM:
+-                        bottom = proto.readInt(RectProto.BOTTOM);
+-                        break;
+-                }
+-            }
+-        } finally {
+-            // Let caller handle any exceptions
+-            proto.end(token);
+-        }
+-    }
+-
+-    /**
+      * Returns true if the rectangle is empty (left >= right or top >= bottom)
+      */
+     public final boolean isEmpty() {

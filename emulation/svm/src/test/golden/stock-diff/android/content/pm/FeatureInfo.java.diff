@@ -1,0 +1,38 @@
+--- a/emulation/svm/src/main/java/android/content/pm/FeatureInfo.java
++++ b/emulation/svm/src/main/java/android/content/pm/FeatureInfo.java
+@@ -20,6 +20,8 @@
+ import android.os.Parcelable;
+ import android.util.proto.ProtoOutputStream;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ /**
+  * Definition of a single optional hardware or software feature of an Android
+  * device.
+@@ -34,6 +36,7 @@
+  * claiming to support version 3 of a specific feature must support apps
+  * requesting version 1 of that feature.
+  */
++@Emulated
+ public class FeatureInfo implements Parcelable {
+     /**
+      * The name of this feature, for example "android.hardware.camera".  If
+@@ -114,18 +117,6 @@
+         dest.writeInt(flags);
+     }
+ 
+-    /** @hide */
+-    public void dumpDebug(ProtoOutputStream proto, long fieldId) {
+-        long token = proto.start(fieldId);
+-        if (name != null) {
+-            proto.write(FeatureInfoProto.NAME, name);
+-        }
+-        proto.write(FeatureInfoProto.VERSION, version);
+-        proto.write(FeatureInfoProto.GLES_VERSION, getGlEsVersion());
+-        proto.write(FeatureInfoProto.FLAGS, flags);
+-        proto.end(token);
+-    }
+-
+     public static final @android.annotation.NonNull Creator<FeatureInfo> CREATOR = new Creator<FeatureInfo>() {
+         @Override
+         public FeatureInfo createFromParcel(Parcel source) {

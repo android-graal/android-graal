@@ -1,0 +1,19 @@
+--- a/emulation/svm/src/main/java/android/hardware/camera2/params/Face.java
++++ b/emulation/svm/src/main/java/android/hardware/camera2/params/Face.java
+@@ -22,13 +22,13 @@
+ import android.annotation.Nullable;
+ import android.graphics.Point;
+ import android.graphics.Rect;
+-import android.hardware.camera2.CameraCharacteristics;
+-import android.hardware.camera2.CameraMetadata;
+-import android.hardware.camera2.CaptureResult;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ /**
+  * Describes a face detected in an image.
+  */
++@Emulated
+ public final class Face {
+ 
+     /**

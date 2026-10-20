@@ -1,0 +1,59 @@
+--- a/emulation/svm/src/main/java/android/app/sdksandbox/RequestSurfacePackageException.java
++++ b/emulation/svm/src/main/java/android/app/sdksandbox/RequestSurfacePackageException.java
+@@ -20,6 +20,8 @@
+ import android.annotation.Nullable;
+ import android.os.Bundle;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ /**
+  * Exception thrown by {@link SdkSandboxManager#requestSurfacePackage}
+  *
+@@ -27,9 +29,10 @@
+  *     deprecated.
+  */
+ @Deprecated
++@Emulated
+ public final class RequestSurfacePackageException extends Exception {
+ 
+-    private final @SdkSandboxManager.RequestSurfacePackageErrorCode int
++    private final int
+             mRequestSurfacePackageErrorCode;
+     private final Bundle mExtraInformation;
+ 
+@@ -41,7 +44,7 @@
+      *     #getMessage()} method.
+      */
+     public RequestSurfacePackageException(
+-            @SdkSandboxManager.RequestSurfacePackageErrorCode int requestSurfacePackageErrorCode,
++            int requestSurfacePackageErrorCode,
+             @Nullable String message) {
+         this(requestSurfacePackageErrorCode, message, /*cause=*/ null);
+     }
+@@ -58,7 +61,7 @@
+      *     nonexistent or unknown.
+      */
+     public RequestSurfacePackageException(
+-            @SdkSandboxManager.RequestSurfacePackageErrorCode int requestSurfacePackageErrorCode,
++            int requestSurfacePackageErrorCode,
+             @Nullable String message,
+             @Nullable Throwable cause) {
+         this(requestSurfacePackageErrorCode, message, cause, new Bundle());
+@@ -77,7 +80,7 @@
+      * @param extraInfo Extra error information. This is empty if there is no such information.
+      */
+     public RequestSurfacePackageException(
+-            @SdkSandboxManager.RequestSurfacePackageErrorCode int requestSurfacePackageErrorCode,
++            int requestSurfacePackageErrorCode,
+             @Nullable String message,
+             @Nullable Throwable cause,
+             @NonNull Bundle extraInfo) {
+@@ -90,7 +93,7 @@
+      *
+      * @return The result code from {@link SdkSandboxManager#requestSurfacePackage}
+      */
+-    public @SdkSandboxManager.RequestSurfacePackageErrorCode int
++    public int
+             getRequestSurfacePackageErrorCode() {
+         return mRequestSurfacePackageErrorCode;
+     }

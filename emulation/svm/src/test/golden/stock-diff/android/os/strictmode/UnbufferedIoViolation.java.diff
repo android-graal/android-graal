@@ -1,0 +1,16 @@
+--- a/emulation/svm/src/main/java/android/os/strictmode/UnbufferedIoViolation.java
++++ b/emulation/svm/src/main/java/android/os/strictmode/UnbufferedIoViolation.java
+@@ -15,11 +15,12 @@
+  */
+ package android.os.strictmode;
+ 
+-import android.os.StrictMode.ThreadPolicy.Builder;
++import org.androidgraal.hosted.annotate.Emulated;
+ 
+ /**
+  * See #{@link Builder#detectUnbufferedIo()}
+  */
++@Emulated
+ public final class UnbufferedIoViolation extends Violation {
+     /** @hide */
+     public UnbufferedIoViolation() {

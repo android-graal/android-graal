@@ -1,0 +1,23 @@
+--- a/emulation/svm/src/main/java/android/content/pm/ChangedPackages.java
++++ b/emulation/svm/src/main/java/android/content/pm/ChangedPackages.java
+@@ -18,10 +18,11 @@
+ import android.annotation.NonNull;
+ import android.annotation.Nullable;
+ import android.annotation.TestApi;
+-import android.content.Intent;
+ import android.os.Parcel;
+ import android.os.Parcelable;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.util.List;
+ 
+ /**
+@@ -29,6 +30,7 @@
+  * were requested.
+  * @see PackageManager#getChangedPackages(int)
+  */
++@Emulated
+ public final class ChangedPackages implements Parcelable {
+     /** The last known sequence number for these changes */
+     private final int mSequenceNumber;

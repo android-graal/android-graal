@@ -1,0 +1,44 @@
+--- a/emulation/svm/src/main/java/android/ranging/RangingData.java
++++ b/emulation/svm/src/main/java/android/ranging/RangingData.java
+@@ -22,10 +22,11 @@
+ import android.annotation.Nullable;
+ import android.os.Parcel;
+ import android.os.Parcelable;
+-import android.ranging.RangingManager.RangingTechnology;
+ 
+ import com.android.ranging.flags.Flags;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.util.Objects;
+ 
+ /**
+@@ -34,9 +35,9 @@
+  *
+  */
+ @FlaggedApi(Flags.FLAG_RANGING_STACK_ENABLED)
++@Emulated
+ public final class RangingData implements Parcelable {
+ 
+-    @RangingManager.RangingTechnology
+     private final int mRangingTechnology;
+     private final RangingMeasurement mDistance;
+     @Nullable private final RangingMeasurement mAzimuth;
+@@ -101,7 +102,7 @@
+      *
+      * @return The ranging technology as an integer.
+      */
+-    public @RangingTechnology int getRangingTechnology() {
++    public int getRangingTechnology() {
+         return mRangingTechnology;
+     }
+ 
+@@ -270,7 +271,7 @@
+          * @return This {@link Builder} instance.
+          */
+         @NonNull
+-        public Builder setRangingTechnology(@RangingTechnology int rangingTechnology) {
++        public Builder setRangingTechnology(int rangingTechnology) {
+             mRangingTechnology = rangingTechnology;
+             return this;
+         }

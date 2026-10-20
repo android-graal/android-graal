@@ -1,0 +1,22 @@
+--- a/emulation/svm/src/main/java/android/net/ipsec/ike/exceptions/IkeTimeoutException.java
++++ b/emulation/svm/src/main/java/android/net/ipsec/ike/exceptions/IkeTimeoutException.java
+@@ -16,9 +16,9 @@
+ package android.net.ipsec.ike.exceptions;
+ 
+ import android.annotation.NonNull;
+-import android.net.ipsec.ike.ChildSessionCallback;
+-import android.net.ipsec.ike.IkeSessionCallback;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.io.IOException;
+ 
+ /**
+@@ -31,6 +31,7 @@
+  * @see <a href="https://datatracker.ietf.org/doc/html/rfc7296#section-2.1">RFC 7296, Internet Key
+  *     Exchange Protocol Version 2 (IKEv2)</a>
+  */
++@Emulated
+ public final class IkeTimeoutException extends IOException {
+ 
+     /**

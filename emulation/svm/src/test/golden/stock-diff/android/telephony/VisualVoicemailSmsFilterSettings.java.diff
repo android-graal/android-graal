@@ -1,0 +1,21 @@
+--- a/emulation/svm/src/main/java/android/telephony/VisualVoicemailSmsFilterSettings.java
++++ b/emulation/svm/src/main/java/android/telephony/VisualVoicemailSmsFilterSettings.java
+@@ -17,8 +17,9 @@
+ 
+ import android.os.Parcel;
+ import android.os.Parcelable;
+-import android.telephony.VisualVoicemailService.VisualVoicemailTask;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.util.Collections;
+ import java.util.List;
+ 
+@@ -38,6 +39,7 @@
+  *
+  * @see TelephonyManager#setVisualVoicemailSmsFilterSettings(VisualVoicemailSmsFilterSettings)
+  */
++@Emulated
+ public final class VisualVoicemailSmsFilterSettings implements Parcelable {
+ 
+ 

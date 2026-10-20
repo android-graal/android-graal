@@ -1,0 +1,21 @@
+--- a/emulation/svm/src/main/java/android/app/PictureInPictureUiState.java
++++ b/emulation/svm/src/main/java/android/app/PictureInPictureUiState.java
+@@ -19,15 +19,17 @@
+ import android.annotation.FlaggedApi;
+ import android.annotation.NonNull;
+ import android.annotation.TestApi;
+-import android.content.res.Configuration;
+ import android.os.Parcel;
+ import android.os.Parcelable;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.util.Objects;
+ 
+ /**
+  * Used by {@link Activity#onPictureInPictureUiStateChanged(PictureInPictureUiState)}.
+  */
++@Emulated
+ public final class PictureInPictureUiState implements Parcelable {
+ 
+     private final boolean mIsStashed;

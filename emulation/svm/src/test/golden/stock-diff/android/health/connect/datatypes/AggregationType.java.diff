@@ -1,0 +1,46 @@
+--- a/emulation/svm/src/main/java/android/health/connect/datatypes/AggregationType.java
++++ b/emulation/svm/src/main/java/android/health/connect/datatypes/AggregationType.java
+@@ -19,8 +19,9 @@
+ import static android.health.connect.datatypes.validation.ValidationUtils.validateIntDefValue;
+ 
+ import android.annotation.IntDef;
+-import android.health.connect.HealthConnectManager;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+ import java.util.Set;
+@@ -35,6 +36,7 @@
+  *
+  * @see HealthConnectManager#aggregate
+  */
++@Emulated
+ public final class AggregationType<T> {
+     /** @hide */
+     public static final int MAX = 0;
+@@ -53,14 +55,14 @@
+ 
+     @AggregationTypeIdentifier.Id private final int mId;
+     @AggregateOperationType private final int mType;
+-    @RecordTypeIdentifier.RecordType private final int mApplicableRecordTypeId;
++    private final int mApplicableRecordTypeId;
+     private final Class<T> mClass;
+ 
+     /** @hide */
+     AggregationType(
+             @AggregationTypeIdentifier.Id int id,
+             @AggregateOperationType int type,
+-            @RecordTypeIdentifier.RecordType int applicableRecordTypeId,
++            int applicableRecordTypeId,
+             Class<T> templateClass) {
+         validateIntDefValue(
+                 id,
+@@ -82,7 +84,6 @@
+     }
+ 
+     /** @hide */
+-    @RecordTypeIdentifier.RecordType
+     public int getApplicableRecordTypeId() {
+         return mApplicableRecordTypeId;
+     }

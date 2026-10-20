@@ -1,0 +1,20 @@
+--- a/emulation/svm/src/main/java/android/content/pm/LauncherUserInfo.java
++++ b/emulation/svm/src/main/java/android/content/pm/LauncherUserInfo.java
+@@ -22,14 +22,15 @@
+ import android.os.Flags;
+ import android.os.Parcel;
+ import android.os.Parcelable;
+-import android.os.UserHandle;
+-import android.os.UserManager;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ /**
+  * The LauncherUserInfo object holds information about an Android user that is required to display
+  * the Launcher related UI elements specific to the user (like badges).
+  */
+ @FlaggedApi(Flags.FLAG_ALLOW_PRIVATE_PROFILE)
++@Emulated
+ public final class LauncherUserInfo implements Parcelable {
+ 
+     /**

@@ -1,0 +1,34 @@
+--- a/emulation/svm/src/main/java/android/net/ipsec/ike/exceptions/IkeProtocolException.java
++++ b/emulation/svm/src/main/java/android/net/ipsec/ike/exceptions/IkeProtocolException.java
+@@ -19,7 +19,7 @@
+ import android.annotation.Nullable;
+ import android.annotation.SystemApi;
+ 
+-import com.android.internal.net.ipsec.ike.message.IkeNotifyPayload;
++import org.androidgraal.hosted.annotate.Emulated;
+ 
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+@@ -34,6 +34,7 @@
+  * @see <a href="https://tools.ietf.org/html/rfc7296#section-3.10.1">RFC 7296, Internet Key Exchange
+  *     Protocol Version 2 (IKEv2)</a>
+  */
++@Emulated
+ public abstract class IkeProtocolException extends IkeException {
+     /** @hide */
+     @Retention(RetentionPolicy.SOURCE)
+@@ -210,14 +211,4 @@
+     public byte[] getErrorData() {
+         return mErrorData;
+     }
+-
+-    /**
+-     * Build an IKE Notification Payload for this {@link IkeProtocolException} instance.
+-     *
+-     * @return the notification payload.
+-     * @hide
+-     */
+-    public IkeNotifyPayload buildNotifyPayload() {
+-        return new IkeNotifyPayload(mErrorType, mErrorData);
+-    }
+ }

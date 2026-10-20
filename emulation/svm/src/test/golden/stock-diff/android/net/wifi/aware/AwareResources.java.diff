@@ -1,0 +1,19 @@
+--- a/emulation/svm/src/main/java/android/net/wifi/aware/AwareResources.java
++++ b/emulation/svm/src/main/java/android/net/wifi/aware/AwareResources.java
+@@ -18,13 +18,15 @@
+ 
+ import android.annotation.IntRange;
+ import android.annotation.NonNull;
+-import android.os.Handler;
+ import android.os.Parcel;
+ import android.os.Parcelable;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ /**
+  * The resources of the Aware service.
+  */
++@Emulated
+ public final class AwareResources implements Parcelable {
+     /**
+      * Number of the NDPs are available.

@@ -1,0 +1,20 @@
+--- a/emulation/svm/src/main/java/android/app/usage/ExternalStorageStats.java
++++ b/emulation/svm/src/main/java/android/app/usage/ExternalStorageStats.java
+@@ -19,14 +19,16 @@
+ import android.annotation.BytesLong;
+ import android.os.Parcel;
+ import android.os.Parcelable;
+-import android.os.UserHandle;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ /**
+  * Shared/external storage statistics for a {@link UserHandle} on a single
+  * storage volume.
+  *
+  * @see StorageStatsManager
+  */
++@Emulated
+ public final class ExternalStorageStats implements Parcelable {
+     /** {@hide} */ public long totalBytes;
+     /** {@hide} */ public long audioBytes;

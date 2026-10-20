@@ -1,0 +1,37 @@
+--- a/emulation/svm/src/main/java/android/telecom/CallEventCallback.java
++++ b/emulation/svm/src/main/java/android/telecom/CallEventCallback.java
+@@ -22,6 +22,8 @@
+ 
+ import com.android.server.telecom.flags.Flags;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.util.List;
+ 
+ /**
+@@ -30,6 +32,7 @@
+  * the presence of other calls on the device, requests relayed from a Bluetooth device,
+  * or from another calling surface.
+  */
++@Emulated
+ public interface CallEventCallback {
+     /**
+      * Telecom is informing the client the current {@link CallEndpoint} changed.
+@@ -59,7 +62,7 @@
+      * @param videoState The current video state.
+      */
+     @FlaggedApi(Flags.FLAG_TRANSACTIONAL_VIDEO_STATE)
+-    default void onVideoStateChanged(@CallAttributes.CallType int videoState) {}
++    default void onVideoStateChanged(int videoState) {}
+ 
+     /**
+      * Telecom is informing the client user requested call streaming but the stream can't be
+@@ -67,7 +70,7 @@
+      *
+      * @param reason Code to indicate the reason of this failure
+      */
+-    void onCallStreamingFailed(@CallStreamingService.StreamingFailedReason int reason);
++    void onCallStreamingFailed(int reason);
+ 
+     /**
+      * Informs this {@link android.telecom.CallEventCallback} on events raised from a

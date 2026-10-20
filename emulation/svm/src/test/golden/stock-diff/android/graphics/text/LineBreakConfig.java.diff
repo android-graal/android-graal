@@ -1,0 +1,25 @@
+--- a/emulation/svm/src/main/java/android/graphics/text/LineBreakConfig.java
++++ b/emulation/svm/src/main/java/android/graphics/text/LineBreakConfig.java
+@@ -25,12 +25,13 @@
+ import android.annotation.Nullable;
+ import android.annotation.SuppressLint;
+ import android.os.Build;
+-import android.os.LocaleList;
+ import android.os.Parcel;
+ import android.os.Parcelable;
+ 
+ import dalvik.system.VMRuntime;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+ import java.util.Objects;
+@@ -43,6 +44,7 @@
+  * line-break property</a> for more information.
+  */
+ @android.ravenwood.annotation.RavenwoodKeepWholeClass
++@Emulated
+ public final class LineBreakConfig implements Parcelable {
+     /**
+      * No hyphenation preference is specified.

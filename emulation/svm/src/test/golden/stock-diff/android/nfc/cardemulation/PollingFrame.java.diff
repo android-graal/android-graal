@@ -1,0 +1,24 @@
+--- a/emulation/svm/src/main/java/android/nfc/cardemulation/PollingFrame.java
++++ b/emulation/svm/src/main/java/android/nfc/cardemulation/PollingFrame.java
+@@ -20,11 +20,12 @@
+ import android.annotation.IntDef;
+ import android.annotation.NonNull;
+ import android.annotation.Nullable;
+-import android.content.ComponentName;
+ import android.os.Bundle;
+ import android.os.Parcel;
+ import android.os.Parcelable;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+ import java.util.HexFormat;
+@@ -37,6 +38,7 @@
+  * match a given frame in a loop and will be delivered through calls to
+  * {@link HostApduService#processPollingFrames(List)}.
+  */
++@Emulated
+ public final class PollingFrame implements Parcelable {
+ 
+     /**

@@ -1,0 +1,36 @@
+--- a/emulation/svm/src/main/java/android/os/PatternMatcher.java
++++ b/emulation/svm/src/main/java/android/os/PatternMatcher.java
+@@ -20,6 +20,8 @@
+ import android.util.Log;
+ import android.util.proto.ProtoOutputStream;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+ import java.util.Arrays;
+@@ -30,6 +32,7 @@
+  * used maliciously.
+  */
+ @android.ravenwood.annotation.RavenwoodKeepWholeClass
++@Emulated
+ public class PatternMatcher implements Parcelable {
+     /**
+      * Pattern type: the given pattern must exactly match the string it is
+@@ -157,16 +160,6 @@
+         return "PatternMatcher{" + type + mPattern + "}";
+     }
+ 
+-    /** @hide */
+-    public void dumpDebug(ProtoOutputStream proto, long fieldId) {
+-        long token = proto.start(fieldId);
+-        proto.write(PatternMatcherProto.PATTERN, mPattern);
+-        proto.write(PatternMatcherProto.TYPE, mType);
+-        // PatternMatcherProto.PARSED_PATTERN is too much to dump, but the field is reserved to
+-        // match the current data structure.
+-        proto.end(token);
+-    }
+-
+     /**
+      * Perform a check on the matcher for the pattern type of {@link #PATTERN_ADVANCED_GLOB}.
+      * Return true if it passed.

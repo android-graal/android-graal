@@ -1,0 +1,37 @@
+--- a/emulation/svm/src/main/java/android/media/MediaCasException.java
++++ b/emulation/svm/src/main/java/android/media/MediaCasException.java
+@@ -16,32 +16,17 @@
+ 
+ package android.media;
+ 
+-import android.hardware.cas.V1_2.Status;
++import org.androidgraal.hosted.annotate.Emulated;
+ 
+ /**
+  * Base class for MediaCas exceptions
+  */
++@Emulated
+ public class MediaCasException extends Exception {
+     private MediaCasException(String detailMessage) {
+         super(detailMessage);
+     }
+ 
+-    static void throwExceptionIfNeeded(int error) throws MediaCasException {
+-        if (error == Status.OK) {
+-            return;
+-        }
+-
+-        if (error == Status.ERROR_CAS_NOT_PROVISIONED) {
+-            throw new NotProvisionedException(null);
+-        } else if (error == Status.ERROR_CAS_RESOURCE_BUSY) {
+-            throw new ResourceBusyException(null);
+-        } else if (error == Status.ERROR_CAS_DEVICE_REVOKED) {
+-            throw new DeniedByServerException(null);
+-        } else {
+-            MediaCasStateException.throwExceptionIfNeeded(error);
+-        }
+-    }
+-
+     /**
+      * Exception thrown when an attempt is made to construct a MediaCas object
+      * using a CA_system_id that is not supported by the device

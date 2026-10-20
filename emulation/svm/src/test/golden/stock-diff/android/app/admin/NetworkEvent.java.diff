@@ -1,0 +1,20 @@
+--- a/emulation/svm/src/main/java/android/app/admin/NetworkEvent.java
++++ b/emulation/svm/src/main/java/android/app/admin/NetworkEvent.java
+@@ -16,14 +16,16 @@
+ 
+ package android.app.admin;
+ 
+-import android.content.pm.PackageManager;
+ import android.os.Parcel;
+ import android.os.ParcelFormatException;
+ import android.os.Parcelable;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ /**
+  * An abstract class that represents a network event.
+  */
++@Emulated
+ public abstract class NetworkEvent implements Parcelable {
+ 
+     /** @hide */

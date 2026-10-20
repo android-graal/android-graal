@@ -1,0 +1,36 @@
+--- a/emulation/svm/src/main/java/android/webkit/ServiceWorkerWebSettings.java
++++ b/emulation/svm/src/main/java/android/webkit/ServiceWorkerWebSettings.java
+@@ -16,6 +16,8 @@
+ 
+ package android.webkit;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ /**
+  * Manages settings state for all Service Workers. These settings are not tied to
+  * the lifetime of any WebView because service workers can outlive WebView instances.
+@@ -25,6 +27,7 @@
+ // This is an abstract base class: concrete ServiceWorkerControllers must
+ // create a class derived from this, and return an instance of it in the
+ // ServiceWorkerController.getServiceWorkerWebSettings() method implementation.
++@Emulated
+ public abstract class ServiceWorkerWebSettings {
+ 
+     /**
+@@ -35,7 +38,7 @@
+      *     or {@link WebSettings#LOAD_CACHE_ONLY}. The default value is
+      *     {@link WebSettings#LOAD_DEFAULT}.
+      */
+-    public abstract void setCacheMode(@WebSettings.CacheMode int mode);
++    public abstract void setCacheMode(int mode);
+ 
+     /**
+      * Gets the current setting for overriding the cache mode.
+@@ -43,7 +46,6 @@
+      * @return the current setting for overriding the cache mode
+      * @see #setCacheMode
+      */
+-    @WebSettings.CacheMode
+     public abstract int getCacheMode();
+ 
+     /**

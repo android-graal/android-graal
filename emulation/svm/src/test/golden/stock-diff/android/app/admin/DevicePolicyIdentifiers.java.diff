@@ -1,0 +1,30 @@
+--- a/emulation/svm/src/main/java/android/app/admin/DevicePolicyIdentifiers.java
++++ b/emulation/svm/src/main/java/android/app/admin/DevicePolicyIdentifiers.java
+@@ -21,8 +21,9 @@
+ import android.annotation.SystemApi;
+ import android.annotation.TestApi;
+ import android.app.appfunctions.flags.Flags;
+-import android.os.UserManager;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.util.Objects;
+ 
+ /**
+@@ -31,6 +32,7 @@
+  * {@link PolicyUpdateReceiver#onPolicyChanged} to communicate updates of a certain policy back
+  * to the admin.
+  */
++@Emulated
+ public final class DevicePolicyIdentifiers {
+ 
+     private DevicePolicyIdentifiers() {}
+@@ -215,7 +217,7 @@
+      */
+     @NonNull
+     public static String getIdentifierForUserRestriction(
+-            @UserManager.UserRestrictionKey @NonNull String restriction) {
++            @NonNull String restriction) {
+         Objects.requireNonNull(restriction);
+         return USER_RESTRICTION_PREFIX + restriction;
+     }
