@@ -4,6 +4,9 @@
 
 package android.net.http;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+
 import org.androidgraal.hosted.annotate.Emulated;
 
 import java.util.List;
@@ -23,6 +26,7 @@ public abstract class UrlResponseInfo {
      *
      * @return the URL the response is for.
      */
+    @NonNull
     public abstract String getUrl();
 
     /**
@@ -31,6 +35,7 @@ public abstract class UrlResponseInfo {
      *
      * @return the URL chain.
      */
+    @NonNull
     public abstract List<String> getUrlChain();
 
     /**
@@ -47,11 +52,13 @@ public abstract class UrlResponseInfo {
      *
      * @return the HTTP status text of the status line.
      */
+    @NonNull
     public abstract String getHttpStatusText();
 
     /**
      * Returns the response headers.
      */
+    @NonNull
     public abstract HeaderBlock getHeaders();
 
     /**
@@ -71,6 +78,7 @@ public abstract class UrlResponseInfo {
      */
     // TODO(mef): Figure out what this returns in the cached case, both with
     // and without a revalidation request.
+    @NonNull
     public abstract String getNegotiatedProtocol();
 
     /**

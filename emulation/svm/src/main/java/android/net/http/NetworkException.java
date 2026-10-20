@@ -4,6 +4,8 @@
 
 package android.net.http;
 
+import androidx.annotation.Nullable;
+
 import org.androidgraal.hosted.annotate.Emulated;
 
 /**
@@ -73,7 +75,7 @@ public abstract class NetworkException extends HttpException {
      * java.io.IOException#getCause getCause()} method). A null value is permitted, and indicates
      * that the cause is nonexistent or unknown.
      */
-    public NetworkException(String message, Throwable cause) {
+    public NetworkException(@Nullable String message, @Nullable Throwable cause) {
         super(message, cause);
     }
 

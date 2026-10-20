@@ -4,6 +4,8 @@
 
 package android.net.http;
 
+import androidx.annotation.Nullable;
+
 import org.androidgraal.hosted.annotate.Emulated;
 
 /**
@@ -21,7 +23,7 @@ public abstract class CallbackException extends HttpException {
      *         saved
      * for later retrieval by the {@link java.io.IOException#getCause getCause()}.
      */
-    protected CallbackException(String message, Throwable cause) {
+    protected CallbackException(@Nullable String message, @Nullable Throwable cause) {
         super(message, cause);
     }
 }
