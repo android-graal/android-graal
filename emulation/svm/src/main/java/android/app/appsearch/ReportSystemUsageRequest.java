@@ -43,7 +43,7 @@ public final class ReportSystemUsageRequest {
     private final String mDocumentId;
     private final long mUsageTimestampMillis;
 
-    private ReportSystemUsageRequest(
+    ReportSystemUsageRequest(
             @NonNull String packageName,
             @NonNull String database,
             @NonNull String namespace,

@@ -29,16 +29,16 @@ import org.androidgraal.hosted.annotate.Emulated;
 @Emulated
 public final class GpsSatellite {
     /* These package private values are modified by the GpsStatus class */
-    private boolean mValid;
-    private boolean mHasEphemeris;
-    private boolean mHasAlmanac;
-    private boolean mUsedInFix;
-    private int mPrn;
-    private float mSnr;
-    private float mElevation;
-    private float mAzimuth;
+    boolean mValid;
+    boolean mHasEphemeris;
+    boolean mHasAlmanac;
+    boolean mUsedInFix;
+    int mPrn;
+    float mSnr;
+    float mElevation;
+    float mAzimuth;
 
-    private GpsSatellite(int prn) {
+    GpsSatellite(int prn) {
         mPrn = prn;
     }
 
@@ -46,7 +46,7 @@ public final class GpsSatellite {
      * Used by {@link LocationManager#getGpsStatus} to copy LocationManager's
      * cached GpsStatus instance to the client's copy.
      */
-    private void setStatus(GpsSatellite satellite) {
+    void setStatus(GpsSatellite satellite) {
         if (satellite == null) {
             mValid = false;
         } else {

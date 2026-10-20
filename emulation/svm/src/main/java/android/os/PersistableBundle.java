@@ -24,6 +24,7 @@ import android.util.ArrayMap;
 import android.util.Slog;
 import android.util.proto.ProtoOutputStream;
 
+import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
 
 import java.io.IOException;
@@ -44,6 +45,7 @@ import java.util.ArrayList;
  */
 @android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
+@Adapted(reason = "does not implement XmlUtils.WriteMapCallback")
 public final class PersistableBundle extends BaseBundle implements Cloneable, Parcelable {
     private static final String TAG = "PersistableBundle";
 
@@ -158,7 +160,7 @@ public final class PersistableBundle extends BaseBundle implements Cloneable, Pa
         }
     }
 
-    public PersistableBundle(Parcel parcelledData, int length) {
+    /* package */ PersistableBundle(Parcel parcelledData, int length) {
         super(parcelledData, length);
         mFlags = FLAG_DEFUSABLE;
     }
@@ -171,7 +173,7 @@ public final class PersistableBundle extends BaseBundle implements Cloneable, Pa
      *
      * @hide
      */
-    private PersistableBundle(PersistableBundle from, boolean deep) {
+    PersistableBundle(PersistableBundle from, boolean deep) {
         super(from, deep);
     }
 

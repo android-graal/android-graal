@@ -1039,7 +1039,7 @@ public final class Sensor {
     private int     mId;
     private UUID    mUuid;
 
-    private Sensor() {
+    Sensor() {
     }
 
     /**
@@ -1281,7 +1281,7 @@ public final class Sensor {
         return (((mFlags & DATA_INJECTION_MASK) >> DATA_INJECTION_SHIFT)) != 0;
     }
 
-    private void setRange(float max, float res) {
+    void setRange(float max, float res) {
         mMaxRange = max;
         mResolution = res;
     }

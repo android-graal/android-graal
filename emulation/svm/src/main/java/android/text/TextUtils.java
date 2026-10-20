@@ -38,6 +38,7 @@ import android.util.Printer;
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.Preconditions;
 
+import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
 
 import java.lang.annotation.Retention;
@@ -54,7 +55,7 @@ public class TextUtils {
     private static final String TAG = "TextUtils";
 
     // Zero-width character used to fill ellipsized strings when codepoint length must be preserved.
-    private static final char ELLIPSIS_FILLER = '\uFEFF'; // ZERO WIDTH NO-BREAK SPACE
+    /* package */ static final char ELLIPSIS_FILLER = '\uFEFF'; // ZERO WIDTH NO-BREAK SPACE
 
     // TODO: Based on CLDR data, these need to be localized for Dzongkha (dz) and perhaps
     // Hong Kong Traditional Chinese (zh-Hant-HK), but that may need to depend on the actual word
@@ -501,6 +502,7 @@ public class TextUtils {
      * Flatten a CharSequence and whatever styles can be copied across processes
      * into the parcel.
      */
+    @Adapted(reason = "writeString below R, and a span throws")
     public static void writeToParcel(@Nullable CharSequence cs, @NonNull Parcel p,
             int parcelableFlags) {
         if (cs instanceof Spanned) {
@@ -544,6 +546,7 @@ public class TextUtils {
         p.writeInt(sp.getSpanFlags(o));
     }
 
+    @Adapted(reason = "readString below R, and a span throws")
     public static final Parcelable.Creator<CharSequence> CHAR_SEQUENCE_CREATOR
             = new Parcelable.Creator<CharSequence>() {
         /**
@@ -608,7 +611,8 @@ public class TextUtils {
     // In order to be fast, the code is intentionally rough and quite conservative in its
     // considering inclusion of any non-BMP or surrogate characters or anything in the bidi
     // blocks or any bidi formatting characters with a potential to affect RTL layout.
-    private static boolean couldAffectRtl(char c) {
+    /* package */
+    static boolean couldAffectRtl(char c) {
         return (0x0590 <= c && c <= 0x08FF) ||  // RTL scripts
                 c == 0x200E ||  // Bidi format character
                 c == 0x200F ||  // Bidi format character
@@ -623,7 +627,8 @@ public class TextUtils {
     // Since this calls couldAffectRtl() above, it's also quite conservative, in the way that
     // it may return 'false' (needs bidi) although careful consideration may tell us it should
     // return 'true' (does not need bidi).
-    private static boolean doesNotNeedBidi(char[] text, int start, int len) {
+    /* package */
+    static boolean doesNotNeedBidi(char[] text, int start, int len) {
         final int end = start + len;
         for (int i = start; i < end; i++) {
             if (couldAffectRtl(text[i])) {
@@ -633,7 +638,7 @@ public class TextUtils {
         return true;
     }
 
-    private static void recycle(char[] temp) {
+    /* package */ static void recycle(char[] temp) {
         if (temp.length > 1000)
             return;
 
@@ -1179,7 +1184,7 @@ public class TextUtils {
          */
         private BitSet mRemovedChars;
 
-        private StringWithRemovedChars(@NonNull String original) {
+        StringWithRemovedChars(@NonNull String original) {
             mOriginal = original;
         }
 
@@ -1187,7 +1192,7 @@ public class TextUtils {
          * Mark all chars in a range {@code [firstRemoved - firstNonRemoved[} (not including
          * firstNonRemoved) as removed.
          */
-        private void removeRange(int firstRemoved, int firstNonRemoved) {
+        void removeRange(int firstRemoved, int firstNonRemoved) {
             if (mRemovedChars == null) {
                 mRemovedChars = new BitSet(mOriginal.length());
             }
@@ -1198,7 +1203,7 @@ public class TextUtils {
         /**
          * Remove all characters before {@code firstNonRemoved}.
          */
-        private void removeAllCharBefore(int firstNonRemoved) {
+        void removeAllCharBefore(int firstNonRemoved) {
             if (mRemovedChars == null) {
                 mRemovedChars = new BitSet(mOriginal.length());
             }
@@ -1209,7 +1214,7 @@ public class TextUtils {
         /**
          * Remove all characters after and including {@code firstRemoved}.
          */
-        private void removeAllCharAfter(int firstRemoved) {
+        void removeAllCharAfter(int firstRemoved) {
             if (mRemovedChars == null) {
                 mRemovedChars = new BitSet(mOriginal.length());
             }
@@ -1237,14 +1242,14 @@ public class TextUtils {
         /**
          * Return length or the original string
          */
-        private int length() {
+        int length() {
             return mOriginal.length();
         }
 
         /**
          * Return codePoint of original string at a certain {@code offset}
          */
-        private int codePointAt(int offset) {
+        int codePointAt(int offset) {
             return mOriginal.codePointAt(offset);
         }
     }

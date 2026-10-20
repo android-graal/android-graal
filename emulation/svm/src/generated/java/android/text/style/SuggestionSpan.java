@@ -1,5 +1,7 @@
 package android.text.style;
 
+import android.text.ParcelableSpan;
+
 /**
  * Holds suggestion candidates for the text enclosed in this span.
  *
@@ -12,7 +14,7 @@ package android.text.style;
  *
  * @see TextView#isSuggestionsEnabled()
  */
-public final class SuggestionSpan {
+public abstract class SuggestionSpan implements ParcelableSpan {
     /**
      * This action is deprecated in {@link android.os.Build.VERSION_CODES#Q}.
      *
@@ -74,6 +76,21 @@ public final class SuggestionSpan {
      */
     @Deprecated
     public static final String SUGGESTION_SPAN_PICKED_HASHCODE = "hashcode";
+
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int getSpanTypeId() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
 
     private SuggestionSpan() {
     }

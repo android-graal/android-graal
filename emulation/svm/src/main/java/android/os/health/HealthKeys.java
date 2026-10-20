@@ -131,20 +131,20 @@ public class HealthKeys {
      * An array of fixed size that will be sorted.
      */
     private static class SortedIntArray {
-        private int mCount;
-        private int[] mArray;
+        int mCount;
+        int[] mArray;
 
         /**
          * Construct with the maximum number of values.
          */
-        private SortedIntArray(int maxCount) {
+        SortedIntArray(int maxCount) {
             mArray = new int[maxCount];
         }
 
         /**
          * Add a value.
          */
-        private void addValue(int value) {
+        void addValue(int value) {
             mArray[mCount++] = value;
         }
 
@@ -152,7 +152,7 @@ public class HealthKeys {
          * Get the array of values that have been added, with the values in
          * numerically increasing order.
          */
-        private int[] getArray() {
+        int[] getArray() {
             if (mCount == mArray.length) {
                 Arrays.sort(mArray);
                 return mArray;

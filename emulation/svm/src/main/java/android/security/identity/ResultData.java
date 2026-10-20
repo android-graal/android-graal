@@ -137,7 +137,7 @@ public abstract class ResultData {
      */
     public abstract @Nullable byte[] getMessageAuthenticationCode();
 
-    private @Nullable byte[] getSignature() {
+    @Nullable byte[] getSignature() {
         throw new UnsupportedOperationException();
     }
 

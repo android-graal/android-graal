@@ -1,0 +1,19 @@
+--- a/emulation/svm/src/main/java/android/os/strictmode/ImplicitDirectBootViolation.java
++++ b/emulation/svm/src/main/java/android/os/strictmode/ImplicitDirectBootViolation.java
+@@ -16,7 +16,7 @@
+ 
+ package android.os.strictmode;
+ 
+-import android.content.pm.PackageManager;
++import org.androidgraal.hosted.annotate.Emulated;
+ 
+ /**
+  * Subclass of {@code Violation} that is used when a process implicitly relies
+@@ -24,6 +24,7 @@
+  *
+  * @see PackageManager#MATCH_DIRECT_BOOT_AUTO
+  */
++@Emulated
+ public final class ImplicitDirectBootViolation extends Violation {
+     /** @hide */
+     public ImplicitDirectBootViolation() {

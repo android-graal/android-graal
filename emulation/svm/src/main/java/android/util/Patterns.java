@@ -121,7 +121,7 @@ public class Patterns {
      *
      *  @hide
      */
-    private static final String IANA_TOP_LEVEL_DOMAINS =
+    static final String IANA_TOP_LEVEL_DOMAINS =
         "(?:"
         + "(?:aaa|aarp|abb|abbott|abbvie|abc|able|abogado|abudhabi|academy|accenture|accountant"
         + "|accountants|aco|actor|ads|adult|aeg|aero|aetna|afl|africa|agakhan|agency|aig|airbus"

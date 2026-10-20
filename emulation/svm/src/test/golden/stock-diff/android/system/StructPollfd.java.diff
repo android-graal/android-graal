@@ -1,0 +1,51 @@
+--- a/emulation/svm/src/main/java/android/system/StructPollfd.java
++++ b/emulation/svm/src/main/java/android/system/StructPollfd.java
+@@ -16,13 +16,17 @@
+ 
+ package android.system;
+ 
++import org.androidgraal.hosted.annotate.Adapted;
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.io.FileDescriptor;
+-import libcore.util.Objects;
++import java.util.Arrays;
+ 
+ /**
+  * Used as an in/out parameter to {@link Os#poll}.
+  * Corresponds to C's {@code struct pollfd} from {@code <poll.h>}.
+  */
++@Emulated
+ public final class StructPollfd {
+     /** The file descriptor to poll. */
+     public FileDescriptor fd;
+@@ -43,7 +47,28 @@
+      */
+     public Object userData;
+ 
++    @Adapted(reason = "Objects.toString's output spelled out over the fields in name order")
+     @Override public String toString() {
+-        return Objects.toString(this);
++        return "StructPollfd[events=" + events + ",fd=" + fd + ",revents=" + revents + ",userData="
++                + valueOf(userData) + "]";
+     }
++
++    @Adapted(reason = "a field value as Objects.toString prints it")
++    private static String valueOf(Object value) {
++        return switch (value) {
++            case null -> "null";
++            case boolean[] array -> Arrays.toString(array);
++            case byte[] array -> Arrays.toString(array);
++            case char[] array -> Arrays.toString(array);
++            case double[] array -> Arrays.toString(array);
++            case float[] array -> Arrays.toString(array);
++            case int[] array -> Arrays.toString(array);
++            case long[] array -> Arrays.toString(array);
++            case short[] array -> Arrays.toString(array);
++            case Object[] array -> Arrays.toString(array);
++            case Character character -> "'" + character + "'";
++            case String string -> "\"" + string + "\"";
++            default -> value.toString();
++        };
++    }
+ }

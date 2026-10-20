@@ -1,0 +1,35 @@
+--- a/emulation/svm/src/main/java/android/system/StructUtsname.java
++++ b/emulation/svm/src/main/java/android/system/StructUtsname.java
+@@ -16,12 +16,14 @@
+ 
+ package android.system;
+ 
+-import libcore.util.Objects;
++import org.androidgraal.hosted.annotate.Adapted;
++import org.androidgraal.hosted.annotate.Emulated;
+ 
+ /**
+  * Information returned by {@link Os#uname}.
+  * Corresponds to C's {@code struct utsname} from {@code <sys/utsname.h>}.
+  */
++@Emulated
+ public final class StructUtsname {
+     /** The OS name, such as "Linux". */
+     public final String sysname;
+@@ -49,7 +51,15 @@
+         this.machine = machine;
+     }
+ 
++    @Adapted(reason = "Objects.toString's output spelled out over the fields in name order")
+     @Override public String toString() {
+-        return Objects.toString(this);
++        return "StructUtsname[machine=" + quoted(machine) + ",nodename=" + quoted(nodename)
++                + ",release=" + quoted(release) + ",sysname=" + quoted(sysname) + ",version="
++                + quoted(version) + "]";
+     }
++
++    @Adapted(reason = "a String field as Objects.toString prints it")
++    private static String quoted(String value) {
++        return value == null ? "null" : "\"" + value + "\"";
++    }
+ }

@@ -56,7 +56,7 @@ public final class DnsOptions {
     @Nullable
     private final StaleDnsOptions mStaleDnsOptions;
 
-    private DnsOptions(Builder builder) {
+    DnsOptions(Builder builder) {
         this.mEnableStaleDns = builder.mEnableStaleDns;
         this.mStaleDnsOptions = builder.mStaleDnsOptions;
         this.mPersistHostCachePeriod = builder.mPersistHostCachePeriod;
@@ -198,7 +198,7 @@ public final class DnsOptions {
         private final @DnsOptionState int mAllowCrossNetworkUsage;
         private final @DnsOptionState int mUseStaleOnNameNotResolved;
 
-        private StaleDnsOptions(@NonNull Builder builder) {
+        StaleDnsOptions(@NonNull Builder builder) {
             this.mFreshLookupTimeout = builder.mFreshLookupTimeout;
             this.mMaxExpiredDelay = builder.mMaxExpiredDelay;
             this.mAllowCrossNetworkUsage = builder.mAllowCrossNetworkUsage;

@@ -1,0 +1,78 @@
+--- a/emulation/svm/src/main/java/android/util/proto/EncodedBuffer.java
++++ b/emulation/svm/src/main/java/android/util/proto/EncodedBuffer.java
+@@ -19,6 +19,8 @@
+ import android.annotation.TestApi;
+ import android.util.Log;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.util.ArrayList;
+ 
+ /**
+@@ -35,9 +37,8 @@
+  */
+ @TestApi
+ @android.ravenwood.annotation.RavenwoodKeepWholeClass
++@Emulated
+ public final class EncodedBuffer {
+-    private static final String TAG = "EncodedBuffer";
+-
+     private final ArrayList<byte[]> mBuffers = new ArrayList<byte[]>();
+ 
+     private final int mChunkSize;
+@@ -92,10 +93,6 @@
+      */
+     private int mReadableSize = -1;
+ 
+-    public EncodedBuffer() {
+-        this(0);
+-    }
+-
+     /**
+      * Construct an EncodedBuffer object.
+      *
+@@ -593,30 +590,6 @@
+     }
+ 
+     /**
+-     * Get the number of chunks allocated.
+-     */
+-    // VisibleForTesting
+-    public int getChunkCount() {
+-        return mBuffers.size();
+-    }
+-
+-    /**
+-     * Get the write position inside the current write chunk.
+-     */
+-     // VisibleForTesting
+-    public int getWriteIndex() {
+-        return mWriteIndex;
+-    }
+-
+-    /**
+-     * Get the index of the current write chunk in the list of chunks.
+-     */
+-    // VisibleForTesting
+-    public int getWriteBufIndex() {
+-        return mWriteBufIndex;
+-    }
+-
+-    /**
+      * Return debugging information about this EncodedBuffer object.
+      */
+     public String getDebugString() {
+@@ -641,13 +614,6 @@
+     /**
+      * Print the internal buffer chunks.
+      */
+-    public static void dumpByteString(String tag, String prefix, byte[] buf) {
+-        dumpByteString(tag, prefix, 0, buf);
+-    }
+-
+-    /**
+-     * Print the internal buffer chunks.
+-     */
+     private static int dumpByteString(String tag, String prefix, int start, byte[] buf) {
+         StringBuilder sb = new StringBuilder();
+         final int length = buf.length;

@@ -74,7 +74,7 @@ public class Base64 {
     //  shared code
     //  --------------------------------------------------------
 
-    public static abstract class Coder {
+    /* package */ static abstract class Coder {
         public byte[] output;
         public int op;
 
@@ -179,7 +179,7 @@ public class Base64 {
         return temp;
     }
 
-    public static class Decoder extends Coder {
+    /* package */ static class Decoder extends Coder {
         /**
          * Lookup table for turning bytes into their position in the
          * Base64 alphabet.
@@ -545,7 +545,7 @@ public class Base64 {
         return encoder.output;
     }
 
-    public static class Encoder extends Coder {
+    /* package */ static class Encoder extends Coder {
         /**
          * Emit a new line every this many output tuples.  Corresponds to
          * a 76-character line length (the maximum allowable according to
@@ -576,7 +576,7 @@ public class Base64 {
         };
 
         final private byte[] tail;
-        private int tailLen;
+        /* package */ int tailLen;
         private int count;
 
         final public boolean do_padding;

@@ -16,6 +16,7 @@
 
 package android.system;
 
+import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
 
 /**
@@ -29,6 +30,7 @@ public class Int64Ref {
         this.value = value;
     }
 
+    @Adapted(reason = "Objects.toString's output spelled out")
     @Override public String toString() {
         return "Int64Ref[value=" + value + "]";
     }

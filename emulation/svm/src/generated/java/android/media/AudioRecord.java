@@ -80,6 +80,16 @@ public final class AudioRecord implements MicrophoneDirection {
      */
     public static final int SUCCESS = 0;
 
+    @Override
+    public boolean setPreferredMicrophoneDirection(int direction) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean setPreferredMicrophoneFieldDimension(float zoom) {
+        throw new UnsupportedOperationException();
+    }
+
     private AudioRecord() {
     }
 

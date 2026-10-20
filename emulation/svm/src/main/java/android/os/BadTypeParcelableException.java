@@ -22,13 +22,13 @@ import org.androidgraal.hosted.annotate.Emulated;
 @android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 class BadTypeParcelableException extends BadParcelableException {
-    public BadTypeParcelableException(String msg) {
+    BadTypeParcelableException(String msg) {
         super(msg);
     }
-    public BadTypeParcelableException(Exception cause) {
+    BadTypeParcelableException(Exception cause) {
         super(cause);
     }
-    public BadTypeParcelableException(String msg, Throwable cause) {
+    BadTypeParcelableException(String msg, Throwable cause) {
         super(msg, cause);
     }
 }

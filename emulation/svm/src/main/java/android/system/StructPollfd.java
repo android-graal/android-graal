@@ -16,6 +16,7 @@
 
 package android.system;
 
+import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
 
 import java.io.FileDescriptor;
@@ -46,12 +47,13 @@ public final class StructPollfd {
      */
     public Object userData;
 
+    @Adapted(reason = "Objects.toString's output spelled out over the fields in name order")
     @Override public String toString() {
-        // ART's reflective toString lists the fields in dex order, which is by name.
         return "StructPollfd[events=" + events + ",fd=" + fd + ",revents=" + revents + ",userData="
                 + valueOf(userData) + "]";
     }
 
+    @Adapted(reason = "a field value as Objects.toString prints it")
     private static String valueOf(Object value) {
         return switch (value) {
             case null -> "null";

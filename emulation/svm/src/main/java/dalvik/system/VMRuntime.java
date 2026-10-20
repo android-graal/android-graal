@@ -30,6 +30,7 @@ import com.android.libcore.Flags;
 import dalvik.annotation.optimization.FastNative;
 
 import org.androidgraal.android.Words;
+import org.androidgraal.hosted.annotate.Adapted;
 
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -113,6 +114,8 @@ public final class VMRuntime {
      */
     @UnsupportedAppUsage
     @SystemApi(client = MODULE_LIBRARIES)
+    @Adapted(value = "https://android.googlesource.com/platform/art/+/refs/tags/android-16.0.0_r1/runtime/native/dalvik_system_VMRuntime.cc#L232-L235",
+            reason = "the native's body in Java over the image's word size")
     public boolean is64Bit() {
         return Words.is64Bit();
     }
@@ -129,6 +132,7 @@ public final class VMRuntime {
     @UnsupportedAppUsage(maxTargetSdk=0, publicAlternatives="Use the {@code targetSdkVersion}"
         +" attribute in the {@code uses-sdk} manifest tag instead.")
     @SystemApi(client = MODULE_LIBRARIES)
+    @Adapted(reason = "without the setTargetSdkVersionNative call")
     public synchronized void setTargetSdkVersion(int targetSdkVersion) {
         this.targetSdkVersion = targetSdkVersion;
     }
@@ -159,6 +163,7 @@ public final class VMRuntime {
      * @hide
      */
     @SystemApi(client = MODULE_LIBRARIES)
+    @Adapted(reason = "an array of exactly minLength through Array.newInstance instead of the native")
     public Object newUnpaddedArray(Class<?> componentType, int minLength) {
         return Array.newInstance(componentType, minLength);
     }

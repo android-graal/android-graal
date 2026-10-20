@@ -40,7 +40,7 @@ public class ProcessedData {
      * @param data Rights data.
      * @param accountId Account ID of the user.
      */
-    private ProcessedData(byte[] data, String accountId) {
+    /* package */ ProcessedData(byte[] data, String accountId) {
         mData = data;
         mAccountId = accountId;
     }
@@ -52,7 +52,7 @@ public class ProcessedData {
      * @param accountId Account ID of the user.
      * @param subscriptionId Subscription ID of the user.
      */
-    private ProcessedData(byte[] data, String accountId, String subscriptionId) {
+    /* package */ ProcessedData(byte[] data, String accountId, String subscriptionId) {
         mData = data;
         mAccountId = accountId;
         mSubscriptionId = subscriptionId;

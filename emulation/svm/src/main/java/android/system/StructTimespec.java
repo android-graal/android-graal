@@ -16,6 +16,7 @@
 
 package android.system;
 
+import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
 
 /**
@@ -74,8 +75,8 @@ public final class StructTimespec implements Comparable<StructTimespec> {
     }
 
     @Override
+    @Adapted(reason = "Objects.toString's output spelled out over the fields in name order")
     public String toString() {
-        // ART's reflective toString lists the fields in dex order, which is by name.
         return "StructTimespec[tv_nsec=" + tv_nsec + ",tv_sec=" + tv_sec + "]";
     }
 }

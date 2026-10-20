@@ -35,19 +35,19 @@ public class AccessControlProfile {
     private AccessControlProfile() {
     }
 
-    private AccessControlProfileId getAccessControlProfileId() {
+    AccessControlProfileId getAccessControlProfileId() {
         return mAccessControlProfileId;
     }
 
-    private long getUserAuthenticationTimeout() {
+    long getUserAuthenticationTimeout() {
         return mUserAuthenticationTimeout;
     }
 
-    private boolean isUserAuthenticationRequired() {
+    boolean isUserAuthenticationRequired() {
         return mUserAuthenticationRequired;
     }
 
-    private X509Certificate getReaderCertificate() {
+    X509Certificate getReaderCertificate() {
         return mReaderCertificate;
     }
 

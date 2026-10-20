@@ -1,0 +1,1494 @@
+--- a/emulation/svm/src/main/java/android/os/Parcel.java
++++ b/emulation/svm/src/main/java/android/os/Parcel.java
+@@ -26,7 +26,6 @@
+ import android.annotation.Nullable;
+ import android.annotation.SuppressLint;
+ import android.annotation.TestApi;
+-import android.app.AppOpsManager;
+ import android.compat.annotation.UnsupportedAppUsage;
+ import android.os.Flags;
+ import android.ravenwood.annotation.RavenwoodClassLoadHook;
+@@ -54,6 +53,10 @@
+ import dalvik.annotation.optimization.CriticalNative;
+ import dalvik.annotation.optimization.FastNative;
+ 
++import org.androidgraal.android.ParcelData;
++import org.androidgraal.hosted.annotate.Adapted;
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.nio.BufferOverflowException;
+ import java.nio.ReadOnlyBufferException;
+ import libcore.util.SneakyThrow;
+@@ -240,6 +243,7 @@
+  */
+ @RavenwoodKeepWholeClass
+ @RavenwoodClassLoadHook(RavenwoodClassLoadHook.LIBANDROID_LOADING_HOOK)
++@Emulated
+ public final class Parcel {
+ 
+     private static final boolean DEBUG_RECYCLE = false;
+@@ -248,7 +252,8 @@
+ 
+     @UnsupportedAppUsage
+     @SuppressWarnings({"UnusedDeclaration"})
+-    private long mNativePtr; // used by native code
++    @Adapted(reason = "a ParcelData instead of a native pointer")
++    private ParcelData mNativePtr; // used by native code
+ 
+     /**
+      * Flag indicating if {@link #mNativePtr} was allocated by this object,
+@@ -391,116 +396,239 @@
+     // Assume the least possible size for complex objects
+     private static final int SIZE_COMPLEX_TYPE = 1;
+ 
+-    @CriticalNative
+-    private static native void nativeMarkSensitive(long nativePtr);
+-    @FastNative
+-    private static native void nativeMarkForBinder(long nativePtr, IBinder binder);
+-    @CriticalNative
+-    private static native boolean nativeIsForRpc(long nativePtr);
+-    @CriticalNative
+-    private static native int nativeDataSize(long nativePtr);
+-    @CriticalNative
+-    private static native int nativeDataAvail(long nativePtr);
+-    @CriticalNative
+-    private static native int nativeDataPosition(long nativePtr);
+-    @CriticalNative
+-    private static native int nativeDataCapacity(long nativePtr);
+-    @FastNative
+-    private static native void nativeSetDataSize(long nativePtr, int size);
+-    @CriticalNative
+-    private static native void nativeSetDataPosition(long nativePtr, int pos);
+-    @FastNative
+-    private static native void nativeSetDataCapacity(long nativePtr, int size);
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L93-L99",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static void nativeMarkSensitive(ParcelData nativePtr) {
++        nativePtr.markSensitive();
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L124-L128",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static int nativeDataSize(ParcelData nativePtr) {
++        return nativePtr.dataSize();
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L130-L134",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static int nativeDataAvail(ParcelData nativePtr) {
++        return nativePtr.dataAvail();
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L136-L140",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static int nativeDataPosition(ParcelData nativePtr) {
++        return nativePtr.dataPosition();
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L142-L146",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static int nativeDataCapacity(ParcelData nativePtr) {
++        return nativePtr.dataCapacity();
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L148-L157",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static void nativeSetDataSize(ParcelData nativePtr, int size) {
++        nativePtr.setDataSize(size);
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L159-L165",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static void nativeSetDataPosition(ParcelData nativePtr, int pos) {
++        nativePtr.setDataPosition(pos);
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L167-L176",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static void nativeSetDataCapacity(ParcelData nativePtr, int size) {
++        nativePtr.setDataCapacity(size);
++    }
+ 
+-    @CriticalNative
+-    private static native boolean nativePushAllowFds(long nativePtr, boolean allowFds);
+-    @CriticalNative
+-    private static native void nativeRestoreAllowFds(long nativePtr, boolean lastValue);
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L178-L187",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static boolean nativePushAllowFds(ParcelData nativePtr, boolean allowFds) {
++        return nativePtr.pushAllowFds(allowFds);
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L189-L196",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static void nativeRestoreAllowFds(ParcelData nativePtr, boolean lastValue) {
++        nativePtr.restoreAllowFds(lastValue);
++    }
+ 
+-    private static native void nativeWriteByteArray(long nativePtr, byte[] b, int offset, int len);
+-    private static native void nativeWriteBlob(long nativePtr, byte[] b, int offset, int len);
+-    @CriticalNative
+-    private static native int nativeWriteInt(long nativePtr, int val);
+-    @CriticalNative
+-    private static native int nativeWriteLong(long nativePtr, long val);
+-    @CriticalNative
+-    private static native int nativeWriteFloat(long nativePtr, float val);
+-    @CriticalNative
+-    private static native int nativeWriteDouble(long nativePtr, double val);
+-    private static native void nativeSignalExceptionForError(int error);
+-    @FastNative
+-    private static native void nativeWriteString8(long nativePtr, String val);
+-    @FastNative
+-    private static native void nativeWriteString16(long nativePtr, String val);
+-    @FastNative
+-    private static native void nativeWriteStrongBinder(long nativePtr, IBinder val);
+-    @FastNative
+-    private static native void nativeWriteFileDescriptor(long nativePtr, FileDescriptor val);
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L198-L223",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static void nativeWriteByteArray(ParcelData nativePtr, byte[] b, int offset, int len) {
++        nativePtr.writeByteArray(b, offset, len);
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L225-L262",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static void nativeWriteBlob(ParcelData nativePtr, byte[] b, int offset, int len) {
++        nativePtr.writeBlob(b, offset, len);
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L264-L267",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static int nativeWriteInt(ParcelData nativePtr, int val) {
++        return nativePtr.writeInt32(val);
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L269-L272",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static int nativeWriteLong(ParcelData nativePtr, long val) {
++        return nativePtr.writeInt64(val);
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L274-L277",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static int nativeWriteFloat(ParcelData nativePtr, float val) {
++        return nativePtr.writeFloat(val);
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L279-L282",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static int nativeWriteDouble(ParcelData nativePtr, double val) {
++        return nativePtr.writeDouble(val);
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L284-L286",
++            reason = "the native's body in Java over ParcelData")
++    private static void nativeSignalExceptionForError(int error) {
++        ParcelData.signalExceptionForError(error);
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L288-L312",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static void nativeWriteString8(ParcelData nativePtr, String val) {
++        nativePtr.writeString8(val);
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L314-L338",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static void nativeWriteString16(ParcelData nativePtr, String val) {
++        nativePtr.writeString16(val);
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L363-L392",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static byte[] nativeCreateByteArray(ParcelData nativePtr) {
++        return nativePtr.createByteArray();
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L394-L419",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static boolean nativeReadByteArray(ParcelData nativePtr, byte[] dest, int destLen) {
++        return nativePtr.readByteArray(dest, destLen);
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L421-L449",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static byte[] nativeReadBlob(ParcelData nativePtr) {
++        return nativePtr.readBlob();
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L451-L458",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static int nativeReadInt(ParcelData nativePtr) {
++        return nativePtr.readInt32();
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L460-L467",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static long nativeReadLong(ParcelData nativePtr) {
++        return nativePtr.readInt64();
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L469-L476",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static float nativeReadFloat(ParcelData nativePtr) {
++        return nativePtr.readFloat();
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L478-L485",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static double nativeReadDouble(ParcelData nativePtr) {
++        return nativePtr.readDouble();
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L487-L499",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static String nativeReadString8(ParcelData nativePtr) {
++        return nativePtr.readString8();
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L501-L513",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static String nativeReadString16(ParcelData nativePtr) {
++        return nativePtr.readString16();
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L541-L545",
++            reason = "a new ParcelData instead of a native Parcel")
++    private static ParcelData nativeCreate() {
++        return new ParcelData();
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L547-L553",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static void nativeFreeBuffer(ParcelData nativePtr) {
++        nativePtr.freeData();
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L555-L559",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static void nativeDestroy(ParcelData nativePtr) {
++        nativePtr.destroy();
++    }
+ 
+-    private static native byte[] nativeCreateByteArray(long nativePtr);
+-    private static native boolean nativeReadByteArray(long nativePtr, byte[] dest, int destLen);
+-    private static native byte[] nativeReadBlob(long nativePtr);
+-    @CriticalNative
+-    private static native int nativeReadInt(long nativePtr);
+-    @CriticalNative
+-    private static native long nativeReadLong(long nativePtr);
+-    @CriticalNative
+-    private static native float nativeReadFloat(long nativePtr);
+-    @CriticalNative
+-    private static native double nativeReadDouble(long nativePtr);
+-    @FastNative
+-    private static native String nativeReadString8(long nativePtr);
+-    @FastNative
+-    private static native String nativeReadString16(long nativePtr);
+-    @FastNative
+-    private static native IBinder nativeReadStrongBinder(long nativePtr);
+-    @FastNative
+-    private static native FileDescriptor nativeReadFileDescriptor(long nativePtr);
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L582-L602",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static byte[] nativeMarshall(ParcelData nativePtr) {
++        return nativePtr.marshall();
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L613-L633",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static int nativeMarshallArray(
++            ParcelData nativePtr, byte[] data, int offset, int length) {
++        return nativePtr.marshall(data, offset, length);
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L635-L652",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static int nativeMarshallBuffer(
++            ParcelData nativePtr, ByteBuffer buffer, int offset, int length) {
++        return nativePtr.marshall(buffer, offset, length);
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L654-L673",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static void nativeUnmarshall(
++            ParcelData nativePtr, byte[] data, int offset, int length) {
++        nativePtr.unmarshall(data, offset, length);
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L675-L692",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static void nativeUnmarshallBuffer(
++            ParcelData nativePtr, ByteBuffer buffer, int offset, int length) {
++        nativePtr.unmarshall(buffer, offset, length);
++    }
+ 
+-    private static native long nativeCreate();
+-    private static native void nativeFreeBuffer(long nativePtr);
+-    private static native void nativeDestroy(long nativePtr);
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L694-L704",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static int nativeCompareData(ParcelData thisNativePtr, ParcelData otherNativePtr) {
++        return thisNativePtr.compareData(otherNativePtr);
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L706-L723",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static boolean nativeCompareDataInRange(
++            ParcelData ptrA, int offsetA, ParcelData ptrB, int offsetB, int length) {
++        return ptrA.compareData(offsetA, ptrB, offsetB, length);
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L725-L742",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static void nativeAppendFrom(
++            ParcelData thisNativePtr, ParcelData otherNativePtr, int offset, int length) {
++        thisNativePtr.appendFrom(otherNativePtr, offset, length);
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L773-L783",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static boolean nativeHasFileDescriptors(ParcelData nativePtr) {
++        return nativePtr.hasFileDescriptors();
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L785-L799",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static boolean nativeHasFileDescriptorsInRange(
++            ParcelData nativePtr, int offset, int length) {
++        return nativePtr.hasFileDescriptors(offset, length);
++    }
+ 
+-    private static native byte[] nativeMarshall(long nativePtr);
+-    private static native int nativeMarshallArray(
+-            long nativePtr, byte[] data, int offset, int length);
+-    private static native int nativeMarshallBuffer(
+-            long nativePtr, ByteBuffer buffer, int offset, int length);
+-    private static native void nativeUnmarshall(
+-            long nativePtr, byte[] data, int offset, int length);
+-    private static native void nativeUnmarshallBuffer(
+-            long nativePtr, ByteBuffer buffer, int offset, int length);
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L838-L847",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static void nativeWriteInterfaceToken(ParcelData nativePtr, String interfaceName) {
++        nativePtr.writeInterfaceToken(interfaceName, Build.VERSION.SDK_INT);
++    }
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L849-L878",
++            reason = "the native over ParcelData instead of a native Parcel")
++    private static void nativeEnforceInterface(ParcelData nativePtr, String interfaceName) {
++        nativePtr.enforceInterface(interfaceName, Build.VERSION.SDK_INT);
++    }
+ 
+-    private static native int nativeCompareData(long thisNativePtr, long otherNativePtr);
+-    private static native boolean nativeCompareDataInRange(
+-            long ptrA, int offsetA, long ptrB, int offsetB, int length);
+-    private static native void nativeAppendFrom(
+-            long thisNativePtr, long otherNativePtr, int offset, int length);
+-    @CriticalNative
+-    private static native boolean nativeHasFileDescriptors(long nativePtr);
+-    private static native boolean nativeHasFileDescriptorsInRange(
+-            long nativePtr, int offset, int length);
+-
+-    private static native boolean nativeHasBinders(long nativePtr);
+-    private static native boolean nativeHasBindersInRange(
+-            long nativePtr, int offset, int length);
+-    private static native void nativeWriteInterfaceToken(long nativePtr, String interfaceName);
+-    private static native void nativeEnforceInterface(long nativePtr, String interfaceName);
+-
+-    @CriticalNative
+-    private static native boolean nativeReplaceCallingWorkSourceUid(
+-            long nativePtr, int workSourceUid);
+-    @CriticalNative
+-    private static native int nativeReadCallingWorkSourceUid(long nativePtr);
+-
+     /** Last time exception with a stack trace was written */
+     private static volatile long sLastWriteExceptionStackTrace;
+     /** Used for throttling of writing stack trace, which is costly */
+     private static final int WRITE_EXCEPTION_STACK_TRACE_THRESHOLD_MS = 1000;
+ 
+-    @CriticalNative
+-    private static native long nativeGetOpenAshmemSize(long nativePtr);
+-
+     public final static Parcelable.Creator<String> STRING_CREATOR
+              = new Parcelable.Creator<String>() {
+         public String createFromParcel(Parcel source) {
+@@ -555,6 +683,7 @@
+      * Retrieve a new Parcel object from the pool.
+      */
+     @NonNull
++    @Adapted(reason = "a null ParcelData instead of a zero pointer")
+     public static Parcel obtain() {
+         Parcel res = null;
+         synchronized (sPoolSync) {
+@@ -569,7 +698,7 @@
+         // When no cache found above, create from scratch; otherwise prepare the
+         // cached object to be used
+         if (res == null) {
+-            res = new Parcel(0);
++            res = new Parcel(null);
+         } else {
+             res.mRecycled = false;
+             if (DEBUG_RECYCLE) {
+@@ -578,7 +707,7 @@
+             res.mReadWriteHelper = ReadWriteHelper.DEFAULT;
+         }
+ 
+-        if (res.mNativePtr == 0) {
++        if (res.mNativePtr == null) {
+             Log.e(TAG, "Obtained Parcel object has null native pointer. Invalid state.");
+         }
+ 
+@@ -586,24 +715,10 @@
+     }
+ 
+     /**
+-     * Retrieve a new Parcel object from the pool for use with a specific binder.
+-     *
+-     * Associate this parcel with a binder object. This marks the parcel as being prepared for a
+-     * transaction on this specific binder object. Based on this, the format of the wire binder
+-     * protocol may change. For future compatibility, it is recommended to use this for all
+-     * Parcels.
+-     */
+-    @NonNull
+-    public static Parcel obtain(@NonNull IBinder binder) {
+-        Parcel parcel = Parcel.obtain();
+-        parcel.markForBinder(binder);
+-        return parcel;
+-    }
+-
+-    /**
+      * Put a Parcel object back into the pool.  You must not touch
+      * the object after this call.
+      */
++    @Adapted(reason = "a null ParcelData instead of a zero pointer")
+     public final void recycle() {
+         if (mRecycled) {
+             String error = "Recycle called on unowned Parcel. (recycle twice?) Here: "
+@@ -630,7 +745,7 @@
+                 }
+             }
+         } else {
+-            mNativePtr = 0;
++            mNativePtr = null;
+             synchronized (sPoolSync) {
+                 if (sHolderPoolSize < POOL_SIZE) {
+                     mPoolNext = sHolderPool;
+@@ -660,14 +775,6 @@
+         return (mReadWriteHelper != null) && (mReadWriteHelper != ReadWriteHelper.DEFAULT);
+     }
+ 
+-    /** @hide */
+-    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
+-    public static native long getGlobalAllocSize();
+-
+-    /** @hide */
+-    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
+-    public static native long getGlobalAllocCount();
+-
+     /**
+      * Parcel data should be zero'd before realloc'd or deleted.
+      *
+@@ -686,22 +793,6 @@
+         nativeMarkSensitive(mNativePtr);
+     }
+ 
+-    /**
+-     * @hide
+-     */
+-    private void markForBinder(@NonNull IBinder binder) {
+-        nativeMarkForBinder(mNativePtr, binder);
+-    }
+-
+-    /**
+-     * Whether this Parcel is written for an RPC transaction.
+-     *
+-     * @hide
+-     */
+-    public final boolean isForRpc() {
+-        return nativeIsForRpc(mNativePtr);
+-    }
+-
+     /** @hide */
+     @ParcelFlags
+     @TestApi
+@@ -1083,47 +1174,6 @@
+     }
+ 
+     /**
+-     * Report whether the parcel contains any marshalled IBinder objects.
+-     *
+-     * @throws UnsupportedOperationException if binder kernel driver was disabled or if method was
+-     *                                       invoked in case of Binder RPC protocol.
+-     *
+-     * WARNING: Parcelable definitions change over time. Unless you define
+-     * a Parcelable yourself OR the Parcelable explicitly guarantees that
+-     * it would never include such objects, you should not expect the return
+-     * value to stay the same, and your code should continue to work even
+-     * if the return value changes.
+-     *
+-     * @hide
+-     */
+-    public boolean hasBinders() {
+-        return nativeHasBinders(mNativePtr);
+-    }
+-
+-    /**
+-     * Report whether the parcel contains any marshalled {@link IBinder} objects in the range
+-     * defined by {@code offset} and {@code length}.
+-     *
+-     * WARNING: Parcelable definitions change over time. Unless you define
+-     * a Parcelable yourself OR the Parcelable explicitly guarantees that
+-     * it would never include such objects, you should not expect the return
+-     * value to stay the same, and your code should continue to work even
+-     * if the return value changes.
+-     *
+-     * @param offset The offset from which the range starts. Should be between 0 and
+-     *               {@link #dataSize()}.
+-     * @param length The length of the range. Should be between 0 and {@link #dataSize()} - {@code
+-     *               offset}.
+-     * @return whether there are binders in the range or not.
+-     * @throws IllegalArgumentException if the parameters are out of the permitted ranges.
+-     *
+-     * @hide
+-     */
+-    public boolean hasBinders(int offset, int length) {
+-        return nativeHasBindersInRange(mNativePtr, offset, length);
+-    }
+-
+-    /**
+      * Store or read an IBinder interface token in the parcel at the current
+      * {@link #dataPosition}. This is used to validate that the marshalled
+      * transaction is intended for the target interface. This is typically written
+@@ -1157,35 +1207,6 @@
+     }
+ 
+     /**
+-     * Writes the work source uid to the request headers.
+-     *
+-     * <p>It requires the headers to have been written/read already to replace the work source.
+-     *
+-     * @return true if the request headers have been updated.
+-     *
+-     * @hide
+-     */
+-    public boolean replaceCallingWorkSourceUid(int workSourceUid) {
+-        return nativeReplaceCallingWorkSourceUid(mNativePtr, workSourceUid);
+-    }
+-
+-    /**
+-     * Reads the work source uid from the request headers.
+-     *
+-     * <p>Unlike other read methods, this method does not read the parcel at the current
+-     * {@link #dataPosition}. It will set the {@link #dataPosition} before the read and restore the
+-     * position after reading the request header.
+-     *
+-     * @return the work source uid or {@link Binder#UNSET_WORKSOURCE} if headers have not been
+-     * written/parsed yet.
+-     *
+-     * @hide
+-     */
+-    public int readCallingWorkSourceUid() {
+-        return nativeReadCallingWorkSourceUid(mNativePtr);
+-    }
+-
+-    /**
+      * Write a byte array into the parcel at the current {@link #dataPosition},
+      * growing {@link #dataCapacity} if needed.
+      * @param b Bytes to place into the parcel.
+@@ -1360,62 +1381,6 @@
+     }
+ 
+     /**
+-     * Write an object into the parcel at the current dataPosition(),
+-     * growing dataCapacity() if needed.
+-     */
+-    public final void writeStrongBinder(IBinder val) {
+-        nativeWriteStrongBinder(mNativePtr, val);
+-    }
+-
+-    /**
+-     * Write an object into the parcel at the current dataPosition(),
+-     * growing dataCapacity() if needed.
+-     */
+-    public final void writeStrongInterface(IInterface val) {
+-        writeStrongBinder(val == null ? null : val.asBinder());
+-    }
+-
+-    /**
+-     * Write a FileDescriptor into the parcel at the current dataPosition(),
+-     * growing dataCapacity() if needed.
+-     *
+-     * <p class="caution">The file descriptor will not be closed, which may
+-     * result in file descriptor leaks when objects are returned from Binder
+-     * calls.  Use {@link ParcelFileDescriptor#writeToParcel} instead, which
+-     * accepts contextual flags and will close the original file descriptor
+-     * if {@link Parcelable#PARCELABLE_WRITE_RETURN_VALUE} is set.</p>
+-     */
+-    public final void writeFileDescriptor(@NonNull FileDescriptor val) {
+-        nativeWriteFileDescriptor(mNativePtr, val);
+-    }
+-
+-    /**
+-     * {@hide}
+-     * This will be the new name for writeFileDescriptor, for consistency.
+-     **/
+-    public final void writeRawFileDescriptor(@NonNull FileDescriptor val) {
+-        nativeWriteFileDescriptor(mNativePtr, val);
+-    }
+-
+-    /**
+-     * {@hide}
+-     * Write an array of FileDescriptor objects into the Parcel.
+-     *
+-     * @param value The array of objects to be written.
+-     */
+-    public final void writeRawFileDescriptorArray(@Nullable FileDescriptor[] value) {
+-        if (value != null) {
+-            int N = value.length;
+-            writeInt(N);
+-            for (int i=0; i<N; i++) {
+-                writeRawFileDescriptor(value[i]);
+-            }
+-        } else {
+-            writeInt(-1);
+-        }
+-    }
+-
+-    /**
+      * Write a byte value into the parcel at the current dataPosition(),
+      * growing dataCapacity() if needed.
+      *
+@@ -2113,43 +2078,7 @@
+         }
+     }
+ 
+-    public final void writeBinderArray(@Nullable IBinder[] val) {
+-        if (val != null) {
+-            int N = val.length;
+-            writeInt(N);
+-            for (int i=0; i<N; i++) {
+-                writeStrongBinder(val[i]);
+-            }
+-        } else {
+-            writeInt(-1);
+-        }
+-    }
+-
+     /**
+-     * Flatten a homogeneous array containing an IInterface type into the parcel,
+-     * at the current dataPosition() and growing dataCapacity() if needed.  The
+-     * type of the objects in the array must be one that implements IInterface.
+-     *
+-     * @param val The array of objects to be written.
+-     *
+-     * @see #createInterfaceArray
+-     * @see #readInterfaceArray
+-     * @see IInterface
+-     */
+-    public final <T extends IInterface> void writeInterfaceArray(
+-            @SuppressLint("ArrayReturn") @Nullable T[] val) {
+-        if (val != null) {
+-            int N = val.length;
+-            writeInt(N);
+-            for (int i=0; i<N; i++) {
+-                writeStrongInterface(val[i]);
+-            }
+-        } else {
+-            writeInt(-1);
+-        }
+-    }
+-
+-    /**
+      * @hide
+      */
+     public final void writeCharSequenceArray(@Nullable CharSequence[] val) {
+@@ -2179,78 +2108,7 @@
+         }
+     }
+ 
+-    @Nullable
+-    public final IBinder[] createBinderArray() {
+-        int N = readInt();
+-        ensureWithinMemoryLimit(SIZE_COMPLEX_TYPE, N);
+-        if (N >= 0) {
+-            IBinder[] val = new IBinder[N];
+-            for (int i=0; i<N; i++) {
+-                val[i] = readStrongBinder();
+-            }
+-            return val;
+-        } else {
+-            return null;
+-        }
+-    }
+-
+-    public final void readBinderArray(@NonNull IBinder[] val) {
+-        int N = readInt();
+-        if (N == val.length) {
+-            for (int i=0; i<N; i++) {
+-                val[i] = readStrongBinder();
+-            }
+-        } else {
+-            throw new RuntimeException("bad array lengths");
+-        }
+-    }
+-
+     /**
+-     * Read and return a new array of T (IInterface) from the parcel.
+-     *
+-     * @return the IInterface array of type T
+-     * @param newArray a function to create an array of T with a given length
+-     * @param asInterface a function to convert IBinder object into T (IInterface)
+-     */
+-    @SuppressLint({"ArrayReturn", "NullableCollection", "SamShouldBeLast"})
+-    @Nullable
+-    public final <T extends IInterface> T[] createInterfaceArray(
+-            @NonNull IntFunction<T[]> newArray, @NonNull Function<IBinder, T> asInterface) {
+-        int N = readInt();
+-        ensureWithinMemoryLimit(SIZE_COMPLEX_TYPE, N);
+-        if (N >= 0) {
+-            T[] val = newArray.apply(N);
+-            for (int i=0; i<N; i++) {
+-                val[i] = asInterface.apply(readStrongBinder());
+-            }
+-            return val;
+-        } else {
+-            return null;
+-        }
+-    }
+-
+-    /**
+-     * Read an array of T (IInterface) from a parcel.
+-     *
+-     * @param asInterface a function to convert IBinder object into T (IInterface)
+-     *
+-     * @throws BadParcelableException Throws BadParcelableException if the length of `val`
+-     *    mismatches the number of items in the parcel.
+-     */
+-    public final <T extends IInterface> void readInterfaceArray(
+-            @SuppressLint("ArrayReturn") @NonNull T[] val,
+-            @NonNull Function<IBinder, T> asInterface) {
+-        int N = readInt();
+-        if (N == val.length) {
+-            for (int i=0; i<N; i++) {
+-                val[i] = asInterface.apply(readStrongBinder());
+-            }
+-        } else {
+-            throw new BadParcelableException("bad array lengths");
+-        }
+-    }
+-
+-    /**
+      * Flatten a List containing a particular object type into the parcel, at
+      * the current dataPosition() and growing dataCapacity() if needed.  The
+      * type of the objects in the list must be one that implements Parcelable.
+@@ -2352,53 +2210,6 @@
+     }
+ 
+     /**
+-     * Flatten a List containing IBinder objects into the parcel, at
+-     * the current dataPosition() and growing dataCapacity() if needed.  They
+-     * can later be retrieved with {@link #createBinderArrayList} or
+-     * {@link #readBinderList}.
+-     *
+-     * @param val The list of strings to be written.
+-     *
+-     * @see #createBinderArrayList
+-     * @see #readBinderList
+-     */
+-    public final void writeBinderList(@Nullable List<IBinder> val) {
+-        if (val == null) {
+-            writeInt(-1);
+-            return;
+-        }
+-        int N = val.size();
+-        int i=0;
+-        writeInt(N);
+-        while (i < N) {
+-            writeStrongBinder(val.get(i));
+-            i++;
+-        }
+-    }
+-
+-    /**
+-     * Flatten a {@code List} containing T (IInterface) objects into this parcel
+-     * at the current position. They can later be retrieved with
+-     * {@link #createInterfaceArrayList} or {@link #readInterfaceList}.
+-     *
+-     * @see #createInterfaceArrayList
+-     * @see #readInterfaceList
+-     */
+-    public final <T extends IInterface> void writeInterfaceList(@Nullable List<T> val) {
+-        if (val == null) {
+-            writeInt(-1);
+-            return;
+-        }
+-        int N = val.size();
+-        int i=0;
+-        writeInt(N);
+-        while (i < N) {
+-            writeStrongInterface(val.get(i));
+-            i++;
+-        }
+-    }
+-
+-    /**
+      * Flatten a {@code List} containing arbitrary {@code Parcelable} objects into this parcel
+      * at the current position. They can later be retrieved using
+      * {@link #readParcelableList(List, ClassLoader)} if required.
+@@ -2506,6 +2317,7 @@
+         writeFixedArrayInternal(val, parcelableFlags, /*index=*/0, dimensions);
+     }
+ 
++    @Adapted(reason = "without binder and interface arrays")
+     private <T> void writeFixedArrayInternal(T val, int parcelableFlags, int index,
+             int[] dimensions) {
+         if (index >= dimensions.length) {
+@@ -2549,10 +2361,6 @@
+             writeFloatArray((float[]) val);
+         } else if (componentType == double.class) {
+             writeDoubleArray((double[]) val);
+-        } else if (componentType == IBinder.class) {
+-            writeBinderArray((IBinder[]) val);
+-        } else if (IInterface.class.isAssignableFrom(componentType)) {
+-            writeInterfaceArray((IInterface[]) val);
+         } else if (Parcelable.class.isAssignableFrom(componentType)) {
+             writeTypedArray((Parcelable[]) val, parcelableFlags);
+         } else if (componentType.isArray()) {
+@@ -2635,6 +2443,7 @@
+     }
+ 
+     /** @hide */
++    @Adapted(reason = "the value types of the device's API level, without binders")
+     public static int getValueType(@Nullable Object v) {
+         if (v == null) {
+             return VAL_NULL;
+@@ -2647,10 +2456,12 @@
+         } else if (v instanceof Bundle) {
+             // Must be before Parcelable
+             return VAL_BUNDLE;
+-        } else if (v instanceof PersistableBundle) {
++        } else if (v instanceof PersistableBundle
++                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+             // Must be before Parcelable
+             return VAL_PERSISTABLEBUNDLE;
+-        } else if (v instanceof SizeF) {
++        } else if (v instanceof SizeF && (Build.VERSION.SDK_INT < Build.VERSION_CODES.S
++                || Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU)) {
+             // Must be before Parcelable
+             return VAL_SIZEF;
+         } else if (v instanceof Parcelable) {
+@@ -2684,8 +2495,6 @@
+         } else if (v instanceof CharSequence[]) {
+             // Must be after String[] and before Object[]
+             return VAL_CHARSEQUENCEARRAY;
+-        } else if (v instanceof IBinder) {
+-            return VAL_IBINDER;
+         } else if (v instanceof Parcelable[]) {
+             return VAL_PARCELABLEARRAY;
+         } else if (v instanceof int[]) {
+@@ -2696,15 +2505,19 @@
+             return VAL_BYTE;
+         } else if (v instanceof Size) {
+             return VAL_SIZE;
+-        } else if (v instanceof double[]) {
++        } else if (v instanceof double[] && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+             return VAL_DOUBLEARRAY;
+-        } else if (v instanceof Character) {
++        } else if (v instanceof Character
++                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+             return VAL_CHAR;
+-        } else if (v instanceof short[]) {
++        } else if (v instanceof short[]
++                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+             return VAL_SHORTARRAY;
+-        } else if (v instanceof char[]) {
++        } else if (v instanceof char[]
++                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+             return VAL_CHARARRAY;
+-        } else  if (v instanceof float[]) {
++        } else  if (v instanceof float[]
++                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+             return VAL_FLOATARRAY;
+         } else {
+             Class<?> clazz = v.getClass();
+@@ -2726,6 +2539,7 @@
+      *
+      * @hide
+      */
++    @Adapted(reason = "without the binder value")
+     public void writeValue(int type, @Nullable Object v) {
+         switch (type) {
+             case VAL_NULL:
+@@ -2784,9 +2598,6 @@
+             case VAL_CHARSEQUENCEARRAY:
+                 writeCharSequenceArray((CharSequence[]) v);
+                 break;
+-            case VAL_IBINDER:
+-                writeStrongBinder((IBinder) v);
+-                break;
+             case VAL_PARCELABLEARRAY:
+                 writeParcelableArray((Parcelable[]) v, 0);
+                 break;
+@@ -3093,13 +2904,10 @@
+      * @see #writeNoException
+      * @see #readException
+      */
+-    @RavenwoodReplace(blockedBy = AppOpsManager.class)
++    @Adapted(reason = "without AppOps and StrictMode, the stack trace header from P on, and a parcelled stack trace throws")
+     public final void writeException(@NonNull Exception e) {
+-        AppOpsManager.prefixParcelWithAppOpsIfNeeded(this);
+-
+         int code = getExceptionCode(e);
+         writeInt(code);
+-        StrictMode.clearGatheredViolations();
+         if (code == 0) {
+             if (e instanceof RuntimeException) {
+                 throw (RuntimeException) e;
+@@ -3107,13 +2915,16 @@
+             throw new RuntimeException(e);
+         }
+         writeString(e.getMessage());
+-        final long timeNow = sParcelExceptionStackTrace ? SystemClock.elapsedRealtime() : 0;
+-        if (sParcelExceptionStackTrace && (timeNow - sLastWriteExceptionStackTrace
+-                > WRITE_EXCEPTION_STACK_TRACE_THRESHOLD_MS)) {
+-            sLastWriteExceptionStackTrace = timeNow;
+-            writeStackTrace(e);
+-        } else {
+-            writeInt(0);
++        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
++            if (sParcelExceptionStackTrace) throw new UnsupportedOperationException();
++            final long timeNow = 0;
++            if (sParcelExceptionStackTrace && (timeNow - sLastWriteExceptionStackTrace
++                    > WRITE_EXCEPTION_STACK_TRACE_THRESHOLD_MS)) {
++                sLastWriteExceptionStackTrace = timeNow;
++                writeStackTrace(e);
++            } else {
++                writeInt(0);
++            }
+         }
+         switch (code) {
+             case EX_SERVICE_SPECIFIC:
+@@ -3132,24 +2943,13 @@
+         }
+     }
+ 
+-    private void writeException$ravenwood(@NonNull Exception e) {
+-        int code = getExceptionCode(e);
+-        writeInt(code);
+-        if (code == 0) {
+-            if (e instanceof RuntimeException) {
+-                throw (RuntimeException) e;
+-            }
+-            throw new RuntimeException(e);
+-        }
+-        writeString(e.getMessage());
+-        writeInt(0);
+-    }
+-
+     /** @hide */
++    @Adapted(reason = "EX_PARCELABLE from O on for android.* exceptions only and EX_SERVICE_SPECIFIC from N on")
+     public static int getExceptionCode(@NonNull Throwable e) {
+         int code = 0;
+-        if (e instanceof Parcelable
+-                && (e.getClass().getClassLoader() == Parcelable.class.getClassLoader())) {
++        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && e instanceof Parcelable
++                && (e.getClass().getClassLoader() == Parcelable.class.getClassLoader())
++                && e.getClass().getName().startsWith("android.")) {
+             // We only send Parcelable exceptions that are in the
+             // BootClassLoader to ensure that the receiver can unpack them
+             code = EX_PARCELABLE;
+@@ -3167,7 +2967,8 @@
+             code = EX_NETWORK_MAIN_THREAD;
+         } else if (e instanceof UnsupportedOperationException) {
+             code = EX_UNSUPPORTED_OPERATION;
+-        } else if (e instanceof ServiceSpecificException) {
++        } else if (e instanceof ServiceSpecificException
++                && Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+             code = EX_SERVICE_SPECIFIC;
+         }
+         return code;
+@@ -3198,38 +2999,8 @@
+      * @see #writeException
+      * @see #readException
+      */
+-    @RavenwoodReplace(blockedBy = AppOpsManager.class)
++    @Adapted(reason = "always the plain header, without AppOps and StrictMode")
+     public final void writeNoException() {
+-        AppOpsManager.prefixParcelWithAppOpsIfNeeded(this);
+-
+-        // Despite the name of this function ("write no exception"),
+-        // it should instead be thought of as "write the RPC response
+-        // header", but because this function name is written out by
+-        // the AIDL compiler, we're not going to rename it.
+-        //
+-        // The response header, in the non-exception case (see also
+-        // writeException above, also called by the AIDL compiler), is
+-        // either a 0 (the default case), or EX_HAS_STRICTMODE_REPLY_HEADER if
+-        // StrictMode has gathered up violations that have occurred
+-        // during a Binder call, in which case we write out the number
+-        // of violations and their details, serialized, before the
+-        // actual RPC respons data.  The receiving end of this is
+-        // readException(), below.
+-        if (StrictMode.hasGatheredViolations()) {
+-            writeInt(EX_HAS_STRICTMODE_REPLY_HEADER);
+-            final int sizePosition = dataPosition();
+-            writeInt(0);  // total size of fat header, to be filled in later
+-            StrictMode.writeGatheredViolationsToParcel(this);
+-            final int payloadPosition = dataPosition();
+-            setDataPosition(sizePosition);
+-            writeInt(payloadPosition - sizePosition);  // header size
+-            setDataPosition(payloadPosition);
+-        } else {
+-            writeInt(0);
+-        }
+-    }
+-
+-    private void writeNoException$ravenwood() {
+         writeInt(0);
+     }
+ 
+@@ -3265,12 +3036,11 @@
+      */
+     @UnsupportedAppUsage
+     @TestApi
++    @Adapted(reason = "the AppOps and StrictMode reply headers throw")
+     public final int readExceptionCode() {
+         int code = readInt();
+         if (code == EX_HAS_NOTED_APPOPS_REPLY_HEADER) {
+-            AppOpsManager.readAndLogNotedAppops(this);
+-            // Read next header or real exception if there is no more header
+-            code = readInt();
++            throw new UnsupportedOperationException();
+         }
+ 
+         if (code == EX_HAS_STRICTMODE_REPLY_HEADER) {
+@@ -3282,7 +3052,7 @@
+                 // but discussions around event/RPC tracing suggest we might
+                 // put that here too.  If so, switch on sub-header tags here.
+                 // But for now, just parse out the StrictMode stuff.
+-                StrictMode.readAndHandleBinderCallViolations(this);
++                throw new UnsupportedOperationException();
+             }
+             // And fat response headers are currently only used when
+             // there are no exceptions, so return no error:
+@@ -3298,9 +3068,11 @@
+      * @param code Used to determine which exception class to throw.
+      * @param msg The exception message.
+      */
++    @Adapted(reason = "reads the stack trace size from P on")
+     public final void readException(int code, String msg) {
+         String remoteStackTrace = null;
+-        final int remoteStackPayloadSize = readInt();
++        final int remoteStackPayloadSize =
++                Build.VERSION.SDK_INT >= Build.VERSION_CODES.P ? readInt() : 0;
+         if (remoteStackPayloadSize > 0) {
+             remoteStackTrace = readString();
+         }
+@@ -3444,71 +3216,6 @@
+     }
+ 
+     /**
+-     * Read an object from the parcel at the current dataPosition().
+-     */
+-    public final IBinder readStrongBinder() {
+-        final IBinder result = nativeReadStrongBinder(mNativePtr);
+-
+-        // If it's a reply from a method with @PropagateAllowBlocking, then inherit allow-blocking
+-        // from the object that returned it.
+-        if (result != null && hasFlags(
+-                FLAG_IS_REPLY_FROM_BLOCKING_ALLOWED_OBJECT | FLAG_PROPAGATE_ALLOW_BLOCKING)) {
+-            Binder.allowBlocking(result);
+-        }
+-        return result;
+-    }
+-
+-    /**
+-     * Read a FileDescriptor from the parcel at the current dataPosition().
+-     */
+-    public final ParcelFileDescriptor readFileDescriptor() {
+-        FileDescriptor fd = nativeReadFileDescriptor(mNativePtr);
+-        return fd != null ? new ParcelFileDescriptor(fd) : null;
+-    }
+-
+-    /** {@hide} */
+-    @UnsupportedAppUsage
+-    public final FileDescriptor readRawFileDescriptor() {
+-        return nativeReadFileDescriptor(mNativePtr);
+-    }
+-
+-    /**
+-     * {@hide}
+-     * Read and return a new array of FileDescriptors from the parcel.
+-     * @return the FileDescriptor array, or null if the array is null.
+-     **/
+-    @Nullable
+-    public final FileDescriptor[] createRawFileDescriptorArray() {
+-        int N = readInt();
+-        if (N < 0) {
+-            return null;
+-        }
+-        ensureWithinMemoryLimit(SIZE_COMPLEX_TYPE, N);
+-        FileDescriptor[] f = new FileDescriptor[N];
+-        for (int i = 0; i < N; i++) {
+-            f[i] = readRawFileDescriptor();
+-        }
+-        return f;
+-    }
+-
+-    /**
+-     * {@hide}
+-     * Read an array of FileDescriptors from a parcel.
+-     * The passed array must be exactly the length of the array in the parcel.
+-     * @return the FileDescriptor array, or null if the array is null.
+-     **/
+-    public final void readRawFileDescriptorArray(FileDescriptor[] val) {
+-        int N = readInt();
+-        if (N == val.length) {
+-            for (int i=0; i<N; i++) {
+-                val[i] = readRawFileDescriptor();
+-            }
+-        } else {
+-            throw new RuntimeException("bad array lengths");
+-        }
+-    }
+-
+-    /**
+      * Read a byte value from the parcel at the current dataPosition().
+      */
+     public final byte readByte() {
+@@ -4073,59 +3780,6 @@
+     }
+ 
+     /**
+-     * Read and return a new ArrayList containing IBinder objects from
+-     * the parcel that was written with {@link #writeBinderList} at the
+-     * current dataPosition().  Returns null if the
+-     * previously written list object was null.
+-     *
+-     * @return A newly created ArrayList containing strings with the same data
+-     *         as those that were previously written.
+-     *
+-     * @see #writeBinderList
+-     */
+-    @Nullable
+-    public final ArrayList<IBinder> createBinderArrayList() {
+-        int N = readInt();
+-        if (N < 0) {
+-            return null;
+-        }
+-        ensureWithinMemoryLimit(SIZE_COMPLEX_TYPE, N);
+-        ArrayList<IBinder> l = new ArrayList<IBinder>(N);
+-        while (N > 0) {
+-            l.add(readStrongBinder());
+-            N--;
+-        }
+-        return l;
+-    }
+-
+-    /**
+-     * Read and return a new ArrayList containing T (IInterface) objects from
+-     * the parcel that was written with {@link #writeInterfaceList} at the
+-     * current dataPosition().  Returns null if the
+-     * previously written list object was null.
+-     *
+-     * @return A newly created ArrayList containing T (IInterface)
+-     *
+-     * @see #writeInterfaceList
+-     */
+-    @SuppressLint({"ConcreteCollection", "NullableCollection"})
+-    @Nullable
+-    public final <T extends IInterface> ArrayList<T> createInterfaceArrayList(
+-            @NonNull Function<IBinder, T> asInterface) {
+-        int N = readInt();
+-        if (N < 0) {
+-            return null;
+-        }
+-        ensureWithinMemoryLimit(SIZE_COMPLEX_TYPE, N);
+-        ArrayList<T> l = new ArrayList<T>(N);
+-        while (N > 0) {
+-            l.add(asInterface.apply(readStrongBinder()));
+-            N--;
+-        }
+-        return l;
+-    }
+-
+-    /**
+      * Read into the given List items String objects that were written with
+      * {@link #writeStringList} at the current dataPosition().
+      *
+@@ -4148,51 +3802,6 @@
+     }
+ 
+     /**
+-     * Read into the given List items IBinder objects that were written with
+-     * {@link #writeBinderList} at the current dataPosition().
+-     *
+-     * @see #writeBinderList
+-     */
+-    public final void readBinderList(@NonNull List<IBinder> list) {
+-        int M = list.size();
+-        int N = readInt();
+-        ensureWithinMemoryLimit(SIZE_COMPLEX_TYPE, N);
+-        int i = 0;
+-        for (; i < M && i < N; i++) {
+-            list.set(i, readStrongBinder());
+-        }
+-        for (; i<N; i++) {
+-            list.add(readStrongBinder());
+-        }
+-        for (; i<M; i++) {
+-            list.remove(N);
+-        }
+-    }
+-
+-    /**
+-     * Read into the given List items IInterface objects that were written with
+-     * {@link #writeInterfaceList} at the current dataPosition().
+-     *
+-     * @see #writeInterfaceList
+-     */
+-    public final <T extends IInterface> void readInterfaceList(@NonNull List<T> list,
+-            @NonNull Function<IBinder, T> asInterface) {
+-        int M = list.size();
+-        int N = readInt();
+-        ensureWithinMemoryLimit(SIZE_COMPLEX_TYPE, N);
+-        int i = 0;
+-        for (; i < M && i < N; i++) {
+-            list.set(i, asInterface.apply(readStrongBinder()));
+-        }
+-        for (; i<N; i++) {
+-            list.add(asInterface.apply(readStrongBinder()));
+-        }
+-        for (; i<M; i++) {
+-            list.remove(N);
+-        }
+-    }
+-
+-    /**
+      * Read the list of {@code Parcelable} objects at the current data position into the
+      * given {@code list}. The contents of the {@code list} are replaced. If the serialized
+      * list was {@code null}, {@code list} is cleared.
+@@ -4346,6 +3955,7 @@
+      * @see #readInterfaceArray
+      * @see #readTypedArray
+      */
++    @Adapted(reason = "without binder arrays")
+     public <T> void readFixedArray(@NonNull T val) {
+         Class<?> componentType = val.getClass().getComponentType();
+         if (componentType == boolean.class) {
+@@ -4362,8 +3972,6 @@
+             readFloatArray((float[]) val);
+         } else if (componentType == double.class) {
+             readDoubleArray((double[]) val);
+-        } else if (componentType == IBinder.class) {
+-            readBinderArray((IBinder[]) val);
+         } else if (componentType.isArray()) {
+             int length = readInt();
+             if (length != Array.getLength(val)) {
+@@ -4379,32 +3987,6 @@
+     }
+ 
+     /**
+-     * Read a new multi-dimensional array of typed interfaces from a parcel.
+-     * If you want to read Parcelable values, use
+-     * {@link #readFixedArray(Object, Parcelable.Creator)}. For values of other types, use
+-     * {@link #readFixedArray(Object)}.
+-     * @param val the destination array to hold the read values.
+-     */
+-    public <T, S extends IInterface> void readFixedArray(@NonNull T val,
+-            @NonNull Function<IBinder, S> asInterface) {
+-        Class<?> componentType = val.getClass().getComponentType();
+-        if (IInterface.class.isAssignableFrom(componentType)) {
+-            readInterfaceArray((S[]) val, asInterface);
+-        } else if (componentType.isArray()) {
+-            int length = readInt();
+-            if (length != Array.getLength(val)) {
+-                throw new BadParcelableException("Bad length: expected " + Array.getLength(val)
+-                    + ", but got " + length);
+-            }
+-            for (int i = 0; i < length; i++) {
+-                readFixedArray(Array.get(val, i), asInterface);
+-            }
+-        } else {
+-            throw new BadParcelableException("Unknown type for fixed-size array: " + componentType);
+-        }
+-    }
+-
+-    /**
+      * Read a new multi-dimensional array of typed parcelables from a parcel.
+      * If you want to read IInterface values, use
+      * {@link #readFixedArray(Object, Function)}. For values of other types, use
+@@ -4469,6 +4051,7 @@
+      * @see #createTypedArray
+      */
+     @Nullable
++    @Adapted(reason = "without binder arrays")
+     public <T> T createFixedArray(@NonNull Class<T> cls, @NonNull int... dimensions) {
+         // Check if type matches with dimensions
+         // If type is one-dimensional array, delegate to other creators
+@@ -4492,8 +4075,6 @@
+             val = (T) createFloatArray();
+         } else if (componentType == double.class) {
+             val = (T) createDoubleArray();
+-        } else if (componentType == IBinder.class) {
+-            val = (T) createBinderArray();
+         } else if (componentType.isArray()) {
+             int length = readInt();
+             if (length < 0) {
+@@ -4533,66 +4114,6 @@
+     }
+ 
+     /**
+-     * Read and return a new multi-dimensional array of typed interfaces from a parcel.
+-     * Returns null if the previously written array object is null.  If you want to read
+-     * Parcelable values, use {@link #createFixedArray(Class, Parcelable.Creator, int[])}.
+-     * For values of other types use {@link #createFixedArray(Class, int[])}.
+-     * @param cls  the Class object for the target array type. (e.g. IFoo[][].class)
+-     * @param dimensions an array of int representing length of each dimension.
+-     */
+-    @Nullable
+-    public <T, S extends IInterface> T createFixedArray(@NonNull Class<T> cls,
+-            @NonNull Function<IBinder, S> asInterface, @NonNull int... dimensions) {
+-        // Check if type matches with dimensions
+-        // If type is one-dimensional array, delegate to other creators
+-        // Otherwise, create an multi-dimensional array at once and then fill it with readFixedArray
+-
+-        ensureClassHasExpectedDimensions(cls, dimensions.length);
+-
+-        T val = null;
+-        final Class<?> componentType = cls.getComponentType();
+-        if (IInterface.class.isAssignableFrom(componentType)) {
+-            val = (T) createInterfaceArray(n -> (S[]) Array.newInstance(componentType, n),
+-                    asInterface);
+-        } else if (componentType.isArray()) {
+-            int length = readInt();
+-            if (length < 0) {
+-                return null;
+-            }
+-            if (length != dimensions[0]) {
+-                throw new BadParcelableException("Bad length: expected " + dimensions[0]
+-                    + ", but got " + length);
+-            }
+-
+-            // Create a multi-dimensional array with an innermost component type and dimensions
+-            Class<?> innermost = componentType.getComponentType();
+-            while (innermost.isArray()) {
+-                innermost = innermost.getComponentType();
+-            }
+-
+-            int typeSize = getItemTypeSize(innermost);
+-            ensureWithinMemoryLimit(typeSize, dimensions);
+-
+-            val = (T) Array.newInstance(innermost, dimensions);
+-            for (int i = 0; i < length; i++) {
+-                readFixedArray(Array.get(val, i), asInterface);
+-            }
+-            return val;
+-        } else {
+-            throw new BadParcelableException("Unknown type for fixed-size array: " + componentType);
+-        }
+-
+-        // Check if val is null (which is OK) or has the expected size.
+-        // This check doesn't have to be multi-dimensional because multi-dimensional arrays
+-        // are created with expected dimensions.
+-        if (val != null && Array.getLength(val) != dimensions[0]) {
+-            throw new BadParcelableException("Bad length: expected " + dimensions[0] + ", but got "
+-                + Array.getLength(val));
+-        }
+-        return val;
+-    }
+-
+-    /**
+      * Read and return a new multi-dimensional array of typed parcelables from a parcel.
+      * Returns null if the previously written array object is null.  If you want to read
+      * IInterface values, use {@link #createFixedArray(Class, Function, int[])}.
+@@ -4938,6 +4459,7 @@
+      */
+     @SuppressWarnings("unchecked")
+     @Nullable
++    @Adapted(reason = "a binder value throws BadParcelableException")
+     private <T> T readValue(int type, @Nullable ClassLoader loader, @Nullable Class<T> clazz,
+             @Nullable Class<?>... itemTypes) {
+         final Object object;
+@@ -5013,8 +4535,7 @@
+                 break;
+ 
+             case VAL_IBINDER:
+-                object = readStrongBinder();
+-                break;
++                throw new BadParcelableException("Parcel: unable to unmarshal a binder");
+ 
+             case VAL_OBJECTARRAY: {
+                 Class<?> itemType = ArrayUtils.getOrNull(itemTypes, 0);
+@@ -5104,11 +4625,15 @@
+         return (T) object;
+     }
+ 
++    @Adapted(reason = "false below TIRAMISU")
+     private boolean isLengthPrefixed(int type) {
+         // In general, we want custom types and containers of custom types to be length-prefixed,
+         // this allows clients (eg. Bundle) to skip their content during deserialization. The
+         // exception to this is Bundle, since Bundle is already length-prefixed and already copies
+         // the correspondent section of the parcel internally.
++        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
++            return false;
++        }
+         switch (type) {
+             case VAL_MAP:
+             case VAL_PARCELABLE:
+@@ -5544,33 +5069,8 @@
+         throw new UnsupportedOperationException();
+     }
+ 
+-    /** @hide */
+-    static protected final Parcel obtain(long obj) {
+-        Parcel res = null;
+-        synchronized (sPoolSync) {
+-            if (sHolderPool != null) {
+-                res = sHolderPool;
+-                sHolderPool = res.mPoolNext;
+-                res.mPoolNext = null;
+-                sHolderPoolSize--;
+-            }
+-        }
+-
+-        // When no cache found above, create from scratch; otherwise prepare the
+-        // cached object to be used
+-        if (res == null) {
+-            res = new Parcel(obj);
+-        } else {
+-            res.mRecycled = false;
+-            if (DEBUG_RECYCLE) {
+-                res.mStack = new RuntimeException();
+-            }
+-            res.init(obj);
+-        }
+-        return res;
+-    }
+-
+-    private Parcel(long nativePtr) {
++    @Adapted(reason = "takes a ParcelData instead of a native pointer")
++    private Parcel(ParcelData nativePtr) {
+         if (DEBUG_RECYCLE) {
+             mStack = new RuntimeException();
+         }
+@@ -5578,8 +5078,9 @@
+         init(nativePtr);
+     }
+ 
+-    private void init(long nativePtr) {
+-        if (nativePtr != 0) {
++    @Adapted(reason = "takes a ParcelData instead of a native pointer")
++    private void init(ParcelData nativePtr) {
++        if (nativePtr != null) {
+             mNativePtr = nativePtr;
+             mOwnsNativeParcelObject = false;
+         } else {
+@@ -5597,25 +5098,20 @@
+         mReadWriteHelper = ReadWriteHelper.DEFAULT;
+     }
+ 
++    @Adapted(reason = "a null ParcelData instead of a zero pointer")
+     private void destroy() {
+         resetSqaushingState();
+-        if (mNativePtr != 0) {
++        if (mNativePtr != null) {
+             if (mOwnsNativeParcelObject) {
+                 nativeDestroy(mNativePtr);
+             }
+-            mNativePtr = 0;
++            mNativePtr = null;
+         }
+     }
+ 
+     @Override
++    @Adapted(reason = "empty, the image runs no finalizer")
+     protected void finalize() throws Throwable {
+-        if (DEBUG_RECYCLE) {
+-            // we could always have this log on, but it's spammy
+-            if (!mRecycled) {
+-                Log.w(TAG, "Client did not call Parcel.recycle()", mStack);
+-            }
+-        }
+-        destroy();
+     }
+ 
+     /**
+@@ -5860,13 +5356,6 @@
+         }
+     }
+ 
+-    /**
+-     * @hide For testing
+-     */
+-    public long getOpenAshmemSize() {
+-        return nativeGetOpenAshmemSize(mNativePtr);
+-    }
+-
+     private static String valueTypeToString(int type) {
+         switch (type) {
+             case VAL_NULL: return "VAL_NULL";

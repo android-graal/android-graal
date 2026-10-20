@@ -41,6 +41,7 @@ import org.androidgraal.android.ScopedUtfChars;
 import org.androidgraal.bionic.Dlfcn;
 import org.androidgraal.bionic.Errno;
 import org.androidgraal.bionic.SystemProperties.SystemPropertyReadCallback;
+import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
 import org.graalvm.nativeimage.CurrentIsolate;
 import org.graalvm.nativeimage.IsolateThread;
@@ -132,6 +133,8 @@ public class SystemProperties {
     }
 
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_SystemProperties.cpp#L70-L83",
+            reason = "the native's body in Java over bionic")
     private static String native_get(String key, String def) {
         String[] ret = {def};
         ReadProperty(key, value -> {
@@ -146,6 +149,8 @@ public class SystemProperties {
     }
 
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_SystemProperties.cpp#L85-L94",
+            reason = "the native's body in Java over bionic")
     private static int native_get_int(String key, int def) {
         long[] ret = {def};
         ReadProperty(key, value -> ParseInt(value, ret, Integer.MIN_VALUE, Integer.MAX_VALUE));
@@ -153,6 +158,8 @@ public class SystemProperties {
     }
 
     @UnsupportedAppUsage
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_SystemProperties.cpp#L85-L94",
+            reason = "the native's body in Java over bionic")
     private static long native_get_long(String key, long def) {
         long[] ret = {def};
         ReadProperty(key, value -> ParseInt(value, ret, Long.MIN_VALUE, Long.MAX_VALUE));
@@ -160,18 +167,24 @@ public class SystemProperties {
     }
 
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_SystemProperties.cpp#L112-L120",
+            reason = "the native's body in Java over bionic")
     private static boolean native_get_boolean(String key, boolean def) {
         ParseBoolResult[] parseResult = {ParseBoolResult.kError};
         ReadProperty(key, value -> parseResult[0] = ParseBool(CString.toJava(value)));
         return jbooleanFromParseBoolResult(parseResult[0], def);
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_SystemProperties.cpp#L122-L130",
+            reason = "the native's body in Java over bionic")
     private static long native_find(String name) {
         try (ScopedUtfChars key = new ScopedUtfChars(name)) {
             return __system_property_find(key.get()).rawValue();
         }
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_SystemProperties.cpp#L132-L140",
+            reason = "the native's body in Java over bionic")
     private static String native_get(long handle) {
         String[] ret = {null};
         PointerBase prop = WordFactory.pointer(handle);
@@ -179,6 +192,8 @@ public class SystemProperties {
         return ret[0];
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_SystemProperties.cpp#L142-L151",
+            reason = "the native's body in Java over bionic")
     private static int native_get_int(long handle, int def) {
         long[] ret = {def};
         PointerBase prop = WordFactory.pointer(handle);
@@ -186,6 +201,8 @@ public class SystemProperties {
         return (int) ret[0];
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_SystemProperties.cpp#L142-L151",
+            reason = "the native's body in Java over bionic")
     private static long native_get_long(long handle, long def) {
         long[] ret = {def};
         PointerBase prop = WordFactory.pointer(handle);
@@ -193,6 +210,8 @@ public class SystemProperties {
         return ret[0];
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_SystemProperties.cpp#L153-L161",
+            reason = "the native's body in Java over bionic")
     private static boolean native_get_boolean(long handle, boolean def) {
         ParseBoolResult[] parseResult = {ParseBoolResult.kError};
         PointerBase prop = WordFactory.pointer(handle);
@@ -386,10 +405,14 @@ public class SystemProperties {
         }
     }
 
+    @Adapted(reason = "bionic's __system_property_read_callback, null below API 26")
     private static final SystemPropertyReadCallback sReadCallback = readCallback();
 
+    @Adapted(reason = "the calling thread's functor for the read callback")
     private static final ThreadLocal<Callback> sCallback = ThreadLocal.withInitial(Callback::new);
 
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_SystemProperties.cpp#L44-L54",
+            reason = "the native's ReadProperty in Java, over __system_property_read where the callback is absent")
     private static void ReadProperty(PointerBase prop, ValueFunctor functor) {
         if (sReadCallback.isNull()) {
             byte[] value = new byte[org.androidgraal.bionic.SystemProperties.PROP_VALUE_MAX()];
@@ -416,6 +439,8 @@ public class SystemProperties {
     }
 
     @CEntryPoint(publishAs = Publish.NotPublished)
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_SystemProperties.cpp#L47-L52",
+            reason = "the native's read callback as an entry point")
     private static void thunk(@IsolateThreadContext IsolateThread cookie, CCharPointer name,
             CCharPointer value, int serial) {
         try {
@@ -425,6 +450,8 @@ public class SystemProperties {
         }
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_SystemProperties.cpp#L56-L68",
+            reason = "the native's ReadProperty in Java")
     private static void ReadProperty(String key, ValueFunctor functor) {
         try (ScopedUtfChars keyChars = new ScopedUtfChars(key)) {
             PointerBase prop = __system_property_find(keyChars.get());
@@ -435,6 +462,8 @@ public class SystemProperties {
         }
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_SystemProperties.cpp#L96-L110",
+            reason = "the native's jbooleanFromParseBoolResult in Java")
     private static boolean jbooleanFromParseBoolResult(ParseBoolResult parseResult,
             boolean defJ) {
         return switch (parseResult) {
@@ -444,6 +473,8 @@ public class SystemProperties {
         };
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/system/libbase/+/refs/tags/android-16.0.0_r1/include/android-base/parseint.h#L105-L132",
+            reason = "libbase's ParseInt in Java over bionic")
     private static boolean ParseInt(CCharPointer s, long[] out, long min, long max) {
         while (isspace(s.read() & 0xff) != 0) {
             s = s.addressOf(1);
@@ -470,6 +501,8 @@ public class SystemProperties {
         return true;
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/system/libbase/+/refs/tags/android-16.0.0_r1/parsebool.cpp#L23-L31",
+            reason = "libbase's ParseBool in Java")
     private static ParseBoolResult ParseBool(String s) {
         if (s.equals("1") || s.equals("y") || s.equals("yes") || s.equals("on")
                 || s.equals("true")) {
@@ -482,6 +515,7 @@ public class SystemProperties {
         return ParseBoolResult.kError;
     }
 
+    @Adapted(reason = "looks up bionic's __system_property_read_callback at run time")
     private static SystemPropertyReadCallback readCallback() {
         try (ScopedUtfChars name = new ScopedUtfChars("__system_property_read_callback")) {
             return (SystemPropertyReadCallback) Dlfcn.dlsym(
@@ -489,19 +523,24 @@ public class SystemProperties {
         }
     }
 
+    @Adapted(reason = "the native's value functor as an interface")
     private interface ValueFunctor {
         void accept(CCharPointer value);
     }
 
+    @Adapted(reason = "the calling thread's state for the read callback")
     private static final class Callback {
         private ValueFunctor functor;
         private Throwable thrown;
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/system/libbase/+/refs/tags/android-16.0.0_r1/include/android-base/parsebool.h#L49-L53",
+            reason = "libbase's ParseBoolResult as an enum")
     private enum ParseBoolResult {
         kError, kFalse, kTrue
     }
 
+    @Adapted(reason = "the entry point literal of the read callback")
     private static final class Thunk {
         private static final CEntryPointLiteral<CFunctionPointer> LITERAL =
                 CEntryPointLiteral.create(SystemProperties.class, "thunk", IsolateThread.class,

@@ -89,7 +89,7 @@ public final class ArrayMap<K, V> implements Map<K, V> {
      * Special hash array value that indicates the container is immutable.
      */
     @UnsupportedAppUsage(maxTargetSdk = 28) // Allocations are an implementation detail.
-    private static final int[] EMPTY_IMMUTABLE_INTS = new int[0];
+    static final int[] EMPTY_IMMUTABLE_INTS = new int[0];
 
     /**
      * @hide Special immutable empty ArrayMap.
@@ -104,13 +104,13 @@ public final class ArrayMap<K, V> implements Map<K, V> {
      * list; the second entry is a pointer to the int[] hash code array for it.
      */
     @UnsupportedAppUsage(maxTargetSdk = 28) // Allocations are an implementation detail.
-    private static Object[] mBaseCache;
+    static Object[] mBaseCache;
     @UnsupportedAppUsage(maxTargetSdk = 28) // Allocations are an implementation detail.
-    private static int mBaseCacheSize;
+    static int mBaseCacheSize;
     @UnsupportedAppUsage(maxTargetSdk = 28) // Allocations are an implementation detail.
-    private static Object[] mTwiceBaseCache;
+    static Object[] mTwiceBaseCache;
     @UnsupportedAppUsage(maxTargetSdk = 28) // Allocations are an implementation detail.
-    private static int mTwiceBaseCacheSize;
+    static int mTwiceBaseCacheSize;
     /**
      * Separate locks for each cache since each can be accessed independently of the other without
      * risk of a deadlock.
@@ -120,11 +120,11 @@ public final class ArrayMap<K, V> implements Map<K, V> {
 
     private final boolean mIdentityHashCode;
     @UnsupportedAppUsage(maxTargetSdk = 28) // Hashes are an implementation detail. Use public key/value API.
-    private int[] mHashes;
+    int[] mHashes;
     @UnsupportedAppUsage(maxTargetSdk = 28) // Storage is an implementation detail. Use public key/value API.
-    private Object[] mArray;
+    Object[] mArray;
     @UnsupportedAppUsage(maxTargetSdk = 28) // Use size()
-    private int mSize;
+    int mSize;
     private MapCollections<K, V> mCollections;
 
     private static int binarySearchHashes(int[] hashes, int N, int hash) {
@@ -140,7 +140,7 @@ public final class ArrayMap<K, V> implements Map<K, V> {
     }
 
     @UnsupportedAppUsage(maxTargetSdk = 28) // Hashes are an implementation detail. Use indexOfKey(Object).
-    private int indexOf(Object key, int hash) {
+    int indexOf(Object key, int hash) {
         final int N = mSize;
 
         // Important fast case: if nothing is in here, nothing to look for.
@@ -179,7 +179,7 @@ public final class ArrayMap<K, V> implements Map<K, V> {
     }
 
     @UnsupportedAppUsage(maxTargetSdk = 28) // Use indexOf(null)
-    private int indexOfNull() {
+    int indexOfNull() {
         final int N = mSize;
 
         // Important fast case: if nothing is in here, nothing to look for.

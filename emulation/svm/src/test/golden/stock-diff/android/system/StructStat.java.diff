@@ -1,0 +1,33 @@
+--- a/emulation/svm/src/main/java/android/system/StructStat.java
++++ b/emulation/svm/src/main/java/android/system/StructStat.java
+@@ -16,12 +16,14 @@
+ 
+ package android.system;
+ 
+-import libcore.util.Objects;
++import org.androidgraal.hosted.annotate.Adapted;
++import org.androidgraal.hosted.annotate.Emulated;
+ 
+ /**
+  * File information returned by {@link Os#fstat}, {@link Os#lstat}, and {@link Os#stat}.
+  * Corresponds to C's {@code struct stat} from {@code <stat.h>}.
+  */
++@Emulated
+ public final class StructStat {
+     /** Device ID of device containing file. */
+     public final long st_dev; /*dev_t*/
+@@ -115,7 +117,13 @@
+         this.st_blocks = st_blocks;
+     }
+ 
++    @Adapted(reason = "Objects.toString's output spelled out over the fields in name order")
+     @Override public String toString() {
+-        return Objects.toString(this);
++        return "StructStat[st_atim=" + st_atim + ",st_atime=" + st_atime + ",st_blksize="
++                + st_blksize + ",st_blocks=" + st_blocks + ",st_ctim=" + st_ctim + ",st_ctime="
++                + st_ctime + ",st_dev=" + st_dev + ",st_gid=" + st_gid + ",st_ino=" + st_ino
++                + ",st_mode=" + st_mode + ",st_mtim=" + st_mtim + ",st_mtime=" + st_mtime
++                + ",st_nlink=" + st_nlink + ",st_rdev=" + st_rdev + ",st_size=" + st_size
++                + ",st_uid=" + st_uid + "]";
+     }
+ }

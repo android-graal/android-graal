@@ -25,5 +25,5 @@ import org.androidgraal.hosted.annotate.Emulated;
  */
 @Emulated
 public abstract class Conferenceable {
-    private Conferenceable() {}
+    Conferenceable() {}
 }

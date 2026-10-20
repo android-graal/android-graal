@@ -1,0 +1,19 @@
+--- a/emulation/svm/src/main/java/android/util/AttributeSet.java
++++ b/emulation/svm/src/main/java/android/util/AttributeSet.java
+@@ -17,7 +17,7 @@
+ package android.util;
+ 
+ 
+-import org.xmlpull.v1.XmlPullParser;
++import org.androidgraal.hosted.annotate.Emulated;
+ 
+ /**
+  * A collection of attributes, as found associated with a tag in an XML
+@@ -59,6 +59,7 @@
+  *
+  * @see XmlPullParser
+  */
++@Emulated
+ public interface AttributeSet {
+     /**
+      * Returns the number of attributes available in the set.

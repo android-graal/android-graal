@@ -25,12 +25,12 @@ import org.androidgraal.hosted.annotate.Emulated;
 @Emulated
 class Children {
 
-    private Child[] children = new Child[16];
+    Child[] children = new Child[16];
 
     /**
      * Looks up a child by name and creates a new one if necessary.
      */
-    public Element getOrCreate(Element parent, String uri, String localName) {
+    Element getOrCreate(Element parent, String uri, String localName) {
         int hash = uri.hashCode() * 31 + localName.hashCode();
         int index = hash & 15;
 
@@ -65,7 +65,7 @@ class Children {
     /**
      * Looks up a child by name.
      */
-    public Element get(String uri, String localName) {
+    Element get(String uri, String localName) {
         int hash = uri.hashCode() * 31 + localName.hashCode();
         int index = hash & 15;
 
@@ -86,12 +86,12 @@ class Children {
         }
     }
 
-    private static class Child extends Element {
+    static class Child extends Element {
 
-        private final int hash;
-        private Child next;
+        final int hash;
+        Child next;
 
-        private Child(Element parent, String uri, String localName, int depth,
+        Child(Element parent, String uri, String localName, int depth,
                 int hash) {
             super(parent, uri, localName, depth);
             this.hash = hash;

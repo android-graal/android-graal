@@ -6,4 +6,6 @@ import org.androidgraal.hosted.annotate.Emulated;
 public final class Flags {
     /** @hide */
     public static final String FLAG_CONNECTIONLESS_HANDWRITING = "android.view.inputmethod.connectionless_handwriting";
+    /** @hide */
+    public static final String FLAG_WRITING_TOOLS = "android.view.inputmethod.writing_tools";
 }

@@ -1,0 +1,19 @@
+--- a/emulation/svm/src/main/java/android/os/FileUriExposedException.java
++++ b/emulation/svm/src/main/java/android/os/FileUriExposedException.java
+@@ -16,7 +16,7 @@
+ 
+ package android.os;
+ 
+-import android.content.Intent;
++import org.androidgraal.hosted.annotate.Emulated;
+ 
+ /**
+  * The exception that is thrown when an application exposes a {@code file://}
+@@ -38,6 +38,7 @@
+  * @see androidx.core.content.FileProvider
+  * @see Intent#FLAG_GRANT_READ_URI_PERMISSION
+  */
++@Emulated
+ public class FileUriExposedException extends RuntimeException {
+     public FileUriExposedException(String message) {
+         super(message);

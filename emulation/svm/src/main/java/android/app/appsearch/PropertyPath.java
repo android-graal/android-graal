@@ -302,7 +302,7 @@ public class PropertyPath implements Iterable<PropertyPath.PathSegment> {
          * @param propertyName the name of the property
          * @param propertyIndex the index into the property
          */
-        private PathSegment(@NonNull String propertyName, int propertyIndex) {
+        PathSegment(@NonNull String propertyName, int propertyIndex) {
             mPropertyName = Objects.requireNonNull(propertyName);
             mPropertyIndex = propertyIndex;
         }

@@ -146,12 +146,12 @@ public class DrmInfoRequest {
      *     true if valid
      *     false if invalid
      */
-    private boolean isValid() {
+    boolean isValid() {
         return (null != mMimeType && !mMimeType.equals("")
                 && null != mRequestInformation && isValidType(mInfoType));
     }
 
-    public static boolean isValidType(int infoType) {
+    /* package */ static boolean isValidType(int infoType) {
         boolean isValid = false;
 
         switch (infoType) {

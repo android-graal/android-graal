@@ -46,19 +46,19 @@ public class PersonalizationData {
 
     private LinkedHashMap<String, NamespaceData> mNamespaces = new LinkedHashMap<>();
 
-    private Collection<AccessControlProfile> getAccessControlProfiles() {
+    Collection<AccessControlProfile> getAccessControlProfiles() {
         return Collections.unmodifiableCollection(mProfiles);
     }
 
-    private Collection<String> getNamespaces() {
+    Collection<String> getNamespaces() {
         return Collections.unmodifiableCollection(mNamespaces.keySet());
     }
 
-    private NamespaceData getNamespaceData(String namespace) {
+    NamespaceData getNamespaceData(String namespace) {
         return mNamespaces.get(namespace);
     }
 
-    private static class NamespaceData {
+    static class NamespaceData {
 
         private String mNamespace;
         private LinkedHashMap<String, EntryData> mEntries = new LinkedHashMap<>();
@@ -67,15 +67,15 @@ public class PersonalizationData {
             this.mNamespace = namespace;
         }
 
-        private String getNamespaceName() {
+        String getNamespaceName() {
             return mNamespace;
         }
 
-        private Collection<String> getEntryNames() {
+        Collection<String> getEntryNames() {
             return Collections.unmodifiableCollection(mEntries.keySet());
         }
 
-        private Collection<AccessControlProfileId> getAccessControlProfileIds(String name) {
+        Collection<AccessControlProfileId> getAccessControlProfileIds(String name) {
             EntryData value = mEntries.get(name);
             if (value != null) {
                 return value.mAccessControlProfileIds;
@@ -83,7 +83,7 @@ public class PersonalizationData {
             return null;
         }
 
-        private byte[] getEntryValue(String name) {
+        byte[] getEntryValue(String name) {
             EntryData value = mEntries.get(name);
             if (value != null) {
                 return value.mValue;
@@ -93,10 +93,10 @@ public class PersonalizationData {
     }
 
     private static class EntryData {
-        private byte[] mValue;
-        private Collection<AccessControlProfileId> mAccessControlProfileIds;
+        byte[] mValue;
+        Collection<AccessControlProfileId> mAccessControlProfileIds;
 
-        private EntryData(byte[] value, Collection<AccessControlProfileId> accessControlProfileIds) {
+        EntryData(byte[] value, Collection<AccessControlProfileId> accessControlProfileIds) {
             this.mValue = value;
             this.mAccessControlProfileIds = accessControlProfileIds;
         }

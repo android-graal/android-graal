@@ -27,6 +27,7 @@ import com.android.internal.util.Preconditions;
 import com.android.internal.util.TypedProperties;
 
 import org.androidgraal.bionic.Malloc;
+import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
 import org.graalvm.nativeimage.StackValue;
 
@@ -909,6 +910,7 @@ public final class Debug
             return 0;
         }
 
+        @Adapted(reason = "throws instead of writing the fields")
         public void writeToParcel(Parcel dest, int flags) {
             throw new UnsupportedOperationException();
         }
@@ -1134,6 +1136,8 @@ public final class Debug
      * Returns the size of the native heap.
      * @return The size of the native heap in bytes.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Debug.cpp#L105-L109",
+            reason = "the native's body in Java over bionic's mallinfo")
     public static long getNativeHeapSize() {
         Malloc.mallinfo info = StackValue.get(Malloc.mallinfo.class);
         Malloc.mallinfo(info);
@@ -1144,6 +1148,8 @@ public final class Debug
      * Returns the amount of allocated memory in the native heap.
      * @return The allocated size in bytes.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Debug.cpp#L111-L115",
+            reason = "the native's body in Java over bionic's mallinfo")
     public static long getNativeHeapAllocatedSize() {
         Malloc.mallinfo info = StackValue.get(Malloc.mallinfo.class);
         Malloc.mallinfo(info);
@@ -1154,6 +1160,8 @@ public final class Debug
      * Returns the amount of free memory in the native heap.
      * @return The freed size in bytes.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Debug.cpp#L117-L121",
+            reason = "the native's body in Java over bionic's mallinfo")
     public static long getNativeHeapFreeSize() {
         Malloc.mallinfo info = StackValue.get(Malloc.mallinfo.class);
         Malloc.mallinfo(info);

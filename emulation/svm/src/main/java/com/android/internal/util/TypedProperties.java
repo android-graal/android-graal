@@ -35,7 +35,7 @@ public class TypedProperties extends HashMap<String, Object> {
      * @param r The {@code Reader} that the {@code StreamTokenizer} will read from
      * @return a newly-created and initialized {@code StreamTokenizer}
      */
-    private static StreamTokenizer initTokenizer(Reader r) {
+    static StreamTokenizer initTokenizer(Reader r) {
         StreamTokenizer st = new StreamTokenizer(r);
 
         // Treat everything we don't specify as "ordinary".
@@ -79,26 +79,26 @@ public class TypedProperties extends HashMap<String, Object> {
      * or semantic error in the input.
      */
     public static class ParseException extends IllegalArgumentException {
-        private ParseException(StreamTokenizer state, String expected) {
+        ParseException(StreamTokenizer state, String expected) {
             super("expected " + expected + ", saw " + state.toString());
         }
     }
 
     // A sentinel instance used to indicate a null string.
-    private static final String NULL_STRING = new String("<TypedProperties:NULL_STRING>");
+    static final String NULL_STRING = new String("<TypedProperties:NULL_STRING>");
 
     // Constants used to represent the supported types.
-    private static final int TYPE_UNSET = 'x';
-    private static final int TYPE_BOOLEAN = 'Z';
-    private static final int TYPE_BYTE = 'I' | 1 << 8;
+    static final int TYPE_UNSET = 'x';
+    static final int TYPE_BOOLEAN = 'Z';
+    static final int TYPE_BYTE = 'I' | 1 << 8;
     // TYPE_CHAR: character literal syntax not supported; use short.
-    private static final int TYPE_SHORT = 'I' | 2 << 8;
-    private static final int TYPE_INT = 'I' | 4 << 8;
-    private static final int TYPE_LONG = 'I' | 8 << 8;
-    private static final int TYPE_FLOAT = 'F' | 4 << 8;
-    private static final int TYPE_DOUBLE = 'F' | 8 << 8;
-    private static final int TYPE_STRING = 'L' | 's' << 8;
-    private static final int TYPE_ERROR = -1;
+    static final int TYPE_SHORT = 'I' | 2 << 8;
+    static final int TYPE_INT = 'I' | 4 << 8;
+    static final int TYPE_LONG = 'I' | 8 << 8;
+    static final int TYPE_FLOAT = 'F' | 4 << 8;
+    static final int TYPE_DOUBLE = 'F' | 8 << 8;
+    static final int TYPE_STRING = 'L' | 's' << 8;
+    static final int TYPE_ERROR = -1;
 
     /**
      * Converts a string to an internal type constant.
@@ -107,7 +107,7 @@ public class TypedProperties extends HashMap<String, Object> {
      * @return the type constant that corresponds to {@code typeName},
      *         or {@code TYPE_ERROR} if the type is unknown
      */
-    private static int interpretType(String typeName) {
+    static int interpretType(String typeName) {
         if ("unset".equals(typeName)) {
             return TYPE_UNSET;
         } else if ("boolean".equals(typeName)) {
@@ -138,7 +138,7 @@ public class TypedProperties extends HashMap<String, Object> {
      * @throws ParseException if the input data is malformed
      * @throws IOException if there is a problem reading from the {@code Reader}
      */
-    private static void parse(Reader r, Map<String, Object> map) throws ParseException, IOException {
+    static void parse(Reader r, Map<String, Object> map) throws ParseException, IOException {
         final StreamTokenizer st = initTokenizer(r);
 
         /* A property name must be a valid fully-qualified class + package name.
@@ -230,7 +230,7 @@ public class TypedProperties extends HashMap<String, Object> {
      *         Null strings are represented by the String instance NULL_STRING
      * @throws IOException if there is a problem reading from the {@code StreamTokenizer}
      */
-    private static Object parseValue(StreamTokenizer st, final int type) throws IOException {
+    static Object parseValue(StreamTokenizer st, final int type) throws IOException {
         final int token = st.nextToken();
 
         if (type == TYPE_BOOLEAN) {

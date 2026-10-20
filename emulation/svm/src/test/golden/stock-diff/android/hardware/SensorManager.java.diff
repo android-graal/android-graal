@@ -1,0 +1,470 @@
+--- a/emulation/svm/src/main/java/android/hardware/SensorManager.java
++++ b/emulation/svm/src/main/java/android/hardware/SensorManager.java
+@@ -21,13 +21,13 @@
+ import android.annotation.SystemApi;
+ import android.annotation.SystemService;
+ import android.compat.annotation.UnsupportedAppUsage;
+-import android.content.Context;
+ import android.os.Build;
+-import android.os.Handler;
+-import android.os.MemoryFile;
+ import android.util.Log;
+ import android.util.SparseArray;
+ 
++import org.androidgraal.hosted.annotate.Adapted;
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+ import java.util.ArrayList;
+@@ -90,7 +90,8 @@
+  * @see Sensor
+  *
+  */
+-@SystemService(Context.SENSOR_SERVICE)
++@Emulated
++@Adapted(reason = "without @SystemService")
+ public abstract class SensorManager {
+     /** @hide */
+     protected static final String TAG = "SensorManager";
+@@ -101,9 +102,6 @@
+     private final SparseArray<List<Sensor>> mSensorListByType =
+             new SparseArray<List<Sensor>>();
+ 
+-    // Legacy sensor manager implementation.  Guarded by mSensorListByType during initialization.
+-    private LegacySensorManager mLegacySensorManager;
+-
+     /* NOTE: sensor IDs must be a power of 2 */
+ 
+     /**
+@@ -397,16 +395,6 @@
+     protected abstract List<Sensor> getFullDynamicSensorList();
+ 
+     /**
+-     * @return available sensors.
+-     * @deprecated This method is deprecated, use
+-     *             {@link SensorManager#getSensorList(int)} instead
+-     */
+-    @Deprecated
+-    public int getSensors() {
+-        return getLegacySensorManager().getSensors();
+-    }
+-
+-    /**
+      * Use this method to get the list of available sensors of a certain type.
+      * Make multiple calls to get sensors of different types or use
+      * {@link android.hardware.Sensor#TYPE_ALL Sensor.TYPE_ALL} to get all the
+@@ -580,90 +568,8 @@
+     }
+ 
+     /**
+-     * Registers a listener for given sensors.
+-     *
+-     * @deprecated This method is deprecated, use
+-     *             {@link SensorManager#registerListener(SensorEventListener, Sensor, int)}
+-     *             instead.
+-     *
+-     * @param listener
+-     *        sensor listener object
+-     *
+-     * @param sensors
+-     *        a bit masks of the sensors to register to
+-     *
+-     * @return <code>true</code> if the sensor is supported and successfully
+-     *         enabled
+-     */
+-    @Deprecated
+-    public boolean registerListener(SensorListener listener, int sensors) {
+-        return registerListener(listener, sensors, SENSOR_DELAY_NORMAL);
+-    }
+-
+-    /**
+-     * Registers a SensorListener for given sensors.
+-     *
+-     * @deprecated This method is deprecated, use
+-     *             {@link SensorManager#registerListener(SensorEventListener, Sensor, int)}
+-     *             instead.
+-     *
+-     * @param listener
+-     *        sensor listener object
+-     *
+-     * @param sensors
+-     *        a bit masks of the sensors to register to
+-     *
+-     * @param rate
+-     *        rate of events. This is only a hint to the system. events may be
+-     *        received faster or slower than the specified rate. Usually events
+-     *        are received faster. The value must be one of
+-     *        {@link #SENSOR_DELAY_NORMAL}, {@link #SENSOR_DELAY_UI},
+-     *        {@link #SENSOR_DELAY_GAME}, or {@link #SENSOR_DELAY_FASTEST}.
+-     *
+-     * @return <code>true</code> if the sensor is supported and successfully
+-     *         enabled
+-     */
+-    @Deprecated
+-    public boolean registerListener(SensorListener listener, int sensors, int rate) {
+-        return getLegacySensorManager().registerListener(listener, sensors, rate);
+-    }
+-
+-    /**
+-     * Unregisters a listener for all sensors.
+-     *
+-     * @deprecated This method is deprecated, use
+-     *             {@link SensorManager#unregisterListener(SensorEventListener)}
+-     *             instead.
+-     *
+-     * @param listener
+-     *        a SensorListener object
+-     */
+-    @Deprecated
+-    public void unregisterListener(SensorListener listener) {
+-        unregisterListener(listener, SENSOR_ALL | SENSOR_ORIENTATION_RAW);
+-    }
+-
+-    /**
+      * Unregisters a listener for the sensors with which it is registered.
+      *
+-     * @deprecated This method is deprecated, use
+-     *             {@link SensorManager#unregisterListener(SensorEventListener, Sensor)}
+-     *             instead.
+-     *
+-     * @param listener
+-     *        a SensorListener object
+-     *
+-     * @param sensors
+-     *        a bit masks of the sensors to unregister from
+-     */
+-    @Deprecated
+-    public void unregisterListener(SensorListener listener, int sensors) {
+-        getLegacySensorManager().unregisterListener(listener, sensors);
+-    }
+-
+-    /**
+-     * Unregisters a listener for the sensors with which it is registered.
+-     *
+      * <p class="note">
+      * Note: Don't use this method with a one shot trigger sensor such as
+      * {@link Sensor#TYPE_SIGNIFICANT_MOTION}.
+@@ -708,193 +614,8 @@
+     /** @hide */
+     protected abstract void unregisterListenerImpl(SensorEventListener listener, Sensor sensor);
+ 
+-    /**
+-     * Registers a {@link android.hardware.SensorEventListener SensorEventListener} for the given
+-     * sensor at the given sampling frequency.
+-     * <p>
+-     * The events will be delivered to the provided {@code SensorEventListener} as soon as they are
+-     * available. To reduce the power consumption, applications can use
+-     * {@link #registerListener(SensorEventListener, Sensor, int, int)} instead and specify a
+-     * positive non-zero maximum reporting latency.
+-     * </p>
+-     * <p>
+-     * In the case of non-wake-up sensors, the events are only delivered while the Application
+-     * Processor (AP) is not in suspend mode. See {@link Sensor#isWakeUpSensor()} for more details.
+-     * To ensure delivery of events from non-wake-up sensors even when the screen is OFF, the
+-     * application registering to the sensor must hold a partial wake-lock to keep the AP awake,
+-     * otherwise some events might be lost while the AP is asleep. Note that although events might
+-     * be lost while the AP is asleep, the sensor will still consume power if it is not explicitly
+-     * deactivated by the application. Applications must unregister their {@code
+-     * SensorEventListener}s in their activity's {@code onPause()} method to avoid consuming power
+-     * while the device is inactive.  See {@link #registerListener(SensorEventListener, Sensor, int,
+-     * int)} for more details on hardware FIFO (queueing) capabilities and when some sensor events
+-     * might be lost.
+-     * </p>
+-     * <p>
+-     * In the case of wake-up sensors, each event generated by the sensor will cause the AP to
+-     * wake-up, ensuring that each event can be delivered. Because of this, registering to a wake-up
+-     * sensor has very significant power implications. Call {@link Sensor#isWakeUpSensor()} to check
+-     * whether a sensor is a wake-up sensor. See
+-     * {@link #registerListener(SensorEventListener, Sensor, int, int)} for information on how to
+-     * reduce the power impact of registering to wake-up sensors.
+-     * </p>
+-     * <p class="note">
+-     * Note: Don't use this method with one-shot trigger sensors such as
+-     * {@link Sensor#TYPE_SIGNIFICANT_MOTION}. Use
+-     * {@link #requestTriggerSensor(TriggerEventListener, Sensor)} instead. Use
+-     * {@link Sensor#getReportingMode()} to obtain the reporting mode of a given sensor.
+-     * </p>
+-     *
+-     * @param listener A {@link android.hardware.SensorEventListener SensorEventListener} object.
+-     * @param sensor The {@link android.hardware.Sensor Sensor} to register to.
+-     * @param samplingPeriodUs The rate {@link android.hardware.SensorEvent sensor events} are
+-     *            delivered at. This is only a hint to the system. Events may be received faster or
+-     *            slower than the specified rate. Usually events are received faster. The value must
+-     *            be one of {@link #SENSOR_DELAY_NORMAL}, {@link #SENSOR_DELAY_UI},
+-     *            {@link #SENSOR_DELAY_GAME}, or {@link #SENSOR_DELAY_FASTEST} or, the desired delay
+-     *            between events in microseconds. Specifying the delay in microseconds only works
+-     *            from Android 2.3 (API level 9) onwards. For earlier releases, you must use one of
+-     *            the {@code SENSOR_DELAY_*} constants.
+-     * @return <code>true</code> if the sensor is supported and successfully enabled.
+-     * @see #registerListener(SensorEventListener, Sensor, int, Handler)
+-     * @see #unregisterListener(SensorEventListener)
+-     * @see #unregisterListener(SensorEventListener, Sensor)
+-     */
+-    public boolean registerListener(SensorEventListener listener, Sensor sensor,
+-            int samplingPeriodUs) {
+-        return registerListener(listener, sensor, samplingPeriodUs, null);
+-    }
+ 
+     /**
+-     * Registers a {@link android.hardware.SensorEventListener SensorEventListener} for the given
+-     * sensor at the given sampling frequency and the given maximum reporting latency.
+-     * <p>
+-     * This function is similar to {@link #registerListener(SensorEventListener, Sensor, int)} but
+-     * it allows events to stay temporarily in the hardware FIFO (queue) before being delivered. The
+-     * events can be stored in the hardware FIFO up to {@code maxReportLatencyUs} microseconds. Once
+-     * one of the events in the FIFO needs to be reported, all of the events in the FIFO are
+-     * reported sequentially. This means that some events will be reported before the maximum
+-     * reporting latency has elapsed.
+-     * </p><p>
+-     * When {@code maxReportLatencyUs} is 0, the call is equivalent to a call to
+-     * {@link #registerListener(SensorEventListener, Sensor, int)}, as it requires the events to be
+-     * delivered as soon as possible.
+-     * </p><p>
+-     * When {@code sensor.maxFifoEventCount()} is 0, the sensor does not use a FIFO, so the call
+-     * will also be equivalent to {@link #registerListener(SensorEventListener, Sensor, int)}.
+-     * </p><p>
+-     * Setting {@code maxReportLatencyUs} to a positive value allows to reduce the number of
+-     * interrupts the AP (Application Processor) receives, hence reducing power consumption, as the
+-     * AP can switch to a lower power state while the sensor is capturing the data. This is
+-     * especially important when registering to wake-up sensors, for which each interrupt causes the
+-     * AP to wake up if it was in suspend mode. See {@link Sensor#isWakeUpSensor()} for more
+-     * information on wake-up sensors.
+-     * </p>
+-     * <p class="note">
+-     * </p>
+-     * Note: Don't use this method with one-shot trigger sensors such as
+-     * {@link Sensor#TYPE_SIGNIFICANT_MOTION}. Use
+-     * {@link #requestTriggerSensor(TriggerEventListener, Sensor)} instead. </p>
+-     *
+-     * @param listener A {@link android.hardware.SensorEventListener SensorEventListener} object
+-     *            that will receive the sensor events. If the application is interested in receiving
+-     *            flush complete notifications, it should register with
+-     *            {@link android.hardware.SensorEventListener SensorEventListener2} instead.
+-     * @param sensor The {@link android.hardware.Sensor Sensor} to register to.
+-     * @param samplingPeriodUs The desired delay between two consecutive events in microseconds.
+-     *            This is only a hint to the system. Events may be received faster or slower than
+-     *            the specified rate. Usually events are received faster. Can be one of
+-     *            {@link #SENSOR_DELAY_NORMAL}, {@link #SENSOR_DELAY_UI},
+-     *            {@link #SENSOR_DELAY_GAME}, {@link #SENSOR_DELAY_FASTEST} or the delay in
+-     *            microseconds.
+-     * @param maxReportLatencyUs Maximum time in microseconds that events can be delayed before
+-     *            being reported to the application. A large value allows reducing the power
+-     *            consumption associated with the sensor. If maxReportLatencyUs is set to zero,
+-     *            events are delivered as soon as they are available, which is equivalent to calling
+-     *            {@link #registerListener(SensorEventListener, Sensor, int)}.
+-     * @return <code>true</code> if the sensor is supported and successfully enabled.
+-     * @see #registerListener(SensorEventListener, Sensor, int)
+-     * @see #unregisterListener(SensorEventListener)
+-     * @see #flush(SensorEventListener)
+-     */
+-    public boolean registerListener(SensorEventListener listener, Sensor sensor,
+-            int samplingPeriodUs, int maxReportLatencyUs) {
+-        int delay = getDelay(samplingPeriodUs);
+-        return registerListenerImpl(listener, sensor, delay, null, maxReportLatencyUs, 0);
+-    }
+-
+-    /**
+-     * Registers a {@link android.hardware.SensorEventListener SensorEventListener} for the given
+-     * sensor. Events are delivered in continuous mode as soon as they are available. To reduce the
+-     * power consumption, applications can use
+-     * {@link #registerListener(SensorEventListener, Sensor, int, int)} instead and specify a
+-     * positive non-zero maximum reporting latency.
+-     * <p class="note">
+-     * </p>
+-     * Note: Don't use this method with a one shot trigger sensor such as
+-     * {@link Sensor#TYPE_SIGNIFICANT_MOTION}. Use
+-     * {@link #requestTriggerSensor(TriggerEventListener, Sensor)} instead. </p>
+-     *
+-     * @param listener A {@link android.hardware.SensorEventListener SensorEventListener} object.
+-     * @param sensor The {@link android.hardware.Sensor Sensor} to register to.
+-     * @param samplingPeriodUs The rate {@link android.hardware.SensorEvent sensor events} are
+-     *            delivered at. This is only a hint to the system. Events may be received faster or
+-     *            slower than the specified rate. Usually events are received faster. The value must
+-     *            be one of {@link #SENSOR_DELAY_NORMAL}, {@link #SENSOR_DELAY_UI},
+-     *            {@link #SENSOR_DELAY_GAME}, or {@link #SENSOR_DELAY_FASTEST} or, the desired
+-     *            delay between events in microseconds. Specifying the delay in microseconds only
+-     *            works from Android 2.3 (API level 9) onwards. For earlier releases, you must use
+-     *            one of the {@code SENSOR_DELAY_*} constants.
+-     * @param handler The {@link android.os.Handler Handler} the {@link android.hardware.SensorEvent
+-     *            sensor events} will be delivered to.
+-     * @return <code>true</code> if the sensor is supported and successfully enabled.
+-     * @see #registerListener(SensorEventListener, Sensor, int)
+-     * @see #unregisterListener(SensorEventListener)
+-     * @see #unregisterListener(SensorEventListener, Sensor)
+-     */
+-    public boolean registerListener(SensorEventListener listener, Sensor sensor,
+-            int samplingPeriodUs, Handler handler) {
+-        int delay = getDelay(samplingPeriodUs);
+-        return registerListenerImpl(listener, sensor, delay, handler, 0, 0);
+-    }
+-
+-    /**
+-     * Registers a {@link android.hardware.SensorEventListener SensorEventListener} for the given
+-     * sensor at the given sampling frequency and the given maximum reporting latency.
+-     *
+-     * @param listener A {@link android.hardware.SensorEventListener SensorEventListener} object
+-     *            that will receive the sensor events. If the application is interested in receiving
+-     *            flush complete notifications, it should register with
+-     *            {@link android.hardware.SensorEventListener SensorEventListener2} instead.
+-     * @param sensor The {@link android.hardware.Sensor Sensor} to register to.
+-     * @param samplingPeriodUs The desired delay between two consecutive events in microseconds.
+-     *            This is only a hint to the system. Events may be received faster or slower than
+-     *            the specified rate. Usually events are received faster. Can be one of
+-     *            {@link #SENSOR_DELAY_NORMAL}, {@link #SENSOR_DELAY_UI},
+-     *            {@link #SENSOR_DELAY_GAME}, {@link #SENSOR_DELAY_FASTEST} or the delay in
+-     *            microseconds.
+-     * @param maxReportLatencyUs Maximum time in microseconds that events can be delayed before
+-     *            being reported to the application. A large value allows reducing the power
+-     *            consumption associated with the sensor. If maxReportLatencyUs is set to zero,
+-     *            events are delivered as soon as they are available, which is equivalent to calling
+-     *            {@link #registerListener(SensorEventListener, Sensor, int)}.
+-     * @param handler The {@link android.os.Handler Handler} the {@link android.hardware.SensorEvent
+-     *            sensor events} will be delivered to.
+-     * @return <code>true</code> if the sensor is supported and successfully enabled.
+-     * @see #registerListener(SensorEventListener, Sensor, int, int)
+-     */
+-    public boolean registerListener(SensorEventListener listener, Sensor sensor,
+-            int samplingPeriodUs, int maxReportLatencyUs, Handler handler) {
+-        int delayUs = getDelay(samplingPeriodUs);
+-        return registerListenerImpl(listener, sensor, delayUs, handler, maxReportLatencyUs, 0);
+-    }
+-
+-    /** @hide */
+-    protected abstract boolean registerListenerImpl(SensorEventListener listener, Sensor sensor,
+-            int delayUs, Handler handler, int maxReportLatencyUs, int reservedFlags);
+-
+-
+-    /**
+      * Flushes the FIFO of all the sensors registered for this listener. If there are events
+      * in the FIFO of the sensor, they are returned as if the maxReportLatency of the FIFO has
+      * expired. Events are returned in the usual way through the SensorEventListener.
+@@ -921,56 +642,7 @@
+     /** @hide */
+     protected abstract boolean flushImpl(SensorEventListener listener);
+ 
+-
+-    /**
+-     * Create a sensor direct channel backed by shared memory wrapped in MemoryFile object.
+-     *
+-     * The resulting channel can be used for delivering sensor events to native code, other
+-     * processes, GPU/DSP or other co-processors without CPU intervention. This is the recommended
+-     * for high performance sensor applications that use high sensor rates (e.g. greater than 200Hz)
+-     * and cares about sensor event latency.
+-     *
+-     * Use the returned {@link android.hardware.SensorDirectChannel} object to configure direct
+-     * report of sensor events. After use, call {@link android.hardware.SensorDirectChannel#close()}
+-     * to free up resource in sensor system associated with the direct channel.
+-     *
+-     * @param mem A {@link android.os.MemoryFile} shared memory object.
+-     * @return A {@link android.hardware.SensorDirectChannel} object.
+-     * @throws NullPointerException when mem is null.
+-     * @throws UncheckedIOException if not able to create channel.
+-     * @see SensorDirectChannel#close()
+-     */
+-    public SensorDirectChannel createDirectChannel(MemoryFile mem) {
+-        return createDirectChannelImpl(mem, null);
+-    }
+-
+-    /**
+-     * Create a sensor direct channel backed by shared memory wrapped in HardwareBuffer object.
+-     *
+-     * The resulting channel can be used for delivering sensor events to native code, other
+-     * processes, GPU/DSP or other co-processors without CPU intervention. This is the recommended
+-     * for high performance sensor applications that use high sensor rates (e.g. greater than 200Hz)
+-     * and cares about sensor event latency.
+-     *
+-     * Use the returned {@link android.hardware.SensorDirectChannel} object to configure direct
+-     * report of sensor events. After use, call {@link android.hardware.SensorDirectChannel#close()}
+-     * to free up resource in sensor system associated with the direct channel.
+-     *
+-     * @param mem A {@link android.hardware.HardwareBuffer} shared memory object.
+-     * @return A {@link android.hardware.SensorDirectChannel} object.
+-     * @throws NullPointerException when mem is null.
+-     * @throws UncheckedIOException if not able to create channel.
+-     * @see SensorDirectChannel#close()
+-     */
+-    public SensorDirectChannel createDirectChannel(HardwareBuffer mem) {
+-        return createDirectChannelImpl(null, mem);
+-    }
+-
+     /** @hide */
+-    protected abstract SensorDirectChannel createDirectChannelImpl(
+-            MemoryFile memoryFile, HardwareBuffer hardwareBuffer);
+-
+-    /** @hide */
+     void destroyDirectChannel(SensorDirectChannel channel) {
+         destroyDirectChannelImpl(channel);
+     }
+@@ -1004,42 +676,6 @@
+ 
+ 
+     /**
+-     * Add a {@link android.hardware.SensorManager.DynamicSensorCallback
+-     * DynamicSensorCallback} to receive dynamic sensor connection callbacks. Repeat
+-     * registration with the already registered callback object will have no additional effect.
+-     *
+-     * @param callback An object that implements the
+-     *        {@link android.hardware.SensorManager.DynamicSensorCallback
+-     *        DynamicSensorCallback}
+-     *        interface for receiving callbacks.
+-     * @see #registerDynamicSensorCallback(DynamicSensorCallback, Handler)
+-     *
+-     * @throws IllegalArgumentException when callback is null.
+-     */
+-    public void registerDynamicSensorCallback(DynamicSensorCallback callback) {
+-        registerDynamicSensorCallback(callback, null);
+-    }
+-
+-    /**
+-     * Add a {@link android.hardware.SensorManager.DynamicSensorCallback
+-     * DynamicSensorCallback} to receive dynamic sensor connection callbacks. Repeat
+-     * registration with the already registered callback object will have no additional effect.
+-     *
+-     * @param callback An object that implements the
+-     *        {@link android.hardware.SensorManager.DynamicSensorCallback
+-     *        DynamicSensorCallback} interface for receiving callbacks.
+-     * @param handler The {@link android.os.Handler Handler} the {@link
+-     *        android.hardware.SensorManager.DynamicSensorCallback
+-     *        sensor connection events} will be delivered to.
+-     *
+-     * @throws IllegalArgumentException when callback is null.
+-     */
+-    public void registerDynamicSensorCallback(
+-            DynamicSensorCallback callback, Handler handler) {
+-        registerDynamicSensorCallbackImpl(callback, handler);
+-    }
+-
+-    /**
+      * Remove a {@link android.hardware.SensorManager.DynamicSensorCallback
+      * DynamicSensorCallback} to stop sending dynamic sensor connection events to that
+      * callback.
+@@ -1065,10 +701,6 @@
+     }
+ 
+     /** @hide */
+-    protected abstract void registerDynamicSensorCallbackImpl(
+-            DynamicSensorCallback callback, Handler handler);
+-
+-    /** @hide */
+     protected abstract void unregisterDynamicSensorCallbackImpl(
+             DynamicSensorCallback callback);
+ 
+@@ -1967,17 +1599,6 @@
+     protected abstract boolean injectSensorDataImpl(Sensor sensor, float[] values, int accuracy,
+                 long timestamp);
+ 
+-    private LegacySensorManager getLegacySensorManager() {
+-        synchronized (mSensorListByType) {
+-            if (mLegacySensorManager == null) {
+-                Log.i(TAG, "This application is using deprecated SensorManager API which will "
+-                        + "be removed someday.  Please consider switching to the new API.");
+-                mLegacySensorManager = new LegacySensorManager(this);
+-            }
+-            return mLegacySensorManager;
+-        }
+-    }
+-
+     private static int getDelay(int rate) {
+         int delay = -1;
+         switch (rate) {

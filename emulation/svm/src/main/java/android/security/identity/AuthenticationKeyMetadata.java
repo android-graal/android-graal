@@ -31,7 +31,7 @@ public final class AuthenticationKeyMetadata {
     private int mUsageCount;
     private Instant mExpirationDate;
 
-    private AuthenticationKeyMetadata(int usageCount, @NonNull Instant expirationDate) {
+    AuthenticationKeyMetadata(int usageCount, @NonNull Instant expirationDate) {
         mUsageCount = usageCount;
         mExpirationDate = expirationDate;
     }

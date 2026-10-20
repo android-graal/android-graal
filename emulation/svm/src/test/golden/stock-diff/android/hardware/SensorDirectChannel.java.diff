@@ -1,0 +1,58 @@
+--- a/emulation/svm/src/main/java/android/hardware/SensorDirectChannel.java
++++ b/emulation/svm/src/main/java/android/hardware/SensorDirectChannel.java
+@@ -16,10 +16,12 @@
+ package android.hardware;
+ 
+ import android.annotation.IntDef;
+-import android.os.MemoryFile;
+ 
+ import dalvik.system.CloseGuard;
+ 
++import org.androidgraal.hosted.annotate.Adapted;
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.io.IOException;
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+@@ -34,6 +36,7 @@
+  * (see {@link #configure(Sensor, int)})
+  * to start delivery of sensor events into shared memory buffer.
+  */
++@Emulated
+ public final class SensorDirectChannel implements Channel {
+ 
+     // shared memory types
+@@ -203,32 +206,9 @@
+         return mNativeHandle;
+     }
+ 
+-    /**
+-     * This function encode handle information in {@link android.os.MemoryFile} into a long array to
+-     * be passed down to native methods.
+-     *
+-     * @hide */
+-    static long[] encodeData(MemoryFile ashmem) {
+-        int fd;
+-        try {
+-            fd = ashmem.getFileDescriptor().getInt$();
+-        } catch (IOException e) {
+-            fd = -1;
+-        }
+-        return new long[] { 1 /*numFds*/, 0 /*numInts*/, fd };
+-    }
+-
+     @Override
++    @Adapted(reason = "empty, the image runs no finalizer")
+     protected void finalize() throws Throwable {
+-        try {
+-            if (mCloseGuard != null) {
+-                mCloseGuard.warnIfOpen();
+-            }
+-
+-            close();
+-        } finally {
+-            super.finalize();
+-        }
+     }
+ 
+     private final AtomicBoolean mClosed = new AtomicBoolean();

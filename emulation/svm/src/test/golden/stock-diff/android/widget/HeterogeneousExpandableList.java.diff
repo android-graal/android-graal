@@ -1,0 +1,20 @@
+--- a/emulation/svm/src/main/java/android/widget/HeterogeneousExpandableList.java
++++ b/emulation/svm/src/main/java/android/widget/HeterogeneousExpandableList.java
+@@ -16,8 +16,7 @@
+ 
+ package android.widget;
+ 
+-import android.view.View;
+-import android.view.ViewGroup;
++import org.androidgraal.hosted.annotate.Emulated;
+ 
+ /**
+  * Additional methods that when implemented make an
+@@ -36,6 +35,7 @@
+  * will be of the appropriate group or child type, resulting in a more efficient reuse of the
+  * previously created views.
+  */
++@Emulated
+ public interface HeterogeneousExpandableList {
+     /**
+      * Get the type of group View that will be created by

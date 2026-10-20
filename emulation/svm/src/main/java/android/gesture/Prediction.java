@@ -24,7 +24,7 @@ public class Prediction {
 
     public double score;
 
-    private Prediction(String label, double predictionScore) {
+    Prediction(String label, double predictionScore) {
         name = label;
         score = predictionScore;
     }

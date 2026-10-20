@@ -32,10 +32,10 @@ import java.util.Objects;
 @FlaggedApi(Flags.FLAG_ADPF_GPU_REPORT_ACTUAL_WORK_DURATION)
 @Emulated
 public final class WorkDuration {
-    private long mActualTotalDurationNanos = 0;
-    private long mWorkPeriodStartTimestampNanos = 0;
-    private long mActualCpuDurationNanos = 0;
-    private long mActualGpuDurationNanos = 0;
+    long mActualTotalDurationNanos = 0;
+    long mWorkPeriodStartTimestampNanos = 0;
+    long mActualCpuDurationNanos = 0;
+    long mActualGpuDurationNanos = 0;
 
     public WorkDuration() {}
 

@@ -32,21 +32,21 @@ import java.util.ArrayList;
 @Emulated
 public class Element {
 
-    public final String uri;
-    public final String localName;
-    public final int depth;
-    public final Element parent;
+    final String uri;
+    final String localName;
+    final int depth;
+    final Element parent;
     
-    public Children children;
-    private ArrayList<Element> requiredChilden;
+    Children children;
+    ArrayList<Element> requiredChilden;
 
-    public boolean visited;
+    boolean visited;
 
-    public StartElementListener startElementListener;
-    public EndElementListener endElementListener;
-    public EndTextElementListener endTextElementListener;
+    StartElementListener startElementListener;
+    EndElementListener endElementListener;
+    EndTextElementListener endTextElementListener;
 
-    public Element(Element parent, String uri, String localName, int depth) {
+    Element(Element parent, String uri, String localName, int depth) {
         this.parent = parent;
         this.uri = uri;
         this.localName = localName;
@@ -169,14 +169,14 @@ public class Element {
         return toString(uri, localName);
     }
 
-    public static String toString(String uri, String localName) {
+    static String toString(String uri, String localName) {
         return "'" + (uri.equals("") ? localName : uri + ":" + localName) + "'";
     }
 
     /**
      * Clears flags on required children.
      */
-    public void resetRequiredChildren() {
+    void resetRequiredChildren() {
         ArrayList<Element> requiredChildren = this.requiredChilden;
         if (requiredChildren != null) {
             for (int i = requiredChildren.size() - 1; i >= 0; i--) {
@@ -188,7 +188,7 @@ public class Element {
     /**
      * Throws an exception if a required child was not present.
      */
-    public void checkRequiredChildren(Locator locator) throws SAXParseException {
+    void checkRequiredChildren(Locator locator) throws SAXParseException {
         ArrayList<Element> requiredChildren = this.requiredChilden;
         if (requiredChildren != null) {
             for (int i = requiredChildren.size() - 1; i >= 0; i--) {

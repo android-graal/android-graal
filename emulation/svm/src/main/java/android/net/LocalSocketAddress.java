@@ -54,7 +54,7 @@ public class LocalSocketAddress
         /**
          * @return int constant shared with native code
          */
-        private int getId() {
+        /*package*/ int getId() {
             return id;
         }
     }

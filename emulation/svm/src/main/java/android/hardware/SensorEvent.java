@@ -856,7 +856,7 @@ public class SensorEvent {
     public boolean firstEventAfterDiscontinuity;
 
     @UnsupportedAppUsage
-    private SensorEvent(int valueSize) {
+    SensorEvent(int valueSize) {
         values = new float[valueSize];
     }
 

@@ -1,0 +1,81 @@
+--- a/emulation/svm/src/main/java/android/os/health/HealthKeys.java
++++ b/emulation/svm/src/main/java/android/os/health/HealthKeys.java
+@@ -18,6 +18,8 @@
+ 
+ import android.annotation.TestApi;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.lang.annotation.ElementType;
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+@@ -31,13 +33,9 @@
+  * @hide
+  */
+ @TestApi
++@Emulated
+ public class HealthKeys {
+ 
+-    /**
+-     * No valid key will ever be 0.
+-     */
+-    public static final int UNKNOWN_KEY = 0;
+-
+     /*
+      * Base key for each of the different classes. There is
+      * nothing intrinsic to the operation of the value of the
+@@ -127,54 +125,6 @@
+                 mKeys[i] = keys[i].getArray();
+             }
+         }
+-
+-        /**
+-         * Get a string representation of this class. Useful for debugging. It will be the
+-         * simple name of the class passed in the constructor.
+-         */
+-        public String getDataType() {
+-            return mDataType;
+-        }
+-
+-        /**
+-         * Return how many keys there are for the given field type.
+-         *
+-         * @see TYPE_TIMER
+-         * @see TYPE_MEASUREMENT
+-         * @see TYPE_TIMERS
+-         * @see TYPE_MEASUREMENTS
+-         * @see TYPE_STATS
+-         */
+-        public int getSize(int type) {
+-            return mKeys[type].length;
+-        }
+-
+-        /**
+-         * Return the index for the given type and key combination in the array of field
+-         * keys or values.
+-         *
+-         * @see TYPE_TIMER
+-         * @see TYPE_MEASUREMENT
+-         * @see TYPE_TIMERS
+-         * @see TYPE_MEASUREMENTS
+-         * @see TYPE_STATS
+-         */
+-        public int getIndex(int type, int key) {
+-            final int index = Arrays.binarySearch(mKeys[type], key);
+-            if (index >= 0) {
+-                return index;
+-            } else {
+-                throw new RuntimeException("Unknown Constant " + key + " (of type "
+-                        + type + " )");
+-            }
+-        }
+-
+-        /**
+-         * Get the array of keys for the given field type.
+-         */
+-        public int[] getKeys(int type) {
+-            return mKeys[type];
+-        }
+     }
+ 
+     /**

@@ -247,7 +247,7 @@ public class SensorAdditionalInfo {
     /** @hide */
     public static final int TYPE_DEBUG_INFO  = 0x40000000;
 
-    private SensorAdditionalInfo(
+    SensorAdditionalInfo(
             Sensor aSensor, int aType, int aSerial, int[] aIntValues, float[] aFloatValues) {
         sensor = aSensor;
         type = aType;

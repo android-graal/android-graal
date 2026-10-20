@@ -32,7 +32,7 @@ public class EventLogTags {
         public final int mTag;
         public final String mName;
 
-        private Description(int tag, String name) {
+        Description(int tag, String name) {
             mTag = tag;
             mName = name;
         }

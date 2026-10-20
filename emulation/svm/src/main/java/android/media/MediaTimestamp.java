@@ -106,7 +106,7 @@ public final class MediaTimestamp
     }
 
     /** @hide */
-    private MediaTimestamp() {
+    MediaTimestamp() {
         mediaTimeUs = 0;
         nanoTime = 0;
         clockRate = 1.0f;

@@ -142,7 +142,7 @@ public class DrmStore {
          */
         public static final int RESUME = 0x03;
 
-        private static boolean isValid(int playbackStatus) {
+        /* package */ static boolean isValid(int playbackStatus) {
             boolean isValid = false;
 
             switch (playbackStatus) {
@@ -199,7 +199,7 @@ public class DrmStore {
          */
         public static final int DISPLAY = 0x07;
 
-        private static boolean isValid(int action) {
+        /* package */ static boolean isValid(int action) {
             boolean isValid = false;
 
             switch (action) {

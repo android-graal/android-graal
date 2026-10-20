@@ -1,0 +1,21 @@
+--- a/emulation/svm/src/main/java/android/view/inspector/PropertyMapper.java
++++ b/emulation/svm/src/main/java/android/view/inspector/PropertyMapper.java
+@@ -18,8 +18,9 @@
+ 
+ import android.annotation.AttrRes;
+ import android.annotation.NonNull;
+-import android.content.res.Resources;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.util.Set;
+ import java.util.function.IntFunction;
+ 
+@@ -37,6 +38,7 @@
+  *
+  * @see InspectionCompanion#mapProperties(PropertyMapper)
+  */
++@Emulated
+ public interface PropertyMapper {
+     /**
+      * Map a string name to an integer ID for a primitive boolean property.

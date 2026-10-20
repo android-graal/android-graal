@@ -1,0 +1,30 @@
+--- a/emulation/svm/src/main/java/android/util/CloseGuard.java
++++ b/emulation/svm/src/main/java/android/util/CloseGuard.java
+@@ -20,6 +20,8 @@
+ import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+ import android.ravenwood.annotation.RavenwoodReplace;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ /**
+  * CloseGuard is a mechanism for flagging implicit finalizer cleanup of
+  * resources that should have been cleaned up by explicit close
+@@ -111,6 +113,7 @@
+  * resource acquisition.
+  */
+ @RavenwoodKeepWholeClass
++@Emulated
+ public final class CloseGuard {
+     private final dalvik.system.CloseGuard mImpl;
+ 
+@@ -137,10 +140,6 @@
+         return dalvik.system.CloseGuard.get();
+     }
+ 
+-    private dalvik.system.CloseGuard getImpl$ravenwood() {
+-        return null;
+-    }
+-
+     /**
+      * Initializes the instance with a warning that the caller should have explicitly called the
+      * {@code closeMethodName} method instead of relying on finalization.

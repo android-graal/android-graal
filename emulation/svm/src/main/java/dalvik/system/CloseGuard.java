@@ -22,6 +22,8 @@ import android.annotation.SystemApi;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.util.Log;
 
+import org.androidgraal.hosted.annotate.Adapted;
+
 /**
  * CloseGuard is a mechanism for flagging implicit finalizer cleanup of
  * resources that should have been cleaned up by explicit close
@@ -331,6 +333,8 @@ public final class CloseGuard {
     @UnsupportedAppUsage(trackingBug=111170242)
     @SystemApi(client = MODULE_LIBRARIES)
     @libcore.api.IntraCoreApi
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/ojluni/src/main/native/System.c#L232-L252",
+            reason = "logs with Log.w under the tag System instead of System.logW")
     public void warnIfOpen() {
         if (closerNameOrAllocationInfo != null) {
             if (closerNameOrAllocationInfo instanceof Throwable) {
@@ -387,11 +391,15 @@ public final class CloseGuard {
         @UnsupportedAppUsage
         private DefaultReporter() {}
 
+        @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/ojluni/src/main/native/System.c#L232-L252",
+                reason = "logs with Log.w under the tag System instead of System.logW")
         @Override public void report (String message, Throwable allocationSite) {
             Log.w("System", message, allocationSite);
         }
 
         @Override
+        @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/ojluni/src/main/native/System.c#L232-L252",
+                reason = "logs with Log.w under the tag System instead of System.logW")
         public void report(String message) {
             Log.w("System", message);
         }

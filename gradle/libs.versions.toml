@@ -5,6 +5,7 @@ commons-io = "2.22.0"
 compile-testing = "0.23.0"
 errorprone-annotations = "2.50.0"
 graal = "25.2.4"
+java-diff-utils = "4.12"
 javapoet = "0.20.0"
 jnigen-commons = "3.1.2"
 jspecify = "1.0.1"
@@ -23,6 +24,7 @@ asm-commons = { module = "org.ow2.asm:asm-commons", version.ref = "asm" }
 commons-io = { module = "commons-io:commons-io", version.ref = "commons-io" }
 compile-testing = { module = "com.google.testing.compile:compile-testing", version.ref = "compile-testing" }
 errorprone-annotations = { module = "com.google.errorprone:error_prone_annotations", version.ref = "errorprone-annotations" }
+java-diff-utils = { module = "io.github.java-diff-utils:java-diff-utils", version.ref = "java-diff-utils" }
 javapoet = { module = "com.palantir.javapoet:javapoet", version.ref = "javapoet" }
 jnigen-commons = { module = "com.badlogicgames.jnigen:jnigen-commons", version.ref = "jnigen-commons" }
 jspecify = { module = "org.jspecify:jspecify", version.ref = "jspecify" }

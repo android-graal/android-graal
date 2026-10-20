@@ -1,0 +1,21 @@
+--- a/emulation/svm/src/main/java/android/text/InputType.java
++++ b/emulation/svm/src/main/java/android/text/InputType.java
+@@ -16,9 +16,7 @@
+ 
+ package android.text;
+ 
+-import android.view.inputmethod.InputConnection;
+-import android.view.inputmethod.TextAttribute;
+-import android.view.inputmethod.TextAttribute.Builder;
++import org.androidgraal.hosted.annotate.Emulated;
+ 
+ import java.util.List;
+ 
+@@ -45,6 +43,7 @@
+  * </dl>
+  */
+ @android.ravenwood.annotation.RavenwoodKeepWholeClass
++@Emulated
+ public interface InputType {
+     /**
+      * Mask of bits that determine the overall class

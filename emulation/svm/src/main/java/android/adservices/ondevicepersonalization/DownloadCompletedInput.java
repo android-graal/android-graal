@@ -36,7 +36,7 @@ public final class DownloadCompletedInput {
     /**
      * A {@link KeyValueStore} that contains the downloaded content.
      */
-    private @NonNull KeyValueStore mDownloadedContents;
+    @NonNull KeyValueStore mDownloadedContents;
 
 
     /** Creates a {@link DownloadCompletedInput}

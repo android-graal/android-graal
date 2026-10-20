@@ -59,7 +59,7 @@ public final class TriggerEvent {
      */
     public long timestamp;
 
-    private TriggerEvent(int size) {
+    TriggerEvent(int size) {
         values = new float[size];
     }
 }

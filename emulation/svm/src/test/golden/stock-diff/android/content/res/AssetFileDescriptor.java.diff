@@ -1,0 +1,134 @@
+--- a/emulation/svm/src/main/java/android/content/res/AssetFileDescriptor.java
++++ b/emulation/svm/src/main/java/android/content/res/AssetFileDescriptor.java
+@@ -30,17 +30,23 @@
+ import android.system.Os;
+ import android.system.StructStat;
+ 
++import org.androidgraal.hosted.annotate.Adapted;
++import org.androidgraal.hosted.annotate.Emulated;
++
++import java.io.ByteArrayOutputStream;
+ import java.io.Closeable;
+ import java.io.FileDescriptor;
+ import java.io.FileInputStream;
+ import java.io.FileOutputStream;
+ import java.io.IOException;
++import java.io.OutputStream;
+ import java.nio.ByteBuffer;
+ import java.nio.MappedByteBuffer;
+ import java.nio.channels.FileChannel;
+ import java.nio.channels.FileLock;
+ import java.nio.channels.ReadableByteChannel;
+ import java.nio.channels.WritableByteChannel;
++import java.util.Objects;
+ 
+ /**
+  * File descriptor of an entry in the AssetManager.  This provides your own
+@@ -48,6 +54,7 @@
+  * offset and length of that entry's data in the file.
+  */
+ @RavenwoodKeepWholeClass
++@Emulated
+ public class AssetFileDescriptor implements Parcelable, Closeable {
+     /**
+      * Length used with {@link #AssetFileDescriptor(ParcelFileDescriptor, long, long)}
+@@ -222,6 +229,9 @@
+      */
+     public static class AutoCloseInputStream
+             extends ParcelFileDescriptor.AutoCloseInputStream {
++        @Adapted(reason = "the buffer size of the three FileInputStream overrides")
++        private static final int TRANSFER_BUFFER_SIZE = 16384;
++
+         private ParcelFileDescriptor.AutoCloseInputStream mDelegateInputStream;
+ 
+         public AutoCloseInputStream(AssetFileDescriptor fd) throws IOException {
+@@ -283,7 +293,49 @@
+         public FileChannel getChannel() {
+             return mDelegateInputStream.getChannel();
+         }
++
+         @Override
++        @Adapted(reason = "reads through this stream's read instead of FileInputStream's whole-file override")
++        public byte[] readAllBytes() throws IOException {
++            return readNBytes(Integer.MAX_VALUE);
++        }
++
++        @Override
++        @Adapted(reason = "reads through this stream's read instead of FileInputStream's whole-file override")
++        public byte[] readNBytes(int len) throws IOException {
++            if (len < 0) {
++                throw new IllegalArgumentException("len < 0");
++            }
++            ByteArrayOutputStream bytes =
++                    new ByteArrayOutputStream(Math.min(len, Math.max(available(), 1)));
++            byte[] buffer = new byte[TRANSFER_BUFFER_SIZE];
++            int remaining = len;
++            while (remaining > 0) {
++                int read = read(buffer, 0, Math.min(buffer.length, remaining));
++                if (read < 0) {
++                    break;
++                }
++                bytes.write(buffer, 0, read);
++                remaining -= read;
++            }
++            return bytes.toByteArray();
++        }
++
++        @Override
++        @Adapted(reason = "reads through this stream's read instead of FileInputStream's whole-file override")
++        public long transferTo(OutputStream out) throws IOException {
++            Objects.requireNonNull(out, "out");
++            long transferred = 0;
++            byte[] buffer = new byte[TRANSFER_BUFFER_SIZE];
++            int read;
++            while ((read = read(buffer, 0, buffer.length)) >= 0) {
++                out.write(buffer, 0, read);
++                transferred += read;
++            }
++            return transferred;
++        }
++
++        @Override
+         public void close() throws IOException {
+             // Make the mDelegateInputStream own file descriptor and super.close()
+             // is not needed here to avoid double close the file descriptor.
+@@ -308,11 +360,8 @@
+         }
+ 
+         @RavenwoodReplace
++        @Adapted(reason = "the body of skipRaw$ravenwood, reading instead of skipping")
+         private long skipRaw(long count) throws IOException {
+-            return super.skip(count);
+-        }
+-
+-        private long skipRaw$ravenwood(long count) throws IOException {
+             // OpenJDK doesn't allow skip on pipes, so just use read.
+             final byte[] buf = new byte[(int) Math.min(1024, count)];
+             long totalRead = 0;
+@@ -726,26 +775,4 @@
+             out.writeInt(0);
+         }
+     }
+-
+-    AssetFileDescriptor(Parcel src) {
+-        mFd = ParcelFileDescriptor.CREATOR.createFromParcel(src);
+-        mStartOffset = src.readLong();
+-        mLength = src.readLong();
+-        if (src.readInt() != 0) {
+-            mExtras = src.readBundle();
+-        } else {
+-            mExtras = null;
+-        }
+-    }
+-
+-    public static final @android.annotation.NonNull Parcelable.Creator<AssetFileDescriptor> CREATOR
+-            = new Parcelable.Creator<AssetFileDescriptor>() {
+-        public AssetFileDescriptor createFromParcel(Parcel in) {
+-            return new AssetFileDescriptor(in);
+-        }
+-        public AssetFileDescriptor[] newArray(int size) {
+-            return new AssetFileDescriptor[size];
+-        }
+-    };
+-
+ }

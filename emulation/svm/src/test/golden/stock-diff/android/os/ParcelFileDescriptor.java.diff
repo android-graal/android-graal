@@ -1,0 +1,412 @@
+--- a/emulation/svm/src/main/java/android/os/ParcelFileDescriptor.java
++++ b/emulation/svm/src/main/java/android/os/ParcelFileDescriptor.java
+@@ -35,11 +35,6 @@
+ import android.annotation.SuppressLint;
+ import android.annotation.TestApi;
+ import android.compat.annotation.UnsupportedAppUsage;
+-import android.content.BroadcastReceiver;
+-import android.content.ContentProvider;
+-import android.content.ContentResolver;
+-import android.net.Uri;
+-import android.os.MessageQueue.OnFileDescriptorEventListener;
+ import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+ import android.ravenwood.annotation.RavenwoodThrow;
+ import android.system.ErrnoException;
+@@ -55,6 +50,10 @@
+ import libcore.io.IoUtils;
+ import libcore.io.Memory;
+ 
++import org.androidgraal.android.FileDescriptors;
++import org.androidgraal.hosted.annotate.Adapted;
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.io.Closeable;
+ import java.io.File;
+ import java.io.FileDescriptor;
+@@ -73,6 +72,7 @@
+  * you to close it when done with it.
+  */
+ @RavenwoodKeepWholeClass
++@Emulated
+ public class ParcelFileDescriptor implements Parcelable, Closeable {
+     private static final String TAG = "ParcelFileDescriptor";
+ 
+@@ -194,18 +194,15 @@
+     }
+ 
+     /** {@hide} */
++    @Adapted(reason = "without IoUtils.setFdOwner")
+     public ParcelFileDescriptor(FileDescriptor fd, FileDescriptor commChannel) {
+         if (fd == null) {
+             throw new NullPointerException("FileDescriptor must not be null");
+         }
+         mWrapped = null;
+         mFd = fd;
+-        IoUtils.setFdOwner(mFd, this);
+ 
+         mCommFd = commChannel;
+-        if (mCommFd != null) {
+-            IoUtils.setFdOwner(mCommFd, this);
+-        }
+ 
+         mGuard.open("close");
+     }
+@@ -236,104 +233,6 @@
+         return new ParcelFileDescriptor(fd);
+     }
+ 
+-    /**
+-     * Create a new ParcelFileDescriptor accessing a given file.
+-     * <p>
+-     * This method should only be used for files that you have direct access to;
+-     * if you'd like to work with files hosted outside your app, use an API like
+-     * {@link ContentResolver#openFile(Uri, String, CancellationSignal)}.
+-     *
+-     * @param file The file to be opened.
+-     * @param mode The desired access mode, must be one of
+-     *            {@link #MODE_READ_ONLY}, {@link #MODE_WRITE_ONLY}, or
+-     *            {@link #MODE_READ_WRITE}; may also be any combination of
+-     *            {@link #MODE_CREATE}, {@link #MODE_TRUNCATE},
+-     *            {@link #MODE_WORLD_READABLE}, and
+-     *            {@link #MODE_WORLD_WRITEABLE}.
+-     * @param handler to call listener from; must not be null.
+-     * @param listener to be invoked when the returned descriptor has been
+-     *            closed; must not be null.
+-     * @return a new ParcelFileDescriptor pointing to the given file.
+-     * @throws FileNotFoundException if the given file does not exist or can not
+-     *             be opened with the requested mode.
+-     * @see #parseMode(String)
+-     */
+-    // We can't accept a generic Executor here, since we need to use
+-    // MessageQueue.addOnFileDescriptorEventListener()
+-    @SuppressLint("ExecutorRegistration")
+-    public static ParcelFileDescriptor open(File file, int mode, Handler handler,
+-            final OnCloseListener listener) throws IOException {
+-        if (handler == null) {
+-            throw new IllegalArgumentException("Handler must not be null");
+-        }
+-        if (listener == null) {
+-            throw new IllegalArgumentException("Listener must not be null");
+-        }
+-
+-        final FileDescriptor fd = openInternal(file, mode);
+-        if (fd == null) return null;
+-
+-        return fromFd(fd, handler, listener);
+-    }
+-
+-    /**
+-     * Create a new ParcelFileDescriptor wrapping an already-opened file.
+-     *
+-     * @param pfd The already-opened file.
+-     * @param handler to call listener from.
+-     * @param listener to be invoked when the returned descriptor has been
+-     *            closed.
+-     * @return a new ParcelFileDescriptor pointing to the given file.
+-     */
+-    // We can't accept a generic Executor here, since we need to use
+-    // MessageQueue.addOnFileDescriptorEventListener()
+-    @RavenwoodThrow(blockedBy = MessageQueue.class)
+-    @SuppressLint("ExecutorRegistration")
+-    public static @NonNull ParcelFileDescriptor wrap(@NonNull ParcelFileDescriptor pfd,
+-            @NonNull Handler handler, @NonNull OnCloseListener listener) throws IOException {
+-        final FileDescriptor original = new FileDescriptor();
+-        original.setInt$(pfd.detachFd());
+-        return fromFd(original, handler, listener);
+-    }
+-
+-    /** {@hide} */
+-    @RavenwoodThrow(blockedBy = MessageQueue.class)
+-    public static ParcelFileDescriptor fromFd(FileDescriptor fd, Handler handler,
+-            final OnCloseListener listener) throws IOException {
+-        if (handler == null) {
+-            throw new IllegalArgumentException("Handler must not be null");
+-        }
+-        if (listener == null) {
+-            throw new IllegalArgumentException("Listener must not be null");
+-        }
+-
+-        final FileDescriptor[] comm = createCommSocketPair();
+-        final ParcelFileDescriptor pfd = new ParcelFileDescriptor(fd, comm[0]);
+-        final MessageQueue queue = handler.getLooper().getQueue();
+-        queue.addOnFileDescriptorEventListener(comm[1],
+-                OnFileDescriptorEventListener.EVENT_INPUT, new OnFileDescriptorEventListener() {
+-            @Override
+-            public int onFileDescriptorEvents(FileDescriptor fd, int events) {
+-                Status status = null;
+-                if ((events & OnFileDescriptorEventListener.EVENT_INPUT) != 0) {
+-                    final byte[] buf = new byte[MAX_STATUS];
+-                    status = readCommStatus(fd, buf);
+-                } else if ((events & OnFileDescriptorEventListener.EVENT_ERROR) != 0) {
+-                    status = new Status(Status.DEAD);
+-                }
+-                if (status != null) {
+-                    queue.removeOnFileDescriptorEventListener(fd);
+-                    closeInternal(fd);
+-                    listener.onClose(status.asIOException());
+-                    return 0;
+-                }
+-                return EVENT_INPUT;
+-            }
+-        });
+-
+-        return pfd;
+-    }
+-
+     private static FileDescriptor openInternal(File file, int mode) throws FileNotFoundException {
+         if ((mode & MODE_WRITE_ONLY) != 0 && (mode & MODE_APPEND) == 0
+                 && (mode & MODE_TRUNCATE) == 0 && ((mode & MODE_READ_ONLY) == 0)
+@@ -367,11 +266,12 @@
+      * new file descriptor shared state such as file position with the
+      * original file descriptor.
+      */
++    @Adapted(reason = "sets the int through FileDescriptors instead of setInt$")
+     public static ParcelFileDescriptor dup(FileDescriptor orig) throws IOException {
+         try {
+             final FileDescriptor fd = new FileDescriptor();
+             int intfd = Os.fcntlInt(orig, (isAtLeastQ() ? F_DUPFD_CLOEXEC : F_DUPFD), 0);
+-            fd.setInt$(intfd);
++            FileDescriptors.setFd(fd, intfd);
+             return new ParcelFileDescriptor(fd);
+         } catch (ErrnoException e) {
+             throw e.rethrowAsIOException();
+@@ -402,14 +302,15 @@
+      * @return Returns a new ParcelFileDescriptor holding a FileDescriptor
+      * for a dup of the given fd.
+      */
++    @Adapted(reason = "sets the int through FileDescriptors instead of setInt$")
+     public static ParcelFileDescriptor fromFd(int fd) throws IOException {
+         final FileDescriptor original = new FileDescriptor();
+-        original.setInt$(fd);
++        FileDescriptors.setFd(original, fd);
+ 
+         try {
+             final FileDescriptor dup = new FileDescriptor();
+             int intfd = Os.fcntlInt(original, (isAtLeastQ() ? F_DUPFD_CLOEXEC : F_DUPFD), 0);
+-            dup.setInt$(intfd);
++            FileDescriptors.setFd(dup, intfd);
+             return new ParcelFileDescriptor(dup);
+         } catch (ErrnoException e) {
+             throw e.rethrowAsIOException();
+@@ -430,82 +331,15 @@
+      * @return Returns a new ParcelFileDescriptor holding a FileDescriptor
+      * for the given fd.
+      */
++    @Adapted(reason = "sets the int through FileDescriptors instead of setInt$")
+     public static ParcelFileDescriptor adoptFd(int fd) {
+         final FileDescriptor fdesc = new FileDescriptor();
+-        fdesc.setInt$(fd);
++        FileDescriptors.setFd(fdesc, fd);
+ 
+         return new ParcelFileDescriptor(fdesc);
+     }
+ 
+     /**
+-     * Create a new ParcelFileDescriptor from the specified Socket.  The new
+-     * ParcelFileDescriptor holds a dup of the original FileDescriptor in
+-     * the Socket, so you must still close the Socket as well as the new
+-     * ParcelFileDescriptor.
+-     * <p>
+-     * <strong>WARNING:</strong> Prior to API level 29, this function would not
+-     * actually dup the Socket's FileDescriptor, and would take a
+-     * reference to the its internal FileDescriptor instead. If the Socket
+-     * gets garbage collected before the ParcelFileDescriptor, this may
+-     * lead to the ParcelFileDescriptor being unexpectedly closed. To avoid
+-     * this, the following pattern can be used:
+-     * <pre>{@code
+-     *    ParcelFileDescriptor pfd = ParcelFileDescriptor.fromSocket(socket).dup();
+-     * }</pre>
+-     *
+-     * @param socket The Socket whose FileDescriptor is used to create
+-     *               a new ParcelFileDescriptor.
+-     *
+-     * @return A new ParcelFileDescriptor with a duped copy of the
+-     * FileDescriptor of the specified Socket.
+-     *
+-     * @throws UncheckedIOException if {@link #dup(FileDescriptor)} throws IOException.
+-     */
+-    @RavenwoodThrow(reason = "Socket.getFileDescriptor$()")
+-    public static ParcelFileDescriptor fromSocket(Socket socket) {
+-        FileDescriptor fd = socket.getFileDescriptor$();
+-        try {
+-            return fd != null ? ParcelFileDescriptor.dup(fd) : null;
+-        } catch (IOException e) {
+-            throw new UncheckedIOException(e);
+-        }
+-    }
+-
+-    /**
+-     * Create a new ParcelFileDescriptor from the specified DatagramSocket. The
+-     * new ParcelFileDescriptor holds a dup of the original FileDescriptor in
+-     * the DatagramSocket, so you must still close the DatagramSocket as well
+-     * as the new ParcelFileDescriptor.
+-     * <p>
+-     * <strong>WARNING:</strong> Prior to API level 29, this function would not
+-     * actually dup the DatagramSocket's FileDescriptor, and would take a
+-     * reference to the its internal FileDescriptor instead. If the DatagramSocket
+-     * gets garbage collected before the ParcelFileDescriptor, this may
+-     * lead to the ParcelFileDescriptor being unexpectedly closed. To avoid
+-     * this, the following pattern can be used:
+-     * <pre>{@code
+-     *    ParcelFileDescriptor pfd = ParcelFileDescriptor.fromDatagramSocket(socket).dup();
+-     * }</pre>
+-     *
+-     * @param datagramSocket The DatagramSocket whose FileDescriptor is used
+-     *               to create a new ParcelFileDescriptor.
+-     *
+-     * @return A new ParcelFileDescriptor with a duped copy of the
+-     * FileDescriptor of the specified Socket.
+-     *
+-     * @throws UncheckedIOException if {@link #dup(FileDescriptor)} throws IOException.
+-     */
+-    @RavenwoodThrow(reason = "DatagramSocket.getFileDescriptor$()")
+-    public static ParcelFileDescriptor fromDatagramSocket(DatagramSocket datagramSocket) {
+-        FileDescriptor fd = datagramSocket.getFileDescriptor$();
+-        try {
+-            return fd != null ? ParcelFileDescriptor.dup(fd) : null;
+-        } catch (IOException e) {
+-            throw new UncheckedIOException(e);
+-        }
+-    }
+-
+-    /**
+      * Create two ParcelFileDescriptors structured as a data pipe.  The first
+      * ParcelFileDescriptor in the returned array is the read side; the second
+      * is the write side.
+@@ -619,34 +453,6 @@
+     }
+ 
+     /**
+-     * @hide Please use createPipe() or ContentProvider.openPipeHelper().
+-     * Gets a file descriptor for a read-only copy of the given data.
+-     *
+-     * @param data Data to copy.
+-     * @param name Name for the shared memory area that may back the file descriptor.
+-     *        This is purely informative and may be {@code null}.
+-     * @return A ParcelFileDescriptor.
+-     * @throws IOException if there is an error while creating the shared memory area.
+-     */
+-    @UnsupportedAppUsage
+-    @Deprecated
+-    @RavenwoodThrow(blockedBy = MemoryFile.class)
+-    public static ParcelFileDescriptor fromData(byte[] data, String name) throws IOException {
+-        if (data == null) return null;
+-        MemoryFile file = new MemoryFile(name, data.length);
+-        try {
+-            if (data.length > 0) {
+-                file.writeBytes(data, 0, 0, data.length);
+-            }
+-            file.deactivate();
+-            FileDescriptor fd = file.getFileDescriptor();
+-            return fd != null ? ParcelFileDescriptor.dup(fd) : null;
+-        } finally {
+-            file.close();
+-        }
+-    }
+-
+-    /**
+      * Converts a string representing a file mode, such as "rw", into a bitmask suitable for use
+      * with {@link #open}.
+      * <p>
+@@ -687,9 +493,10 @@
+      */
+     @TestApi
+     @RavenwoodThrow(reason = "Os.readlink() and Os.stat()")
++    @Adapted(reason = "reads the int through FileDescriptors instead of getInt$")
+     public static File getFile(FileDescriptor fd) throws IOException {
+         try {
+-            final String path = Os.readlink("/proc/self/fd/" + fd.getInt$());
++            final String path = Os.readlink("/proc/self/fd/" + FileDescriptors.getFd(fd));
+             if (OsConstants.S_ISREG(Os.stat(path).st_mode)
+                     || OsConstants.S_ISCHR(Os.stat(path).st_mode)) {
+                 return new File(path);
+@@ -762,6 +569,7 @@
+      * <strong>WARNING:</strong> Do not call close on the return value of this
+      * function or pass it to a function that assumes ownership of the fd.
+      */
++    @Adapted(reason = "reads the int through FileDescriptors instead of getInt$")
+     public int getFd() {
+         if (mWrapped != null) {
+             return mWrapped.getFd();
+@@ -769,7 +577,7 @@
+             if (mClosed) {
+                 throw new IllegalStateException("Already closed");
+             }
+-            return mFd.getInt$();
++            return FileDescriptors.getFd(mFd);
+         }
+     }
+ 
+@@ -1089,21 +897,8 @@
+     }
+ 
+     @Override
++    @Adapted(reason = "empty, the image runs no finalizer")
+     protected void finalize() throws Throwable {
+-        if (mWrapped != null) {
+-            releaseResources();
+-        }
+-        if (mGuard != null) {
+-            mGuard.warnIfOpen();
+-        }
+-        try {
+-            if (!mClosed) {
+-                // mWrapped was and is null.
+-                closeWithStatus(Status.LEAKED, null);
+-            }
+-        } finally {
+-            super.finalize();
+-        }
+     }
+ 
+     @Override
+@@ -1121,6 +916,7 @@
+      * the file descriptor will be closed after a copy is written to the Parcel.
+      */
+     @Override
++    @Adapted(reason = "writing the descriptor throws")
+     public void writeToParcel(Parcel out, int flags) {
+         if (mWrapped != null) {
+             try {
+@@ -1129,40 +925,10 @@
+                 releaseResources();
+             }
+         } else {
+-            if (mCommFd != null) {
+-                out.writeInt(1);
+-                out.writeFileDescriptor(mFd);
+-                out.writeFileDescriptor(mCommFd);
+-            } else {
+-                out.writeInt(0);
+-                out.writeFileDescriptor(mFd);
+-            }
+-            if ((flags & PARCELABLE_WRITE_RETURN_VALUE) != 0 && !mClosed) {
+-                // Not a real close, so emit no status
+-                closeWithStatus(Status.SILENCE, null);
+-            }
++            throw new UnsupportedOperationException();
+         }
+     }
+ 
+-    public static final @android.annotation.NonNull Parcelable.Creator<ParcelFileDescriptor> CREATOR
+-            = new Parcelable.Creator<ParcelFileDescriptor>() {
+-        @Override
+-        public ParcelFileDescriptor createFromParcel(Parcel in) {
+-            int hasCommChannel = in.readInt();
+-            final FileDescriptor fd = in.readRawFileDescriptor();
+-            FileDescriptor commChannel = null;
+-            if (hasCommChannel != 0) {
+-                commChannel = in.readRawFileDescriptor();
+-            }
+-            return new ParcelFileDescriptor(fd, commChannel);
+-        }
+-
+-        @Override
+-        public ParcelFileDescriptor[] newArray(int size) {
+-            return new ParcelFileDescriptor[size];
+-        }
+-    };
+-
+     /**
+      * Callback indicating that a ParcelFileDescriptor has been closed.
+      */

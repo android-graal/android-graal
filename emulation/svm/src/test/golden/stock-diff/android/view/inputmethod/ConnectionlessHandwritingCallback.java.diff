@@ -1,0 +1,21 @@
+--- a/emulation/svm/src/main/java/android/view/inputmethod/ConnectionlessHandwritingCallback.java
++++ b/emulation/svm/src/main/java/android/view/inputmethod/ConnectionlessHandwritingCallback.java
+@@ -19,8 +19,9 @@
+ import android.annotation.FlaggedApi;
+ import android.annotation.IntDef;
+ import android.annotation.NonNull;
+-import android.view.View;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+ import java.util.concurrent.Executor;
+@@ -35,6 +36,7 @@
+  * String, Executor, ConnectionlessHandwritingCallback)}.
+  */
+ @FlaggedApi(Flags.FLAG_CONNECTIONLESS_HANDWRITING)
++@Emulated
+ public interface ConnectionlessHandwritingCallback {
+ 
+     /** @hide */

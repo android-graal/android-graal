@@ -76,10 +76,10 @@ public final class ArraySet<E> implements Collection<E>, Set<E> {
      * The first entry in the array is a pointer to the next array in the
      * list; the second entry is a pointer to the int[] hash code array for it.
      */
-    private static Object[] sBaseCache;
-    private static int sBaseCacheSize;
-    private static Object[] sTwiceBaseCache;
-    private static int sTwiceBaseCacheSize;
+    static Object[] sBaseCache;
+    static int sBaseCacheSize;
+    static Object[] sTwiceBaseCache;
+    static int sTwiceBaseCacheSize;
     /**
      * Separate locks for each cache since each can be accessed independently of the other without
      * risk of a deadlock.
@@ -89,11 +89,11 @@ public final class ArraySet<E> implements Collection<E>, Set<E> {
 
     private final boolean mIdentityHashCode;
     @UnsupportedAppUsage(maxTargetSdk = 28) // Hashes are an implementation detail. Use public API.
-    private int[] mHashes;
+    int[] mHashes;
     @UnsupportedAppUsage(maxTargetSdk = 28) // Storage is an implementation detail. Use public API.
-    private Object[] mArray;
+    Object[] mArray;
     @UnsupportedAppUsage(maxTargetSdk = 28) // Use size()
-    private int mSize;
+    int mSize;
     private MapCollections<E, E> mCollections;
 
     private int binarySearch(int[] hashes, int hash) {

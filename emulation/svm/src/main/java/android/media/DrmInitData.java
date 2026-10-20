@@ -32,7 +32,7 @@ public abstract class DrmInitData {
     /**
      * Prevent public constuctor access
      */
-    private DrmInitData() {
+    /* package private */ DrmInitData() {
     }
 
     /**

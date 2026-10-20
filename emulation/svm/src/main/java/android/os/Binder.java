@@ -33,6 +33,7 @@ import dalvik.annotation.optimization.CriticalNative;
 
 import libcore.io.IoUtils;
 
+import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
 
 import java.io.FileDescriptor;
@@ -78,16 +79,25 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 @RavenwoodKeepWholeClass
 @RavenwoodClassLoadHook(RavenwoodClassLoadHook.LIBANDROID_LOADING_HOOK)
 @Emulated
+@Adapted(reason = "does not implement IBinder")
 public class Binder {
     private static boolean sIsHandlingBinderTransaction = false;
 
     /**
      * @hide
      */
+    @Adapted(reason = "without isDirectlyHandlingTransactionNative")
     public static final boolean isDirectlyHandlingTransaction() {
         return sIsHandlingBinderTransaction;
     }
 
-    private Binder() {
+    /**
+     * Default constructor just initializes the object.
+     *
+     * <p>If you're creating a Binder token (a Binder object without an attached interface),
+     * you should use {@link #Binder(String)} instead.
+     */
+    @Adapted(reason = "empty instead of calling Binder(String)")
+    public Binder() {
     }
 }

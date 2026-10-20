@@ -21,6 +21,8 @@ import static android.annotation.SystemApi.Client.MODULE_LIBRARIES;
 import android.annotation.SystemApi;
 import android.compat.annotation.UnsupportedAppUsage;
 
+import org.androidgraal.hosted.annotate.Adapted;
+
 import java.lang.annotation.Annotation;
 
 /**
@@ -33,13 +35,13 @@ public final class EmptyArray {
     private EmptyArray() {}
 
     /** @hide */
-    /** @hide */
     @SystemApi(client = MODULE_LIBRARIES)
+    @Adapted(reason = "without @UnsupportedAppUsage")
     public static final @NonNull int[] INT = new int[0];
 
     /** @hide */
-    /** @hide */
     @SystemApi(client = MODULE_LIBRARIES)
+    @Adapted(reason = "without @UnsupportedAppUsage")
     public static final @NonNull Object[] OBJECT = new Object[0];
 
 }

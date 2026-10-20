@@ -41,13 +41,13 @@ import java.util.Iterator;
 @Emulated
 public class DrmUtils {
     /* Should be used when we need to read from local file */
-    public static byte[] readBytes(String path) throws IOException {
+    /* package */ static byte[] readBytes(String path) throws IOException {
         File file = new File(path);
         return readBytes(file);
     }
 
     /* Should be used when we need to read from local file */
-    public static byte[] readBytes(File file) throws IOException {
+    /* package */ static byte[] readBytes(File file) throws IOException {
         FileInputStream inputStream = new FileInputStream(file);
         BufferedInputStream bufferedStream = new BufferedInputStream(inputStream);
         byte[] data = null;
@@ -66,7 +66,7 @@ public class DrmUtils {
         return data;
     }
 
-    private static void writeToFile(final String path, byte[] data) throws IOException {
+    /* package */ static void writeToFile(final String path, byte[] data) throws IOException {
         /* check for invalid inputs */
         FileOutputStream outputStream = null;
 
@@ -80,7 +80,7 @@ public class DrmUtils {
         }
     }
 
-    private static void removeFile(String path) throws IOException {
+    /* package */ static void removeFile(String path) throws IOException {
         File file = new File(path);
         file.delete();
     }
@@ -123,7 +123,7 @@ public class DrmUtils {
      * }
      */
     public static class ExtendedMetadataParser {
-        private HashMap<String, String> mMap = new HashMap<String, String>();
+        HashMap<String, String> mMap = new HashMap<String, String>();
 
         private int readByte(byte[] constraintData, int arrayIndex) {
             //Convert byte[] into int.

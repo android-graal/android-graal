@@ -16,6 +16,7 @@
 
 package android.system;
 
+import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
 
 /**
@@ -50,13 +51,14 @@ public final class StructUtsname {
         this.machine = machine;
     }
 
+    @Adapted(reason = "Objects.toString's output spelled out over the fields in name order")
     @Override public String toString() {
-        // ART's reflective toString lists the fields in dex order, which is by name.
         return "StructUtsname[machine=" + quoted(machine) + ",nodename=" + quoted(nodename)
                 + ",release=" + quoted(release) + ",sysname=" + quoted(sysname) + ",version="
                 + quoted(version) + "]";
     }
 
+    @Adapted(reason = "a String field as Objects.toString prints it")
     private static String quoted(String value) {
         return value == null ? "null" : "\"" + value + "\"";
     }

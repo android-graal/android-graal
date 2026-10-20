@@ -16,6 +16,7 @@
 
 package android.system;
 
+import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
 
 /**
@@ -116,8 +117,8 @@ public final class StructStat {
         this.st_blocks = st_blocks;
     }
 
+    @Adapted(reason = "Objects.toString's output spelled out over the fields in name order")
     @Override public String toString() {
-        // ART's reflective toString lists the fields in dex order, which is by name.
         return "StructStat[st_atim=" + st_atim + ",st_atime=" + st_atime + ",st_blksize="
                 + st_blksize + ",st_blocks=" + st_blocks + ",st_ctim=" + st_ctim + ",st_ctime="
                 + st_ctime + ",st_dev=" + st_dev + ",st_gid=" + st_gid + ",st_ino=" + st_ino

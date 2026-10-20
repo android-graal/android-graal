@@ -1,0 +1,27 @@
+--- a/emulation/svm/src/main/java/android/system/StructTimespec.java
++++ b/emulation/svm/src/main/java/android/system/StructTimespec.java
+@@ -16,11 +16,13 @@
+ 
+ package android.system;
+ 
+-import libcore.util.Objects;;
++import org.androidgraal.hosted.annotate.Adapted;
++import org.androidgraal.hosted.annotate.Emulated;
+ 
+ /**
+  * Corresponds to C's {@code struct timespec} from {@code <time.h>}.
+  */
++@Emulated
+ public final class StructTimespec implements Comparable<StructTimespec> {
+     /** Seconds part of time of last data modification. */
+     public final long tv_sec; /*time_t*/
+@@ -73,7 +75,8 @@
+     }
+ 
+     @Override
++    @Adapted(reason = "Objects.toString's output spelled out over the fields in name order")
+     public String toString() {
+-        return Objects.toString(this);
++        return "StructTimespec[tv_nsec=" + tv_nsec + ",tv_sec=" + tv_sec + "]";
+     }
+ }

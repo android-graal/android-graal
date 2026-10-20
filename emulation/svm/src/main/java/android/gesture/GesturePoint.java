@@ -38,7 +38,7 @@ public class GesturePoint {
         timestamp = t;
     }
 
-    private static GesturePoint deserialize(DataInputStream in) throws IOException {
+    static GesturePoint deserialize(DataInputStream in) throws IOException {
         // Read X and Y
         final float x = in.readFloat();
         final float y = in.readFloat();

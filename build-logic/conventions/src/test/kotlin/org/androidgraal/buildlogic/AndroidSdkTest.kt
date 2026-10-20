@@ -123,6 +123,13 @@ class AndroidSdkTest {
         assertEquals(File(sdk.root, "platforms/android-36/android.jar"), sdk.androidJar(36))
     }
 
+    @Test
+    fun `sources is the platform's sources package whether or not it is installed`() {
+        val sdk = sdk("sources-sdk")
+
+        assertEquals(File(sdk.root, "sources/android-36"), sdk.androidSources(36))
+    }
+
     private fun sdk(name: String): AndroidSdk {
         val root = File(tmp, name)
         root.mkdirs()

@@ -470,11 +470,11 @@ public final class AudioMetadata {
 
         private ByteBuffer mBuffer;
 
-        private AutoGrowByteBuffer() {
+        AutoGrowByteBuffer() {
             this(1024);
         }
 
-        private AutoGrowByteBuffer(@IntRange(from = 0) int initialCapacity) {
+        AutoGrowByteBuffer(@IntRange(from = 0) int initialCapacity) {
             mBuffer = ByteBuffer.allocateDirect(initialCapacity);
         }
 

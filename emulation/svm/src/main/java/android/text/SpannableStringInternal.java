@@ -33,7 +33,7 @@ import java.lang.reflect.Array;
 @Emulated
 /* package */ abstract class SpannableStringInternal
 {
-    public SpannableStringInternal(CharSequence source,
+    /* package */ SpannableStringInternal(CharSequence source,
                                           int start, int end, boolean ignoreNoCopySpan) {
         if (start == 0 && end == source.length())
             mText = source.toString();
@@ -60,7 +60,7 @@ import java.lang.reflect.Array;
      * Due to backward compatibility reasons, we copy even NoCopySpan by default
      */
     @UnsupportedAppUsage
-    public SpannableStringInternal(CharSequence source, int start, int end) {
+    /* package */ SpannableStringInternal(CharSequence source, int start, int end) {
         this(source, start, end, false /* ignoreNoCopySpan */);
     }
 
@@ -186,7 +186,7 @@ import java.lang.reflect.Array;
     }
 
     @UnsupportedAppUsage
-    public void setSpan(Object what, int start, int end, int flags) {
+    /* package */ void setSpan(Object what, int start, int end, int flags) {
         setSpan(what, start, end, flags, true/*enforceParagraph*/);
     }
 
@@ -263,7 +263,7 @@ import java.lang.reflect.Array;
     }
 
     @UnsupportedAppUsage
-    public void removeSpan(Object what) {
+    /* package */ void removeSpan(Object what) {
         removeSpan(what, 0 /* flags */);
     }
 
@@ -582,7 +582,7 @@ import java.lang.reflect.Array;
     private int mSpanCount;
 
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
-    private static final Object[] EMPTY = new Object[0];
+    /* package */ static final Object[] EMPTY = new Object[0];
 
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     private static final int START = 0;

@@ -74,6 +74,7 @@ import org.androidgraal.bionic.Unistd;
 import org.androidgraal.bionic.Utsname;
 import org.androidgraal.bionic.Vm;
 import org.androidgraal.bionic.Xattr;
+import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
 import org.graalvm.nativeimage.PinnedObject;
 import org.graalvm.nativeimage.StackValue;
@@ -116,6 +117,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/accept.2.html">accept(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1018-L1030",
+            reason = "the native's body in Java over bionic with BlockGuardOs's socket probes instead of Libcore.os")
     public static FileDescriptor accept(FileDescriptor fd, InetSocketAddress peerAddress) throws ErrnoException, SocketException {
         if (isUnixSocket(fd)) {
             isNonBlockingFile(fd);
@@ -144,6 +147,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/access.2.html">access(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1032-L1042",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static boolean access(String path, int mode) throws ErrnoException {
         try (ScopedUtfChars pathChars = new ScopedUtfChars(path)) {
             int rc = (int) tempFailureRetry(() -> Unistd.access(pathChars.get(), mode));
@@ -157,6 +162,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/bind.2.html">bind(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1044-L1047",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void bind(FileDescriptor fd, InetAddress address, int port) throws ErrnoException, SocketException {
         Socket.sockaddr_storage ss = StackValue.get(Socket.sockaddr_storage.class);
         int saLength = inetAddressToSockaddr(address, port, ss, true);
@@ -175,6 +182,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/bind.2.html">bind(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1049-L1069",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void bind(@NonNull FileDescriptor fd, @NonNull SocketAddress address) throws ErrnoException, SocketException {
         if (address instanceof InetSocketAddress inet) {
             bind(fd, inet.getAddress(), inet.getPort());
@@ -188,6 +197,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/chmod.2.html">chmod(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1148-L1154",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void chmod(String path, int mode) throws ErrnoException {
         try (ScopedUtfChars pathChars = new ScopedUtfChars(path)) {
             throwIfMinusOne("chmod",
@@ -198,6 +209,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/chown.2.html">chown(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1156-L1162",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void chown(String path, int uid, int gid) throws ErrnoException {
         try (ScopedUtfChars pathChars = new ScopedUtfChars(path)) {
             throwIfMinusOne("chown",
@@ -208,6 +221,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/close.2.html">close(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1164-L1187",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void close(FileDescriptor fd) throws ErrnoException {
         if (fd == null) {
             throw new NullPointerException("null fd");
@@ -218,6 +233,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/connect.2.html">connect(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1230-L1232",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void connect(FileDescriptor fd, InetAddress address, int port) throws ErrnoException, SocketException {
         Socket.sockaddr_storage ss = StackValue.get(Socket.sockaddr_storage.class);
         int saLength = inetAddressToSockaddr(address, port, ss, true);
@@ -236,6 +253,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/connect.2.html">connect(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1234-L1254",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void connect(@NonNull FileDescriptor fd, @NonNull SocketAddress address) throws ErrnoException, SocketException {
         if (address instanceof InetSocketAddress inet) {
             connect(fd, inet.getAddress(), inet.getPort());
@@ -249,6 +268,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/dup.2.html">dup(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1256-L1260",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static FileDescriptor dup(FileDescriptor oldFd) throws ErrnoException {
         return FileDescriptors.create((int) throwIfMinusOne("dup",
                 tempFailureRetry(() -> Unistd.dup(fd(oldFd))), errno()));
@@ -257,6 +278,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/dup2.2.html">dup2(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1262-L1266",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static FileDescriptor dup2(FileDescriptor oldFd, int newFd) throws ErrnoException {
         return FileDescriptors.create((int) throwIfMinusOne("dup2",
                 tempFailureRetry(() -> Unistd.dup2(fd(oldFd), newFd)), errno()));
@@ -265,6 +288,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man3/environ.3.html">environ(3)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1268-L1271",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static String[] environ() {
         PointerBase symbol;
         try (ScopedUtfChars nameChars = new ScopedUtfChars("environ")) {
@@ -277,6 +302,8 @@ public final class Os {
     /**
      * See <a href="https://man7.org/linux/man-pages/man3/execv.3.html">exec(3)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1286-L1296",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void execv(String filename, String[] argv) throws ErrnoException {
         try (ScopedUtfChars filenameChars = new ScopedUtfChars(filename);
                 CCharPointerPointerHolder argvChars = strings(argv)) {
@@ -288,6 +315,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/execve.2.html">execve(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1273-L1284",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void execve(String filename, String[] argv, String[] envp) throws ErrnoException {
         try (ScopedUtfChars filenameChars = new ScopedUtfChars(filename);
                 CCharPointerPointerHolder argvChars = strings(argv);
@@ -301,6 +330,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/fchmod.2.html">fchmod(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1298-L1301",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void fchmod(FileDescriptor fd, int mode) throws ErrnoException {
         throwIfMinusOne("fchmod", tempFailureRetry(() -> Stat.fchmod(fd(fd), mode)), errno());
     }
@@ -308,6 +339,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/fchown.2.html">fchown(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1303-L1306",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void fchown(FileDescriptor fd, int uid, int gid) throws ErrnoException {
         throwIfMinusOne("fchown",
                 tempFailureRetry(() -> Unistd.fchown(fd(fd), uid, gid)), errno());
@@ -316,12 +349,16 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/fcntl.2.html">fcntl(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1308-L1311",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static int fcntlInt(@NonNull FileDescriptor fd, int cmd, int arg) throws ErrnoException {
         return (int) throwIfMinusOne("fcntl",
                 tempFailureRetry(() -> Fcntl.fcntl(fd(fd), cmd, arg)), errno());
     }
 
     /** @hide */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1313-L1316",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static int fcntlVoid(FileDescriptor fd, int cmd) throws ErrnoException {
         return (int) throwIfMinusOne("fcntl",
                 tempFailureRetry(() -> Fcntl.fcntl(fd(fd), cmd)), errno());
@@ -330,6 +367,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/fdatasync.2.html">fdatasync(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1318-L1321",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void fdatasync(FileDescriptor fd) throws ErrnoException {
         throwIfMinusOne("fdatasync", tempFailureRetry(() -> Unistd.fdatasync(fd(fd))), errno());
     }
@@ -337,6 +376,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/fstat.2.html">fstat(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1323-L1332",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static StructStat fstat(FileDescriptor fd) throws ErrnoException {
         Scoped<Stat.stat64> sb = Scoped.of(StackValue.get(Stat.stat64.class));
         int rc = (int) tempFailureRetry(() -> Stat.fstat64(fd(fd), sb.get()));
@@ -349,6 +390,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/fstatvfs.2.html">fstatvfs(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1334-L1343",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static StructStatVfs fstatvfs(FileDescriptor fd) throws ErrnoException {
         Scoped<Statvfs.statvfs> sb = Scoped.of(StackValue.get(Statvfs.statvfs.class));
         int rc = (int) tempFailureRetry(() -> Statvfs.fstatvfs(fd(fd), sb.get()));
@@ -361,6 +404,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/fsync.2.html">fsync(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1345-L1348",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void fsync(FileDescriptor fd) throws ErrnoException {
         throwIfMinusOne("fsync", tempFailureRetry(() -> Unistd.fsync(fd(fd))), errno());
     }
@@ -368,6 +413,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/ftruncate.2.html">ftruncate(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1350-L1353",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void ftruncate(FileDescriptor fd, long length) throws ErrnoException {
         throwIfMinusOne("ftruncate",
                 tempFailureRetry(() -> Unistd.ftruncate64(fd(fd), length)), errno());
@@ -376,26 +423,33 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man3/gai_strerror.3.html">gai_strerror(3)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1355-L1357",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static String gai_strerror(int error) { return CString.toJava(Netdb.gai_strerror(error)); }
 
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/getegid.2.html">getegid(2)</a>.
      */
+    @Adapted(reason = "Linux's Java body instead of Libcore.os")
     public static int getegid() { return nativeGetegid(); }
 
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/geteuid.2.html">geteuid(2)</a>.
      */
+    @Adapted(reason = "Linux's Java body instead of Libcore.os")
     public static int geteuid() { return nativeGeteuid(); }
 
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/getgid.2.html">getgid(2)</a>.
      */
+    @Adapted(reason = "Linux's Java body instead of Libcore.os")
     public static int getgid() { return nativeGetgid(); }
 
     /**
      * See <a href="http://man7.org/linux/man-pages/man3/getenv.3.html">getenv(3)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1438-L1444",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static String getenv(String name) {
         try (ScopedUtfChars nameChars = new ScopedUtfChars(name)) {
             return CString.toJava(Stdlib.getenv(nameChars.get()));
@@ -405,22 +459,58 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/getpeername.2.html">getpeername(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1462-L1464",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static SocketAddress getpeername(FileDescriptor fd) throws ErrnoException { return doGetSockName(fd, false); }
 
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/getpid.2.html">getpid(2)</a>.
      */
+    @Adapted(reason = "Linux's Java body instead of Libcore.os")
     public static int getpid() { return nativeGetpid(); }
 
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/getppid.2.html">getppid(2)</a>.
      */
+    @Adapted(reason = "Linux's Java body instead of Libcore.os")
     public static int getppid() { return nativeGetppid(); }
 
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/getsockname.2.html">getsockname(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1506-L1508",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static SocketAddress getsockname(FileDescriptor fd) throws ErrnoException { return doGetSockName(fd, true); }
+
+    /**
+     * Gets socket options for the socket referred to by the file descriptor {@code fd}.
+     *
+     * See <a href="https://man7.org/linux/man-pages/man2/getsockopt.2.html">getsockopt(2)</a>.
+     * For the list of available options see <a href="https://man7.org/linux/man-pages/man7/socket.7.html">socket(7)</a>.
+     *
+     * @param fd    file descriptor of the socket to get options of
+     * @param level level at which the {@code option} resides. For example,
+     *              to indicate that an option is to be interpreted by the TCP protocol,
+     *              level should be set to the protocol number of TCP
+     * @param option name of the option to get
+     * @return socket options for file descriptor {@code fd}
+     * @throws ErrnoException if {@code fd} is invalid; or
+     *                        {@code option} is unknown at given {@code level}
+     *
+     * @hide
+     */
+    @SystemApi(client = MODULE_LIBRARIES)
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1533-L1539",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
+    public static int getsockoptInt(@NonNull FileDescriptor fd, int level, int option) throws ErrnoException {
+        Scoped<CIntPointer> result = Scoped.of(StackValue.get(CIntPointer.class));
+        result.get().write(0);
+        Scoped<CIntPointer> size = Scoped.of(StackValue.get(CIntPointer.class));
+        size.get().write(Integer.BYTES);
+        throwIfMinusOne("getsockopt", tempFailureRetry(() -> Socket.getsockopt(fd(fd), level,
+                option, result.get(), size.get())), errno());
+        return result.get().read();
+    }
 
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/setsockopt.2.html">getsockopt(2)</a>.
@@ -429,6 +519,8 @@ public final class Os {
      * {@link OsConstants#SO_RCVTIMEO} and {@link OsConstants#SO_SNDTIMEO}. Use with other
      * options may throw an {@code IllegalArgumentException} or return junk values.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1554-L1572",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static @NonNull StructTimeval getsockoptTimeval(@NonNull FileDescriptor fd, int level, int option) throws ErrnoException {
         Scoped<Time.timeval> tv = Scoped.of(StackValue.get(Time.timeval.class));
         Strings.memset(tv.get(), 0, SizeOf.unsigned(Time.timeval.class));
@@ -449,16 +541,20 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/gettid.2.html">gettid(2)</a>.
      */
+    @Adapted(reason = "Linux's Java body instead of Libcore.os")
     public static int gettid() { return nativeGettid(); }
 
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/getuid.2.html">getuid(2)</a>.
      */
+    @Adapted(reason = "Linux's Java body instead of Libcore.os")
     public static int getuid() { return nativeGetuid(); }
 
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/getxattr.2.html">getxattr(2)</a>
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1599-L1636",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static byte[] getxattr(String path, String name) throws ErrnoException {
         try (ScopedUtfChars pathChars = new ScopedUtfChars(path);
                 ScopedUtfChars nameChars = new ScopedUtfChars(name)) {
@@ -489,6 +585,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man3/if_indextoname.3.html">if_indextoname(3)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1739-L1745",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static String if_indextoname(int index) {
         byte[] buf = new byte[Net.IF_NAMESIZE()];
         try (PinnedObject pin = PinnedObject.create(buf)) {
@@ -500,6 +598,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man3/if_nametoindex.3.html">if_nametoindex(3)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1747-L1755",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static int if_nametoindex(String name) {
         try (ScopedUtfChars nameChars = new ScopedUtfChars(name)) {
             return Net.if_nametoindex(nameChars.get());
@@ -509,6 +609,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man3/inet_pton.3.html">inet_pton(3)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1757-L1777",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static InetAddress inet_pton(int family, String address) {
         try (ScopedUtfChars addressChars = new ScopedUtfChars(address)) {
             Socket.sockaddr_storage ss = StackValue.get(Socket.sockaddr_storage.class);
@@ -532,6 +634,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man3/isatty.3.html">isatty(3)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1820-L1823",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static boolean isatty(FileDescriptor fd) {
         return tempFailureRetry(() -> Unistd.isatty(fd(fd))) == 1;
     }
@@ -539,6 +643,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/kill.2.html">kill(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1825-L1827",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void kill(int pid, int signal) throws ErrnoException {
         throwIfMinusOne("kill", tempFailureRetry(() -> Signal.kill(pid, signal)), errno());
     }
@@ -546,6 +652,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/lchown.2.html">lchown(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1829-L1835",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void lchown(String path, int uid, int gid) throws ErrnoException {
         try (ScopedUtfChars pathChars = new ScopedUtfChars(path)) {
             throwIfMinusOne("lchown",
@@ -556,6 +664,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/link.2.html">link(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1837-L1847",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void link(String oldPath, String newPath) throws ErrnoException {
         try (ScopedUtfChars oldPathChars = new ScopedUtfChars(oldPath);
                 ScopedUtfChars newPathChars = new ScopedUtfChars(newPath)) {
@@ -567,6 +677,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/listen.2.html">listen(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1849-L1852",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void listen(FileDescriptor fd, int backlog) throws ErrnoException {
         throwIfMinusOne("listen", tempFailureRetry(() -> Socket.listen(fd(fd), backlog)), errno());
     }
@@ -574,6 +686,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/listxattr.2.html">listxattr(2)</a>
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1854-L1887",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static String[] listxattr(String path) throws ErrnoException {
         try (ScopedUtfChars pathChars = new ScopedUtfChars(path)) {
             while (true) {
@@ -605,6 +719,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/lseek.2.html">lseek(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1889-L1892",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static long lseek(FileDescriptor fd, long offset, int whence) throws ErrnoException {
         return throwIfMinusOne("lseek",
                 tempFailureRetry(() -> Unistd.lseek64(fd(fd), offset, whence)), errno());
@@ -613,11 +729,15 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/lstat.2.html">lstat(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1894-L1896",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static StructStat lstat(String path) throws ErrnoException { return doStat(path, true); }
 
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/memfd_create.2.html">memfd_create(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1903-L1910",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static @NonNull FileDescriptor memfd_create(@NonNull String name, int flags) throws ErrnoException {
         try (ScopedUtfChars nameChars = new ScopedUtfChars(name)) {
             SignedWord number = WordFactory.signed(Syscall.__NR_memfd_create());
@@ -629,6 +749,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/mincore.2.html">mincore(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1912-L1920",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void mincore(long address, long byteCount, byte[] vector) throws ErrnoException {
         try (ScopedBytes vectorBytes = new ScopedBytes(vector)) {
             throwIfMinusOne("mincore", tempFailureRetry(() -> Mman.mincore(
@@ -640,6 +762,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/mkdir.2.html">mkdir(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1922-L1928",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void mkdir(String path, int mode) throws ErrnoException {
         try (ScopedUtfChars pathChars = new ScopedUtfChars(path)) {
             throwIfMinusOne("mkdir",
@@ -650,6 +774,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man3/mkfifo.3.html">mkfifo(3)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1930-L1936",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void mkfifo(String path, int mode) throws ErrnoException {
         try (ScopedUtfChars pathChars = new ScopedUtfChars(path)) {
             throwIfMinusOne("mkfifo",
@@ -660,6 +786,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/mlock.2.html">mlock(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1938-L1941",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void mlock(long address, long byteCount) throws ErrnoException {
         throwIfMinusOne("mlock", tempFailureRetry(() -> Mman.mlock(WordFactory.pointer(address),
                 WordFactory.unsigned(byteCount))), errno());
@@ -668,6 +796,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/mmap.2.html">mmap(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1943-L1951",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static long mmap(long address, long byteCount, int prot, int flags, FileDescriptor fd, long offset) throws ErrnoException {
         PointerBase ptr = Mman.mmap64(WordFactory.pointer(address),
                 WordFactory.unsigned(byteCount), prot, flags, fd(fd), offset);
@@ -680,6 +810,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/msync.2.html">msync(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1953-L1956",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void msync(long address, long byteCount, int flags) throws ErrnoException {
         throwIfMinusOne("msync", tempFailureRetry(() -> Mman.msync(WordFactory.pointer(address),
                 WordFactory.unsigned(byteCount), flags)), errno());
@@ -688,6 +820,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/munlock.2.html">munlock(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1958-L1961",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void munlock(long address, long byteCount) throws ErrnoException {
         throwIfMinusOne("munlock", tempFailureRetry(() -> Mman.munlock(
                 WordFactory.pointer(address), WordFactory.unsigned(byteCount))), errno());
@@ -696,6 +830,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/munmap.2.html">munmap(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1963-L1966",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void munmap(long address, long byteCount) throws ErrnoException {
         throwIfMinusOne("munmap", tempFailureRetry(() -> Mman.munmap(WordFactory.pointer(address),
                 WordFactory.unsigned(byteCount))), errno());
@@ -704,6 +840,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/open.2.html">open(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1968-L1975",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static FileDescriptor open(String path, int flags, int mode) throws ErrnoException {
         try (ScopedUtfChars pathChars = new ScopedUtfChars(path)) {
             return FileDescriptors.create((int) throwIfMinusOne("open",
@@ -714,6 +852,7 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/pipe.2.html">pipe(2)</a>.
      */
+    @Adapted(reason = "calls pipe2 directly instead of Libcore.os")
     public static FileDescriptor[] pipe() throws ErrnoException { return pipe2(0); }
 
     /**
@@ -737,6 +876,8 @@ public final class Os {
      * @hide
      */
     @SystemApi(client = MODULE_LIBRARIES)
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1977-L1997",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static @Nullable FileDescriptor[] pipe2(int flags) throws ErrnoException {
         Scoped<CIntPointer> fds = Scoped.of(StackValue.get(2, CIntPointer.class));
         throwIfMinusOne("pipe2", tempFailureRetry(() -> Unistd.pipe2(fds.get(), flags)), errno());
@@ -751,6 +892,8 @@ public final class Os {
      * In later releases, the implementation will automatically just restart the system call with
      * an appropriately reduced timeout.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1999-L2078",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static int poll(StructPollfd[] fds, int timeoutMs) throws ErrnoException {
         int arrayLength = fds.length;
         Poll.pollfd pollFds = UnmanagedMemory.calloc(arrayLength * SizeOf.get(Poll.pollfd.class));
@@ -810,6 +953,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man3/posix_fallocate.3.html">posix_fallocate(3)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2080-L2088",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void posix_fallocate(FileDescriptor fd, long offset, long length) throws ErrnoException {
         int error;
         do {
@@ -823,6 +968,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/prctl.2.html">prctl(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2090-L2098",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static int prctl(int option, long arg2, long arg3, long arg4, long arg5) throws ErrnoException {
         return (int) throwIfMinusOne("prctl",
                 tempFailureRetry(() -> Prctl.prctl(option, WordFactory.unsigned(arg2),
@@ -833,6 +980,7 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/pread.2.html">pread(2)</a>.
      */
+    @Adapted(reason = "Linux's Java body instead of Libcore.os")
     public static int pread(FileDescriptor fd, ByteBuffer buffer, long offset) throws ErrnoException, InterruptedIOException {
         final int position = buffer.position();
         final int bytesRead;
@@ -849,6 +997,7 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/pread.2.html">pread(2)</a>.
      */
+    @Adapted(reason = "Linux's Java body instead of Libcore.os")
     public static int pread(FileDescriptor fd, byte[] bytes, int byteOffset, int byteCount, long offset) throws ErrnoException, InterruptedIOException {
         return preadBytes(fd, bytes, byteOffset, byteCount, offset);
     }
@@ -856,6 +1005,7 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/pwrite.2.html">pwrite(2)</a>.
      */
+    @Adapted(reason = "Linux's Java body instead of Libcore.os")
     public static int pwrite(FileDescriptor fd, ByteBuffer buffer, long offset) throws ErrnoException, InterruptedIOException {
         final int position = buffer.position();
         final int bytesWritten;
@@ -872,6 +1022,7 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/pwrite.2.html">pwrite(2)</a>.
      */
+    @Adapted(reason = "Linux's Java body instead of Libcore.os")
     public static int pwrite(FileDescriptor fd, byte[] bytes, int byteOffset, int byteCount, long offset) throws ErrnoException, InterruptedIOException {
         return pwriteBytes(fd, bytes, byteOffset, byteCount, offset);
     }
@@ -879,6 +1030,7 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/read.2.html">read(2)</a>.
      */
+    @Adapted(reason = "Linux's Java body instead of Libcore.os")
     public static int read(FileDescriptor fd, ByteBuffer buffer) throws ErrnoException, InterruptedIOException {
         final int position = buffer.position();
         final int bytesRead;
@@ -895,6 +1047,7 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/read.2.html">read(2)</a>.
      */
+    @Adapted(reason = "Linux's Java body instead of Libcore.os")
     public static int read(FileDescriptor fd, byte[] bytes, int byteOffset, int byteCount) throws ErrnoException, InterruptedIOException {
         return readBytes(fd, bytes, byteOffset, byteCount);
     }
@@ -902,6 +1055,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/readlink.2.html">readlink(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2124-L2136",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static String readlink(String path) throws ErrnoException {
         try (ScopedUtfChars pathChars = new ScopedUtfChars(path)) {
             byte[] buf = new byte[4096];
@@ -925,6 +1080,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/readv.2.html">readv(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2153-L2159",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static int readv(FileDescriptor fd, Object[] buffers, int[] offsets, int[] byteCounts) throws ErrnoException, InterruptedIOException {
         try (IoVec ioVec = new IoVec(buffers.length)) {
             if (!ioVec.init(buffers, offsets, byteCounts)) {
@@ -938,6 +1095,7 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/recvfrom.2.html">recvfrom(2)</a>.
      */
+    @Adapted(reason = "Linux's Java body instead of Libcore.os")
     public static int recvfrom(FileDescriptor fd, ByteBuffer buffer, int flags, InetSocketAddress srcAddress) throws ErrnoException, SocketException {
         final int position = buffer.position();
         final int bytesReceived;
@@ -955,6 +1113,7 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/recvfrom.2.html">recvfrom(2)</a>.
      */
+    @Adapted(reason = "Linux's Java body instead of Libcore.os")
     public static int recvfrom(FileDescriptor fd, byte[] bytes, int byteOffset, int byteCount, int flags, InetSocketAddress srcAddress) throws ErrnoException, SocketException {
         return recvfromBytes(fd, bytes, byteOffset, byteCount, flags, srcAddress);
     }
@@ -962,6 +1121,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/recvmsg.2.html">recvmsg(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2183-L2236",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static int recvmsg(@NonNull FileDescriptor fd, @NonNull StructMsghdr msg, int flags) throws ErrnoException, SocketException {
         if (msg == null) {
             throw new NullPointerException("missing structMsghdr");
@@ -1004,6 +1165,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man3/remove.3.html">remove(3)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2239-L2245",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void remove(String path) throws ErrnoException {
         try (ScopedUtfChars pathChars = new ScopedUtfChars(path)) {
             throwIfMinusOne("remove",
@@ -1014,6 +1177,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/removexattr.2.html">removexattr(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2247-L2261",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void removexattr(String path, String name) throws ErrnoException {
         try (ScopedUtfChars pathChars = new ScopedUtfChars(path);
                 ScopedUtfChars nameChars = new ScopedUtfChars(name)) {
@@ -1028,6 +1193,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/rename.2.html">rename(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2263-L2273",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void rename(String oldPath, String newPath) throws ErrnoException {
         try (ScopedUtfChars oldPathChars = new ScopedUtfChars(oldPath);
                 ScopedUtfChars newPathChars = new ScopedUtfChars(newPath)) {
@@ -1039,6 +1206,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/sendfile.2.html">sendfile(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2275-L2292",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static long sendfile(FileDescriptor outFd, FileDescriptor inFd, Int64Ref offset, long byteCount) throws ErrnoException {
         CLongPointer slot = StackValue.get(CLongPointer.class);
         Scoped<CLongPointer> offsetPtr =
@@ -1057,6 +1226,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/sendmsg.2.html">sendmsg(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2294-L2357",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static int sendmsg(@NonNull FileDescriptor fd, @NonNull StructMsghdr msg, int flags) throws ErrnoException, SocketException {
         if (msg == null) {
             throw new NullPointerException("missing structMsghdr");
@@ -1095,6 +1266,7 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/sendto.2.html">sendto(2)</a>.
      */
+    @Adapted(reason = "Linux's Java body instead of Libcore.os")
     public static int sendto(FileDescriptor fd, ByteBuffer buffer, int flags, InetAddress inetAddress, int port) throws ErrnoException, SocketException {
         final int position = buffer.position();
         final int bytesSent;
@@ -1112,6 +1284,7 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/sendto.2.html">sendto(2)</a>.
      */
+    @Adapted(reason = "Linux's Java body instead of Libcore.os")
     public static int sendto(FileDescriptor fd, byte[] bytes, int byteOffset, int byteCount, int flags, InetAddress inetAddress, int port) throws ErrnoException, SocketException {
         return sendtoBytes(fd, bytes, byteOffset, byteCount, flags, inetAddress, port);
     }
@@ -1119,6 +1292,7 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/sendto.2.html">sendto(2)</a>.
      */
+    @Adapted(reason = "Linux's Java body instead of Libcore.os")
     public static int sendto(@NonNull FileDescriptor fd, @NonNull byte[] bytes, int byteOffset, int byteCount, int flags, @Nullable SocketAddress address) throws ErrnoException, SocketException {
         return sendtoBytes(fd, bytes, byteOffset, byteCount, flags, address);
     }
@@ -1128,6 +1302,8 @@ public final class Os {
      * @deprecated Android Applications do not have sufficient privileges to call this method.
      */
     @Deprecated
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2404-L2406",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void setegid(int egid) throws ErrnoException {
         throwIfMinusOne("setegid", tempFailureRetry(() -> Unistd.setegid(egid)), errno());
     }
@@ -1135,6 +1311,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man3/setenv.3.html">setenv(3)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2408-L2418",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void setenv(String name, String value, boolean overwrite) throws ErrnoException {
         try (ScopedUtfChars nameChars = new ScopedUtfChars(name);
                 ScopedUtfChars valueChars = new ScopedUtfChars(value)) {
@@ -1148,6 +1326,8 @@ public final class Os {
      * @deprecated Android Applications do not have sufficient privileges to call this method.
      */
     @Deprecated
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2420-L2422",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void seteuid(int euid) throws ErrnoException {
         throwIfMinusOne("seteuid", tempFailureRetry(() -> Unistd.seteuid(euid)), errno());
     }
@@ -1157,6 +1337,8 @@ public final class Os {
      * @deprecated Android Applications do not have sufficient privileges to call this method.
      */
     @Deprecated
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2424-L2426",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void setgid(int gid) throws ErrnoException {
         throwIfMinusOne("setgid", tempFailureRetry(() -> Unistd.setgid(gid)), errno());
     }
@@ -1164,6 +1346,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/setsid.2.html">setsid(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2440-L2442",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static int setsid() throws ErrnoException {
         return (int) throwIfMinusOne("setsid", tempFailureRetry(() -> Unistd.setsid()), errno());
     }
@@ -1171,6 +1355,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/setsockopt.2.html">setsockopt(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2459-L2462",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void setsockoptInt(FileDescriptor fd, int level, int option, int value) throws ErrnoException {
         Scoped<CIntPointer> v = Scoped.of(StackValue.get(CIntPointer.class));
         v.get().write(value);
@@ -1185,6 +1371,8 @@ public final class Os {
      * {@link OsConstants#SO_RCVTIMEO} and {@link OsConstants#SO_SNDTIMEO}. Use with other
      * options is likely to cause incorrect behavior.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2515-L2528",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void setsockoptTimeval(@NonNull FileDescriptor fd, int level, int option, @NonNull StructTimeval value) throws ErrnoException {
         if (value == null) {
             throw new NullPointerException("null javaTimeval");
@@ -1201,6 +1389,8 @@ public final class Os {
      * @deprecated Android Applications do not have sufficient privileges to call this method.
      */
     @Deprecated
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2530-L2532",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void setuid(int uid) throws ErrnoException {
         throwIfMinusOne("setuid", tempFailureRetry(() -> Unistd.setuid(uid)), errno());
     }
@@ -1208,6 +1398,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/setxattr.2.html">setxattr(2)</a>
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2534-L2553",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void setxattr(String path, String name, byte[] value, int flags) throws ErrnoException {
         try (ScopedUtfChars pathChars = new ScopedUtfChars(path);
                 ScopedUtfChars nameChars = new ScopedUtfChars(name);
@@ -1224,6 +1416,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/shutdown.2.html">shutdown(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2555-L2558",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void shutdown(FileDescriptor fd, int how) throws ErrnoException {
         throwIfMinusOne("shutdown", tempFailureRetry(() -> Socket.shutdown(fd(fd), how)), errno());
     }
@@ -1231,6 +1425,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/socket.2.html">socket(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2560-L2566",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static FileDescriptor socket(int domain, int type, int protocol) throws ErrnoException {
         if (domain == AF_PACKET) {
             protocol = Short.toUnsignedInt(htons(protocol));
@@ -1243,6 +1439,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/socketpair.2.html">socketpair(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2568-L2583",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void socketpair(int domain, int type, int protocol, FileDescriptor fd1, FileDescriptor fd2) throws ErrnoException {
         if (fd1 == null) {
             throw new NullPointerException("null fd1");
@@ -1260,11 +1458,15 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/stat.2.html">stat(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2629-L2631",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static StructStat stat(String path) throws ErrnoException { return doStat(path, false); }
 
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/statvfs.2.html">statvfs(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2633-L2645",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static StructStatVfs statvfs(String path) throws ErrnoException {
         try (ScopedUtfChars pathChars = new ScopedUtfChars(path)) {
             Scoped<Statvfs.statvfs> sb = Scoped.of(StackValue.get(Statvfs.statvfs.class));
@@ -1279,16 +1481,22 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man3/strerror.3.html">strerror(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2647-L2660",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static String strerror(int errno) { return CString.toJava(Errno.strerror(errno)); }
 
     /**
      * See <a href="http://man7.org/linux/man-pages/man3/strsignal.3.html">strsignal(3)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2662-L2664",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static String strsignal(int signal) { return CString.toJava(Signal.strsignal(signal)); }
 
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/symlink.2.html">symlink(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2666-L2676",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void symlink(String oldPath, String newPath) throws ErrnoException {
         try (ScopedUtfChars oldPathChars = new ScopedUtfChars(oldPath);
                 ScopedUtfChars newPathChars = new ScopedUtfChars(newPath)) {
@@ -1300,6 +1508,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man3/sysconf.3.html">sysconf(3)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2678-L2686",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static long sysconf(int name) throws ErrnoException {
         Errno.errno().write(0);
         SignedWord result = Unistd.sysconf(name);
@@ -1313,6 +1523,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man3/tcdrain.3.html">tcdrain(3)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2688-L2691",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void tcdrain(FileDescriptor fd) throws ErrnoException {
         throwIfMinusOne("tcdrain", tempFailureRetry(() -> Termios.tcdrain(fd(fd))), errno());
     }
@@ -1320,6 +1532,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man3/tcsendbreak.3.html">tcsendbreak(3)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2693-L2696",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void tcsendbreak(FileDescriptor fd, int duration) throws ErrnoException {
         throwIfMinusOne("tcsendbreak",
                 tempFailureRetry(() -> Termios.tcsendbreak(fd(fd), duration)), errno());
@@ -1328,6 +1542,7 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/umask.2.html">umask(2)</a>.
      */
+    @Adapted(reason = "Linux's Java body instead of Libcore.os")
     public static int umask(int mask) {
         if ((mask & 0777) != mask) {
             throw new IllegalArgumentException("Invalid umask: " + mask);
@@ -1338,6 +1553,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/uname.2.html">uname(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2702-L2708",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static StructUtsname uname() {
         Scoped<Utsname.utsname> buf = Scoped.of(StackValue.get(Utsname.utsname.class));
         if (tempFailureRetry(() -> Utsname.uname(buf.get())) == -1) {
@@ -1349,6 +1566,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man3/unsetenv.3.html">unsetenv(3)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2718-L2724",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static void unsetenv(String name) throws ErrnoException {
         try (ScopedUtfChars nameChars = new ScopedUtfChars(name)) {
             throwIfMinusOne("unsetenv", Stdlib.unsetenv(nameChars.get()), errno());
@@ -1358,6 +1577,7 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/write.2.html">write(2)</a>.
      */
+    @Adapted(reason = "Linux's Java body instead of Libcore.os")
     public static int write(FileDescriptor fd, ByteBuffer buffer) throws ErrnoException, InterruptedIOException {
         final int position = buffer.position();
         final int bytesWritten;
@@ -1374,6 +1594,7 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/write.2.html">write(2)</a>.
      */
+    @Adapted(reason = "Linux's Java body instead of Libcore.os")
     public static int write(FileDescriptor fd, byte[] bytes, int byteOffset, int byteCount) throws ErrnoException, InterruptedIOException {
         return writeBytes(fd, bytes, byteOffset, byteCount);
     }
@@ -1381,6 +1602,8 @@ public final class Os {
     /**
      * See <a href="http://man7.org/linux/man-pages/man2/writev.2.html">writev(2)</a>.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2743-L2749",
+            reason = "the native's body in Java over bionic instead of Libcore.os")
     public static int writev(FileDescriptor fd, Object[] buffers, int[] offsets, int[] byteCounts) throws ErrnoException, InterruptedIOException {
         try (IoVec ioVec = new IoVec(buffers.length)) {
             if (!ioVec.init(buffers, offsets, byteCounts)) {
@@ -1391,10 +1614,13 @@ public final class Os {
         }
     }
 
+    @Adapted(reason = "reads bionic's errno")
     private static int errno() {
         return Errno.errno().read();
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L279-L285",
+            reason = "the native's throwIfMinusOne in Java")
     private static int throwIfMinusOne(String name, int rc, int errno) throws ErrnoException {
         if (rc == -1) {
             throw new ErrnoException(name, errno);
@@ -1402,6 +1628,8 @@ public final class Os {
         return rc;
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L279-L285",
+            reason = "the native's throwIfMinusOne in Java")
     private static long throwIfMinusOne(String name, long rc, int errno) throws ErrnoException {
         if (rc == -1) {
             throw new ErrnoException(name, errno);
@@ -1409,6 +1637,8 @@ public final class Os {
         return rc;
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L279-L285",
+            reason = "the native's throwIfMinusOne in Java")
     private static SignedWord throwIfMinusOne(String name, SignedWord rc, int errno)
             throws ErrnoException {
         if (rc.equal(-1)) {
@@ -1418,6 +1648,8 @@ public final class Os {
     }
 
     @AlwaysInline("the closure is scalar-replaced only when inlined")
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L159-L186",
+            reason = "the native's NET_FAILURE_RETRY in Java without AsynchronousCloseMonitor")
     private static SignedWord retry(String name, SystemCall call) throws ErrnoException {
         SignedWord rc;
         int errno;
@@ -1429,6 +1661,8 @@ public final class Os {
     }
 
     @AlwaysInline("the closure is scalar-replaced only when inlined")
+    @Adapted(value = "https://android.googlesource.com/platform/bionic/+/refs/tags/android-16.0.0_r1/libc/include/unistd.h#L420-L425",
+            reason = "bionic's TEMP_FAILURE_RETRY in Java")
     private static SignedWord tempFailureRetry(SystemCall call) {
         SignedWord rc;
         do {
@@ -1438,6 +1672,8 @@ public final class Os {
     }
 
     @AlwaysInline("the closure is scalar-replaced only when inlined")
+    @Adapted(value = "https://android.googlesource.com/platform/bionic/+/refs/tags/android-16.0.0_r1/libc/include/unistd.h#L420-L425",
+            reason = "bionic's TEMP_FAILURE_RETRY in Java")
     private static long tempFailureRetry(LongSystemCall call) {
         long rc;
         do {
@@ -1446,18 +1682,27 @@ public final class Os {
         return rc;
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libnativehelper/+/refs/tags/android-16.0.0_r1/include_platform/nativehelper/JNIPlatformHelp.h#L100-L105",
+            reason = "libnativehelper's jniGetFDFromFileDescriptor in Java")
     private static int fd(FileDescriptor fd) {
         return fd == null ? -1 : FileDescriptors.getFd(fd);
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/ExecStrings.cpp#L27-L42",
+            reason = "the native's ExecStrings in Java")
     private static CCharPointerPointerHolder strings(String[] values) {
         return values == null ? null : CString.of(values);
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/ExecStrings.cpp#L70-L72",
+            reason = "the native's ExecStrings.get in Java")
     private static CCharPointerPointer vector(CCharPointerPointerHolder holder) {
         return holder == null ? WordFactory.nullPointer() : holder.get();
     }
 
+    @Adapted(value = {"https://android.googlesource.com/platform/libnativehelper/+/refs/tags/android-16.0.0_r1/include/nativehelper/toStringArray.h#L27-L46",
+            "https://android.googlesource.com/platform/libnativehelper/+/refs/tags/android-16.0.0_r1/include/nativehelper/toStringArray.h#L52-L56"},
+            reason = "libnativehelper's toStringArray in Java")
     private static String[] toStringArray(CCharPointerPointer strings) {
         int count = 0;
         while (strings.read(count).isNonNull()) {
@@ -1470,6 +1715,7 @@ public final class Os {
         return result;
     }
 
+    @Adapted(reason = "BlockGuardOs's helper over Os instead of Libcore.os")
     private static boolean isNonBlockingFile(FileDescriptor fd) throws ErrnoException {
         int flag = fcntlInt(fd, F_GETFL, 0);
         if ((flag & O_NONBLOCK) != 0) {
@@ -1478,58 +1724,67 @@ public final class Os {
         return false;
     }
 
+    @Adapted(reason = "BlockGuardOs's helper over Os instead of Libcore.os")
     private static boolean isUnixSocket(FileDescriptor fd) throws ErrnoException {
         return getsockoptInt(fd, Socket.SOL_SOCKET(), Socket.SO_DOMAIN()) == AF_UNIX;
     }
 
+    @Adapted(reason = "BlockGuardOs's helper over Os instead of Libcore.os")
     private static boolean isInetSocket(FileDescriptor fd) throws ErrnoException {
         int domain = getsockoptInt(fd, Socket.SOL_SOCKET(), Socket.SO_DOMAIN());
         return domain == AF_INET || domain == AF_INET6;
     }
 
-    private static int getsockoptInt(@NonNull FileDescriptor fd, int level, int option)
-            throws ErrnoException {
-        Scoped<CIntPointer> result = Scoped.of(StackValue.get(CIntPointer.class));
-        result.get().write(0);
-        Scoped<CIntPointer> size = Scoped.of(StackValue.get(CIntPointer.class));
-        size.get().write(Integer.BYTES);
-        throwIfMinusOne("getsockopt", tempFailureRetry(() -> Socket.getsockopt(fd(fd), level,
-                option, result.get(), size.get())), errno());
-        return result.get().read();
-    }
-
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1426-L1428",
+            reason = "the native's body in Java over bionic")
     private static int nativeGetegid() {
         return Unistd.getegid();
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1430-L1432",
+            reason = "the native's body in Java over bionic")
     private static int nativeGeteuid() {
         return Unistd.geteuid();
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1434-L1436",
+            reason = "the native's body in Java over bionic")
     private static int nativeGetgid() {
         return Unistd.getgid();
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1470-L1472",
+            reason = "the native's body in Java over bionic")
     private static int nativeGetpid() {
         return (int) tempFailureRetry(() -> Unistd.getpid());
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1474-L1476",
+            reason = "the native's body in Java over bionic")
     private static int nativeGetppid() {
         return (int) tempFailureRetry(() -> Unistd.getppid());
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1587-L1593",
+            reason = "the native's body in Java over bionic")
     private static int nativeGettid() {
         return (int) tempFailureRetry(() -> Unistd.gettid());
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L1595-L1597",
+            reason = "the native's body in Java over bionic")
     private static int nativeGetuid() {
         return Unistd.getuid();
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2698-L2700",
+            reason = "the native's body in Java over bionic")
     private static int umaskImpl(int mask) {
         return Stat.umask(mask);
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2116-L2122",
+            reason = "the native's body in Java over bionic")
     private static int readBytes(FileDescriptor fd, Object javaBytes, int byteOffset,
             int byteCount) throws ErrnoException {
         try (ScopedBytes bytes = new ScopedBytes(javaBytes, byteOffset, byteCount)) {
@@ -1541,6 +1796,8 @@ public final class Os {
         }
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2735-L2741",
+            reason = "the native's body in Java over bionic")
     private static int writeBytes(FileDescriptor fd, Object javaBytes, int byteOffset,
             int byteCount) throws ErrnoException {
         try (ScopedBytes bytes = new ScopedBytes(javaBytes, byteOffset, byteCount)) {
@@ -1552,6 +1809,8 @@ public final class Os {
         }
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2100-L2106",
+            reason = "the native's body in Java over bionic")
     private static int preadBytes(FileDescriptor fd, Object javaBytes, int byteOffset,
             int byteCount, long offset) throws ErrnoException {
         try (ScopedBytes bytes = new ScopedBytes(javaBytes, byteOffset, byteCount)) {
@@ -1563,6 +1822,8 @@ public final class Os {
         }
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2108-L2114",
+            reason = "the native's body in Java over bionic")
     private static int pwriteBytes(FileDescriptor fd, Object javaBytes, int byteOffset,
             int byteCount, long offset) throws ErrnoException {
         try (ScopedBytes bytes = new ScopedBytes(javaBytes, byteOffset, byteCount)) {
@@ -1574,6 +1835,8 @@ public final class Os {
         }
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2161-L2181",
+            reason = "the native's body in Java over bionic")
     private static int recvfromBytes(FileDescriptor fd, Object javaBytes, int byteOffset,
             int byteCount, int flags, InetSocketAddress srcAddress) throws ErrnoException {
         try (ScopedBytes bytes = new ScopedBytes(javaBytes, byteOffset, byteCount)) {
@@ -1599,6 +1862,8 @@ public final class Os {
     }
 
     @AlwaysInline("a closure is inlined only while it is a trivial method, so it forwards here")
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2161-L2181",
+            reason = "the recvfrom call of the native's body")
     private static SignedWord recvfromCall(FileDescriptor fd, ScopedBytes bytes, int byteOffset,
             int byteCount, int flags, Scoped<Socket.sockaddr> from,
             Scoped<CIntPointer> fromLength) {
@@ -1606,6 +1871,8 @@ public final class Os {
                 WordFactory.unsigned(byteCount), flags, from.get(), fromLength.get());
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2359-L2367",
+            reason = "the native's body in Java over bionic")
     private static int sendtoBytes(FileDescriptor fd, Object javaBytes, int byteOffset,
             int byteCount, int flags, InetAddress inetAddress, int port) throws ErrnoException {
         try (ScopedBytes bytes = new ScopedBytes(javaBytes, byteOffset, byteCount)) {
@@ -1629,6 +1896,8 @@ public final class Os {
         }
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2369-L2402",
+            reason = "the native's body in Java over bionic")
     private static int sendtoBytes(FileDescriptor fd, Object javaBytes, int byteOffset,
             int byteCount, int flags, SocketAddress address) throws ErrnoException {
         if (address instanceof InetSocketAddress inet) {
@@ -1648,12 +1917,15 @@ public final class Os {
     }
 
     @AlwaysInline("the holders and the closure are scalar-replaced only when inlined")
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L2294-L2357",
+            reason = "the sendmsg call of the native's body")
     private static int sendmsgMsghdr(FileDescriptor fd, Scoped<Socket.msghdr> hdr, int flags)
             throws ErrnoException {
         return (int) Words.signExtended(
                 retry("sendmsg", () -> Socket.sendmsg(fd(fd), hdr.get(), flags)));
     }
 
+    @Adapted(reason = "Linux's maybeUpdateBufferPosition")
     private static void maybeUpdateBufferPosition(ByteBuffer buffer, int originalPosition,
             int bytesReadOrWritten) {
         if (bytesReadOrWritten > 0) {
@@ -1661,6 +1933,8 @@ public final class Os {
         }
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/NetworkUtilities.cpp#L105-L204",
+            reason = "the native's inetAddressToSockaddr in Java")
     private static int inetAddressToSockaddr(InetAddress inetAddress, int port,
             Socket.sockaddr_storage ss, boolean map) {
         Strings.memset(ss, 0, SizeOf.unsigned(Socket.sockaddr_storage.class));
@@ -1689,6 +1963,8 @@ public final class Os {
         return SizeOf.get(Netinet.sockaddr_in.class);
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L773-L797",
+            reason = "the native's javaSocketAddressToSockaddr in Java")
     private static int javaSocketAddressToSockaddr(SocketAddress address,
             Socket.sockaddr_storage ss) {
         Objects.requireNonNull(address);
@@ -1701,11 +1977,15 @@ public final class Os {
         throw new UnsupportedOperationException("unsupported SocketAddress subclass");
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L671-L677",
+            reason = "the native's javaInetSocketAddressToSockaddr in Java")
     private static int javaInetSocketAddressToSockaddr(InetSocketAddress address,
             Socket.sockaddr_storage ss) {
         return inetAddressToSockaddr(address.getAddress(), address.getPort(), ss, true);
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L756-L770",
+            reason = "the native's javaVmSocketAddressToSockaddr in Java")
     private static int javaVmSocketAddressToSockaddr(VmSocketAddress address,
             Socket.sockaddr_storage ss) {
         Strings.memset(ss, 0, SizeOf.unsigned(Socket.sockaddr_storage.class));
@@ -1716,6 +1996,8 @@ public final class Os {
         return SizeOf.get(Vm.sockaddr_vm.class);
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L636-L655",
+            reason = "the native's fillSocketAddress in Java")
     private static boolean fillSocketAddress(SocketAddress address, Socket.sockaddr_storage ss) {
         if (address instanceof InetSocketAddress inet) {
             fillInetSocketAddress(inet, ss);
@@ -1727,6 +2009,8 @@ public final class Os {
         throw new UnsupportedOperationException("unsupported SocketAddress subclass");
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L589-L610",
+            reason = "the native's fillInetSocketAddress in Java")
     private static void fillInetSocketAddress(InetSocketAddress address,
             Socket.sockaddr_storage ss) {
         if (address == null) {
@@ -1736,6 +2020,8 @@ public final class Os {
         SocketAddresses.fill(address, sender, port((Socket.sockaddr) ss));
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L613-L633",
+            reason = "the native's fillVmSocketAddress in Java")
     private static boolean fillVmSocketAddress(VmSocketAddress address,
             Socket.sockaddr_storage ss) {
         if (Short.toUnsignedInt(ss.ss_family()) != AF_VSOCK) {
@@ -1746,6 +2032,8 @@ public final class Os {
         return true;
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L389-L447",
+            reason = "the native's makeSocketAddress in Java")
     private static SocketAddress makeSocketAddress(Socket.sockaddr_storage ss) {
         int family = Short.toUnsignedInt(ss.ss_family());
         if (family == AF_INET || family == AF_INET6) {
@@ -1755,6 +2043,8 @@ public final class Os {
         throw new IllegalArgumentException("unsupported ss_family: " + family);
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/NetworkUtilities.cpp#L38-L103",
+            reason = "the native's sockaddrToInetAddress in Java")
     private static InetAddress sockaddrToInetAddress(Socket.sockaddr sa) {
         int family = Short.toUnsignedInt(sa.sa_family());
         CCharPointer sin6Addr = ((Netinet.sockaddr_in6) sa).sin6_addr();
@@ -1780,6 +2070,8 @@ public final class Os {
         }
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/NetworkUtilities.cpp#L38-L103",
+            reason = "the port half of the native's sockaddrToInetAddress")
     private static int port(Socket.sockaddr sa) {
         if (Short.toUnsignedInt(sa.sa_family()) == AF_INET) {
             return ntohs(((Netinet.sockaddr_in) sa).sin_port());
@@ -1787,6 +2079,8 @@ public final class Os {
         return ntohs(((Netinet.sockaddr_in6) sa).sin6_port());
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L799-L812",
+            reason = "the native's doStat in Java")
     private static StructStat doStat(String path, boolean isLstat) throws ErrnoException {
         try (ScopedUtfChars pathChars = new ScopedUtfChars(path)) {
             Scoped<Stat.stat64> sb = Scoped.of(StackValue.get(Stat.stat64.class));
@@ -1800,6 +2094,8 @@ public final class Os {
         }
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L814-L827",
+            reason = "the native's doGetSockName in Java")
     private static SocketAddress doGetSockName(FileDescriptor fd, boolean isSockName)
             throws ErrnoException {
         Socket.sockaddr_storage ss = StackValue.get(Socket.sockaddr_storage.class);
@@ -1817,18 +2113,24 @@ public final class Os {
     }
 
     @AlwaysInline("the holders and the closure are scalar-replaced only when inlined")
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L119-L146",
+            reason = "the bind call of the native's NET_IPV4_FALLBACK")
     private static void bindSockaddr(FileDescriptor fd, Scoped<Socket.sockaddr> sa,
             int saLength) throws ErrnoException {
         retry("bind", () -> WordFactory.signed(Socket.bind(fd(fd), sa.get(), saLength)));
     }
 
     @AlwaysInline("the holders and the closure are scalar-replaced only when inlined")
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L119-L146",
+            reason = "the connect call of the native's NET_IPV4_FALLBACK")
     private static void connectSockaddr(FileDescriptor fd, Scoped<Socket.sockaddr> sa,
             int saLength) throws ErrnoException {
         retry("connect", () -> WordFactory.signed(Socket.connect(fd(fd), sa.get(), saLength)));
     }
 
     @AlwaysInline("the holders and the closure are scalar-replaced only when inlined")
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L119-L146",
+            reason = "the sendto call of the native's NET_IPV4_FALLBACK")
     private static int sendtoSockaddr(FileDescriptor fd, ScopedBytes bytes, int byteOffset,
             int byteCount, int flags, Scoped<Socket.sockaddr> sa, int saLength)
             throws ErrnoException {
@@ -1837,10 +2139,14 @@ public final class Os {
                 saLength)));
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L119-L146",
+            reason = "the IPv4 retry condition of the native's NET_IPV4_FALLBACK")
     private static boolean retriesAsIPv4(ErrnoException e, Socket.sockaddr sa, int saLength) {
         return e.errno == EAFNOSUPPORT && saLength != 0 && isIPv4MappedAddress(sa);
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L102-L107",
+            reason = "the native's isIPv4MappedAddress in Java")
     private static boolean isIPv4MappedAddress(Socket.sockaddr sa) {
         if (sa.isNull() || Short.toUnsignedInt(sa.sa_family()) != AF_INET6) {
             return false;
@@ -1849,6 +2155,8 @@ public final class Os {
         return isV4Mapped(address) || isUnspecified(address);
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/bionic/+/refs/tags/android-16.0.0_r1/libc/include/netinet/in6.h#L54-L57",
+            reason = "bionic's IN6_IS_ADDR_V4MAPPED in Java")
     private static boolean isV4Mapped(CCharPointer in6Address) {
         for (int i = 0; i < 10; ++i) {
             if (in6Address.read(i) != 0) {
@@ -1858,6 +2166,8 @@ public final class Os {
         return in6Address.read(10) == (byte) 0xff && in6Address.read(11) == (byte) 0xff;
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/bionic/+/refs/tags/android-16.0.0_r1/libc/include/netinet/in6.h#L36-L40",
+            reason = "bionic's IN6_IS_ADDR_UNSPECIFIED in Java")
     private static boolean isUnspecified(CCharPointer in6Address) {
         for (int i = 0; i < 16; ++i) {
             if (in6Address.read(i) != 0) {
@@ -1867,14 +2177,21 @@ public final class Os {
         return true;
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/bionic/+/refs/tags/android-16.0.0_r1/libc/include/sys/endian.h#L59-L59",
+            reason = "bionic's htons in Java")
     private static short htons(int value) {
         return Short.reverseBytes((short) value);
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/bionic/+/refs/tags/android-16.0.0_r1/libc/include/sys/endian.h#L61-L61",
+            reason = "bionic's ntohs in Java")
     private static int ntohs(short value) {
         return Short.toUnsignedInt(Short.reverseBytes(value));
     }
 
+    @Adapted(value = {"https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/NetworkUtilities.cpp#L446-L517",
+            "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/NetworkUtilities.cpp#L520-L524"},
+            reason = "the native's msghdrJavaToC in Java")
     private static void msghdrJavaToC(StructMsghdr msg, Socket.msghdr hdr,
             ScopedByteBufferArray scopedBufArray) {
         byteBufferArrayToIOV(msg.msg_iov, hdr, scopedBufArray);
@@ -1890,6 +2207,8 @@ public final class Os {
         hdr.msg_flags(msg.msg_flags);
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/NetworkUtilities.cpp#L217-L271",
+            reason = "the native's structCmsghdrArrayToMsgcontrol in Java")
     private static void structCmsghdrArrayToMsgcontrol(StructCmsghdr[] cmsgs, Socket.msghdr hdr) {
         long controlLength = 0;
         for (StructCmsghdr cmsg : cmsgs) {
@@ -1908,6 +2227,8 @@ public final class Os {
         }
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/NetworkUtilities.cpp#L276-L325",
+            reason = "the native's msgcontrolToStructCmsghdrArray in Java")
     private static void msgcontrolToStructCmsghdrArray(StructMsghdr msg, Socket.msghdr hdr) {
         int count = 0;
         for (Socket.cmsghdr cm = cmsgFirstHdr(hdr); cm.isNonNull();
@@ -1928,29 +2249,42 @@ public final class Os {
         msg.msg_control = cmsgs;
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/bionic/+/refs/tags/android-16.0.0_r1/libc/include/sys/socket.h#L106-L106",
+            reason = "bionic's CMSG_ALIGN in Java")
     private static long cmsgAlign(long length) {
         long alignment = SizeOf.get(WordPointer.class);
         return (length + alignment - 1) & ~(alignment - 1);
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/bionic/+/refs/tags/android-16.0.0_r1/libc/include/sys/socket.h#L108-L108",
+            reason = "bionic's CMSG_SPACE in Java")
     private static long cmsgSpace(long length) {
         return cmsgAlign(SizeOf.get(Socket.cmsghdr.class)) + cmsgAlign(length);
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/bionic/+/refs/tags/android-16.0.0_r1/libc/include/sys/socket.h#L109-L109",
+            reason = "bionic's CMSG_LEN in Java")
     private static long cmsgLen(long length) {
         return cmsgAlign(SizeOf.get(Socket.cmsghdr.class)) + length;
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/bionic/+/refs/tags/android-16.0.0_r1/libc/include/sys/socket.h#L107-L107",
+            reason = "bionic's CMSG_DATA in Java")
     private static CCharPointer cmsgData(Socket.cmsghdr cmsg) {
         return WordFactory.pointer(cmsg.rawValue() + cmsgAlign(SizeOf.get(Socket.cmsghdr.class)));
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/bionic/+/refs/tags/android-16.0.0_r1/libc/include/sys/socket.h#L110-L112",
+            reason = "bionic's CMSG_FIRSTHDR in Java")
     private static Socket.cmsghdr cmsgFirstHdr(Socket.msghdr msg) {
         return msg.msg_controllen().aboveOrEqual(SizeOf.get(Socket.cmsghdr.class))
                 ? (Socket.cmsghdr) msg.msg_control()
                 : WordFactory.nullPointer();
     }
 
+    @Adapted(value = {"https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/NetworkUtilities.cpp#L336-L364",
+            "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/NetworkUtilities.cpp#L369-L416"},
+            reason = "the native's byteBufferArrayToIOV in Java")
     private static void byteBufferArrayToIOV(ByteBuffer[] buffers, Socket.msghdr hdr,
             ScopedByteBufferArray scopedBufArray) {
         Uio.iovec iov = UnmanagedMemory.calloc(buffers.length * SizeOf.get(Uio.iovec.class));
@@ -1968,11 +2302,15 @@ public final class Os {
         }
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L462-L470",
+            reason = "the native's makeStructTimespec in Java")
     private static StructTimespec makeStructTimespec(Time.timespec ts) {
         return new StructTimespec(Words.signExtended(ts.tv_sec()),
                 Words.signExtended(ts.tv_nsec()));
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L472-L499",
+            reason = "the native's makeStructStat in Java")
     private static StructStat makeStructStat(Stat.stat64 sb) {
         return new StructStat(sb.st_dev(), sb.st_ino(), sb.st_mode(),
                 Integer.toUnsignedLong(sb.st_nlink()), sb.st_uid(), sb.st_gid(), sb.st_rdev(),
@@ -1980,6 +2318,8 @@ public final class Os {
                 makeStructTimespec(sb.st_ctim()), sb.st_blksize(), sb.st_blocks());
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L501-L520",
+            reason = "the native's makeStructStatVfs in Java")
     private static StructStatVfs makeStructStatVfs(Statvfs.statvfs sb) {
         return new StructStatVfs(sb.f_bsize().rawValue(), sb.f_frsize().rawValue(),
                 sb.f_blocks().rawValue(), sb.f_bfree().rawValue(), sb.f_bavail().rawValue(),
@@ -1987,11 +2327,15 @@ public final class Os {
                 sb.f_fsid().rawValue(), sb.f_flag().rawValue(), sb.f_namemax().rawValue());
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L530-L537",
+            reason = "the native's makeStructTimeval in Java")
     private static StructTimeval makeStructTimeval(Time.timeval tv) {
         return (StructTimeval) (Object) new Target_android_system_StructTimeval(
                 Words.signExtended(tv.tv_sec()), Words.signExtended(tv.tv_usec()));
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L547-L560",
+            reason = "the native's makeStructUtsname in Java")
     private static StructUtsname makeStructUtsname(Utsname.utsname buf) {
         String sysname = CString.toJava(buf.sysname());
         String nodename = CString.toJava(buf.nodename());
@@ -2001,12 +2345,14 @@ public final class Os {
         return new StructUtsname(sysname, nodename, release, version, machine);
     }
 
+    @Adapted(reason = "copies a Java array into C memory")
     private static void bytesToC(byte[] from, CCharPointer to) {
         for (int i = 0; i < from.length; ++i) {
             to.write(i, from[i]);
         }
     }
 
+    @Adapted(reason = "copies C memory into a Java array")
     private static byte[] bytesFromC(CCharPointer from, int length) {
         byte[] result = new byte[length];
         for (int i = 0; i < length; ++i) {
@@ -2015,14 +2361,18 @@ public final class Os {
         return result;
     }
 
+    @Adapted(reason = "a system call for the retry loops")
     private interface SystemCall {
         SignedWord call();
     }
 
+    @Adapted(reason = "a system call for the retry loops")
     private interface LongSystemCall {
         long call();
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/libcore_io_Linux.cpp#L287-L343",
+            reason = "the native's IoVec in Java")
     private static final class IoVec implements AutoCloseable {
         private final Uio.iovec ioVec;
         private final ScopedBytes[] scopedBuffers;
@@ -2067,6 +2417,8 @@ public final class Os {
         }
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/native/ScopedByteBufferArray.h#L25-L99",
+            reason = "the native's ScopedByteBufferArray in Java")
     private static final class ScopedByteBufferArray implements AutoCloseable {
         private final boolean isRW;
         private ScopedBytes[] array;
@@ -2101,6 +2453,7 @@ public final class Os {
     }
 
     @TargetClass(StructTimeval.class)
+    @Adapted(reason = "an alias of StructTimeval's private constructor")
     private static final class Target_android_system_StructTimeval {
         @Alias
         public Target_android_system_StructTimeval(long tv_sec, long tv_usec) {

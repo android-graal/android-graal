@@ -1,0 +1,27 @@
+--- a/emulation/svm/src/main/java/android/system/Int64Ref.java
++++ b/emulation/svm/src/main/java/android/system/Int64Ref.java
+@@ -16,11 +16,13 @@
+ 
+ package android.system;
+ 
+-import libcore.util.Objects;
++import org.androidgraal.hosted.annotate.Adapted;
++import org.androidgraal.hosted.annotate.Emulated;
+ 
+ /**
+  * A signed 64bit integer reference suitable for passing to lower-level system calls.
+  */
++@Emulated
+ public class Int64Ref {
+     public long value;
+ 
+@@ -28,7 +30,8 @@
+         this.value = value;
+     }
+ 
++    @Adapted(reason = "Objects.toString's output spelled out")
+     @Override public String toString() {
+-        return Objects.toString(this);
++        return "Int64Ref[value=" + value + "]";
+     }
+ }

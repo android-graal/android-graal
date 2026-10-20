@@ -54,6 +54,7 @@ import org.androidgraal.bionic.Signal;
 import org.androidgraal.bionic.Stdlib;
 import org.androidgraal.bionic.Strings;
 import org.androidgraal.bionic.Unistd;
+import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
 import org.graalvm.nativeimage.StackValue;
 import org.graalvm.nativeimage.UnmanagedMemory;
@@ -818,6 +819,8 @@ public class Process {
     }
 
     /** @hide */
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Process.cpp#L634-L642",
+            reason = "the native's body in Java over bionic")
     public static final int setUid(int uid) {
         if (uid < 0) {
             throw new IllegalArgumentException("uid is negative: " + uid);
@@ -827,6 +830,8 @@ public class Process {
     }
 
     /** @hide */
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Process.cpp#L644-L651",
+            reason = "the native's body in Java over bionic")
     public static final int setGid(int uid) {
         if (uid < 0) {
             throw new IllegalArgumentException("gid is negative: " + uid);
@@ -841,6 +846,8 @@ public class Process {
      * @param pid The pid of the target process.
      * @param signal The signal to send.
      */
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Process.cpp#L1131-L1137",
+            reason = "the native's body in Java over bionic")
     public static final void sendSignal(int pid, int signal) {
         if (pid > 0) {
             Log.i(LOG_TAG, "Sending signal. PID: " + pid + " SIG: " + signal);
@@ -848,6 +855,8 @@ public class Process {
         }
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Process.cpp#L1146-L1161",
+            reason = "the native's body in Java over bionic")
     private static void sendSignalThrows(int pid, int signal)
             throws IllegalArgumentException, SecurityException, NoSuchElementException {
         if (pid <= 0) {
@@ -881,6 +890,8 @@ public class Process {
      * beat you up.
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Process.cpp#L1139-L1144",
+            reason = "the native's body in Java over bionic")
     public static final void sendSignalQuiet(int pid, int signal) {
         if (pid > 0) {
             Signal.kill(pid, signal);
@@ -889,6 +900,8 @@ public class Process {
 
     /** @hide */
     @UnsupportedAppUsage
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Process.cpp#L696-L805",
+            reason = "the native's body in Java over bionic")
     public static final void readProcLines(String path,
             String[] reqFields, long[] outSizes) {
         if (path == null || reqFields == null || outSizes == null) {
@@ -1041,6 +1054,8 @@ public class Process {
         public boolean usingWrapper;
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Process.cpp#L91-L109",
+            reason = "the native's signalExceptionForError in Java")
     private static void signalExceptionForError(int err, int tid) {
         if (err == OsConstants.EINVAL) {
             throw new IllegalArgumentException("Invalid argument: " + tid);

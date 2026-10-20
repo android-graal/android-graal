@@ -43,6 +43,7 @@ import org.androidgraal.android.FileDescriptors;
 import org.androidgraal.android.ScopedBytes;
 import org.androidgraal.android.ScopedUtfChars;
 import org.androidgraal.bionic.Unistd;
+import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
 import org.androidgraal.shared.MarshalledException;
 import org.graalvm.nativeimage.StackValue;
@@ -80,6 +81,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 @RavenwoodKeepWholeClass
 @CLibrary("android")
 @Emulated
+@Adapted(reason = "links libandroid")
 public final class AssetManager implements AutoCloseable {
     private static final String TAG = "AssetManager";
     private static final boolean DEBUG_REFS = false;
@@ -289,6 +291,11 @@ public final class AssetManager implements AutoCloseable {
         }
     }
 
+    @Override
+    @Adapted(reason = "empty, the image runs no finalizer")
+    protected void finalize() throws Throwable {
+    }
+
     /* No Locking is needed for AssetInputStream because an AssetInputStream is not-thread
     safe and it does not rely on AssetManager once it has been created. It completely owns the
     underlying Asset. */
@@ -385,6 +392,11 @@ public final class AssetManager implements AutoCloseable {
             }
         }
 
+        @Override
+        @Adapted(reason = "empty, the image runs no finalizer")
+        protected void finalize() throws Throwable {
+        }
+
         private void ensureOpen() {
             if (mAssetNativePtr == 0) {
                 throw new IllegalStateException("AssetInputStream is closed");
@@ -422,6 +434,7 @@ public final class AssetManager implements AutoCloseable {
         mNumRefs.incrementAndGet();
     }
 
+    @Adapted(reason = "without resetting mApkAssets")
     private void decRefs(long id) {
         if (DEBUG_REFS) {
             synchronized (this) {
@@ -440,6 +453,8 @@ public final class AssetManager implements AutoCloseable {
         }
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_AssetManager.cpp#L260-L292",
+            reason = "the native's ReturnParcelFileDescriptor in Java over libandroid's AAsset")
     private static ParcelFileDescriptor returnParcelFileDescriptor(PointerBase asset,
             long[] outOffsets) throws FileNotFoundException {
         CLongPointer startOffset = StackValue.get(CLongPointer.class);
@@ -460,15 +475,17 @@ public final class AssetManager implements AutoCloseable {
     }
 
     // AssetManager setup native methods.
+    @Adapted(reason = "the application's AAssetManager from ART instead of a new native one")
     private static long nativeCreate() {
         return EmulationRoot.host().assetManager();
     }
 
+    @Adapted(reason = "empty instead of destroying a native AssetManager")
     private static void nativeDestroy(long ptr) {
-        // The AAssetManager belongs to ART's application AssetManager.
     }
 
     // File native methods.
+    @Adapted(reason = "lists through ART's AssetManager instead of the native")
     private static @Nullable String[] nativeList(long ptr, @NonNull String path)
             throws IOException {
         try {
@@ -478,6 +495,8 @@ public final class AssetManager implements AutoCloseable {
         }
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_AssetManager.cpp#L513-L537",
+            reason = "the native's body in Java over libandroid's AAsset")
     private static long nativeOpenAsset(long ptr, @NonNull String fileName, int accessMode)
             throws FileNotFoundException {
         try (ScopedUtfChars assetPathUtf8 = new ScopedUtfChars(fileName)) {
@@ -495,6 +514,8 @@ public final class AssetManager implements AutoCloseable {
         }
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_AssetManager.cpp#L539-L556",
+            reason = "the native's body in Java over libandroid's AAsset")
     private static @Nullable ParcelFileDescriptor nativeOpenAssetFd(long ptr,
             @NonNull String fileName, long[] outOffsets) throws IOException {
         try (ScopedUtfChars assetPathUtf8 = new ScopedUtfChars(fileName)) {
@@ -508,15 +529,20 @@ public final class AssetManager implements AutoCloseable {
     }
 
     // Resource name/ID native methods.
+    @Adapted(reason = "the locales of ART's AssetManager instead of the native")
     private static @Nullable String[] nativeGetLocales(long ptr, boolean excludeSystem) {
         return EmulationRoot.host().locales();
     }
 
     // AssetInputStream related native methods.
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_AssetManager.cpp#L1502-L1504",
+            reason = "the native's body in Java over libandroid's AAsset")
     private static void nativeAssetDestroy(long assetPtr) {
         AAsset_close(WordFactory.pointer(assetPtr));
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_AssetManager.cpp#L1506-L1511",
+            reason = "the native's body in Java over libandroid's AAsset")
     private static int nativeAssetReadChar(long assetPtr) {
         PointerBase asset = WordFactory.pointer(assetPtr);
         CCharPointer b = StackValue.get(CCharPointer.class);
@@ -524,6 +550,8 @@ public final class AssetManager implements AutoCloseable {
         return res == 1 ? Byte.toUnsignedInt(b.read()) : -1;
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_AssetManager.cpp#L1513-L1538",
+            reason = "the native's body in Java over libandroid's AAsset")
     private static int nativeAssetRead(long assetPtr, byte[] b, int off, int len)
             throws IOException {
         if (len == 0) {
@@ -546,22 +574,29 @@ public final class AssetManager implements AutoCloseable {
         }
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_AssetManager.cpp#L1540-L1545",
+            reason = "the native's body in Java over libandroid's AAsset")
     private static long nativeAssetSeek(long assetPtr, long offset, int whence) {
         PointerBase asset = WordFactory.pointer(assetPtr);
         return AAsset_seek64(asset, offset,
                 (whence > 0 ? Unistd.SEEK_END() : (whence < 0 ? Unistd.SEEK_SET() : Unistd.SEEK_CUR())));
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_AssetManager.cpp#L1547-L1550",
+            reason = "the native's body in Java over libandroid's AAsset")
     private static long nativeAssetGetLength(long assetPtr) {
         PointerBase asset = WordFactory.pointer(assetPtr);
         return AAsset_getLength64(asset);
     }
 
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_AssetManager.cpp#L1552-L1555",
+            reason = "the native's body in Java over libandroid's AAsset")
     private static long nativeAssetGetRemainingLength(long assetPtr) {
         PointerBase asset = WordFactory.pointer(assetPtr);
         return AAsset_getRemainingLength64(asset);
     }
 
+    @Adapted(reason = "turns ART's exception into the IOException the native throws")
     private static IOException io(MarshalledException e) {
         if (!(e.getCause() instanceof MarshalledException cause)) {
             throw e;
@@ -576,25 +611,39 @@ public final class AssetManager implements AutoCloseable {
     }
 
     @CFunction
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/native/+/refs/tags/android-16.0.0_r1/include/android/asset_manager.h#L106-L106",
+            reason = "binds libandroid's AAssetManager_open")
     private static native PointerBase AAssetManager_open(PointerBase mgr, CCharPointer filename,
             int mode);
 
     @CFunction
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/native/+/refs/tags/android-16.0.0_r1/include/android/asset_manager.h#L135-L135",
+            reason = "binds libandroid's AAsset_read")
     private static native int AAsset_read(PointerBase asset, PointerBase buf, UnsignedWord count);
 
     @CFunction
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/native/+/refs/tags/android-16.0.0_r1/include/android/asset_manager.h#L155-L155",
+            reason = "binds libandroid's AAsset_seek64")
     private static native long AAsset_seek64(PointerBase asset, long offset, int whence);
 
     @CFunction
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/native/+/refs/tags/android-16.0.0_r1/include/android/asset_manager.h#L160-L160",
+            reason = "binds libandroid's AAsset_close")
     private static native void AAsset_close(PointerBase asset);
 
     @CFunction
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/native/+/refs/tags/android-16.0.0_r1/include/android/asset_manager.h#L179-L179",
+            reason = "binds libandroid's AAsset_getLength64")
     private static native long AAsset_getLength64(PointerBase asset);
 
     @CFunction
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/native/+/refs/tags/android-16.0.0_r1/include/android/asset_manager.h#L192-L192",
+            reason = "binds libandroid's AAsset_getRemainingLength64")
     private static native long AAsset_getRemainingLength64(PointerBase asset);
 
     @CFunction
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/native/+/refs/tags/android-16.0.0_r1/include/android/asset_manager.h#L214-L214",
+            reason = "binds libandroid's AAsset_openFileDescriptor64")
     private static native int AAsset_openFileDescriptor64(PointerBase asset, CLongPointer outStart,
             CLongPointer outLength);
 }

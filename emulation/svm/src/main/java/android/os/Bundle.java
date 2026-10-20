@@ -33,6 +33,7 @@ import android.util.proto.ProtoOutputStream;
 
 import com.android.internal.annotations.VisibleForTesting;
 
+import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
 
 import java.io.Serializable;
@@ -52,26 +53,31 @@ import java.util.List;
 @android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public final class Bundle extends BaseBundle implements Cloneable, Parcelable {
-    private static final int FLAG_HAS_FDS = 1 << 8;
+    @VisibleForTesting
+    static final int FLAG_HAS_FDS = 1 << 8;
 
-    private static final int FLAG_HAS_FDS_KNOWN = 1 << 9;
+    @VisibleForTesting
+    static final int FLAG_HAS_FDS_KNOWN = 1 << 9;
 
-    private static final int FLAG_ALLOW_FDS = 1 << 10;
+    @VisibleForTesting
+    static final int FLAG_ALLOW_FDS = 1 << 10;
 
-    private static final int FLAG_HAS_BINDERS_KNOWN = 1 << 11;
+    @VisibleForTesting
+    static final int FLAG_HAS_BINDERS_KNOWN = 1 << 11;
 
-    private static final int FLAG_HAS_BINDERS = 1 << 12;
+    @VisibleForTesting
+    static final int FLAG_HAS_BINDERS = 1 << 12;
 
     /**
      * Indicates there may be intents with creator tokens contained in this bundle. When unparceled,
      * they should be verified if tokens are missing or invalid.
      */
-    public static final int FLAG_VERIFY_TOKENS_PRESENT = 1 << 13;
+    static final int FLAG_VERIFY_TOKENS_PRESENT = 1 << 13;
 
     /**
      * Indicates the bundle definitely contains an Intent.
      */
-    private static final int FLAG_HAS_INTENT = 1 << 14;
+    static final int FLAG_HAS_INTENT = 1 << 14;
 
 
     /**
@@ -184,7 +190,7 @@ public final class Bundle extends BaseBundle implements Cloneable, Parcelable {
      * @param deep Whether is a deep or shallow copy.
      * @hide
      */
-    private Bundle(Bundle from, boolean deep) {
+    Bundle(Bundle from, boolean deep) {
         super(from, deep);
     }
 
@@ -449,6 +455,7 @@ public final class Bundle extends BaseBundle implements Cloneable, Parcelable {
 
     /** {@hide} */
     @Override
+    @Adapted(reason = "a Binder value throws")
     public void putObject(@Nullable String key, @Nullable Object value) {
         if (value instanceof Byte) {
             putByte(key, (Byte) value);
@@ -981,7 +988,7 @@ public final class Bundle extends BaseBundle implements Cloneable, Parcelable {
      *
      * @param containerBundle the bundle this bundle is retrieved from.
      */
-    public void setClassLoaderSameAsContainerBundleWhenRetrievedFirstTime(BaseBundle containerBundle) {
+    void setClassLoaderSameAsContainerBundleWhenRetrievedFirstTime(BaseBundle containerBundle) {
         if (!isFirstRetrievedFromABundle) {
             setClassLoader(containerBundle.getClassLoader());
             isFirstRetrievedFromABundle = true;

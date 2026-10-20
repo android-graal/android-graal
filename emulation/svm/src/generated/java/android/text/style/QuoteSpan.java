@@ -1,5 +1,7 @@
 package android.text.style;
 
+import android.text.ParcelableSpan;
+
 /**
  *  A span which styles paragraphs by adding a vertical stripe at the beginning of the text
  *  (respecting layout direction).
@@ -30,7 +32,7 @@ package android.text.style;
  *  <img src="{@docRoot}reference/android/images/text/style/customquotespan.png" />
  *  <figcaption>Customized <code>QuoteSpan</code>.</figcaption>
  */
-public final class QuoteSpan {
+public abstract class QuoteSpan implements ParcelableSpan {
     /**
      * Default color for the quote stripe.
      */
@@ -45,6 +47,21 @@ public final class QuoteSpan {
      * Default stripe width in pixels.
      */
     public static final int STANDARD_STRIPE_WIDTH_PX = 2;
+
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int getSpanTypeId() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
 
     private QuoteSpan() {
     }

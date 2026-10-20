@@ -36,17 +36,17 @@ import java.util.Set;
 @android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 abstract class MapCollections<K, V> {
-    private EntrySet mEntrySet;
-    private KeySet mKeySet;
-    private ValuesCollection mValues;
+    EntrySet mEntrySet;
+    KeySet mKeySet;
+    ValuesCollection mValues;
 
-    private final class ArrayIterator<T> implements Iterator<T> {
-        private final int mOffset;
-        private int mSize;
-        private int mIndex;
-        private boolean mCanRemove = false;
+    final class ArrayIterator<T> implements Iterator<T> {
+        final int mOffset;
+        int mSize;
+        int mIndex;
+        boolean mCanRemove = false;
 
-        private ArrayIterator(int offset) {
+        ArrayIterator(int offset) {
             mOffset = offset;
             mSize = colGetSize();
         }
@@ -77,12 +77,12 @@ abstract class MapCollections<K, V> {
         }
     }
 
-    private final class MapIterator implements Iterator<Map.Entry<K, V>>, Map.Entry<K, V> {
-        private int mEnd;
-        private int mIndex;
-        private boolean mEntryValid = false;
+    final class MapIterator implements Iterator<Map.Entry<K, V>>, Map.Entry<K, V> {
+        int mEnd;
+        int mIndex;
+        boolean mEntryValid = false;
 
-        private MapIterator() {
+        MapIterator() {
             mEnd = colGetSize() - 1;
             mIndex = -1;
         }
@@ -170,7 +170,7 @@ abstract class MapCollections<K, V> {
         }
     }
 
-    private final class EntrySet implements Set<Map.Entry<K, V>> {
+    final class EntrySet implements Set<Map.Entry<K, V>> {
         @Override
         public boolean add(Map.Entry<K, V> object) {
             throw new UnsupportedOperationException();
@@ -272,7 +272,7 @@ abstract class MapCollections<K, V> {
         }
     };
 
-    private final class KeySet implements Set<K> {
+    final class KeySet implements Set<K> {
 
         @Override
         public boolean add(K object) {
@@ -365,7 +365,7 @@ abstract class MapCollections<K, V> {
         }
     }
 
-    private final class ValuesCollection implements Collection<V> {
+    final class ValuesCollection implements Collection<V> {
 
         @Override
         public boolean add(V object) {

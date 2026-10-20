@@ -2151,7 +2151,7 @@ public final class ProtoOutputStream extends ProtoStream {
         writeObjectImpl(id, value);
     }
 
-    private void writeObjectImpl(int id, byte[] value) {
+    void writeObjectImpl(int id, byte[] value) {
         if (value != null && value.length != 0) {
             writeKnownLengthHeader(id, value.length);
             mBuffer.writeRawBuffer(value);
@@ -2172,7 +2172,7 @@ public final class ProtoOutputStream extends ProtoStream {
         writeRepeatedObjectImpl(id, value);
     }
 
-    private void writeRepeatedObjectImpl(int id, byte[] value) {
+    void writeRepeatedObjectImpl(int id, byte[] value) {
         writeKnownLengthHeader(id, value == null ? 0 : value.length);
         mBuffer.writeRawBuffer(value);
     }

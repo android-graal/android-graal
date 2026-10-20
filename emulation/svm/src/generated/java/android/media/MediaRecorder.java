@@ -96,6 +96,16 @@ public final class MediaRecorder implements MicrophoneDirection {
      */
     public static final int MEDIA_RECORDER_INFO_UNKNOWN = 1;
 
+    @Override
+    public boolean setPreferredMicrophoneDirection(int direction) {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public boolean setPreferredMicrophoneFieldDimension(float zoom) {
+        throw new UnsupportedOperationException();
+    }
+
     private MediaRecorder() {
     }
 

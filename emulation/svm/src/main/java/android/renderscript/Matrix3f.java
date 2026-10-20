@@ -319,7 +319,7 @@ public class Matrix3f {
         }
     }
 
-    public final float[] mMat;
+    final float[] mMat;
 }
 
 

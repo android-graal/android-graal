@@ -1,0 +1,189 @@
+--- a/emulation/svm/src/main/java/android/os/PersistableBundle.java
++++ b/emulation/svm/src/main/java/android/os/PersistableBundle.java
+@@ -22,17 +22,11 @@
+ import android.annotation.Nullable;
+ import android.util.ArrayMap;
+ import android.util.Slog;
+-import android.util.Xml;
+ import android.util.proto.ProtoOutputStream;
+ 
+-import com.android.internal.util.XmlUtils;
+-import com.android.modules.utils.TypedXmlPullParser;
+-import com.android.modules.utils.TypedXmlSerializer;
++import org.androidgraal.hosted.annotate.Adapted;
++import org.androidgraal.hosted.annotate.Emulated;
+ 
+-import org.xmlpull.v1.XmlPullParser;
+-import org.xmlpull.v1.XmlPullParserException;
+-import org.xmlpull.v1.XmlSerializer;
+-
+ import java.io.IOException;
+ import java.io.InputStream;
+ import java.io.OutputStream;
+@@ -50,8 +44,9 @@
+  * @see Bundle
+  */
+ @android.ravenwood.annotation.RavenwoodKeepWholeClass
+-public final class PersistableBundle extends BaseBundle implements Cloneable, Parcelable,
+-        XmlUtils.WriteMapCallback {
++@Emulated
++@Adapted(reason = "does not implement XmlUtils.WriteMapCallback")
++public final class PersistableBundle extends BaseBundle implements Cloneable, Parcelable {
+     private static final String TAG = "PersistableBundle";
+ 
+     private static final String TAG_PERSISTABLEMAP = "pbundle_as_map";
+@@ -261,40 +256,6 @@
+                 }
+             };
+ 
+-    /** @hide */
+-    @Override
+-    public void writeUnknownObject(Object v, String name, TypedXmlSerializer out)
+-            throws XmlPullParserException, IOException {
+-        if (v instanceof PersistableBundle) {
+-            out.startTag(null, TAG_PERSISTABLEMAP);
+-            out.attribute(null, "name", name);
+-            ((PersistableBundle) v).saveToXml(out);
+-            out.endTag(null, TAG_PERSISTABLEMAP);
+-        } else {
+-            throw new XmlPullParserException("Unknown Object o=" + v);
+-        }
+-    }
+-
+-    /** @hide */
+-    public void saveToXml(XmlSerializer out) throws IOException, XmlPullParserException {
+-        saveToXml(XmlUtils.makeTyped(out));
+-    }
+-
+-    /** @hide */
+-    public void saveToXml(TypedXmlSerializer out) throws IOException, XmlPullParserException {
+-        unparcel();
+-        // Explicitly drop invalid types an attacker may have added before persisting.
+-        for (int i = mMap.size() - 1; i >= 0; --i) {
+-            final Object value = mMap.valueAt(i);
+-            if (!isValidType(value)) {
+-                Slog.e(TAG, "Dropping bad data before persisting: "
+-                        + mMap.keyAt(i) + "=" + value);
+-                mMap.removeAt(i);
+-            }
+-        }
+-        XmlUtils.writeMapXml(mMap, out, this);
+-    }
+-
+     /**
+      * Checks whether all keys and values are within the given character limit.
+      * Note: Maximum character limit of String that can be saved to XML as part of bundle is 65535.
+@@ -332,18 +293,6 @@
+         return true;
+     }
+ 
+-    /** @hide */
+-    static class MyReadMapCallback implements  XmlUtils.ReadMapCallback {
+-        @Override
+-        public Object readThisUnknownObjectXml(TypedXmlPullParser in, String tag)
+-                throws XmlPullParserException, IOException {
+-            if (TAG_PERSISTABLEMAP.equals(tag)) {
+-                return restoreFromXml(in);
+-            }
+-            throw new XmlPullParserException("Unknown tag=" + tag);
+-        }
+-    }
+-
+     /**
+      * Report the nature of this Parcelable's contents
+      */
+@@ -367,33 +316,6 @@
+         }
+     }
+ 
+-    /** @hide */
+-    public static PersistableBundle restoreFromXml(XmlPullParser in) throws IOException,
+-            XmlPullParserException {
+-        return restoreFromXml(XmlUtils.makeTyped(in));
+-    }
+-
+-    /** @hide */
+-    public static PersistableBundle restoreFromXml(TypedXmlPullParser in) throws IOException,
+-            XmlPullParserException {
+-        final int outerDepth = in.getDepth();
+-        final String startTag = in.getName();
+-        final String[] tagName = new String[1];
+-        int event;
+-        while (((event = in.next()) != XmlPullParser.END_DOCUMENT) &&
+-                (event != XmlPullParser.END_TAG || in.getDepth() < outerDepth)) {
+-            if (event == XmlPullParser.START_TAG) {
+-                // Don't throw an exception when restoring from XML since an attacker could try to
+-                // input invalid data in the persisted file.
+-                return new PersistableBundle((ArrayMap<String, Object>)
+-                        XmlUtils.readThisArrayMapXml(in, startTag, tagName,
+-                        new MyReadMapCallback()),
+-                        /* throwException */ false);
+-            }
+-        }
+-        return new PersistableBundle();  // An empty mutable PersistableBundle
+-    }
+-
+     /**
+      * Returns a string representation of the {@link PersistableBundle} that may be suitable for
+      * debugging. It won't print the internal map if its content hasn't been unparcelled.
+@@ -423,60 +345,4 @@
+         return mMap.toString();
+     }
+ 
+-    /** @hide */
+-    public void dumpDebug(ProtoOutputStream proto, long fieldId) {
+-        final long token = proto.start(fieldId);
+-
+-        if (mParcelledData != null) {
+-            if (isEmptyParcel()) {
+-                proto.write(PersistableBundleProto.PARCELLED_DATA_SIZE, 0);
+-            } else {
+-                proto.write(PersistableBundleProto.PARCELLED_DATA_SIZE, mParcelledData.dataSize());
+-            }
+-        } else {
+-            proto.write(PersistableBundleProto.MAP_DATA, mMap.toString());
+-        }
+-
+-        proto.end(token);
+-    }
+-
+-    /**
+-     * Writes the content of the {@link PersistableBundle} to a {@link OutputStream}.
+-     *
+-     * <p>The content can be read by a {@link #readFromStream}.
+-     *
+-     * @see #readFromStream
+-     */
+-    public void writeToStream(@NonNull OutputStream outputStream) throws IOException {
+-        TypedXmlSerializer serializer = Xml.newFastSerializer();
+-        serializer.setOutput(outputStream, UTF_8.name());
+-        serializer.startTag(null, "bundle");
+-        try {
+-            saveToXml(serializer);
+-        } catch (XmlPullParserException e) {
+-            throw new IOException(e);
+-        }
+-        serializer.endTag(null, "bundle");
+-        serializer.flush();
+-    }
+-
+-    /**
+-     * Reads a {@link PersistableBundle} from an {@link InputStream}.
+-     *
+-     * <p>The stream must be generated by {@link #writeToStream}.
+-     *
+-     * @see #writeToStream
+-     */
+-    @NonNull
+-    public static PersistableBundle readFromStream(@NonNull InputStream inputStream)
+-            throws IOException {
+-        try {
+-            TypedXmlPullParser parser = Xml.newFastPullParser();
+-            parser.setInput(inputStream, UTF_8.name());
+-            parser.next();
+-            return PersistableBundle.restoreFromXml(parser);
+-        } catch (XmlPullParserException e) {
+-            throw new IOException(e);
+-        }
+-    }
+ }

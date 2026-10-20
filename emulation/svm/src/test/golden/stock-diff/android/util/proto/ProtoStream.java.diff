@@ -1,0 +1,111 @@
+--- a/emulation/svm/src/main/java/android/util/proto/ProtoStream.java
++++ b/emulation/svm/src/main/java/android/util/proto/ProtoStream.java
+@@ -21,6 +21,9 @@
+ import android.annotation.NonNull;
+ import android.annotation.Nullable;
+ 
++import org.androidgraal.hosted.annotate.Adapted;
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+ 
+@@ -33,6 +36,7 @@
+  * @hide
+  */
+ @android.ravenwood.annotation.RavenwoodKeepWholeClass
++@Emulated
+ public class ProtoStream {
+ 
+     /**
+@@ -62,45 +66,11 @@
+      * Encoding</a>
+      */
+     @Retention(RetentionPolicy.SOURCE)
+-    @LongDef({
+-        FIELD_TYPE_UNKNOWN,
+-        FIELD_TYPE_DOUBLE,
+-        FIELD_TYPE_FLOAT,
+-        FIELD_TYPE_INT64,
+-        FIELD_TYPE_UINT64,
+-        FIELD_TYPE_INT32,
+-        FIELD_TYPE_FIXED64,
+-        FIELD_TYPE_FIXED32,
+-        FIELD_TYPE_BOOL,
+-        FIELD_TYPE_STRING,
+-        FIELD_TYPE_MESSAGE,
+-        FIELD_TYPE_BYTES,
+-        FIELD_TYPE_UINT32,
+-        FIELD_TYPE_ENUM,
+-        FIELD_TYPE_SFIXED32,
+-        FIELD_TYPE_SFIXED64,
+-        FIELD_TYPE_SINT32,
+-        FIELD_TYPE_SINT64,
+-    })
++    @Adapted(reason = "without @LongDef")
+     public @interface FieldType {}
+ 
+ 
+     /**
+-     * Represents the cardinality of a protobuf field.
+-     *
+-     * @see <a href="https://developers.google.com/protocol-buffers/docs/encoding">Protobuf
+-     * Encoding</a>
+-     */
+-    @Retention(RetentionPolicy.SOURCE)
+-    @LongDef({
+-        FIELD_COUNT_UNKNOWN,
+-        FIELD_COUNT_SINGLE,
+-        FIELD_COUNT_REPEATED,
+-        FIELD_COUNT_PACKED,
+-    })
+-    public @interface FieldCount {}
+-
+-    /**
+      * Number of bits to shift the field number to form a tag.
+      *
+      * <pre>
+@@ -133,13 +103,6 @@
+     public static final int WIRE_TYPE_MASK = (1 << FIELD_ID_SHIFT) - 1;
+ 
+     /**
+-     * Mask to select the field id from a tag.
+-     * @hide (not used by anything, and not actually useful, because you also want
+-     * to shift when you mask the field id).
+-     */
+-    public static final int FIELD_ID_MASK = ~WIRE_TYPE_MASK;
+-
+-    /**
+      * Varint wire type code.
+      *
+      * @see <a href="https://developers.google.com/protocol-buffers/docs/encoding">Protobuf
+@@ -198,13 +161,7 @@
+      */
+     public static final long FIELD_TYPE_MASK = 0x0ffL << FIELD_TYPE_SHIFT;
+ 
+-    /**
+-     * Not a real field type.
+-     * @hide
+-     */
+-    public static final long FIELD_TYPE_UNKNOWN = 0;
+ 
+-
+     /*
+      * The FIELD_TYPE_ constants are copied from
+      * external/protobuf/src/google/protobuf/descriptor.h directly, so no
+@@ -518,15 +475,6 @@
+                 + " fieldId=0x" + Long.toHexString(fieldId);
+     }
+ 
+-    /**
+-     * Combine a fieldId (the field keys in the proto file) and the field flags.
+-     * Mostly useful for testing because the generated code contains the fieldId
+-     * constants.
+-     */
+-    public static long makeFieldId(int id, long fieldFlags) {
+-        return fieldFlags | (((long) id) & 0x0ffffffffL);
+-    }
+-
+     //
+     // Child objects
+     //

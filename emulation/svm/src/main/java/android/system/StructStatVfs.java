@@ -16,6 +16,7 @@
 
 package android.system;
 
+import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
 
 /**
@@ -75,8 +76,8 @@ public final class StructStatVfs {
         this.f_namemax = f_namemax;
     }
 
+    @Adapted(reason = "Objects.toString's output spelled out over the fields in name order")
     @Override public String toString() {
-        // ART's reflective toString lists the fields in dex order, which is by name.
         return "StructStatVfs[f_bavail=" + f_bavail + ",f_bfree=" + f_bfree + ",f_blocks="
                 + f_blocks + ",f_bsize=" + f_bsize + ",f_favail=" + f_favail + ",f_ffree=" + f_ffree
                 + ",f_files=" + f_files + ",f_flag=" + f_flag + ",f_frsize=" + f_frsize + ",f_fsid="

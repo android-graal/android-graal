@@ -193,7 +193,7 @@ public class Matrix2f {
         mMat[2] = temp;
     }
 
-    private final float[] mMat;
+    final float[] mMat;
 }
 
 

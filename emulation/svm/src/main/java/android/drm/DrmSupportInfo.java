@@ -163,7 +163,7 @@ public class DrmSupportInfo {
      * @return True if Mime type is supported; false if MIME type is not supported.
      * Null or empty string is not a supported mimeType.
      */
-    private boolean isSupportedMimeType(String mimeType) {
+    /* package */ boolean isSupportedMimeType(String mimeType) {
         if (null != mimeType && !mimeType.equals("")) {
             for (int i = 0; i < mMimeTypeList.size(); i++) {
                 String completeMimeType = mMimeTypeList.get(i);
@@ -186,7 +186,7 @@ public class DrmSupportInfo {
      * @param fileSuffix File suffix.
      * @return True if file suffix is supported; false if file suffix is not supported.
      */
-    private boolean isSupportedFileSuffix(String fileSuffix) {
+    /* package */ boolean isSupportedFileSuffix(String fileSuffix) {
         return mFileSuffixList.contains(fileSuffix);
     }
 }

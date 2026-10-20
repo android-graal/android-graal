@@ -46,7 +46,7 @@ public final class DeviceId {
     private final @DeviceIdType int mType;
     private final String mId;
 
-    private DeviceId(int type, @NonNull String id) {
+    DeviceId(int type, @NonNull String id) {
         mType = type;
         mId = id;
     }

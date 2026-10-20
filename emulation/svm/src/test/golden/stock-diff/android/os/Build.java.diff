@@ -1,0 +1,260 @@
+--- a/emulation/svm/src/main/java/android/os/Build.java
++++ b/emulation/svm/src/main/java/android/os/Build.java
+@@ -16,7 +16,6 @@
+ 
+ package android.os;
+ 
+-import android.Manifest;
+ import android.annotation.FlaggedApi;
+ import android.annotation.IntDef;
+ import android.annotation.NonNull;
+@@ -26,25 +25,21 @@
+ import android.annotation.SuppressLint;
+ import android.annotation.SystemApi;
+ import android.annotation.TestApi;
+-import android.app.ActivityThread;
+-import android.app.Application;
+ import android.compat.annotation.UnsupportedAppUsage;
+-import android.content.Context;
+ import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+ import android.sdk.Flags;
+-import android.sysprop.BackportedFixesProperties;
+ import android.sysprop.DeviceProperties;
+ import android.sysprop.SocProperties;
+ import android.sysprop.TelephonyProperties;
+ import android.text.TextUtils;
+ import android.util.ArraySet;
+ import android.util.Slog;
+-import android.view.View;
+ 
+-import com.android.internal.util.FrameworkStatsLog;
+-
+ import dalvik.system.VMRuntime;
+ 
++import org.androidgraal.hosted.annotate.Adapted;
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+ import java.util.ArrayList;
+@@ -57,6 +52,7 @@
+  * Information about the current build, extracted from system properties.
+  */
+ @RavenwoodKeepWholeClass
++@Emulated
+ public class Build {
+     private static final String TAG = "Build";
+ 
+@@ -225,60 +221,6 @@
+     public static final String SERIAL = getString("no.such.thing");
+ 
+     /**
+-     * Gets the hardware serial number, if available.
+-     *
+-     * <p class="note"><b>Note:</b> Root access may allow you to modify device identifiers, such as
+-     * the hardware serial number. If you change these identifiers, you can not use
+-     * <a href="/training/articles/security-key-attestation.html">key attestation</a> to obtain
+-     * proof of the device's original identifiers. KeyMint will reject an ID attestation request
+-     * if the identifiers provided by the frameworks do not match the identifiers it was
+-     * provisioned with.
+-     *
+-     * <p>Starting with API level 29, persistent device identifiers are guarded behind additional
+-     * restrictions, and apps are recommended to use resettable identifiers (see <a
+-     * href="/training/articles/user-data-ids">Best practices for unique identifiers</a>). This
+-     * method can be invoked if one of the following requirements is met:
+-     * <ul>
+-     *     <li>If the calling app has been granted the READ_PRIVILEGED_PHONE_STATE permission; this
+-     *     is a privileged permission that can only be granted to apps preloaded on the device.
+-     *     <li>If the calling app has carrier privileges (see {@link
+-     *     android.telephony.TelephonyManager#hasCarrierPrivileges}) on any active subscription.
+-     *     <li>If the calling app is the default SMS role holder (see {@link
+-     *     android.app.role.RoleManager#isRoleHeld(String)}).
+-     *     <li>If the calling app is the device owner of a fully-managed device, a profile
+-     *     owner of an organization-owned device, or their delegates (see {@link
+-     *     android.app.admin.DevicePolicyManager#getEnrollmentSpecificId()}).
+-     * </ul>
+-     *
+-     * <p>If the calling app does not meet one of these requirements then this method will behave
+-     * as follows:
+-     *
+-     * <ul>
+-     *     <li>If the calling app's target SDK is API level 28 or lower and the app has the
+-     *     READ_PHONE_STATE permission then {@link Build#UNKNOWN} is returned.</li>
+-     *     <li>If the calling app's target SDK is API level 28 or lower and the app does not have
+-     *     the READ_PHONE_STATE permission, or if the calling app is targeting API level 29 or
+-     *     higher, then a SecurityException is thrown.</li>
+-     * </ul>
+-     *
+-     * @return The serial number if specified.
+-     */
+-    @SuppressAutoDoc // No support for device / profile owner.
+-    @RequiresPermission(Manifest.permission.READ_PRIVILEGED_PHONE_STATE)
+-    public static String getSerial() {
+-        IDeviceIdentifiersPolicyService service = IDeviceIdentifiersPolicyService.Stub
+-                .asInterface(ServiceManager.getService(Context.DEVICE_IDENTIFIERS_SERVICE));
+-        try {
+-            Application application = ActivityThread.currentApplication();
+-            String callingPackage = application != null ? application.getPackageName() : null;
+-            return service.getSerialForPackage(callingPackage, null);
+-        } catch (RemoteException e) {
+-            e.rethrowFromSystemServer();
+-        }
+-        return UNKNOWN;
+-    }
+-
+-    /**
+      * An ordered list of ABIs supported by this device. The most preferred ABI is the first
+      * element in the list.
+      *
+@@ -431,8 +373,9 @@
+          * android.os.Build.VERSION_CODES_FULL}.
+          */
+         @FlaggedApi(Flags.FLAG_MAJOR_MINOR_VERSIONING_SCHEME)
++        @Adapted(reason = "SDK_INT when ro.build.version.sdk_full is unset")
+         public static final int SDK_INT_FULL = parseFullVersion(SystemProperties.get(
+-                    "ro.build.version.sdk_full", ""));
++                    "ro.build.version.sdk_full", Integer.toString(SDK_INT)));
+ 
+         /**
+          * The SDK version of the software that <em>initially</em> shipped on
+@@ -1660,30 +1603,6 @@
+     public @interface BackportedFixStatus {
+     }
+ 
+-    /**
+-     * The status of the backported fix for a known issue on this device.
+-     *
+-     * @param id The id of the known issue to check.
+-     * @return {@link #BACKPORTED_FIX_STATUS_FIXED} if the known issue is
+-     * fixed on this device,
+-     * {@link #BACKPORTED_FIX_STATUS_NOT_FIXED} if the known issue is not
+-     * fixed on this device,
+-     * {@link #BACKPORTED_FIX_STATUS_NOT_APPLICABLE} if the known issue is
+-     * is not applicable on this device,
+-     * otherwise {@link #BACKPORTED_FIX_STATUS_UNKNOWN}.
+-     */
+-    @FlaggedApi(android.os.Flags.FLAG_API_FOR_BACKPORTED_FIXES)
+-    public static @BackportedFixStatus int getBackportedFixStatus(long id) {
+-        @BackportedFixStatus int status = BACKPORTED_FIX_STATUS_UNKNOWN;
+-        int uid = Binder.getCallingUid();
+-        if (id > 0 && id <= 1023) {
+-            status = isBitSet(BackportedFixesProperties.alias_bitset(), (int) id)
+-                    ? BACKPORTED_FIX_STATUS_FIXED : BACKPORTED_FIX_STATUS_UNKNOWN;
+-        }
+-        FrameworkStatsLog.write(FrameworkStatsLog.BACKPORTED_FIX_STATUS_REPORTED, uid, id, status);
+-        return status;
+-    }
+-
+     private static boolean isBitSet(List<Long> bitsetLongArray, int bitIndex) {
+         // Because java.util.BitSet is not threadsafe do the calculations here instead.
+         if (bitIndex < 0) {
+@@ -1716,23 +1635,6 @@
+     }
+ 
+     /**
+-     * Ensure that raw fingerprint system property is defined. If it was derived
+-     * dynamically by {@link #deriveFingerprint()} this is where we push the
+-     * derived value into the property service.
+-     *
+-     * @hide
+-     */
+-    public static void ensureFingerprintProperty() {
+-        if (TextUtils.isEmpty(SystemProperties.get("ro.build.fingerprint"))) {
+-            try {
+-                SystemProperties.set("ro.build.fingerprint", FINGERPRINT);
+-            } catch (IllegalArgumentException e) {
+-                Slog.e(TAG, "Failed to set fingerprint property", e);
+-            }
+-        }
+-    }
+-
+-    /**
+      * A multiplier for various timeouts on the system.
+      *
+      * The intent is that products targeting software emulators that are orders of magnitude slower
+@@ -1752,85 +1654,6 @@
+     public static final boolean IS_TREBLE_ENABLED =
+         SystemProperties.getBoolean("ro.treble.enabled", false);
+ 
+-    /**
+-     * Verifies the current flash of the device is consistent with what
+-     * was expected at build time.
+-     *
+-     * Treble devices will verify the Vendor Interface (VINTF). A device
+-     * launched without Treble:
+-     *
+-     * 1) Checks that device fingerprint is defined and that it matches across
+-     *    various partitions.
+-     * 2) Verifies radio and bootloader partitions are those expected in the build.
+-     *
+-     * @hide
+-     */
+-    public static boolean isBuildConsistent() {
+-        // Don't care on eng builds.  Incremental build may trigger false negative.
+-        if (IS_ENG) return true;
+-
+-        if (IS_TREBLE_ENABLED) {
+-            int result = VintfObject.verifyBuildAtBoot();
+-
+-            if (result != 0) {
+-                Slog.e(TAG, "Vendor interface is incompatible, error="
+-                        + String.valueOf(result));
+-            }
+-
+-            return result == 0;
+-        }
+-
+-        final String system = SystemProperties.get("ro.system.build.fingerprint");
+-        final String vendor = SystemProperties.get("ro.vendor.build.fingerprint");
+-        final String bootimage = SystemProperties.get("ro.bootimage.build.fingerprint");
+-        final String requiredBootloader = SystemProperties.get("ro.build.expect.bootloader");
+-        final String currentBootloader = SystemProperties.get("ro.bootloader");
+-        final String requiredRadio = SystemProperties.get("ro.build.expect.baseband");
+-        final String currentRadio = joinListOrElse(
+-                TelephonyProperties.baseband_version(), "");
+-
+-        if (TextUtils.isEmpty(system)) {
+-            Slog.e(TAG, "Required ro.system.build.fingerprint is empty!");
+-            return false;
+-        }
+-
+-        if (!TextUtils.isEmpty(vendor)) {
+-            if (!Objects.equals(system, vendor)) {
+-                Slog.e(TAG, "Mismatched fingerprints; system reported " + system
+-                        + " but vendor reported " + vendor);
+-                return false;
+-            }
+-        }
+-
+-        /* TODO: Figure out issue with checks failing
+-        if (!TextUtils.isEmpty(bootimage)) {
+-            if (!Objects.equals(system, bootimage)) {
+-                Slog.e(TAG, "Mismatched fingerprints; system reported " + system
+-                        + " but bootimage reported " + bootimage);
+-                return false;
+-            }
+-        }
+-
+-        if (!TextUtils.isEmpty(requiredBootloader)) {
+-            if (!Objects.equals(currentBootloader, requiredBootloader)) {
+-                Slog.e(TAG, "Mismatched bootloader version: build requires " + requiredBootloader
+-                        + " but runtime reports " + currentBootloader);
+-                return false;
+-            }
+-        }
+-
+-        if (!TextUtils.isEmpty(requiredRadio)) {
+-            if (!Objects.equals(currentRadio, requiredRadio)) {
+-                Slog.e(TAG, "Mismatched radio version: build requires " + requiredRadio
+-                        + " but runtime reports " + currentRadio);
+-                return false;
+-            }
+-        }
+-        */
+-
+-        return true;
+-    }
+-
+     /** Build information for a particular device partition. */
+     public static class Partition {
+         /** The name identifying the system partition. */

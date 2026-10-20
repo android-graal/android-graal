@@ -1,0 +1,199 @@
+--- a/emulation/svm/src/main/java/android/os/Bundle.java
++++ b/emulation/svm/src/main/java/android/os/Bundle.java
+@@ -33,6 +33,9 @@
+ 
+ import com.android.internal.annotations.VisibleForTesting;
+ 
++import org.androidgraal.hosted.annotate.Adapted;
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.io.Serializable;
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+@@ -48,6 +51,7 @@
+  * @see PersistableBundle
+  */
+ @android.ravenwood.annotation.RavenwoodKeepWholeClass
++@Emulated
+ public final class Bundle extends BaseBundle implements Cloneable, Parcelable {
+     @VisibleForTesting
+     static final int FLAG_HAS_FDS = 1 << 8;
+@@ -440,35 +444,6 @@
+     }
+ 
+     /**
+-     * Returns a status indicating whether the bundle contains any parcelled Binder objects.
+-     * @hide
+-     */
+-    @FlaggedApi(Flags.FLAG_ENABLE_HAS_BINDERS)
+-    @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
+-    public @HasBinderStatus int hasBinders() {
+-        if ((mFlags & FLAG_HAS_BINDERS_KNOWN) != 0) {
+-            if ((mFlags & FLAG_HAS_BINDERS) != 0) {
+-                return STATUS_BINDERS_PRESENT;
+-            } else {
+-                return STATUS_BINDERS_NOT_PRESENT;
+-            }
+-        }
+-
+-        final Parcel p = mParcelledData;
+-        if (p == null) {
+-            return STATUS_BINDERS_UNKNOWN;
+-        }
+-        if (p.hasBinders()) {
+-            mFlags = mFlags | FLAG_HAS_BINDERS | FLAG_HAS_BINDERS_KNOWN;
+-            return STATUS_BINDERS_PRESENT;
+-        } else {
+-            mFlags = mFlags & ~FLAG_HAS_BINDERS;
+-            mFlags |= FLAG_HAS_BINDERS_KNOWN;
+-            return STATUS_BINDERS_NOT_PRESENT;
+-        }
+-    }
+-
+-    /**
+      * Returns if the bundle definitely contains at least an intent. This method returns false does
+      * not guarantee the bundle does not contain a nested intent. An intent could still exist in a
+      * ParcelableArrayList, ParcelableArray, ParcelableList, a bundle in this bundle, etc.
+@@ -480,6 +455,7 @@
+ 
+     /** {@hide} */
+     @Override
++    @Adapted(reason = "a Binder value throws")
+     public void putObject(@Nullable String key, @Nullable Object value) {
+         if (value instanceof Byte) {
+             putByte(key, (Byte) value);
+@@ -520,9 +496,7 @@
+         } else if (value instanceof Bundle) {
+             putBundle(key, (Bundle) value);
+         } else if (value instanceof Binder) {
+-            putBinder(key, (Binder) value);
+-        } else if (value instanceof IBinder) {
+-            putIBinder(key, (IBinder) value);
++            throw new UnsupportedOperationException();
+         } else {
+             super.putObject(key, value);
+         }
+@@ -812,44 +786,6 @@
+     }
+ 
+     /**
+-     * Inserts an {@link IBinder} value into the mapping of this Bundle, replacing
+-     * any existing value for the given key.  Either key or value may be null.
+-     *
+-     * <p class="note">You should be very careful when using this function.  In many
+-     * places where Bundles are used (such as inside of Intent objects), the Bundle
+-     * can live longer inside of another process than the process that had originally
+-     * created it.  In that case, the IBinder you supply here will become invalid
+-     * when your process goes away, and no longer usable, even if a new process is
+-     * created for you later on.</p>
+-     *
+-     * @param key a String, or null
+-     * @param value an IBinder object, or null
+-     */
+-    public void putBinder(@Nullable String key, @Nullable IBinder value) {
+-        unparcel();
+-        mMap.put(key, value);
+-        mFlags &= ~FLAG_HAS_BINDERS_KNOWN;
+-    }
+-
+-    /**
+-     * Inserts an IBinder value into the mapping of this Bundle, replacing
+-     * any existing value for the given key.  Either key or value may be null.
+-     *
+-     * @param key a String, or null
+-     * @param value an IBinder object, or null
+-     *
+-     * @deprecated
+-     * @hide This is the old name of the function.
+-     */
+-    @UnsupportedAppUsage
+-    @Deprecated
+-    public void putIBinder(@Nullable String key, @Nullable IBinder value) {
+-        unparcel();
+-        mMap.put(key, value);
+-        mFlags &= ~FLAG_HAS_BINDERS_KNOWN;
+-    }
+-
+-    /**
+      * Returns the value associated with the given key, or (byte) 0 if
+      * no mapping of the desired type exists for the given key.
+      *
+@@ -1469,57 +1405,6 @@
+         return super.getCharSequenceArray(key);
+     }
+ 
+-    /**
+-     * Returns the value associated with the given key, or null if
+-     * no mapping of the desired type exists for the given key or a null
+-     * value is explicitly associated with the key.
+-     *
+-     * @param key a String, or null
+-     * @return an IBinder value, or null
+-     */
+-    @Nullable
+-    public IBinder getBinder(@Nullable String key) {
+-        unparcel();
+-        Object o = mMap.get(key);
+-        if (o == null) {
+-            return null;
+-        }
+-        try {
+-            return (IBinder) o;
+-        } catch (ClassCastException e) {
+-            typeWarning(key, o, "IBinder", e);
+-            return null;
+-        }
+-    }
+-
+-    /**
+-     * Returns the value associated with the given key, or null if
+-     * no mapping of the desired type exists for the given key or a null
+-     * value is explicitly associated with the key.
+-     *
+-     * @param key a String, or null
+-     * @return an IBinder value, or null
+-     *
+-     * @deprecated
+-     * @hide This is the old name of the function.
+-     */
+-    @UnsupportedAppUsage
+-    @Deprecated
+-    @Nullable
+-    public IBinder getIBinder(@Nullable String key) {
+-        unparcel();
+-        Object o = mMap.get(key);
+-        if (o == null) {
+-            return null;
+-        }
+-        try {
+-            return (IBinder) o;
+-        } catch (ClassCastException e) {
+-            typeWarning(key, o, "IBinder", e);
+-            return null;
+-        }
+-    }
+-
+     public static final @android.annotation.NonNull Parcelable.Creator<Bundle> CREATOR =
+         new Parcelable.Creator<Bundle>() {
+         @Override
+@@ -1602,20 +1487,4 @@
+         return mMap.toString();
+     }
+ 
+-    /** @hide */
+-    public void dumpDebug(ProtoOutputStream proto, long fieldId) {
+-        final long token = proto.start(fieldId);
+-
+-        if (mParcelledData != null) {
+-            if (isEmptyParcel()) {
+-                proto.write(BundleProto.PARCELLED_DATA_SIZE, 0);
+-            } else {
+-                proto.write(BundleProto.PARCELLED_DATA_SIZE, mParcelledData.dataSize());
+-            }
+-        } else {
+-            proto.write(BundleProto.MAP_DATA, mMap.toString());
+-        }
+-
+-        proto.end(token);
+-    }
+ }

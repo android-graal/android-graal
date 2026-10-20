@@ -168,7 +168,7 @@ public class DrmInfo {
      *     true if valid
      *     false if invalid
      */
-     private boolean isValid() {
+     boolean isValid() {
         return (null != mMimeType && !mMimeType.equals("")
                 && null != mData && mData.length > 0 && DrmInfoRequest.isValidType(mInfoType));
     }

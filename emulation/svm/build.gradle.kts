@@ -23,6 +23,7 @@ dependencies {
     compileOnly(libs.androidx.annotation)
     compileOnly(libs.errorprone.annotations)
     compileOnly(libs.jspecify)
+    testImplementation(libs.java.diff.utils)
     "declarationsCompileOnly"(project(path))
     // KGP adds kotlin-stdlib to a source set's api unless the source set declares one.
     "declarationsCompileOnly"(embeddedKotlin("stdlib"))
@@ -101,12 +102,38 @@ abstract class DeclarationsInputs : CommandLineArgumentProvider {
     )
 }
 
+abstract class StockDiffInputs : CommandLineArgumentProvider {
+    @get:InputDirectory
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val copies: DirectoryProperty
+
+    @get:InputDirectory
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val sdkSources: DirectoryProperty
+
+    @get:InputDirectory
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val goldens: DirectoryProperty
+
+    override fun asArguments(): List<String> = listOf(
+        "-Dandroid.copies=${copies.get().asFile.absolutePath}",
+        "-Dandroid.sdkSources=${sdkSources.get().asFile.absolutePath}",
+        "-Dandroid.stockDiffs=${goldens.get().asFile.absolutePath}",
+    )
+}
+
 tasks.test {
     jvmArgumentProviders +=
         objects.newInstance<DeclarationsInputs>().apply {
             androidJar.from(nativeHost.sdk.androidJar(sdkVersion))
             emulationClasses.from(sourceSets.main.flatMap { it.java.classesDirectory })
             declarationClasses.from(declarations.java.classesDirectory)
+        }
+    jvmArgumentProviders +=
+        objects.newInstance<StockDiffInputs>().apply {
+            copies = layout.projectDirectory.dir("src/main/java")
+            sdkSources = nativeHost.sdk.androidSources(sdkVersion)
+            goldens = layout.projectDirectory.dir("src/test/golden/stock-diff")
         }
 }
 

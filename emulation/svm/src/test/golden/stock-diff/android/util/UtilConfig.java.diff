@@ -1,0 +1,22 @@
+--- a/emulation/svm/src/main/java/android/util/UtilConfig.java
++++ b/emulation/svm/src/main/java/android/util/UtilConfig.java
+@@ -16,16 +16,15 @@
+ 
+ package android.util;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ /**
+  * Class to configure several of the util classes.
+  *
+  * @hide
+  */
+ @android.ravenwood.annotation.RavenwoodKeepWholeClass
++@Emulated
+ public class UtilConfig {
+     static boolean sThrowExceptionForUpperArrayOutOfBounds = true;
+-
+-    public static void setThrowExceptionForUpperArrayOutOfBounds(boolean check) {
+-        sThrowExceptionForUpperArrayOutOfBounds = check;
+-    }
+ }

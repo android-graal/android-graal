@@ -51,6 +51,7 @@ import libcore.io.IoUtils;
 import libcore.io.Memory;
 
 import org.androidgraal.android.FileDescriptors;
+import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
 
 import java.io.Closeable;
@@ -193,6 +194,7 @@ public class ParcelFileDescriptor implements Parcelable, Closeable {
     }
 
     /** {@hide} */
+    @Adapted(reason = "without IoUtils.setFdOwner")
     public ParcelFileDescriptor(FileDescriptor fd, FileDescriptor commChannel) {
         if (fd == null) {
             throw new NullPointerException("FileDescriptor must not be null");
@@ -264,6 +266,7 @@ public class ParcelFileDescriptor implements Parcelable, Closeable {
      * new file descriptor shared state such as file position with the
      * original file descriptor.
      */
+    @Adapted(reason = "sets the int through FileDescriptors instead of setInt$")
     public static ParcelFileDescriptor dup(FileDescriptor orig) throws IOException {
         try {
             final FileDescriptor fd = new FileDescriptor();
@@ -299,6 +302,7 @@ public class ParcelFileDescriptor implements Parcelable, Closeable {
      * @return Returns a new ParcelFileDescriptor holding a FileDescriptor
      * for a dup of the given fd.
      */
+    @Adapted(reason = "sets the int through FileDescriptors instead of setInt$")
     public static ParcelFileDescriptor fromFd(int fd) throws IOException {
         final FileDescriptor original = new FileDescriptor();
         FileDescriptors.setFd(original, fd);
@@ -327,6 +331,7 @@ public class ParcelFileDescriptor implements Parcelable, Closeable {
      * @return Returns a new ParcelFileDescriptor holding a FileDescriptor
      * for the given fd.
      */
+    @Adapted(reason = "sets the int through FileDescriptors instead of setInt$")
     public static ParcelFileDescriptor adoptFd(int fd) {
         final FileDescriptor fdesc = new FileDescriptor();
         FileDescriptors.setFd(fdesc, fd);
@@ -488,6 +493,7 @@ public class ParcelFileDescriptor implements Parcelable, Closeable {
      */
     @TestApi
     @RavenwoodThrow(reason = "Os.readlink() and Os.stat()")
+    @Adapted(reason = "reads the int through FileDescriptors instead of getInt$")
     public static File getFile(FileDescriptor fd) throws IOException {
         try {
             final String path = Os.readlink("/proc/self/fd/" + FileDescriptors.getFd(fd));
@@ -563,6 +569,7 @@ public class ParcelFileDescriptor implements Parcelable, Closeable {
      * <strong>WARNING:</strong> Do not call close on the return value of this
      * function or pass it to a function that assumes ownership of the fd.
      */
+    @Adapted(reason = "reads the int through FileDescriptors instead of getInt$")
     public int getFd() {
         if (mWrapped != null) {
             return mWrapped.getFd();
@@ -890,6 +897,11 @@ public class ParcelFileDescriptor implements Parcelable, Closeable {
     }
 
     @Override
+    @Adapted(reason = "empty, the image runs no finalizer")
+    protected void finalize() throws Throwable {
+    }
+
+    @Override
     public int describeContents() {
         if (mWrapped != null) {
             return mWrapped.describeContents();
@@ -904,6 +916,7 @@ public class ParcelFileDescriptor implements Parcelable, Closeable {
      * the file descriptor will be closed after a copy is written to the Parcel.
      */
     @Override
+    @Adapted(reason = "writing the descriptor throws")
     public void writeToParcel(Parcel out, int flags) {
         if (mWrapped != null) {
             try {

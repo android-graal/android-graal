@@ -1,0 +1,20 @@
+--- a/emulation/svm/src/main/java/android/provider/OpenableColumns.java
++++ b/emulation/svm/src/main/java/android/provider/OpenableColumns.java
+@@ -16,8 +16,7 @@
+ 
+ package android.provider;
+ 
+-import android.content.ContentResolver;
+-import android.content.Intent;
++import org.androidgraal.hosted.annotate.Emulated;
+ 
+ /**
+  * These are standard columns for openable URIs. Providers that serve openable
+@@ -28,6 +27,7 @@
+  *
+  * @see Intent#CATEGORY_OPENABLE
+  */
++@Emulated
+ public interface OpenableColumns {
+ 
+     /**

@@ -95,6 +95,7 @@ public final class FileUtils {
 
     /** {@hide} */
     public static int translateModeStringToPosix(String mode) {
+        // Quick check for invalid chars
         for (int i = 0; i < mode.length(); i++) {
             switch (mode.charAt(i)) {
                 case 'r':

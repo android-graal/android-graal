@@ -1,0 +1,23 @@
+--- a/emulation/svm/src/main/java/android/hardware/DataSpace.java
++++ b/emulation/svm/src/main/java/android/hardware/DataSpace.java
+@@ -17,10 +17,11 @@
+ 
+ import android.annotation.FlaggedApi;
+ import android.annotation.IntDef;
+-import android.view.SurfaceControl;
+ 
+ import com.android.graphics.flags.Flags;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+ 
+@@ -63,6 +64,7 @@
+  * <p>Defines the range of values corresponding to the unit range of {@code 0-1}.</p>
+  */
+ 
++@Emulated
+ public final class DataSpace {
+     /** @hide */
+     @Retention(RetentionPolicy.SOURCE)

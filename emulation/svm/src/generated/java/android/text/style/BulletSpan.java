@@ -1,5 +1,7 @@
 package android.text.style;
 
+import android.text.ParcelableSpan;
+
 /**
  *  A span which styles paragraphs as bullet points (respecting layout direction).
  *  <p>
@@ -32,8 +34,23 @@ package android.text.style;
  *  <img src="{@docRoot}reference/android/images/text/style/custombulletspan.png" />
  *  <figcaption>Customized BulletSpan.</figcaption>
  */
-public final class BulletSpan {
+public abstract class BulletSpan implements ParcelableSpan {
     public static final int STANDARD_GAP_WIDTH = 2;
+
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public int getSpanTypeId() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
 
     private BulletSpan() {
     }

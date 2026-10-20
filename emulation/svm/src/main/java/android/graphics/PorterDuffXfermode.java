@@ -33,9 +33,9 @@ public class PorterDuffXfermode extends Xfermode {
      *
      * @param mode           The porter-duff mode that is applied
      */
-    private static final int DEFAULT = PorterDuff.Mode.SRC_OVER.nativeInt;
-    public int porterDuffMode = DEFAULT;
-    public PorterDuffXfermode() {}
+    static final int DEFAULT = PorterDuff.Mode.SRC_OVER.nativeInt;
+    int porterDuffMode = DEFAULT;
+    PorterDuffXfermode() {}
     public PorterDuffXfermode(PorterDuff.Mode mode) {
         porterDuffMode = mode.nativeInt;
     }

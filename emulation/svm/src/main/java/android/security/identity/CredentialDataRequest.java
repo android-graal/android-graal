@@ -30,7 +30,7 @@ import java.util.Map;
  */
 @Emulated
 public class CredentialDataRequest {
-    private CredentialDataRequest() {}
+    CredentialDataRequest() {}
 
     /**
      * Gets the device-signed entries to request.
@@ -109,13 +109,13 @@ public class CredentialDataRequest {
         return mReaderSignature;
     }
 
-    private Map<String, Collection<String>> mDeviceSignedEntriesToRequest = new LinkedHashMap<>();
-    private Map<String, Collection<String>> mIssuerSignedEntriesToRequest = new LinkedHashMap<>();
-    private boolean mAllowUsingExhaustedKeys = true;
-    private boolean mAllowUsingExpiredKeys = false;
-    private boolean mIncrementUseCount = true;
-    private byte[] mRequestMessage = null;
-    private byte[] mReaderSignature = null;
+    Map<String, Collection<String>> mDeviceSignedEntriesToRequest = new LinkedHashMap<>();
+    Map<String, Collection<String>> mIssuerSignedEntriesToRequest = new LinkedHashMap<>();
+    boolean mAllowUsingExhaustedKeys = true;
+    boolean mAllowUsingExpiredKeys = false;
+    boolean mIncrementUseCount = true;
+    byte[] mRequestMessage = null;
+    byte[] mReaderSignature = null;
 
     /**
      * A builder for {@link CredentialDataRequest}.

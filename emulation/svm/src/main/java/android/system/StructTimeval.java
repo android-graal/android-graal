@@ -18,6 +18,7 @@ package android.system;
 
 import libcore.util.NonNull;
 
+import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
 
 /**
@@ -57,6 +58,7 @@ public final class StructTimeval {
     }
 
     @Override
+    @Adapted(reason = "Objects.toString's output spelled out")
     public String toString() {
         return "StructTimeval[tv_sec=" + tv_sec + ",tv_usec=" + tv_usec + "]";
     }

@@ -497,5 +497,5 @@ public class Matrix4f {
     }
 
     @UnsupportedAppUsage
-    private final float[] mMat;
+    final float[] mMat;
 }

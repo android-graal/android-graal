@@ -179,7 +179,7 @@ public class DrmRights {
      *
      * @return True if valid; false if invalid.
      */
-    private boolean isValid() {
+    /*package*/ boolean isValid() {
         return (null != mMimeType && !mMimeType.equals("")
                 && null != mData && mData.length > 0);
     }

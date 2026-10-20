@@ -1,0 +1,130 @@
+--- a/emulation/svm/src/main/java/android/util/IndentingPrintWriter.java
++++ b/emulation/svm/src/main/java/android/util/IndentingPrintWriter.java
+@@ -19,6 +19,8 @@
+ import android.annotation.NonNull;
+ import android.annotation.Nullable;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.io.PrintWriter;
+ import java.io.Writer;
+ import java.util.Arrays;
+@@ -35,6 +37,7 @@
+  */
+ // Exported to Mainline modules; cannot use annotations
+ // @android.ravenwood.annotation.RavenwoodKeepWholeClass
++@Emulated
+ public class IndentingPrintWriter extends PrintWriter {
+     private final String mSingleIndent;
+     private final int mWrapLength;
+@@ -54,20 +57,7 @@
+ 
+     private char[] mSingleChar = new char[1];
+ 
+-    public IndentingPrintWriter(@NonNull Writer writer) {
+-        this(writer, "  ", -1);
+-    }
+-
+-    public IndentingPrintWriter(@NonNull Writer writer, @NonNull String singleIndent) {
+-        this(writer, singleIndent, null, -1);
+-    }
+-
+     public IndentingPrintWriter(@NonNull Writer writer, @NonNull String singleIndent,
+-            String prefix) {
+-        this(writer, singleIndent, prefix, -1);
+-    }
+-
+-    public IndentingPrintWriter(@NonNull Writer writer, @NonNull String singleIndent,
+             int wrapLength) {
+         this(writer, singleIndent, null, wrapLength);
+     }
+@@ -83,38 +73,6 @@
+     }
+ 
+     /**
+-     * Overrides the indent set in the constructor for the next printed line.
+-     *
+-     * @deprecated Use the "prefix" constructor parameter
+-     * @hide
+-     */
+-    @NonNull
+-    @Deprecated
+-    public IndentingPrintWriter setIndent(@NonNull String indent) {
+-        mIndentBuilder.setLength(0);
+-        mIndentBuilder.append(indent);
+-        mCurrentIndent = null;
+-        return this;
+-    }
+-
+-    /**
+-     * Overrides the indent set in the constructor with {@code singleIndent} repeated {@code indent}
+-     * times.
+-     *
+-     * @deprecated Use the "prefix" constructor parameter
+-     * @hide
+-     */
+-    @NonNull
+-    @Deprecated
+-    public IndentingPrintWriter setIndent(int indent) {
+-        mIndentBuilder.setLength(0);
+-        for (int i = 0; i < indent; i++) {
+-            increaseIndent();
+-        }
+-        return this;
+-    }
+-
+-    /**
+      * Increases the indent starting with the next printed line.
+      */
+     @NonNull
+@@ -134,50 +92,6 @@
+         return this;
+     }
+ 
+-    /**
+-     * Prints a key-value pair.
+-     */
+-    @NonNull
+-    public IndentingPrintWriter print(@NonNull String key, @Nullable Object value) {
+-        String string;
+-        if (value == null) {
+-            string = "null";
+-        } else if (value.getClass().isArray()) {
+-            if (value.getClass() == boolean[].class) {
+-                string = Arrays.toString((boolean[]) value);
+-            } else if (value.getClass() == byte[].class) {
+-                string = Arrays.toString((byte[]) value);
+-            } else if (value.getClass() == char[].class) {
+-                string = Arrays.toString((char[]) value);
+-            } else if (value.getClass() == double[].class) {
+-                string = Arrays.toString((double[]) value);
+-            } else if (value.getClass() == float[].class) {
+-                string = Arrays.toString((float[]) value);
+-            } else if (value.getClass() == int[].class) {
+-                string = Arrays.toString((int[]) value);
+-            } else if (value.getClass() == long[].class) {
+-                string = Arrays.toString((long[]) value);
+-            } else if (value.getClass() == short[].class) {
+-                string = Arrays.toString((short[]) value);
+-            } else {
+-                string = Arrays.toString((Object[]) value);
+-            }
+-        } else {
+-            string = String.valueOf(value);
+-        }
+-        print(key + "=" + string + " ");
+-        return this;
+-    }
+-
+-    /**
+-     * Prints a key-value pair, using hexadecimal format for the value.
+-     */
+-    @NonNull
+-    public IndentingPrintWriter printHexInt(@NonNull String key, int value) {
+-        print(key + "=0x" + Integer.toHexString(value) + " ");
+-        return this;
+-    }
+-
+     @Override
+     public void println() {
+         write('\n');

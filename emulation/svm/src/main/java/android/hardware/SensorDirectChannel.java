@@ -19,6 +19,7 @@ import android.annotation.IntDef;
 
 import dalvik.system.CloseGuard;
 
+import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
 
 import java.io.IOException;
@@ -192,7 +193,7 @@ public final class SensorDirectChannel implements Channel {
     }
 
     /** @hide */
-    private SensorDirectChannel(SensorManager manager, int id, int type, long size) {
+    SensorDirectChannel(SensorManager manager, int id, int type, long size) {
         mManager = manager;
         mNativeHandle = id;
         mType = type;
@@ -201,8 +202,13 @@ public final class SensorDirectChannel implements Channel {
     }
 
     /** @hide */
-    private int getNativeHandle() {
+    int getNativeHandle() {
         return mNativeHandle;
+    }
+
+    @Override
+    @Adapted(reason = "empty, the image runs no finalizer")
+    protected void finalize() throws Throwable {
     }
 
     private final AtomicBoolean mClosed = new AtomicBoolean();

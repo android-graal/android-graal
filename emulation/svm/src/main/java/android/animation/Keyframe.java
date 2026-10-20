@@ -42,25 +42,25 @@ public abstract class Keyframe implements Cloneable {
      * animation first starts, to populate placeholder keyframes with real values derived
      * from the target object.
      */
-    public boolean mHasValue;
+    boolean mHasValue;
 
     /**
      * Flag to indicate whether the value in the keyframe was read from the target object or not.
      * If so, its value will be recalculated if target changes.
      */
-    public boolean mValueWasSetOnStart;
+    boolean mValueWasSetOnStart;
 
 
     /**
      * The time at which mValue will hold true.
      */
-    public float mFraction;
+    float mFraction;
 
     /**
      * The type of the value in this Keyframe. This type is determined at construction time,
      * based on the type of the <code>value</code> object passed into the constructor.
      */
-    public Class mValueType;
+    Class mValueType;
 
     /**
      * The optional time interpolator for the interval preceding this keyframe. A null interpolator
@@ -183,11 +183,11 @@ public abstract class Keyframe implements Cloneable {
      *
      * @return boolean Whether this Keyframe's value was retieved from the target object or not.
      */
-    private boolean valueWasSetOnStart() {
+    boolean valueWasSetOnStart() {
         return mValueWasSetOnStart;
     }
 
-    private void setValueWasSetOnStart(boolean valueWasSetOnStart) {
+    void setValueWasSetOnStart(boolean valueWasSetOnStart) {
         mValueWasSetOnStart = valueWasSetOnStart;
     }
 
@@ -262,14 +262,14 @@ public abstract class Keyframe implements Cloneable {
     /**
      * This internal subclass is used for all types which are not int or float.
      */
-    private static class ObjectKeyframe extends Keyframe {
+    static class ObjectKeyframe extends Keyframe {
 
         /**
          * The value of the animation at the time mFraction.
          */
-        private Object mValue;
+        Object mValue;
 
-        private ObjectKeyframe(float fraction, Object value) {
+        ObjectKeyframe(float fraction, Object value) {
             mFraction = fraction;
             mValue = value;
             mHasValue = (value != null);
@@ -297,21 +297,21 @@ public abstract class Keyframe implements Cloneable {
     /**
      * Internal subclass used when the keyframe value is of type int.
      */
-    private static class IntKeyframe extends Keyframe {
+    static class IntKeyframe extends Keyframe {
 
         /**
          * The value of the animation at the time mFraction.
          */
-        private int mValue;
+        int mValue;
 
-        private IntKeyframe(float fraction, int value) {
+        IntKeyframe(float fraction, int value) {
             mFraction = fraction;
             mValue = value;
             mValueType = int.class;
             mHasValue = true;
         }
 
-        private IntKeyframe(float fraction) {
+        IntKeyframe(float fraction) {
             mFraction = fraction;
             mValueType = int.class;
         }
@@ -345,20 +345,20 @@ public abstract class Keyframe implements Cloneable {
     /**
      * Internal subclass used when the keyframe value is of type float.
      */
-    private static class FloatKeyframe extends Keyframe {
+    static class FloatKeyframe extends Keyframe {
         /**
          * The value of the animation at the time mFraction.
          */
-        private float mValue;
+        float mValue;
 
-        private FloatKeyframe(float fraction, float value) {
+        FloatKeyframe(float fraction, float value) {
             mFraction = fraction;
             mValue = value;
             mValueType = float.class;
             mHasValue = true;
         }
 
-        private FloatKeyframe(float fraction) {
+        FloatKeyframe(float fraction) {
             mFraction = fraction;
             mValueType = float.class;
         }

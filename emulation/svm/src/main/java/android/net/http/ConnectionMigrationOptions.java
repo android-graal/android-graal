@@ -99,7 +99,7 @@ public class ConnectionMigrationOptions {
         return mAllowNonDefaultNetworkUsage;
     }
 
-    private ConnectionMigrationOptions(@NonNull Builder builder) {
+    ConnectionMigrationOptions(@NonNull Builder builder) {
         this.mEnableDefaultNetworkMigration = builder.mEnableDefaultNetworkMigration;
         this.mEnablePathDegradationMigration = builder.mEnablePathDegradationMigration;
         this.mAllowServerMigration = builder.mAllowServerMigration;

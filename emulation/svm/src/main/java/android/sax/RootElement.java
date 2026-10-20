@@ -68,7 +68,7 @@ import org.androidgraal.hosted.annotate.Emulated;
 @Emulated
 public class RootElement extends Element {
 
-    private final Handler handler = new Handler();
+    final Handler handler = new Handler();
 
     /**
      * Constructs a new root element with the given name.
@@ -97,12 +97,12 @@ public class RootElement extends Element {
         return this.handler;
     }
 
-    private class Handler extends DefaultHandler {
+    class Handler extends DefaultHandler {
 
-        private Locator locator;
-        private int depth = -1;
-        private Element current = null;
-        private StringBuilder bodyBuilder = null;
+        Locator locator;
+        int depth = -1;
+        Element current = null;
+        StringBuilder bodyBuilder = null;
 
         @Override
         public void setDocumentLocator(Locator locator) {
@@ -140,7 +140,7 @@ public class RootElement extends Element {
             }
         }
 
-        private void startRoot(String uri, String localName, Attributes attributes)
+        void startRoot(String uri, String localName, Attributes attributes)
                 throws SAXException {
             Element root = RootElement.this;
             if (root.uri.compareTo(uri) != 0
@@ -153,7 +153,7 @@ public class RootElement extends Element {
             start(root, attributes);
         }
 
-        private void start(Element e, Attributes attributes) {
+        void start(Element e, Attributes attributes) {
             // Push element onto the stack.
             this.current = e;
 

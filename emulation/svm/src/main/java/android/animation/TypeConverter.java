@@ -39,14 +39,14 @@ public abstract class TypeConverter<T, V> {
      * the proper setter function to call.
      * @return The Class to convert the input to.
      */
-    public Class<V> getTargetType() {
+    Class<V> getTargetType() {
         return mToClass;
     }
 
     /**
      * Returns the source conversion type.
      */
-    public Class<T> getSourceType() {
+    Class<T> getSourceType() {
         return mFromClass;
     }
 
