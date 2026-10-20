@@ -7,6 +7,16 @@ import android.os.Parcelable;
  * Events are delivered to registered instances of {@link Callback}.
  */
 public final class GnssMeasurementsEvent implements Parcelable {
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private GnssMeasurementsEvent() {
     }
 

@@ -16,6 +16,8 @@
 
 package android.os;
 
+import android.annotation.FlaggedApi;
+
 import org.androidgraal.hosted.annotate.Emulated;
 
 import java.util.Objects;
@@ -27,6 +29,7 @@ import java.util.Objects;
  *
  * All timings should be in {@link SystemClock#uptimeNanos()} and measured in wall time.
  */
+@FlaggedApi(Flags.FLAG_ADPF_GPU_REPORT_ACTUAL_WORK_DURATION)
 @Emulated
 public final class WorkDuration {
     private long mActualTotalDurationNanos = 0;

@@ -7,6 +7,16 @@ import android.os.Parcelable;
  * from which to read {@link android.app.usage.UsageEvents.Event} objects.
  */
 public final class UsageEvents implements Parcelable {
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private UsageEvents() {
     }
 

@@ -19,6 +19,16 @@ public final class BluetoothHidDeviceAppQosSettings implements Parcelable {
 
     public static final int SERVICE_NO_TRAFFIC = 0;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private BluetoothHidDeviceAppQosSettings() {
     }
 }

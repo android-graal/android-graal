@@ -16,8 +16,6 @@
 
 package android.net.http;
 
-import androidx.annotation.NonNull;
-
 import org.androidgraal.hosted.annotate.Emulated;
 
 import java.util.List;
@@ -35,7 +33,6 @@ public abstract class HeaderBlock {
      *
      * @return an unmodifiable list of header field and value pairs
      */
-    @NonNull
     public abstract List<Map.Entry<String, String>> getAsList();
 
     /**
@@ -47,6 +44,5 @@ public abstract class HeaderBlock {
      *
      * @return an unmodifiable map from header field names to lists of values
      */
-    @NonNull
     public abstract Map<String, List<String>> getAsMap();
 }

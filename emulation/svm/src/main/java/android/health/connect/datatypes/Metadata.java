@@ -18,8 +18,9 @@ package android.health.connect.datatypes;
 
 import static android.health.connect.datatypes.validation.ValidationUtils.validateIntDefValue;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.annotation.IntDef;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -227,6 +228,12 @@ public final class Metadata {
      *
      * @hide
      */
+    @IntDef({
+        RECORDING_METHOD_UNKNOWN,
+        RECORDING_METHOD_ACTIVELY_RECORDED,
+        RECORDING_METHOD_AUTOMATICALLY_RECORDED,
+        RECORDING_METHOD_MANUAL_ENTRY
+    })
     @Retention(RetentionPolicy.SOURCE)
     public @interface RecordingMethod {}
 

@@ -89,6 +89,16 @@ public final class WifiP2pConfig implements Parcelable {
      */
     public static final int PCC_MODE_CONNECTION_TYPE_R2_ONLY = 2;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private WifiP2pConfig() {
     }
 }

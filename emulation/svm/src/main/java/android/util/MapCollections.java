@@ -16,7 +16,7 @@
 
 package android.util;
 
-import androidx.annotation.Nullable;
+import android.annotation.Nullable;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Set;
 
 /**
@@ -32,9 +33,12 @@ import java.util.Set;
  * structure like {@link ArrayMap}.
  * @hide
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 abstract class MapCollections<K, V> {
+    private EntrySet mEntrySet;
     private KeySet mKeySet;
+    private ValuesCollection mValues;
 
     private final class ArrayIterator<T> implements Iterator<T> {
         private final int mOffset;
@@ -72,6 +76,201 @@ abstract class MapCollections<K, V> {
             colRemoveAt(mIndex);
         }
     }
+
+    private final class MapIterator implements Iterator<Map.Entry<K, V>>, Map.Entry<K, V> {
+        private int mEnd;
+        private int mIndex;
+        private boolean mEntryValid = false;
+
+        private MapIterator() {
+            mEnd = colGetSize() - 1;
+            mIndex = -1;
+        }
+
+        @Override
+        public boolean hasNext() {
+            return mIndex < mEnd;
+        }
+
+        @Override
+        public Map.Entry<K, V> next() {
+            if (!hasNext()) throw new NoSuchElementException();
+            mIndex++;
+            mEntryValid = true;
+            return this;
+        }
+
+        @Override
+        public void remove() {
+            if (!mEntryValid) {
+                throw new IllegalStateException();
+            }
+            colRemoveAt(mIndex);
+            mIndex--;
+            mEnd--;
+            mEntryValid = false;
+        }
+
+        @Override
+        public K getKey() {
+            if (!mEntryValid) {
+                throw new IllegalStateException(
+                        "This container does not support retaining Map.Entry objects");
+            }
+            return (K)colGetEntry(mIndex, 0);
+        }
+
+        @Override
+        public V getValue() {
+            if (!mEntryValid) {
+                throw new IllegalStateException(
+                        "This container does not support retaining Map.Entry objects");
+            }
+            return (V)colGetEntry(mIndex, 1);
+        }
+
+        @Override
+        public V setValue(V object) {
+            if (!mEntryValid) {
+                throw new IllegalStateException(
+                        "This container does not support retaining Map.Entry objects");
+            }
+            return colSetValue(mIndex, object);
+        }
+
+        @Override
+        public final boolean equals(Object o) {
+            if (!mEntryValid) {
+                throw new IllegalStateException(
+                        "This container does not support retaining Map.Entry objects");
+            }
+            if (!(o instanceof Map.Entry)) {
+                return false;
+            }
+            Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
+            return Objects.equals(e.getKey(), colGetEntry(mIndex, 0))
+                    && Objects.equals(e.getValue(), colGetEntry(mIndex, 1));
+        }
+
+        @Override
+        public final int hashCode() {
+            if (!mEntryValid) {
+                throw new IllegalStateException(
+                        "This container does not support retaining Map.Entry objects");
+            }
+            final Object key = colGetEntry(mIndex, 0);
+            final Object value = colGetEntry(mIndex, 1);
+            return (key == null ? 0 : key.hashCode()) ^
+                    (value == null ? 0 : value.hashCode());
+        }
+
+        @Override
+        public final String toString() {
+            return getKey() + "=" + getValue();
+        }
+    }
+
+    private final class EntrySet implements Set<Map.Entry<K, V>> {
+        @Override
+        public boolean add(Map.Entry<K, V> object) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean addAll(Collection<? extends Map.Entry<K, V>> collection) {
+            int oldSize = colGetSize();
+            for (Map.Entry<K, V> entry : collection) {
+                colPut(entry.getKey(), entry.getValue());
+            }
+            return oldSize != colGetSize();
+        }
+
+        @Override
+        public void clear() {
+            colClear();
+        }
+
+        @Override
+        public boolean contains(Object o) {
+            if (!(o instanceof Map.Entry))
+                return false;
+            Map.Entry<?, ?> e = (Map.Entry<?, ?>) o;
+            int index = colIndexOfKey(e.getKey());
+            if (index < 0) {
+                return false;
+            }
+            Object foundVal = colGetEntry(index, 1);
+            return Objects.equals(foundVal, e.getValue());
+        }
+
+        @Override
+        public boolean containsAll(Collection<?> collection) {
+            Iterator<?> it = collection.iterator();
+            while (it.hasNext()) {
+                if (!contains(it.next())) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return colGetSize() == 0;
+        }
+
+        @Override
+        public Iterator<Map.Entry<K, V>> iterator() {
+            return new MapIterator();
+        }
+
+        @Override
+        public boolean remove(Object object) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean removeAll(Collection<?> collection) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean retainAll(Collection<?> collection) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public int size() {
+            return colGetSize();
+        }
+
+        @Override
+        public Object[] toArray() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public <T> T[] toArray(T[] array) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean equals(@Nullable Object object) {
+            return equalsSetHelper(this, object);
+        }
+
+        @Override
+        public int hashCode() {
+            int result = 0;
+            for (int i=colGetSize()-1; i>=0; i--) {
+                final Object key = colGetEntry(i, 0);
+                final Object value = colGetEntry(i, 1);
+                result += ( (key == null ? 0 : key.hashCode()) ^
+                        (value == null ? 0 : value.hashCode()) );
+            }
+            return result;
+        }
+    };
 
     private final class KeySet implements Set<K> {
 
@@ -163,6 +362,112 @@ abstract class MapCollections<K, V> {
         @Override
         public String toString() {
             return toStringHelper(0, this, "KeySet");
+        }
+    }
+
+    private final class ValuesCollection implements Collection<V> {
+
+        @Override
+        public boolean add(V object) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public boolean addAll(Collection<? extends V> collection) {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void clear() {
+            colClear();
+        }
+
+        @Override
+        public boolean contains(Object object) {
+            return colIndexOfValue(object) >= 0;
+        }
+
+        @Override
+        public boolean containsAll(Collection<?> collection) {
+            Iterator<?> it = collection.iterator();
+            while (it.hasNext()) {
+                if (!contains(it.next())) {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        @Override
+        public boolean isEmpty() {
+            return colGetSize() == 0;
+        }
+
+        @Override
+        public Iterator<V> iterator() {
+            return new ArrayIterator<V>(1);
+        }
+
+        @Override
+        public boolean remove(Object object) {
+            int index = colIndexOfValue(object);
+            if (index >= 0) {
+                colRemoveAt(index);
+                return true;
+            }
+            return false;
+        }
+
+        @Override
+        public boolean removeAll(Collection<?> collection) {
+            int N = colGetSize();
+            boolean changed = false;
+            for (int i=0; i<N; i++) {
+                Object cur = colGetEntry(i, 1);
+                if (collection.contains(cur)) {
+                    colRemoveAt(i);
+                    i--;
+                    N--;
+                    changed = true;
+                }
+            }
+            return changed;
+        }
+
+        @Override
+        public boolean retainAll(Collection<?> collection) {
+            int N = colGetSize();
+            boolean changed = false;
+            for (int i=0; i<N; i++) {
+                Object cur = colGetEntry(i, 1);
+                if (!collection.contains(cur)) {
+                    colRemoveAt(i);
+                    i--;
+                    N--;
+                    changed = true;
+                }
+            }
+            return changed;
+        }
+
+        @Override
+        public int size() {
+            return colGetSize();
+        }
+
+        @Override
+        public Object[] toArray() {
+            return toArrayHelper(1);
+        }
+
+        @Override
+        public <T> T[] toArray(T[] array) {
+            return toArrayHelper(array, 1);
+        }
+
+        @Override
+        public String toString() {
+            return toStringHelper(1, this, "ValuesCollection");
         }
     }
 
@@ -262,11 +567,25 @@ abstract class MapCollections<K, V> {
         return false;
     }
 
+    public Set<Map.Entry<K, V>> getEntrySet() {
+        if (mEntrySet == null) {
+            mEntrySet = new EntrySet();
+        }
+        return mEntrySet;
+    }
+
     public Set<K> getKeySet() {
         if (mKeySet == null) {
             mKeySet = new KeySet();
         }
         return mKeySet;
+    }
+
+    public Collection<V> getValues() {
+        if (mValues == null) {
+            mValues = new ValuesCollection();
+        }
+        return mValues;
     }
 
     protected abstract int colGetSize();

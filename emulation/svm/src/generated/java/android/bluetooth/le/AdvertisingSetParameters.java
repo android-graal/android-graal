@@ -68,6 +68,16 @@ public final class AdvertisingSetParameters implements Parcelable {
      */
     public static final int TX_POWER_ULTRA_LOW = -21;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private AdvertisingSetParameters() {
     }
 }

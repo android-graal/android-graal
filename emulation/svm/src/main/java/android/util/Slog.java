@@ -16,8 +16,11 @@
 
 package android.util;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.annotation.SystemApi;
+import android.compat.annotation.UnsupportedAppUsage;
+import android.os.Build;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -29,6 +32,8 @@ import org.androidgraal.hosted.annotate.Emulated;
  * @see Log
  * @hide
  */
+@SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public final class Slog {
 
@@ -44,6 +49,7 @@ public final class Slog {
      *
      * @see Log#v(String, String)
      */
+    @UnsupportedAppUsage
     public static int v(@Nullable String tag, @NonNull String msg) {
         return Log.println_native(Log.LOG_ID_SYSTEM, Log.VERBOSE, tag, msg);
     }
@@ -73,6 +79,7 @@ public final class Slog {
      *
      * @see Log#d(String, String)
      */
+    @UnsupportedAppUsage
     public static int d(@Nullable String tag, @NonNull String msg) {
         return Log.println_native(Log.LOG_ID_SYSTEM, Log.DEBUG, tag, msg);
     }
@@ -88,6 +95,7 @@ public final class Slog {
      *
      * @see Log#d(String, String, Throwable)
      */
+    @UnsupportedAppUsage
     public static int d(@Nullable String tag, @NonNull String msg, @Nullable Throwable tr) {
         return Log.println_native(Log.LOG_ID_SYSTEM, Log.DEBUG, tag,
                 msg + '\n' + Log.getStackTraceString(tr));
@@ -102,6 +110,7 @@ public final class Slog {
      *
      * @see Log#i(String, String)
      */
+    @UnsupportedAppUsage
     public static int i(@Nullable String tag, @NonNull String msg) {
         return Log.println_native(Log.LOG_ID_SYSTEM, Log.INFO, tag, msg);
     }
@@ -131,6 +140,7 @@ public final class Slog {
      *
      * @see Log#w(String, String)
      */
+    @UnsupportedAppUsage
     public static int w(@Nullable String tag, @NonNull String msg) {
         return Log.println_native(Log.LOG_ID_SYSTEM, Log.WARN, tag, msg);
     }
@@ -146,6 +156,7 @@ public final class Slog {
      *
      * @see Log#w(String, String, Throwable)
      */
+    @UnsupportedAppUsage
     public static int w(@Nullable String tag, @NonNull String msg, @Nullable Throwable tr) {
         return Log.println_native(Log.LOG_ID_SYSTEM, Log.WARN, tag,
                 msg + '\n' + Log.getStackTraceString(tr));
@@ -173,6 +184,7 @@ public final class Slog {
      *
      * @see Log#e(String, String)
      */
+    @UnsupportedAppUsage
     public static int e(@Nullable String tag, @NonNull String msg) {
         return Log.println_native(Log.LOG_ID_SYSTEM, Log.ERROR, tag, msg);
     }
@@ -188,6 +200,7 @@ public final class Slog {
      *
      * @see Log#e(String, String, Throwable)
      */
+    @UnsupportedAppUsage
     public static int e(@Nullable String tag, @NonNull String msg, @Nullable Throwable tr) {
         return Log.println_native(Log.LOG_ID_SYSTEM, Log.ERROR, tag,
                 msg + '\n' + Log.getStackTraceString(tr));
@@ -206,6 +219,7 @@ public final class Slog {
      *
      * @see Log#wtf(String, String)
      */
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public static int wtf(@Nullable String tag, @NonNull String msg) {
         return Log.wtf(Log.LOG_ID_SYSTEM, tag, msg, null, false, true);
     }
@@ -230,6 +244,7 @@ public final class Slog {
      *
      * @see Log#wtfStack(String, String)
      */
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
     public static int wtfStack(@Nullable String tag, @NonNull String msg) {
         return Log.wtf(Log.LOG_ID_SYSTEM, tag, msg, null, true, true);
     }
@@ -267,11 +282,13 @@ public final class Slog {
      *
      * @see Log#wtf(String, String, Throwable)
      */
+    @UnsupportedAppUsage
     public static int wtf(@Nullable String tag, @NonNull String msg, @Nullable Throwable tr) {
         return Log.wtf(Log.LOG_ID_SYSTEM, tag, msg, tr, false, true);
     }
 
     /** @hide */
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public static int println(@Log.Level int priority, @Nullable String tag, @NonNull String msg) {
         return Log.println_native(Log.LOG_ID_SYSTEM, priority, tag, msg);
     }

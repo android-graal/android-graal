@@ -16,7 +16,11 @@
 
 package android.ranging.oob;
 
-import androidx.annotation.NonNull;
+import android.annotation.FlaggedApi;
+import android.annotation.NonNull;
+import android.annotation.SuppressLint;
+
+import com.android.ranging.flags.Flags;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -34,6 +38,7 @@ import java.util.concurrent.Executor;
  *     <li>Internet</li>
  * </ul>
  */
+@FlaggedApi(Flags.FLAG_RANGING_STACK_ENABLED)
 @Emulated
 public interface TransportHandle extends AutoCloseable {
 
@@ -55,6 +60,7 @@ public interface TransportHandle extends AutoCloseable {
      * @param callback the {@link ReceiveCallback} instance to receive updates. Must not be null.
      * @throws IllegalArgumentException if either {@code executor} or {@code callback} is null.
      */
+    @SuppressLint({"PairedRegistration"})
     void registerReceiveCallback(@NonNull Executor executor, @NonNull ReceiveCallback callback);
 
     /** TransportHandle callback. */

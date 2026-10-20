@@ -16,6 +16,8 @@
 
 package android.view;
 
+import android.annotation.IntDef;
+
 import org.androidgraal.hosted.annotate.Emulated;
 
 import java.lang.annotation.Retention;
@@ -28,10 +30,17 @@ import java.lang.annotation.RetentionPolicy;
 @Emulated
 public class HapticFeedbackConstants {
     /** @hide **/
+    @IntDef(flag = true, prefix = "FLAG_", value = {
+            FLAG_IGNORE_VIEW_SETTING,
+            FLAG_IGNORE_GLOBAL_SETTING,
+    })
     @Retention(RetentionPolicy.SOURCE)
     public @interface Flags {}
 
     /** @hide **/
+    @IntDef(flag = true, prefix = "PRIVATE_FLAG_", value = {
+            PRIVATE_FLAG_APPLY_INPUT_METHOD_SETTINGS,
+    })
     @Retention(RetentionPolicy.SOURCE)
     public @interface PrivateFlags {}
 

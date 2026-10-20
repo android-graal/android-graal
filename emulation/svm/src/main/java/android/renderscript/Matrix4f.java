@@ -16,6 +16,8 @@
 
 package android.renderscript;
 
+import android.compat.annotation.UnsupportedAppUsage;
+
 import org.androidgraal.hosted.annotate.Emulated;
 
 
@@ -494,5 +496,6 @@ public class Matrix4f {
         }
     }
 
+    @UnsupportedAppUsage
     private final float[] mMat;
 }

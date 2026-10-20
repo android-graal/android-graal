@@ -4,6 +4,9 @@
 
 package android.net.http;
 
+import android.annotation.IntDef;
+import android.annotation.SuppressLint;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -32,6 +35,7 @@ import java.time.Duration;
  *     Migration specification</a>
  */
 // SuppressLint to be consistent with other cronet code
+@SuppressLint("UserHandleName")
 @Emulated
 public class ConnectionMigrationOptions {
     private final @MigrationOptionState int mEnableDefaultNetworkMigration;
@@ -67,6 +71,11 @@ public class ConnectionMigrationOptions {
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
+    @IntDef(flag = false, prefix = "MIGRATION_OPTION_", value = {
+            MIGRATION_OPTION_UNSPECIFIED,
+            MIGRATION_OPTION_ENABLED,
+            MIGRATION_OPTION_DISABLED,
+    })
     public @interface MigrationOptionState {}
 
     /**

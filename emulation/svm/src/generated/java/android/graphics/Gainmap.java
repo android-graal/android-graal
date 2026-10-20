@@ -70,6 +70,16 @@ public final class Gainmap implements Parcelable {
      */
     public static final int GAINMAP_DIRECTION_SDR_TO_HDR = 0;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private Gainmap() {
     }
 }

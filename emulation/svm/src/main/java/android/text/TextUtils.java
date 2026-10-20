@@ -18,20 +18,37 @@ package android.text;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.annotation.FloatRange;
+import android.annotation.IntDef;
+import android.annotation.IntRange;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.annotation.PluralsRes;
+import android.compat.annotation.UnsupportedAppUsage;
+import android.os.Build;
+import android.os.Parcel;
 import android.os.Parcelable;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+import android.text.style.ParagraphStyle;
+import android.text.style.UpdateAppearance;
 import android.util.EmptyArray;
+import android.util.Log;
+import android.util.Printer;
+
+import com.android.internal.util.ArrayUtils;
+import com.android.internal.util.Preconditions;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
-import com.android.internal.util.Preconditions;
-
 import java.lang.annotation.Retention;
+import java.lang.reflect.Array;
 import java.util.BitSet;
 import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
 import java.util.regex.Pattern;
 
+@RavenwoodKeepWholeClass
 @Emulated
 public class TextUtils {
     private static final String TAG = "TextUtils";
@@ -56,6 +73,9 @@ public class TextUtils {
      * @hide
      */
     @Retention(SOURCE)
+    @IntDef(flag = true, prefix = "CLEAN_STRING_FLAG_",
+            value = {SAFE_STRING_FLAG_TRIM, SAFE_STRING_FLAG_SINGLE_LINE,
+                    SAFE_STRING_FLAG_FIRST_LINE})
     public @interface SafeStringFlags {}
 
     /**
@@ -477,6 +497,92 @@ public class TextUtils {
     /** @hide */
     public static final int LAST_SPAN = NO_WRITING_TOOLS_SPAN;
 
+    /**
+     * Flatten a CharSequence and whatever styles can be copied across processes
+     * into the parcel.
+     */
+    public static void writeToParcel(@Nullable CharSequence cs, @NonNull Parcel p,
+            int parcelableFlags) {
+        if (cs instanceof Spanned) {
+            p.writeInt(0);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                p.writeString8(cs.toString());
+            } else {
+                p.writeString(cs.toString());
+            }
+
+            Spanned sp = (Spanned) cs;
+            Object[] os = sp.getSpans(0, cs.length(), Object.class);
+
+            // note to people adding to this: check more specific types
+            // before more generic types.  also notice that it uses
+            // "if" instead of "else if" where there are interfaces
+            // so one object can be several.
+
+            for (int i = 0; i < os.length; i++) {
+                throw new UnsupportedOperationException();
+            }
+
+            p.writeInt(0);
+        } else {
+            p.writeInt(1);
+            if (cs != null) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    p.writeString8(cs.toString());
+                } else {
+                    p.writeString(cs.toString());
+                }
+            } else {
+                p.writeString8(null);
+            }
+        }
+    }
+
+    private static void writeWhere(Parcel p, Spanned sp, Object o) {
+        p.writeInt(sp.getSpanStart(o));
+        p.writeInt(sp.getSpanEnd(o));
+        p.writeInt(sp.getSpanFlags(o));
+    }
+
+    public static final Parcelable.Creator<CharSequence> CHAR_SEQUENCE_CREATOR
+            = new Parcelable.Creator<CharSequence>() {
+        /**
+         * Read and return a new CharSequence, possibly with styles,
+         * from the parcel.
+         */
+        public CharSequence createFromParcel(Parcel p) {
+            int kind = p.readInt();
+
+            String string = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R
+                    ? p.readString8() : p.readString();
+            if (string == null) {
+                return null;
+            }
+
+            if (kind == 1) {
+                return string;
+            }
+
+            SpannableString sp = new SpannableString(string);
+
+            while (true) {
+                kind = p.readInt();
+
+                if (kind == 0)
+                    break;
+
+                throw new UnsupportedOperationException();
+            }
+
+            return sp;
+        }
+
+        public CharSequence[] newArray(int size)
+        {
+            return new CharSequence[size];
+        }
+    };
+
     public enum TruncateAt {
         START,
         MIDDLE,
@@ -485,6 +591,7 @@ public class TextUtils {
         /**
          * @hide
          */
+        @UnsupportedAppUsage
         END_SMALL
     }
 
@@ -638,6 +745,7 @@ public class TextUtils {
     /**
      * @hide
      */
+    @UnsupportedAppUsage
     public static boolean isPrintableAsciiOnly(final CharSequence str) {
         final int len = str.length();
         for (int i = 0; i < len; i++) {
@@ -813,6 +921,7 @@ public class TextUtils {
      * @see #unpackRangeEndFromLong(long)
      * @hide
      */
+    @UnsupportedAppUsage
     public static long packRangeInLong(int start, int end) {
         return (((long) start) << 32) | end;
     }
@@ -823,6 +932,7 @@ public class TextUtils {
      * @see #packRangeInLong(int, int)
      * @hide
      */
+    @UnsupportedAppUsage
     public static int unpackRangeStartFromLong(long range) {
         return (int) (range >>> 32);
     }
@@ -833,6 +943,7 @@ public class TextUtils {
      * @see #packRangeInLong(int, int)
      * @hide
      */
+    @UnsupportedAppUsage
     public static int unpackRangeEndFromLong(long range) {
         return (int) (range & 0x00000000FFFFFFFFL);
     }
@@ -989,7 +1100,7 @@ public class TextUtils {
      */
     @Nullable
     public static <T extends CharSequence> T trimToSize(@Nullable T text,
-            int size) {
+            @IntRange(from = 1) int size) {
         Preconditions.checkArgument(size > 0);
         if (TextUtils.isEmpty(text) || text.length() <= size) return text;
         if (Character.isHighSurrogate(text.charAt(size - 1))
@@ -1010,7 +1121,7 @@ public class TextUtils {
      */
     @Nullable
     public static <T extends CharSequence> T trimToLengthWithEllipsis(@Nullable T text,
-            int size) {
+            @IntRange(from = 1) int size) {
         T trimmed = trimToSize(text, size);
         if (text != null && trimmed.length() < text.length()) {
             trimmed = (T) (trimmed.toString() + "...");

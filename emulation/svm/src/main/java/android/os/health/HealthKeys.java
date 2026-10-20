@@ -16,6 +16,8 @@
 
 package android.os.health;
 
+import android.annotation.TestApi;
+
 import org.androidgraal.hosted.annotate.Emulated;
 
 import java.lang.annotation.ElementType;
@@ -30,6 +32,7 @@ import java.util.Arrays;
  *
  * @hide
  */
+@TestApi
 @Emulated
 public class HealthKeys {
 
@@ -75,6 +78,7 @@ public class HealthKeys {
      *
      * @hide
      */
+    @TestApi
     public static class Constants {
         private final String mDataType;
         private final int[][] mKeys = new int[TYPE_COUNT][];

@@ -16,13 +16,15 @@
 
 package android.health.connect.datatypes.units;
 
-import androidx.annotation.NonNull;
+import android.annotation.FlaggedApi;
+import android.annotation.NonNull;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
 import java.util.Objects;
 
 /** Represents a unit of temperature difference. Supported units: Celsius */
+@FlaggedApi("com.android.healthconnect.flags.skin_temperature")
 @Emulated
 public final class TemperatureDelta implements Comparable<TemperatureDelta> {
     private final double mInCelsius;

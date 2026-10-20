@@ -25,6 +25,16 @@ public final class MediaSyncEvent implements Parcelable {
      */
     public static final int SYNC_EVENT_PRESENTATION_COMPLETE = 1;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private MediaSyncEvent() {
     }
 }

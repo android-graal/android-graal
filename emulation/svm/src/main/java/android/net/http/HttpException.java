@@ -4,8 +4,6 @@
 
 package android.net.http;
 
-import androidx.annotation.Nullable;
-
 import org.androidgraal.hosted.annotate.Emulated;
 
 import java.io.IOException;
@@ -23,7 +21,7 @@ public class HttpException extends IOException {
      * java.io.IOException#getCause getCause()} method). A null value is permitted, and indicates
      * that the cause is nonexistent or unknown.
      */
-    public HttpException(@Nullable String message, @Nullable Throwable cause) {
+    public HttpException(String message, Throwable cause) {
         super(message, cause);
     }
 }

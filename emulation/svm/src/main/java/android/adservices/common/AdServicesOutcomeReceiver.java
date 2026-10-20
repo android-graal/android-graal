@@ -16,7 +16,10 @@
 
 package android.adservices.common;
 
-import androidx.annotation.NonNull;
+import android.annotation.FlaggedApi;
+import android.annotation.NonNull;
+
+import com.android.adservices.flags.Flags;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -33,6 +36,7 @@ import org.androidgraal.hosted.annotate.Emulated;
  * @deprecated use {@link android.os.OutcomeReceiver} instead. Android R is no longer supported.
  */
 @Deprecated
+@FlaggedApi(Flags.FLAG_ADSERVICES_OUTCOMERECEIVER_R_API_DEPRECATED)
 @Emulated
 public interface AdServicesOutcomeReceiver<R, E extends Throwable> {
     /**

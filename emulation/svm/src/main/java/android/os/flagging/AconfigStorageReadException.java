@@ -16,7 +16,12 @@
 
 package android.os.flagging;
 
-import androidx.annotation.NonNull;
+import static android.provider.flags.Flags.FLAG_NEW_STORAGE_PUBLIC_API;
+
+import android.annotation.FlaggedApi;
+import android.annotation.IntDef;
+import android.annotation.NonNull;
+import android.compat.annotation.UnsupportedAppUsage;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -37,22 +42,28 @@ import java.lang.annotation.RetentionPolicy;
  *   <li>The fingerprint of the Aconfig Storage file does not match the expected fingerprint.
  * </ul>
  */
+@FlaggedApi(FLAG_NEW_STORAGE_PUBLIC_API)
 @Emulated
 public class AconfigStorageReadException extends RuntimeException {
 
     /** Generic error code indicating an unspecified Aconfig Storage error. */
+    @FlaggedApi(FLAG_NEW_STORAGE_PUBLIC_API)
     public static final int ERROR_GENERIC = 0;
 
     /** Error code indicating that the Aconfig Storage system is not found on the device. */
+    @FlaggedApi(FLAG_NEW_STORAGE_PUBLIC_API)
     public static final int ERROR_STORAGE_SYSTEM_NOT_FOUND = 1;
 
     /** Error code indicating that the requested configuration package is not found. */
+    @FlaggedApi(FLAG_NEW_STORAGE_PUBLIC_API)
     public static final int ERROR_PACKAGE_NOT_FOUND = 2;
 
     /** Error code indicating that the specified container is not found. */
+    @FlaggedApi(FLAG_NEW_STORAGE_PUBLIC_API)
     public static final int ERROR_CONTAINER_NOT_FOUND = 3;
 
     /** Error code indicating that there was an error reading the Aconfig Storage file. */
+    @FlaggedApi(FLAG_NEW_STORAGE_PUBLIC_API)
     public static final int ERROR_CANNOT_READ_STORAGE_FILE = 4;
 
     /**
@@ -65,10 +76,21 @@ public class AconfigStorageReadException extends RuntimeException {
      *
      * @hide
      */
+    @UnsupportedAppUsage
     public static final int ERROR_FILE_FINGERPRINT_MISMATCH = 5;
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
+    @IntDef(
+            prefix = {"ERROR_"},
+            value = {
+                ERROR_GENERIC,
+                ERROR_STORAGE_SYSTEM_NOT_FOUND,
+                ERROR_PACKAGE_NOT_FOUND,
+                ERROR_CONTAINER_NOT_FOUND,
+                ERROR_CANNOT_READ_STORAGE_FILE,
+                ERROR_FILE_FINGERPRINT_MISMATCH
+            })
     public @interface ErrorCode {}
 
     @ErrorCode private final int mErrorCode;
@@ -80,6 +102,7 @@ public class AconfigStorageReadException extends RuntimeException {
      * @param errorCode The error code for this exception.
      * @param msg The detail message for this exception.
      */
+    @FlaggedApi(FLAG_NEW_STORAGE_PUBLIC_API)
     public AconfigStorageReadException(@ErrorCode int errorCode, @NonNull String msg) {
         super(msg);
         mErrorCode = errorCode;
@@ -93,6 +116,7 @@ public class AconfigStorageReadException extends RuntimeException {
      * @param msg The detail message for this exception.
      * @param cause The cause of this exception.
      */
+    @FlaggedApi(FLAG_NEW_STORAGE_PUBLIC_API)
     public AconfigStorageReadException(
             @ErrorCode int errorCode, @NonNull String msg, @NonNull Throwable cause) {
         super(msg, cause);
@@ -105,6 +129,7 @@ public class AconfigStorageReadException extends RuntimeException {
      * @param errorCode The error code for this exception.
      * @param cause The cause of this exception.
      */
+    @FlaggedApi(FLAG_NEW_STORAGE_PUBLIC_API)
     public AconfigStorageReadException(@ErrorCode int errorCode, @NonNull Throwable cause) {
         super(cause);
         mErrorCode = errorCode;
@@ -116,6 +141,7 @@ public class AconfigStorageReadException extends RuntimeException {
      * @return The error code.
      */
     @ErrorCode
+    @FlaggedApi(FLAG_NEW_STORAGE_PUBLIC_API)
     public int getErrorCode() {
         return mErrorCode;
     }
@@ -128,6 +154,7 @@ public class AconfigStorageReadException extends RuntimeException {
      */
     @Override
     @NonNull
+    @FlaggedApi(FLAG_NEW_STORAGE_PUBLIC_API)
     public String getMessage() {
         return errorString() + ": " + super.getMessage();
     }

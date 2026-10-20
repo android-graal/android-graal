@@ -51,6 +51,16 @@ public final class RecognitionPart implements Parcelable {
      */
     public static final int CONFIDENCE_LEVEL_UNKNOWN = 0;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private RecognitionPart() {
     }
 }

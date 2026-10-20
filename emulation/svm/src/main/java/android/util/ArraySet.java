@@ -16,7 +16,9 @@
 
 package android.util;
 
-import androidx.annotation.Nullable;
+import android.annotation.Nullable;
+import android.annotation.TestApi;
+import android.compat.annotation.UnsupportedAppUsage;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -51,6 +53,7 @@ import java.util.function.Predicate;
  *
  * <p>This structure is <b>NOT</b> thread-safe.</p>
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public final class ArraySet<E> implements Collection<E>, Set<E> {
     private static final boolean DEBUG = false;
@@ -85,10 +88,11 @@ public final class ArraySet<E> implements Collection<E>, Set<E> {
     private static final Object sTwiceBaseCacheLock = new Object();
 
     private final boolean mIdentityHashCode;
-    // Hashes are an implementation detail. Use public API.
+    @UnsupportedAppUsage(maxTargetSdk = 28) // Hashes are an implementation detail. Use public API.
     private int[] mHashes;
-    // Storage is an implementation detail. Use public API.
+    @UnsupportedAppUsage(maxTargetSdk = 28) // Storage is an implementation detail. Use public API.
     private Object[] mArray;
+    @UnsupportedAppUsage(maxTargetSdk = 28) // Use size()
     private int mSize;
     private MapCollections<E, E> mCollections;
 
@@ -101,6 +105,7 @@ public final class ArraySet<E> implements Collection<E>, Set<E> {
     }
 
 
+    @UnsupportedAppUsage(maxTargetSdk = 28) // Hashes are an implementation detail. Use indexOfKey(Object).
     private int indexOf(Object key, int hash) {
         final int N = mSize;
 
@@ -139,6 +144,7 @@ public final class ArraySet<E> implements Collection<E>, Set<E> {
         return ~end;
     }
 
+    @UnsupportedAppUsage(maxTargetSdk = 28) // Use indexOf(null)
     private int indexOfNull() {
         final int N = mSize;
 
@@ -177,6 +183,7 @@ public final class ArraySet<E> implements Collection<E>, Set<E> {
         return ~end;
     }
 
+    @UnsupportedAppUsage(maxTargetSdk = 28) // Allocations are an implementation detail.
     private void allocArrays(final int size) {
         if (size == (BASE_SIZE * 2)) {
             synchronized (sTwiceBaseCacheLock) {
@@ -242,6 +249,7 @@ public final class ArraySet<E> implements Collection<E>, Set<E> {
      * Make sure <b>NOT</b> to call this method with arrays that can still be modified. In other
      * words, don't pass mHashes or mArray in directly.
      */
+    @UnsupportedAppUsage(maxTargetSdk = 28) // Allocations are an implementation detail.
     private static void freeArrays(final int[] hashes, final Object[] array, final int size) {
         if (hashes.length == (BASE_SIZE * 2)) {
             synchronized (sTwiceBaseCacheLock) {
@@ -426,6 +434,7 @@ public final class ArraySet<E> implements Collection<E>, Set<E> {
      *
      * @hide
      */
+    @TestApi
     public E valueAtUnchecked(int index) {
         return (E) mArray[index];
     }

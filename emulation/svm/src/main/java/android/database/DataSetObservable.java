@@ -23,6 +23,7 @@ import org.androidgraal.hosted.annotate.Emulated;
  * that provides methods for sending notifications to a list of
  * {@link DataSetObserver} objects.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public class DataSetObservable extends Observable<DataSetObserver> {
     /**

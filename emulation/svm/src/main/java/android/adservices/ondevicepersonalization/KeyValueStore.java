@@ -16,8 +16,9 @@
 
 package android.adservices.ondevicepersonalization;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.annotation.WorkerThread;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -41,11 +42,13 @@ public interface KeyValueStore {
      * or null if there contains no mapping for the key.
      *
      */
+    @WorkerThread
     @Nullable byte[] get(@NonNull String key);
 
     /**
      * Returns a Set view of the keys contained in the REMOTE_DATA table.
      */
+    @WorkerThread
     @NonNull Set<String> keySet();
 
     /**

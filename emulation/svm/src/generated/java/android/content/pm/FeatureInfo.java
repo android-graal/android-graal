@@ -27,6 +27,16 @@ public final class FeatureInfo implements Parcelable {
      */
     public static final int GL_ES_VERSION_UNDEFINED = 0;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private FeatureInfo() {
     }
 }

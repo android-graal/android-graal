@@ -18,6 +18,9 @@ package android.health.connect.datatypes.validation;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
+import java.time.Instant;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 
 /**

@@ -16,8 +16,9 @@
 
 package android.sax;
 
-import org.androidgraal.hosted.annotate.Emulated;
 import org.xml.sax.Attributes;
+
+import org.androidgraal.hosted.annotate.Emulated;
 
 /**
  * Listens for the beginning of elements.

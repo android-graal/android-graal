@@ -56,6 +56,16 @@ public final class ConversationAction implements Parcelable {
      */
     public static final String TYPE_VIEW_MAP = "view_map";
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private ConversationAction() {
     }
 }

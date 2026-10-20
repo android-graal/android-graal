@@ -22,6 +22,16 @@ public final class SignalingDataInfo implements Parcelable {
      */
     public static final int LLS_NO_GROUP_ID = -1;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private SignalingDataInfo() {
     }
 }

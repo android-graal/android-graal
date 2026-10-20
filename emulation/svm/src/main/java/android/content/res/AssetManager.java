@@ -16,11 +16,27 @@
 
 package android.content.res;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.annotation.AnyRes;
+import android.annotation.ArrayRes;
+import android.annotation.AttrRes;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.annotation.StringRes;
+import android.annotation.StyleRes;
+import android.annotation.TestApi;
+import android.compat.annotation.UnsupportedAppUsage;
+import android.os.Build;
 import android.os.ParcelFileDescriptor;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+import android.ravenwood.annotation.RavenwoodReplace;
+import android.ravenwood.annotation.RavenwoodThrow;
+import android.util.ArrayMap;
+import android.util.ArraySet;
+import android.util.Log;
+import android.util.SparseArray;
 
-import androidx.annotation.GuardedBy;
+import com.android.internal.annotations.GuardedBy;
+import com.android.internal.annotations.VisibleForTesting;
 
 import org.androidgraal.android.EmulationRoot;
 import org.androidgraal.android.FileDescriptors;
@@ -38,11 +54,19 @@ import org.graalvm.word.PointerBase;
 import org.graalvm.word.UnsignedWord;
 import org.graalvm.word.WordFactory;
 
+import java.io.FileDescriptor;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintWriter;
+import java.lang.ref.Reference;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -53,6 +77,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * files that have been bundled with the application as a simple stream of
  * bytes.
  */
+@RavenwoodKeepWholeClass
 @CLibrary("android")
 @Emulated
 public final class AssetManager implements AutoCloseable {
@@ -99,6 +124,7 @@ public final class AssetManager implements AutoCloseable {
     @GuardedBy("this") private final long[] mOffsets = new long[2];
 
     // Pointer to native implementation, stuffed inside a long.
+    @UnsupportedAppUsage
     @GuardedBy("this") private long mObject;
 
     // Debug/reference counting implementation.
@@ -106,6 +132,7 @@ public final class AssetManager implements AutoCloseable {
     private AtomicInteger mNumRefs = new AtomicInteger(1);
     @GuardedBy("this") private HashMap<Long, RuntimeException> mRefStacks;
 
+    @RavenwoodReplace
     private static String getFrameworkApkPath() {
         return FRAMEWORK_APK_PATH_DEVICE;
     }
@@ -273,6 +300,7 @@ public final class AssetManager implements AutoCloseable {
         /**
          * @hide
          */
+        @UnsupportedAppUsage
         public final int getAssetInt() {
             throw new UnsupportedOperationException();
         }
@@ -280,6 +308,7 @@ public final class AssetManager implements AutoCloseable {
         /**
          * @hide
          */
+        @UnsupportedAppUsage
         public final long getNativeAsset() {
             return mAssetNativePtr;
         }

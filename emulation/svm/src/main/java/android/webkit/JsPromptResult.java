@@ -16,6 +16,8 @@
 
 package android.webkit;
 
+import android.annotation.SystemApi;
+
 import org.androidgraal.hosted.annotate.Emulated;
 
 
@@ -42,6 +44,7 @@ public class JsPromptResult extends JsResult {
     /**
      * @hide Only for use by WebViewProvider implementations
      */
+    @SystemApi
     public JsPromptResult(ResultReceiver receiver) {
         super(receiver);
     }
@@ -49,6 +52,7 @@ public class JsPromptResult extends JsResult {
     /**
      * @hide Only for use by WebViewProvider implementations
      */
+    @SystemApi
     public String getStringResult() {
         return mStringResult;
     }

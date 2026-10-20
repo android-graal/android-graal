@@ -220,6 +220,16 @@ public final class MediaMetadata implements Parcelable {
      */
     public static final String METADATA_KEY_YEAR = "android.media.metadata.YEAR";
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private MediaMetadata() {
     }
 }

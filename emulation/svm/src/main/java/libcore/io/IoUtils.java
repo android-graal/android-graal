@@ -16,22 +16,36 @@
 
 package libcore.io;
 
+import static android.annotation.SystemApi.Client.MODULE_LIBRARIES;
+
+import android.annotation.SystemApi;
+import android.compat.annotation.UnsupportedAppUsage;
 import android.system.ErrnoException;
 import android.system.Os;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
-import java.io.FileDescriptor;
-import java.io.IOException;
-import java.util.Objects;
+import android.system.StructStat;
 
 import org.androidgraal.android.FileDescriptors;
+
+import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InterruptedIOException;
+import java.net.Socket;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
+
+import libcore.util.NonNull;
+import libcore.util.Nullable;
 
 import static android.system.OsConstants.F_GETFL;
 import static android.system.OsConstants.F_SETFL;
 import static android.system.OsConstants.O_NONBLOCK;
+import static android.system.OsConstants.O_RDONLY;
 
 /** @hide */
+@SystemApi(client = MODULE_LIBRARIES)
 public final class IoUtils {
     private IoUtils() {
     }
@@ -52,6 +66,7 @@ public final class IoUtils {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static int acquireRawFd(@NonNull FileDescriptor fd) {
         Objects.requireNonNull(fd);
 
@@ -70,6 +85,7 @@ public final class IoUtils {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static void close(@Nullable FileDescriptor fd) throws IOException {
         FileDescriptors.close(fd);
     }
@@ -81,6 +97,8 @@ public final class IoUtils {
      *
      * @hide
      */
+    @UnsupportedAppUsage
+    @SystemApi(client = MODULE_LIBRARIES)
     public static void closeQuietly(@Nullable FileDescriptor fd) {
         try {
             IoUtils.close(fd);
@@ -97,6 +115,8 @@ public final class IoUtils {
      *
      * @hide
      */
+    @UnsupportedAppUsage
+    @SystemApi(client = MODULE_LIBRARIES)
     public static void setBlocking(@NonNull FileDescriptor fd, boolean blocking) throws IOException {
         try {
             int flags = Os.fcntlVoid(fd, F_GETFL);

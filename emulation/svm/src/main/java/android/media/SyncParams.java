@@ -21,6 +21,8 @@ import org.androidgraal.hosted.annotate.Emulated;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+import android.annotation.IntDef;
+
 /**
  * Structure for common A/V sync params.
  *
@@ -58,6 +60,14 @@ import java.lang.annotation.RetentionPolicy;
 @Emulated
 public final class SyncParams {
     /** @hide */
+    @IntDef(
+        value = {
+                SYNC_SOURCE_DEFAULT,
+                SYNC_SOURCE_SYSTEM_CLOCK,
+                SYNC_SOURCE_AUDIO,
+                SYNC_SOURCE_VSYNC,
+        }
+    )
     @Retention(RetentionPolicy.SOURCE)
     public @interface SyncSource {}
 
@@ -103,6 +113,13 @@ public final class SyncParams {
     public static final int SYNC_SOURCE_VSYNC = 3;
 
     /** @hide */
+    @IntDef(
+        value = {
+                AUDIO_ADJUST_MODE_DEFAULT,
+                AUDIO_ADJUST_MODE_STRETCH,
+                AUDIO_ADJUST_MODE_RESAMPLE,
+        }
+    )
     @Retention(RetentionPolicy.SOURCE)
     public @interface AudioAdjustMode {}
 

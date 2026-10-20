@@ -24,6 +24,7 @@ import java.io.IOException;
  * Thrown when a reader encounters malformed JSON. Some syntax errors can be
  * ignored by calling {@link JsonReader#setLenient(boolean)}.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public final class MalformedJsonException extends IOException {
     private static final long serialVersionUID = 1L;

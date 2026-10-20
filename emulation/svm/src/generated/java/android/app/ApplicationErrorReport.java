@@ -46,6 +46,16 @@ public final class ApplicationErrorReport implements Parcelable {
      */
     public static final int TYPE_RUNNING_SERVICE = 5;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private ApplicationErrorReport() {
     }
 }

@@ -40,6 +40,16 @@ public final class PlaybackParams implements Parcelable {
 
     public static final int AUDIO_FALLBACK_MODE_MUTE = 1;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private PlaybackParams() {
     }
 }

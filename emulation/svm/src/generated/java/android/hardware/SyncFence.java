@@ -44,6 +44,16 @@ public final class SyncFence implements Parcelable {
      */
     public static final long SIGNAL_TIME_PENDING = 9223372036854775807L;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private SyncFence() {
     }
 }

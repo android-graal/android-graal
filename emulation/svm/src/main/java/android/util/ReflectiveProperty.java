@@ -25,6 +25,7 @@ import java.lang.reflect.Method;
  * Internal class to automatically generate a Property for a given class/name pair, given the
  * specification of {@link Property#of(java.lang.Class, java.lang.Class, java.lang.String)}
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 class ReflectiveProperty<T, V> extends Property<T, V> {
 

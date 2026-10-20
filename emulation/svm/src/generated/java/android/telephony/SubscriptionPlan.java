@@ -80,6 +80,16 @@ public final class SubscriptionPlan implements Parcelable {
      */
     public static final long TIME_UNKNOWN = -1L;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private SubscriptionPlan() {
     }
 }

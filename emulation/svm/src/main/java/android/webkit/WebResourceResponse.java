@@ -16,7 +16,10 @@
 
 package android.webkit;
 
-import androidx.annotation.NonNull;
+import android.annotation.NonNull;
+import android.annotation.SystemApi;
+import android.compat.annotation.UnsupportedAppUsage;
+import android.os.Build;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -31,9 +34,11 @@ import java.util.Map;
  */
 @Emulated
 public class WebResourceResponse {
+    @UnsupportedAppUsage
     private boolean mImmutable;
     private String mMimeType;
     private String mEncoding;
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     private int mStatusCode;
     private String mReasonPhrase;
     private Map<String, String> mResponseHeaders;
@@ -230,6 +235,7 @@ public class WebResourceResponse {
      * The internal version of the constructor that doesn't perform arguments checks.
      * @hide
      */
+    @SystemApi
     public WebResourceResponse(boolean immutable, String mimeType, String encoding, int statusCode,
             String reasonPhrase, Map<String, String> responseHeaders, InputStream data) {
         mImmutable = immutable;

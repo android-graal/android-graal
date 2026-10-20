@@ -31,6 +31,16 @@ public final class TvInteractiveAppServiceInfo implements Parcelable {
      */
     public static final int INTERACTIVE_APP_TYPE_TARGETED_AD = 8;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private TvInteractiveAppServiceInfo() {
     }
 }

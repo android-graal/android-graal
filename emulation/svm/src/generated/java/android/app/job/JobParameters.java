@@ -137,6 +137,16 @@ public final class JobParameters implements Parcelable {
      */
     public static final int STOP_REASON_USER = 13;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private JobParameters() {
     }
 }

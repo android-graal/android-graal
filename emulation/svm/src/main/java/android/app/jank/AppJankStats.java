@@ -16,8 +16,10 @@
 
 package android.app.jank;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.annotation.FlaggedApi;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.annotation.StringDef;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -33,6 +35,7 @@ import java.lang.annotation.Target;
  *  can be used by library widgets to provide the system with more detailed information about
  *  where jank is happening for diagnostic purposes.
  */
+@FlaggedApi(Flags.FLAG_DETAILED_APP_JANK_METRICS_API)
 @Emulated
 public final class AppJankStats {
     // UID of the app
@@ -120,6 +123,15 @@ public final class AppJankStats {
      * functions.
      * @hide
      */
+    @StringDef(prefix = {"WIDGET_CATEGORY_"}, value = {
+            WIDGET_CATEGORY_UNSPECIFIED,
+            WIDGET_CATEGORY_SCROLL,
+            WIDGET_CATEGORY_ANIMATION,
+            WIDGET_CATEGORY_MEDIA,
+            WIDGET_CATEGORY_NAVIGATION,
+            WIDGET_CATEGORY_KEYBOARD,
+            WIDGET_CATEGORY_OTHER
+    })
     @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
     @Retention(RetentionPolicy.SOURCE)
     public @interface WidgetCategory {
@@ -127,6 +139,19 @@ public final class AppJankStats {
     /**
      * @hide
      */
+    @StringDef(prefix = {"WIDGET_STATE_"}, value = {
+            WIDGET_STATE_UNSPECIFIED,
+            WIDGET_STATE_NONE,
+            WIDGET_STATE_SCROLLING,
+            WIDGET_STATE_FLINGING,
+            WIDGET_STATE_SWIPING,
+            WIDGET_STATE_DRAGGING,
+            WIDGET_STATE_ZOOMING,
+            WIDGET_STATE_ANIMATING,
+            WIDGET_STATE_PLAYBACK,
+            WIDGET_STATE_TAPPING,
+            WIDGET_STATE_PREDICTIVE_BACK
+    })
     @Target({ElementType.TYPE_USE, ElementType.TYPE_PARAMETER})
     @Retention(RetentionPolicy.SOURCE)
     public @interface WidgetState {

@@ -84,6 +84,16 @@ public final class Surface implements Parcelable {
      */
     public static final int ROTATION_90 = 1;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private Surface() {
     }
 }

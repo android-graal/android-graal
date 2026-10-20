@@ -21,6 +21,7 @@ import org.androidgraal.hosted.annotate.Emulated;
 /**
  * This is used for {@link Cursor#copyStringToBuffer}
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public final class CharArrayBuffer {
     public CharArrayBuffer(int size) {

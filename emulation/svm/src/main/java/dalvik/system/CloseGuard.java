@@ -16,6 +16,10 @@
 
 package dalvik.system;
 
+import static android.annotation.SystemApi.Client.MODULE_LIBRARIES;
+
+import android.annotation.SystemApi;
+import android.compat.annotation.UnsupportedAppUsage;
 import android.util.Log;
 
 /**
@@ -110,6 +114,8 @@ import android.util.Log;
  *
  * @hide
  */
+@SystemApi(client = MODULE_LIBRARIES)
+@libcore.api.IntraCoreApi
 public final class CloseGuard {
 
     /**
@@ -143,6 +149,9 @@ public final class CloseGuard {
      *
      * @hide
      */
+    @UnsupportedAppUsage(trackingBug=111170242)
+    @SystemApi(client = MODULE_LIBRARIES)
+    @libcore.api.IntraCoreApi
     public static CloseGuard get() {
         return new CloseGuard();
     }
@@ -158,6 +167,8 @@ public final class CloseGuard {
      *
      * @hide
      */
+    @UnsupportedAppUsage
+    @SystemApi(client = MODULE_LIBRARIES)
     public static void setEnabled(boolean enabled) {
         CloseGuard.stackAndTrackingEnabled = enabled;
     }
@@ -179,6 +190,8 @@ public final class CloseGuard {
      *
      * @hide
      */
+    @UnsupportedAppUsage
+    @SystemApi(client = MODULE_LIBRARIES)
     public static void setReporter(Reporter rep) {
         if (rep == null) {
             throw new NullPointerException("reporter == null");
@@ -193,6 +206,7 @@ public final class CloseGuard {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static Reporter getReporter() {
         return reporter;
     }
@@ -224,6 +238,7 @@ public final class CloseGuard {
         return currentTracker;
     }
 
+    @UnsupportedAppUsage
     private CloseGuard() {}
 
     /**
@@ -236,6 +251,9 @@ public final class CloseGuard {
      *
      * @hide
      */
+    @UnsupportedAppUsage(trackingBug=111170242)
+    @SystemApi(client = MODULE_LIBRARIES)
+    @libcore.api.IntraCoreApi
     public void open(String closer) {
         openWithCallSite(closer, null /* callsite */);
     }
@@ -252,6 +270,7 @@ public final class CloseGuard {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public void openWithCallSite(String closer, String callsite) {
         // always perform the check for valid API usage...
         if (closer == null) {
@@ -288,6 +307,9 @@ public final class CloseGuard {
      *
      * @hide
      */
+    @UnsupportedAppUsage
+    @SystemApi(client = MODULE_LIBRARIES)
+    @libcore.api.IntraCoreApi
     public void close() {
         Tracker tracker = currentTracker;
         if (tracker != null && closerNameOrAllocationInfo instanceof Throwable) {
@@ -306,6 +328,9 @@ public final class CloseGuard {
      *
      * @hide
      */
+    @UnsupportedAppUsage(trackingBug=111170242)
+    @SystemApi(client = MODULE_LIBRARIES)
+    @libcore.api.IntraCoreApi
     public void warnIfOpen() {
         if (closerNameOrAllocationInfo != null) {
             if (closerNameOrAllocationInfo instanceof Throwable) {
@@ -337,17 +362,21 @@ public final class CloseGuard {
      * Interface to allow customization of reporting behavior.
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public interface Reporter {
         /**
          *
          * @hide
          */
+        @UnsupportedAppUsage
+        @SystemApi(client = MODULE_LIBRARIES)
         void report(String message, Throwable allocationSite);
 
         /**
          *
          * @hide
          */
+        @SystemApi(client = MODULE_LIBRARIES)
         default void report(String message) {}
     }
 
@@ -355,6 +384,7 @@ public final class CloseGuard {
      * Default Reporter which reports CloseGuard violations to the log.
      */
     private static final class DefaultReporter implements Reporter {
+        @UnsupportedAppUsage
         private DefaultReporter() {}
 
         @Override public void report (String message, Throwable allocationSite) {

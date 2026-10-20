@@ -16,6 +16,7 @@
 
 package android.os;
 
+import android.compat.annotation.UnsupportedAppUsage;
 import android.system.ErrnoException;
 import android.system.Os;
 import android.system.StructStatVfs;
@@ -28,6 +29,7 @@ import org.androidgraal.hosted.annotate.Emulated;
  */
 @Emulated
 public class StatFs {
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     private StructStatVfs mStat;
 
     /**

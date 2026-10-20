@@ -16,7 +16,8 @@
 
 package android.util;
 
-import androidx.annotation.Nullable;
+import android.annotation.Nullable;
+import android.compat.annotation.UnsupportedAppUsage;
 
 import com.android.internal.util.ArrayUtils;
 import com.android.internal.util.GrowingArrayUtils;
@@ -55,16 +56,17 @@ import java.util.Objects;
  * keys in ascending order. In the case of <code>valueAt(int)</code>, the
  * values corresponding to the keys are returned in ascending order.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public class SparseArray<E> implements Cloneable {
     private static final Object DELETED = new Object();
     private boolean mGarbage = false;
 
-    // Use keyAt(int)
+    @UnsupportedAppUsage(maxTargetSdk = 28) // Use keyAt(int)
     private int[] mKeys;
-    // Use valueAt(int), setValueAt(int, E)
+    @UnsupportedAppUsage(maxTargetSdk = 28) // Use valueAt(int), setValueAt(int, E)
     private Object[] mValues;
-    // Use size()
+    @UnsupportedAppUsage(maxTargetSdk = 28) // Use size()
     private int mSize;
 
     /**

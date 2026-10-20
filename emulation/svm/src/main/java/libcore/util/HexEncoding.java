@@ -16,10 +16,15 @@
 
 package libcore.util;
 
+import static android.annotation.SystemApi.Client.MODULE_LIBRARIES;
+
+import android.annotation.SystemApi;
+
 /**
  * Hexadecimal encoding where each byte is represented by two hexadecimal digits.
  * @hide
  */
+@SystemApi(client = MODULE_LIBRARIES)
 public class HexEncoding {
 
     private static final char[] LOWER_CASE_DIGITS = {
@@ -43,6 +48,7 @@ public class HexEncoding {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static char[] encode(byte[] data, boolean upperCase) {
         return encode(data, 0, data.length, upperCase);
     }
@@ -71,6 +77,7 @@ public class HexEncoding {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static String encodeToString(byte[] data) {
         return encodeToString(data, true /* upperCase */);
     }
@@ -85,6 +92,7 @@ public class HexEncoding {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static String encodeToString(byte[] data, boolean upperCase) {
         return new String(encode(data, upperCase));
     }

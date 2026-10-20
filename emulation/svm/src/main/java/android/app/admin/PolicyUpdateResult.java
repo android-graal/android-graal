@@ -16,6 +16,8 @@
 
 package android.app.admin;
 
+import android.annotation.IntDef;
+
 import org.androidgraal.hosted.annotate.Emulated;
 
 import java.lang.annotation.Retention;
@@ -81,6 +83,14 @@ public final class PolicyUpdateResult {
      * @hide
      */
     @Retention(RetentionPolicy.SOURCE)
+    @IntDef(prefix = { "RESULT_" }, value = {
+            RESULT_FAILURE_UNKNOWN,
+            RESULT_POLICY_SET,
+            RESULT_FAILURE_CONFLICTING_ADMIN_POLICY,
+            RESULT_POLICY_CLEARED,
+            RESULT_FAILURE_STORAGE_LIMIT_REACHED,
+            RESULT_FAILURE_HARDWARE_LIMITATION
+    })
     public @interface ResultCode {}
 
     private final int mResultCode;

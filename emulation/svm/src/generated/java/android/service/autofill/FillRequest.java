@@ -51,6 +51,16 @@ public final class FillRequest implements Parcelable {
     @Deprecated
     public static final int FLAG_SUPPORTS_FILL_DIALOG = 64;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private FillRequest() {
     }
 }

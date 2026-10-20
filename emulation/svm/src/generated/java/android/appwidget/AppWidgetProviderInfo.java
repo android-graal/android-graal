@@ -80,6 +80,16 @@ public final class AppWidgetProviderInfo implements Parcelable {
      */
     public static final int WIDGET_FEATURE_RECONFIGURABLE = 1;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private AppWidgetProviderInfo() {
     }
 }

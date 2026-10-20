@@ -23,6 +23,7 @@ import org.androidgraal.hosted.annotate.Emulated;
  * that are observed are {@link Cursor}s or {@link android.widget.Adapter}s.
  * DataSetObserver must be implemented by objects which are added to a DataSetObservable.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public abstract class DataSetObserver {
     /**

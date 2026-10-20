@@ -28,6 +28,16 @@ public final class AmbientBacklightEvent implements Parcelable {
      */
     public static final int AMBIENT_BACKLIGHT_EVENT_METADATA_AVAILABLE = 3;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private AmbientBacklightEvent() {
     }
 }

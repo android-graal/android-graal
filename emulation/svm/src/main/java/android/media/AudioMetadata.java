@@ -16,8 +16,9 @@
 
 package android.media;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.annotation.IntRange;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.util.Log;
 import android.util.Pair;
 
@@ -473,7 +474,7 @@ public final class AudioMetadata {
             this(1024);
         }
 
-        private AutoGrowByteBuffer(int initialCapacity) {
+        private AutoGrowByteBuffer(@IntRange(from = 0) int initialCapacity) {
             mBuffer = ByteBuffer.allocateDirect(initialCapacity);
         }
 
@@ -542,7 +543,7 @@ public final class AudioMetadata {
         /**
          * Ensures capacity to append at least <code>count</code> values.
          */
-        private void ensureCapacity(int count) {
+        private void ensureCapacity(@IntRange int count) {
             if (mBuffer.remaining() < count) {
                 int newCapacity = mBuffer.position() + count;
                 if (newCapacity > Integer.MAX_VALUE >> 1) {

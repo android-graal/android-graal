@@ -154,7 +154,7 @@ import android.os.Parcelable;
  * received an {@link #ACTION_UP} for the prior gesture.
  * </p>
  */
-public final class MotionEvent implements Parcelable {
+public abstract class MotionEvent implements Parcelable {
     /**
      * Constant for {@link #getActionMasked}: A button has been pressed.
      *
@@ -1390,6 +1390,11 @@ public final class MotionEvent implements Parcelable {
      * @see #getToolType
      */
     public static final int TOOL_TYPE_UNKNOWN = 0;
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
 
     private MotionEvent() {
     }

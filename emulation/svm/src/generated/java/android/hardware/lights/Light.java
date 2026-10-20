@@ -50,6 +50,16 @@ public final class Light implements Parcelable {
      */
     public static final int LIGHT_TYPE_PLAYER_ID = 10002;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private Light() {
     }
 }

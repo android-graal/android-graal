@@ -16,6 +16,7 @@
 
 package android.hardware.camera2;
 
+import android.annotation.IntDef;
 import android.util.AndroidException;
 
 import org.androidgraal.hosted.annotate.Emulated;
@@ -84,6 +85,13 @@ public class CameraAccessException extends AndroidException {
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
+    @IntDef(prefix = { "CAMERA_", "MAX_CAMERAS_IN_USE" }, value = {
+            CAMERA_IN_USE,
+            MAX_CAMERAS_IN_USE,
+            CAMERA_DISABLED,
+            CAMERA_DISCONNECTED,
+            CAMERA_ERROR
+    })
     public @interface AccessError {}
 
     // Make the eclipse warning about serializable exceptions go away

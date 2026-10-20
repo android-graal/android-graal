@@ -18,6 +18,8 @@ package android.net.wifi.rtt;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
+import android.annotation.IntDef;
+
 import org.androidgraal.hosted.annotate.Emulated;
 
 import java.lang.annotation.Retention;
@@ -37,6 +39,10 @@ public class CivicLocationKeys {
      * @hide
      */
     @Retention(SOURCE)
+    @IntDef({LANGUAGE, STATE, COUNTY, CITY, BOROUGH, NEIGHBORHOOD, GROUP_OF_STREETS, PRD, POD, STS,
+            HNO, HNS, LMK, LOC, NAM, POSTAL_CODE, BUILDING, APT, FLOOR, ROOM, TYPE_OF_PLACE, PCN,
+            PO_BOX, ADDITIONAL_CODE, DESK, PRIMARY_ROAD_NAME, ROAD_SECTION, BRANCH_ROAD_NAME,
+            SUBBRANCH_ROAD_NAME, STREET_NAME_PRE_MODIFIER, STREET_NAME_POST_MODIFIER, SCRIPT})
     public @interface CivicLocationKeysType {
     }
 

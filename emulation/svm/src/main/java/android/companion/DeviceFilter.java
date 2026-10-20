@@ -17,7 +17,10 @@
 
 package android.companion;
 
-import androidx.annotation.Nullable;
+import android.annotation.IntDef;
+import android.annotation.Nullable;
+import android.compat.annotation.UnsupportedAppUsage;
+import android.os.Build;
 import android.os.Parcelable;
 
 import org.androidgraal.hosted.annotate.Emulated;
@@ -46,9 +49,11 @@ public interface DeviceFilter<D extends Parcelable> extends Parcelable {
      *
      * @hide
      */
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     boolean matches(D device);
 
     /** @hide */
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     String getDeviceDisplayName(D device);
 
     /**  @hide */
@@ -64,6 +69,11 @@ public interface DeviceFilter<D extends Parcelable> extends Parcelable {
     }
 
     /** @hide */
+    @IntDef(prefix = { "MEDIUM_TYPE_" }, value = {
+            MEDIUM_TYPE_BLUETOOTH,
+            MEDIUM_TYPE_BLUETOOTH_LE,
+            MEDIUM_TYPE_WIFI
+    })
     @Retention(RetentionPolicy.SOURCE)
     @interface MediumType {}
 }

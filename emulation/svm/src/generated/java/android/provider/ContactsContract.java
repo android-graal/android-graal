@@ -6250,6 +6250,16 @@ public final class ContactsContract {
          */
         public static final int UNKNOWN_EF_TYPE = 0;
 
+        @Override
+        public int describeContents() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void writeToParcel(android.os.Parcel dest, int flags) {
+            throw new UnsupportedOperationException();
+        }
+
         private SimAccount() {
         }
     }

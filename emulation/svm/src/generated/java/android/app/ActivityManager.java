@@ -113,6 +113,16 @@ public final class ActivityManager {
          */
         public static final int NO_ERROR = 0;
 
+        @Override
+        public int describeContents() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void writeToParcel(android.os.Parcel dest, int flags) {
+            throw new UnsupportedOperationException();
+        }
+
         private ProcessErrorStateInfo() {
         }
     }
@@ -252,6 +262,16 @@ public final class ActivityManager {
          */
         public static final int REASON_UNKNOWN = 0;
 
+        @Override
+        public int describeContents() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void writeToParcel(android.os.Parcel dest, int flags) {
+            throw new UnsupportedOperationException();
+        }
+
         private RunningAppProcessInfo() {
         }
     }
@@ -284,6 +304,16 @@ public final class ActivityManager {
          * core system process.
          */
         public static final int FLAG_SYSTEM_PROCESS = 4;
+
+        @Override
+        public int describeContents() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void writeToParcel(android.os.Parcel dest, int flags) {
+            throw new UnsupportedOperationException();
+        }
 
         private RunningServiceInfo() {
         }

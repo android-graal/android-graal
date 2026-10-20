@@ -30,6 +30,16 @@ public final class WifiP2pServiceInfo implements Parcelable {
      */
     public static final int SERVICE_TYPE_VENDOR_SPECIFIC = 255;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private WifiP2pServiceInfo() {
     }
 }

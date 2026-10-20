@@ -57,6 +57,16 @@ public final class Voice implements Parcelable {
      */
     public static final int QUALITY_VERY_LOW = 100;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private Voice() {
     }
 }

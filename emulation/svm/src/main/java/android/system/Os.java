@@ -16,9 +16,7 @@
 
 package android.system;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
+import static android.annotation.SystemApi.Client.MODULE_LIBRARIES;
 import static android.system.OsConstants.AF_INET;
 import static android.system.OsConstants.AF_INET6;
 import static android.system.OsConstants.AF_PACKET;
@@ -31,6 +29,12 @@ import static android.system.OsConstants.ERANGE;
 import static android.system.OsConstants.F_GETFL;
 import static android.system.OsConstants.O_NONBLOCK;
 import static java.nio.charset.StandardCharsets.UTF_8;
+
+import android.annotation.SystemApi;
+import android.compat.annotation.UnsupportedAppUsage;
+
+import libcore.util.NonNull;
+import libcore.util.Nullable;
 
 import com.oracle.svm.core.annotate.Alias;
 import com.oracle.svm.core.annotate.TargetClass;
@@ -732,6 +736,7 @@ public final class Os {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static @Nullable FileDescriptor[] pipe2(int flags) throws ErrnoException {
         Scoped<CIntPointer> fds = Scoped.of(StackValue.get(2, CIntPointer.class));
         throwIfMinusOne("pipe2", tempFailureRetry(() -> Unistd.pipe2(fds.get(), flags)), errno());
@@ -1482,7 +1487,7 @@ public final class Os {
         return domain == AF_INET || domain == AF_INET6;
     }
 
-    private static int getsockoptInt(FileDescriptor fd, int level, int option)
+    private static int getsockoptInt(@NonNull FileDescriptor fd, int level, int option)
             throws ErrnoException {
         Scoped<CIntPointer> result = Scoped.of(StackValue.get(CIntPointer.class));
         result.get().write(0);

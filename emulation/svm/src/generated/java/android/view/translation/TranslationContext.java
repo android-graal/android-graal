@@ -22,6 +22,16 @@ public final class TranslationContext implements Parcelable {
      */
     public static final int FLAG_TRANSLITERATION = 2;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private TranslationContext() {
     }
 }

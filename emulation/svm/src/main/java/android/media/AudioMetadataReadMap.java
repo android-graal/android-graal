@@ -16,8 +16,9 @@
 
 package android.media;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.annotation.IntRange;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -78,5 +79,6 @@ public interface AudioMetadataReadMap {
     /**
      * Returns the number of elements in the map.
      */
+    @IntRange(from = 0)
     int size();
 }

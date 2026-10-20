@@ -16,17 +16,28 @@
 
 package android.os;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.annotation.FlaggedApi;
+import android.annotation.IntDef;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.annotation.RequiresPermission;
+import android.annotation.SuppressAutoDoc;
+import android.annotation.SuppressLint;
+import android.annotation.SystemApi;
+import android.annotation.TestApi;
+import android.compat.annotation.UnsupportedAppUsage;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+import android.sdk.Flags;
 import android.sysprop.DeviceProperties;
 import android.sysprop.SocProperties;
 import android.sysprop.TelephonyProperties;
 import android.text.TextUtils;
 import android.util.ArraySet;
-
-import org.androidgraal.hosted.annotate.Emulated;
+import android.util.Slog;
 
 import dalvik.system.VMRuntime;
+
+import org.androidgraal.hosted.annotate.Emulated;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -39,6 +50,7 @@ import java.util.stream.Collectors;
 /**
  * Information about the current build, extracted from system properties.
  */
+@RavenwoodKeepWholeClass
 @Emulated
 public class Build {
     private static final String TAG = "Build";
@@ -62,6 +74,7 @@ public class Build {
      * @hide
      */
     @Nullable
+    @TestApi
     public static final String PRODUCT_FOR_ATTESTATION = getVendorDeviceIdProperty("name");
 
     /** The name of the industrial design. */
@@ -74,6 +87,7 @@ public class Build {
      * @hide
      */
     @Nullable
+    @TestApi
     public static final String DEVICE_FOR_ATTESTATION =
             getVendorDeviceIdProperty("device");
 
@@ -106,6 +120,7 @@ public class Build {
      * @hide
      */
     @Nullable
+    @TestApi
     public static final String MANUFACTURER_FOR_ATTESTATION =
             getVendorDeviceIdProperty("manufacturer");
 
@@ -119,6 +134,7 @@ public class Build {
      * @hide
      */
     @Nullable
+    @TestApi
     public static final String BRAND_FOR_ATTESTATION = getVendorDeviceIdProperty("brand");
 
     /** The end-user-visible name for the end product. */
@@ -131,6 +147,7 @@ public class Build {
      * @hide
      */
     @Nullable
+    @TestApi
     public static final String MODEL_FOR_ATTESTATION = getVendorDeviceIdProperty("model");
 
     /** The manufacturer of the device's primary system-on-chip. */
@@ -186,6 +203,8 @@ public class Build {
      * Whether this build was for an emulator device.
      * @hide
      */
+    @UnsupportedAppUsage
+    @TestApi
     public static final boolean IS_EMULATOR = getString("ro.boot.qemu").equals("1");
 
     /**
@@ -227,6 +246,7 @@ public class Build {
             getStringList("ro.product.cpu.abilist64", ",");
 
     /** {@hide} */
+    @TestApi
     public static boolean is64BitAbi(String abi) {
         return VMRuntime.is64BitAbi(abi);
     }
@@ -352,6 +372,7 @@ public class Build {
          * android.os.Build.VERSION_CODES_FULL}.
          */
         // ro.build.version.sdk_full is set from API 36 on.
+        @FlaggedApi(Flags.FLAG_MAJOR_MINOR_VERSIONING_SCHEME)
         public static final int SDK_INT_FULL = parseFullVersion(SystemProperties.get(
                     "ro.build.version.sdk_full", Integer.toString(SDK_INT)));
 
@@ -366,6 +387,8 @@ public class Build {
          * @see #SDK_INT
          * @hide
          */
+        @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
+        @TestApi
         public static final int DEVICE_INITIAL_SDK_INT = SystemProperties
                 .getInt("ro.product.first_api_level", 0);
 
@@ -406,6 +429,7 @@ public class Build {
          *
          * @hide
          */
+        @SystemApi
         @NonNull public static final String PREVIEW_SDK_FINGERPRINT = SystemProperties.get(
                 "ro.build.version.preview_sdk_fingerprint", "REL");
 
@@ -427,6 +451,7 @@ public class Build {
          *
          * @hide
          */
+        @SystemApi
         @NonNull public static final Set<String> KNOWN_CODENAMES =
                 new ArraySet<>(getStringList("ro.build.version.known_codenames", ","));
 
@@ -436,6 +461,8 @@ public class Build {
         /**
          * @hide
          */
+        @UnsupportedAppUsage
+        @TestApi
         public static final String[] ACTIVE_CODENAMES = "REL".equals(ALL_CODENAMES[0])
                 ? new String[0] : ALL_CODENAMES;
 
@@ -445,6 +472,7 @@ public class Build {
          * we are operating under, we bump the assumed resource platform version by 1.
          * @hide
          */
+        @TestApi
         public static final int RESOURCES_SDK_INT = SDK_INT + ACTIVE_CODENAMES.length;
 
         /**
@@ -1184,10 +1212,49 @@ public class Build {
         /**
          * Baklava.
          */
+        @FlaggedApi(Flags.FLAG_MAJOR_MINOR_VERSIONING_SCHEME)
         public static final int BAKLAVA = 36;
     }
 
     /** @hide */
+    @IntDef(value = {
+        VERSION_CODES_FULL.BASE,
+        VERSION_CODES_FULL.BASE_1_1,
+        VERSION_CODES_FULL.CUPCAKE,
+        VERSION_CODES_FULL.DONUT,
+        VERSION_CODES_FULL.ECLAIR,
+        VERSION_CODES_FULL.ECLAIR_0_1,
+        VERSION_CODES_FULL.ECLAIR_MR1,
+        VERSION_CODES_FULL.FROYO,
+        VERSION_CODES_FULL.GINGERBREAD,
+        VERSION_CODES_FULL.GINGERBREAD_MR1,
+        VERSION_CODES_FULL.HONEYCOMB,
+        VERSION_CODES_FULL.HONEYCOMB_MR1,
+        VERSION_CODES_FULL.HONEYCOMB_MR2,
+        VERSION_CODES_FULL.ICE_CREAM_SANDWICH,
+        VERSION_CODES_FULL.ICE_CREAM_SANDWICH_MR1,
+        VERSION_CODES_FULL.JELLY_BEAN,
+        VERSION_CODES_FULL.JELLY_BEAN_MR1,
+        VERSION_CODES_FULL.JELLY_BEAN_MR2,
+        VERSION_CODES_FULL.KITKAT,
+        VERSION_CODES_FULL.KITKAT_WATCH,
+        VERSION_CODES_FULL.LOLLIPOP,
+        VERSION_CODES_FULL.LOLLIPOP_MR1,
+        VERSION_CODES_FULL.M,
+        VERSION_CODES_FULL.N,
+        VERSION_CODES_FULL.N_MR1,
+        VERSION_CODES_FULL.O,
+        VERSION_CODES_FULL.O_MR1,
+        VERSION_CODES_FULL.P,
+        VERSION_CODES_FULL.Q,
+        VERSION_CODES_FULL.R,
+        VERSION_CODES_FULL.S,
+        VERSION_CODES_FULL.S_V2,
+        VERSION_CODES_FULL.TIRAMISU,
+        VERSION_CODES_FULL.UPSIDE_DOWN_CAKE,
+        VERSION_CODES_FULL.VANILLA_ICE_CREAM,
+        VERSION_CODES_FULL.BAKLAVA,
+    })
     @Retention(RetentionPolicy.SOURCE)
     public @interface SdkIntFull {}
 
@@ -1200,6 +1267,8 @@ public class Build {
      *
      * @see android.os.Build.VERSION#SDK_INT_FULL
      */
+    @FlaggedApi(Flags.FLAG_MAJOR_MINOR_VERSIONING_SCHEME)
+    @SuppressLint("AcronymName")
     public static class VERSION_CODES_FULL {
         private VERSION_CODES_FULL() {}
 
@@ -1399,6 +1468,7 @@ public class Build {
      *
      * @return The major version encoded in a VERSION_CODES_FULL value
      */
+    @FlaggedApi(Flags.FLAG_MAJOR_MINOR_VERSIONING_SCHEME)
     public static int getMajorSdkVersion(@SdkIntFull int sdkIntFull) {
         return sdkIntFull / VERSION_CODES_FULL.SDK_INT_MULTIPLIER;
     }
@@ -1409,6 +1479,7 @@ public class Build {
      *
      * @return The minor version encoded in a VERSION_CODES_FULL value
      */
+    @FlaggedApi(Flags.FLAG_MAJOR_MINOR_VERSIONING_SCHEME)
     public static int getMinorSdkVersion(@SdkIntFull int sdkIntFull) {
         return sdkIntFull % VERSION_CODES_FULL.SDK_INT_MULTIPLIER;
     }
@@ -1424,6 +1495,7 @@ public class Build {
      * @hide
      */
     @SuppressWarnings("FlaggedApi") // SDK_INT_MULTIPLIER is defined in this file
+    @SuppressLint("InlinedApi")
     public static @SdkIntFull int parseFullVersion(@NonNull String version) {
         int index = version.indexOf('.');
         int major;
@@ -1496,8 +1568,10 @@ public class Build {
     public static final String FINGERPRINT = deriveFingerprint();
 
     /** The status of the known issue on this device is not known. */
+    @FlaggedApi(android.os.Flags.FLAG_API_FOR_BACKPORTED_FIXES)
     public static final int BACKPORTED_FIX_STATUS_UNKNOWN = 0;
     /** The known issue is fixed on this device. */
+    @FlaggedApi(android.os.Flags.FLAG_API_FOR_BACKPORTED_FIXES)
     public static final int BACKPORTED_FIX_STATUS_FIXED = 1;
     /**
      * The known issue is not applicable to this device.
@@ -1505,8 +1579,10 @@ public class Build {
      * <p>For example if the issue only affects a specific brand, devices
      * from other brands would report not applicable.
      */
+    @FlaggedApi(android.os.Flags.FLAG_API_FOR_BACKPORTED_FIXES)
     public static final int BACKPORTED_FIX_STATUS_NOT_APPLICABLE = 2;
     /** The known issue is not fixed on this device. */
+    @FlaggedApi(android.os.Flags.FLAG_API_FOR_BACKPORTED_FIXES)
     public static final int BACKPORTED_FIX_STATUS_NOT_FIXED = 3;
 
     /**
@@ -1514,6 +1590,14 @@ public class Build {
      *
      * @hide
      */
+    @IntDef(
+            prefix = {"BACKPORTED_FIX_STATUS_"},
+            value = {
+                    BACKPORTED_FIX_STATUS_UNKNOWN,
+                    BACKPORTED_FIX_STATUS_FIXED,
+                    BACKPORTED_FIX_STATUS_NOT_APPLICABLE,
+                    BACKPORTED_FIX_STATUS_NOT_FIXED,
+            })
     @Retention(RetentionPolicy.SOURCE)
     public @interface BackportedFixStatus {
     }
@@ -1675,6 +1759,7 @@ public class Build {
      * selinux into "permissive" mode in particular.
      * @hide
      */
+    @UnsupportedAppUsage
     public static final boolean IS_DEBUGGABLE =
             SystemProperties.getInt("ro.debuggable", 0) == 1;
 
@@ -1686,6 +1771,8 @@ public class Build {
      * selinux into "permissive" mode in particular.
      * @hide
      */
+    @TestApi
+    @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
     public static boolean isDebuggable() {
         return IS_DEBUGGABLE;
     }
@@ -1726,6 +1813,7 @@ public class Build {
      * @hide
      * @removed
      */
+    @SystemApi
     public static final boolean PERMISSIONS_REVIEW_REQUIRED = true;
 
     /**
@@ -1736,6 +1824,7 @@ public class Build {
         return joinListOrElse(TelephonyProperties.baseband_version(), null);
     }
 
+    @UnsupportedAppUsage
     private static String getString(String property) {
         return SystemProperties.get(property, UNKNOWN);
     }
@@ -1760,6 +1849,7 @@ public class Build {
         }
     }
 
+    @UnsupportedAppUsage
     private static long getLong(String property) {
         try {
             return Long.parseLong(SystemProperties.get(property));

@@ -16,8 +16,9 @@
 
 package android.health.connect.datatypes;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.annotation.FlaggedApi;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.health.connect.datatypes.units.Energy;
 import android.health.connect.datatypes.units.Length;
 
@@ -27,9 +28,11 @@ import java.time.Duration;
 import java.util.Objects;
 
 /** A goal which should be met to complete a {@link PlannedExerciseStep}. */
+@FlaggedApi("com.android.healthconnect.flags.training_plans")
 @Emulated
 public abstract class ExerciseCompletionGoal {
     /** An {@link ExerciseCompletionGoal} that requires covering a specified distance. */
+    @FlaggedApi("com.android.healthconnect.flags.training_plans")
     public static final class DistanceGoal extends ExerciseCompletionGoal {
         private final Length mDistance;
 
@@ -70,6 +73,7 @@ public abstract class ExerciseCompletionGoal {
      * <p>For example, a swimming coach may specify '100m @ 1min40s'. This implies: complete 100m
      * and if you manage it in 1min30s, you will have 10s of rest prior to the next set.
      */
+    @FlaggedApi("com.android.healthconnect.flags.training_plans")
     public static final class DistanceWithVariableRestGoal extends ExerciseCompletionGoal {
         private final Length mDistance;
         private final Duration mDuration;
@@ -113,6 +117,7 @@ public abstract class ExerciseCompletionGoal {
     }
 
     /** An {@link ExerciseCompletionGoal} that requires completing a specified number of steps. */
+    @FlaggedApi("com.android.healthconnect.flags.training_plans")
     public static final class StepsGoal extends ExerciseCompletionGoal {
         private final int mSteps;
 
@@ -143,6 +148,7 @@ public abstract class ExerciseCompletionGoal {
     }
 
     /** An {@link ExerciseCompletionGoal} that requires a specified duration to elapse. */
+    @FlaggedApi("com.android.healthconnect.flags.training_plans")
     public static final class DurationGoal extends ExerciseCompletionGoal {
         private final Duration mDuration;
 
@@ -178,6 +184,7 @@ public abstract class ExerciseCompletionGoal {
      * An {@link ExerciseCompletionGoal} that requires a specified number of repetitions to be
      * completed.
      */
+    @FlaggedApi("com.android.healthconnect.flags.training_plans")
     public static final class RepetitionsGoal extends ExerciseCompletionGoal {
         private final int mRepetitions;
 
@@ -211,6 +218,7 @@ public abstract class ExerciseCompletionGoal {
      * An {@link ExerciseCompletionGoal} that requires a specified number of total calories to be
      * burned.
      */
+    @FlaggedApi("com.android.healthconnect.flags.training_plans")
     public static final class TotalCaloriesBurnedGoal extends ExerciseCompletionGoal {
         private final Energy mTotalCalories;
 
@@ -246,6 +254,7 @@ public abstract class ExerciseCompletionGoal {
      * An {@link ExerciseCompletionGoal} that requires a specified number of active calories to be
      * burned.
      */
+    @FlaggedApi("com.android.healthconnect.flags.training_plans")
     public static final class ActiveCaloriesBurnedGoal extends ExerciseCompletionGoal {
         private final Energy mActiveCalories;
 
@@ -278,6 +287,7 @@ public abstract class ExerciseCompletionGoal {
     }
 
     /** An {@link ExerciseCompletionGoal} that is unknown. */
+    @FlaggedApi("com.android.healthconnect.flags.training_plans")
     public static final class UnknownGoal extends ExerciseCompletionGoal {
         private UnknownGoal() {}
 
@@ -288,6 +298,7 @@ public abstract class ExerciseCompletionGoal {
      * An {@link ExerciseCompletionGoal} that has no specific target metric. It is up to the user to
      * determine when the associated {@link PlannedExerciseStep} is complete.
      */
+    @FlaggedApi("com.android.healthconnect.flags.training_plans")
     public static final class UnspecifiedGoal extends ExerciseCompletionGoal {
         private UnspecifiedGoal() {}
 

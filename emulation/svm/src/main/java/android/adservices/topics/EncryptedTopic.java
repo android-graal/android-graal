@@ -16,7 +16,10 @@
 
 package android.adservices.topics;
 
-import androidx.annotation.NonNull;
+import android.annotation.FlaggedApi;
+import android.annotation.NonNull;
+
+import com.android.adservices.flags.Flags;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -38,6 +41,7 @@ import java.util.Objects;
  * href="https://developer.android.com/design-for-safety/privacy-sandbox/guides/topics">Developer
  * Guide</a>.
  */
+@FlaggedApi(Flags.FLAG_TOPICS_ENCRYPTION_ENABLED)
 @Emulated
 public final class EncryptedTopic {
     @NonNull private final byte[] mEncryptedTopic;

@@ -43,6 +43,16 @@ public final class WifiP2pPairingBootstrappingConfig implements Parcelable {
      */
     public static final int PAIRING_BOOTSTRAPPING_METHOD_OUT_OF_BAND = 32;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private WifiP2pPairingBootstrappingConfig() {
     }
 }

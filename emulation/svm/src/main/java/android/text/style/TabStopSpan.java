@@ -16,6 +16,9 @@
 
 package android.text.style;
 
+import android.annotation.IntRange;
+import android.annotation.Px;
+
 import org.androidgraal.hosted.annotate.Emulated;
 
 /**
@@ -23,6 +26,7 @@ import org.androidgraal.hosted.annotate.Emulated;
  * the leading margin of the line. <code>TabStopSpan</code> will only affect the first tab
  * encountered on the first line of the text.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public interface TabStopSpan extends ParagraphStyle {
 
@@ -48,6 +52,7 @@ public interface TabStopSpan extends ParagraphStyle {
      */
     class Standard implements TabStopSpan {
 
+        @Px
         private int mTabOffset;
 
         /**
@@ -56,7 +61,7 @@ public interface TabStopSpan extends ParagraphStyle {
          * @param offset the offset of the tab stop from the leading margin of
          *               the line, in pixels
          */
-        public Standard(int offset) {
+        public Standard(@IntRange(from = 0) int offset) {
             mTabOffset = offset;
         }
 

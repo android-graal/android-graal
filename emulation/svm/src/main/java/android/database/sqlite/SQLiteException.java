@@ -23,6 +23,7 @@ import org.androidgraal.hosted.annotate.Emulated;
 /**
  * A SQLite exception that indicates there was an error with SQL parsing or execution.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public class SQLiteException extends SQLException {
     public SQLiteException() {

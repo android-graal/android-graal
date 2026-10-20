@@ -24,6 +24,7 @@ import org.androidgraal.hosted.annotate.Emulated;
  * see {@link Spannable} for mutable markup and {@link Editable} for
  * mutable text.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public interface Spanned
 extends CharSequence

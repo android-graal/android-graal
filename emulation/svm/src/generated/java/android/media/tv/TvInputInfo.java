@@ -62,6 +62,16 @@ public final class TvInputInfo implements Parcelable {
      */
     public static final int TYPE_VGA = 1005;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private TvInputInfo() {
     }
 }

@@ -16,6 +16,9 @@
 
 package android.webkit;
 
+import android.annotation.SystemApi;
+import android.compat.annotation.UnsupportedAppUsage;
+
 import org.androidgraal.hosted.annotate.Emulated;
 
 /**
@@ -30,10 +33,12 @@ public class JsResult {
      * notifications when the JavaScript result represented by a JsResult instance has
      * @hide Only for use by WebViewProvider implementations
      */
+    @SystemApi
     public interface ResultReceiver {
         public void onJsResultComplete(JsResult result);
     }
     // This is the caller of the prompt and is the object that is waiting.
+    @UnsupportedAppUsage
     private final ResultReceiver mReceiver;
     // This is a basic result of a confirm or prompt dialog.
     private boolean mResult;
@@ -57,6 +62,7 @@ public class JsResult {
     /**
      * @hide Only for use by WebViewProvider implementations
      */
+    @SystemApi
     public JsResult(ResultReceiver receiver) {
         mReceiver = receiver;
     }
@@ -64,6 +70,7 @@ public class JsResult {
     /**
      * @hide Only for use by WebViewProvider implementations
      */
+    @SystemApi
     public final boolean getResult() {
         return mResult;
     }

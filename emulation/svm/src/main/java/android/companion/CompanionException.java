@@ -16,7 +16,7 @@
 
 package android.companion;
 
-import androidx.annotation.NonNull;
+import android.annotation.NonNull;
 
 import org.androidgraal.hosted.annotate.Emulated;
 

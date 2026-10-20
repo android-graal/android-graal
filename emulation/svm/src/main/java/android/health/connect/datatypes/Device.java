@@ -18,8 +18,9 @@ package android.health.connect.datatypes;
 
 import static android.health.connect.datatypes.validation.ValidationUtils.validateIntDefValue;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.annotation.IntDef;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -177,6 +178,17 @@ public final class Device {
                     DEVICE_TYPE_SMART_DISPLAY);
 
     /** @hide */
+    @IntDef({
+        DEVICE_TYPE_UNKNOWN,
+        DEVICE_TYPE_WATCH,
+        DEVICE_TYPE_PHONE,
+        DEVICE_TYPE_SCALE,
+        DEVICE_TYPE_RING,
+        DEVICE_TYPE_HEAD_MOUNTED,
+        DEVICE_TYPE_FITNESS_BAND,
+        DEVICE_TYPE_CHEST_STRAP,
+        DEVICE_TYPE_SMART_DISPLAY,
+    })
     @Retention(RetentionPolicy.SOURCE)
     public @interface DeviceType {}
 }

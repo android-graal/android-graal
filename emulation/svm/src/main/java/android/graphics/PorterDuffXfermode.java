@@ -25,6 +25,7 @@ import org.androidgraal.hosted.annotate.Emulated;
  * information on the available alpha compositing and blending modes.</p>
  *
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public class PorterDuffXfermode extends Xfermode {
     /**

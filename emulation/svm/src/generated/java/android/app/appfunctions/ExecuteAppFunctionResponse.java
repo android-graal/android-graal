@@ -29,6 +29,16 @@ public final class ExecuteAppFunctionResponse implements Parcelable {
      */
     public static final String PROPERTY_RETURN_VALUE = "androidAppfunctionsReturnValue";
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private ExecuteAppFunctionResponse() {
     }
 }

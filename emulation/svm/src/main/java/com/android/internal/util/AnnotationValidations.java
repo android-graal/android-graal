@@ -15,7 +15,13 @@
  */
 package com.android.internal.util;
 
-import androidx.annotation.NonNull;
+import android.annotation.AppIdInt;
+import android.annotation.ColorInt;
+import android.annotation.FloatRange;
+import android.annotation.IntRange;
+import android.annotation.NonNull;
+import android.annotation.Size;
+import android.annotation.UserIdInt;
 
 import java.lang.annotation.Annotation;
 

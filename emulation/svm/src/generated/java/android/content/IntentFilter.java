@@ -101,7 +101,7 @@ import android.os.Parcelable;
  * that unlike the action, an IntentFilter with no categories
  * will only match an Intent that does not have any categories.
  */
-public final class IntentFilter implements Parcelable {
+public class IntentFilter implements Parcelable {
     /**
      * The part of a match constant that applies a quality adjustment to the
      * basic category of match.  The value {@link #MATCH_ADJUSTMENT_NORMAL}
@@ -206,6 +206,16 @@ public final class IntentFilter implements Parcelable {
      * @see #setPriority
      */
     public static final int SYSTEM_LOW_PRIORITY = -1000;
+
+    @Override
+    public final int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public final void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
 
     private IntentFilter() {
     }

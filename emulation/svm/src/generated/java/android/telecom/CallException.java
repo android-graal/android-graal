@@ -44,6 +44,16 @@ public final class CallException implements Parcelable {
      */
     public static final int CODE_OPERATION_TIMED_OUT = 6;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private CallException() {
     }
 }

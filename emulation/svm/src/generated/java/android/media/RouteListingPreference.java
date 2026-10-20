@@ -32,6 +32,16 @@ public final class RouteListingPreference implements Parcelable {
      */
     public static final String EXTRA_ROUTE_ID = "android.media.extra.ROUTE_ID";
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private RouteListingPreference() {
     }
 
@@ -145,6 +155,16 @@ public final class RouteListingPreference implements Parcelable {
          * is not authorized to route to it.
          */
         public static final int SUBTEXT_UNAUTHORIZED = 6;
+
+        @Override
+        public int describeContents() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void writeToParcel(android.os.Parcel dest, int flags) {
+            throw new UnsupportedOperationException();
+        }
 
         private Item() {
         }

@@ -45,6 +45,16 @@ public final class PackagePolicy implements Parcelable {
      */
     public static final int PACKAGE_POLICY_BLOCKLIST = 1;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private PackagePolicy() {
     }
 }

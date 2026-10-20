@@ -16,8 +16,18 @@
 
 package com.android.internal.util;
 
-import androidx.annotation.NonNull;
+import android.annotation.IntRange;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.compat.annotation.UnsupportedAppUsage;
+import android.os.Build;
 import android.text.TextUtils;
+
+import com.google.errorprone.annotations.CompileTimeConstant;
+
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Objects;
 
 /**
  * Simple static methods to be called at the start of your own methods to verify
@@ -31,6 +41,7 @@ public class Preconditions {
      * @param expression the expression to check
      * @throws IllegalArgumentException if {@code expression} is false
      */
+    @UnsupportedAppUsage
     public static void checkArgument(boolean expression) {
         if (!expression) {
             throw new IllegalArgumentException();
@@ -50,5 +61,78 @@ public class Preconditions {
             throw new IllegalArgumentException();
         }
         return string;
+    }
+
+    /**
+     * Ensures that an object reference passed as a parameter to the calling
+     * method is not null.
+     *
+     * @param reference an object reference
+     * @param errorMessage the exception message to use if the check fails; will
+     *     be converted to a string using {@link String#valueOf(Object)}
+     * @return the non-null reference that was validated
+     * @throws NullPointerException if {@code reference} is null
+     * @deprecated - use {@link java.util.Objects#requireNonNull} instead.
+     */
+    @Deprecated
+    @UnsupportedAppUsage
+    public static @NonNull <T> T checkNotNull(
+            final T reference,
+            final @CompileTimeConstant Object errorMessage) {
+        if (reference == null) {
+            throw new NullPointerException(String.valueOf(errorMessage));
+        }
+        return reference;
+    }
+
+    /**
+     * Ensures the truth of an expression involving the state of the calling
+     * instance, but not involving any parameters to the calling method.
+     *
+     * @param expression a boolean expression
+     * @throws IllegalStateException if {@code expression} is false
+     */
+    @UnsupportedAppUsage
+    public static void checkState(final boolean expression) {
+        checkState(expression, null);
+    }
+
+    /**
+     * Ensures the truth of an expression involving the state of the calling
+     * instance, but not involving any parameters to the calling method.
+     *
+     * @param expression a boolean expression
+     * @param errorMessage the exception message to use if the check fails; will
+     *     be converted to a string using {@link String#valueOf(Object)}
+     * @throws IllegalStateException if {@code expression} is false
+     */
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
+    public static void checkState(final boolean expression, String errorMessage) {
+        if (!expression) {
+            throw new IllegalStateException(errorMessage);
+        }
+    }
+
+    /**
+     * Ensures that the argument floating point value is a finite number.
+     *
+     * <p>A finite number is defined to be both representable (that is, not NaN) and
+     * not infinite (that is neither positive or negative infinity).</p>
+     *
+     * @param value a floating point value
+     * @param valueName the name of the argument to use if the check fails
+     *
+     * @return the validated floating point value
+     *
+     * @throws IllegalArgumentException if {@code value} was not finite
+     */
+    public static float checkArgumentFinite(final float value, final String valueName) {
+        if (Float.isNaN(value)) {
+            throw new IllegalArgumentException(valueName + " must not be NaN");
+        } else if (Float.isInfinite(value)) {
+            throw new IllegalArgumentException(valueName + " must not be infinite");
+        }
+
+        return value;
     }
 }

@@ -81,6 +81,16 @@ public final class RemoteViews implements Parcelable {
      */
     public static final int MARGIN_TOP = 1;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private RemoteViews() {
     }
 }

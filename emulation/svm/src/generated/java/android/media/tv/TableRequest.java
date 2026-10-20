@@ -56,6 +56,16 @@ public final class TableRequest implements Parcelable {
      */
     public static final int TABLE_NAME_TOT = 8;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private TableRequest() {
     }
 }

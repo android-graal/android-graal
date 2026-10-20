@@ -84,6 +84,16 @@ public final class SignalThresholdInfo implements Parcelable {
      */
     public static final int SIGNAL_MEASUREMENT_TYPE_UNKNOWN = 0;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private SignalThresholdInfo() {
     }
 }

@@ -22,6 +22,7 @@ import org.androidgraal.hosted.annotate.Emulated;
  * The core Android system has died and is going through a runtime restart. All
  * running apps will be promptly killed.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public class DeadSystemException extends DeadObjectException {
     public DeadSystemException() {

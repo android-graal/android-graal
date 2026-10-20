@@ -12,6 +12,38 @@
       ]
     },
     {
+      "type": "android.hardware.input.InputSensorInfo",
+      "fields": [
+        {
+          "name": "CREATOR"
+        }
+      ]
+    },
+    {
+      "type": "android.os.Bundle",
+      "fields": [
+        {
+          "name": "CREATOR"
+        }
+      ]
+    },
+    {
+      "type": "android.os.ParcelableException",
+      "fields": [
+        {
+          "name": "CREATOR"
+        }
+      ]
+    },
+    {
+      "type": "android.os.PersistableBundle",
+      "fields": [
+        {
+          "name": "CREATOR"
+        }
+      ]
+    },
+    {
       "type": "android.os.health.PackageHealthStats",
       "allDeclaredFields": true
     },
@@ -30,6 +62,34 @@
     {
       "type": "android.os.health.UidHealthStats",
       "allDeclaredFields": true
+    },
+    {
+      "type": "android.util.SizeF",
+      "fields": [
+        {
+          "name": "CREATOR"
+        }
+      ]
+    },
+    {
+      "type": "char[]",
+      "serializable": true
+    },
+    {
+      "type": "double[]",
+      "serializable": true
+    },
+    {
+      "type": "float[]",
+      "serializable": true
+    },
+    {
+      "type": "java.lang.Character",
+      "serializable": true
+    },
+    {
+      "type": "short[]",
+      "serializable": true
     }
   ]
 }

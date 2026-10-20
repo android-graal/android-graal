@@ -16,8 +16,8 @@
 
 package android.health.connect.datatypes;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 
 import org.androidgraal.hosted.annotate.Emulated;
 

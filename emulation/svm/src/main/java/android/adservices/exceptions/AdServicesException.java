@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 package android.adservices.exceptions;
-import androidx.annotation.Nullable;
+import android.annotation.Nullable;
 
 import org.androidgraal.hosted.annotate.Emulated;
 /**

@@ -16,6 +16,11 @@
 
 package android.system;
 
+import static android.annotation.SystemApi.Client.MODULE_LIBRARIES;
+
+import android.annotation.SystemApi;
+import android.compat.annotation.UnsupportedAppUsage;
+
 import org.androidgraal.bionic.Capability;
 import org.androidgraal.bionic.Errno;
 import org.androidgraal.bionic.Fcntl;
@@ -45,6 +50,7 @@ import org.androidgraal.hosted.annotate.Emulated;
  */
 @Emulated
 public final class OsConstants {
+    @UnsupportedAppUsage
     private OsConstants() {
     }
 

@@ -21,6 +21,7 @@ import org.androidgraal.hosted.annotate.Emulated;
 /**
  * Interface for objects that use a heuristic for guessing at the paragraph direction by examining text.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public interface TextDirectionHeuristic {
     /**

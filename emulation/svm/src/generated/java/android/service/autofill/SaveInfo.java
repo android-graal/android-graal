@@ -236,6 +236,16 @@ public final class SaveInfo implements Parcelable {
      */
     public static final int SAVE_DATA_TYPE_USERNAME = 8;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private SaveInfo() {
     }
 }

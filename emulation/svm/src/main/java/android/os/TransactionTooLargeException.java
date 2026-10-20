@@ -56,6 +56,7 @@ import org.androidgraal.hosted.annotate.Emulated;
  * later as needed.
  * </p>
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public class TransactionTooLargeException extends RemoteException {
     public TransactionTooLargeException() {

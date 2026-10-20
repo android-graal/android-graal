@@ -22,6 +22,7 @@ import org.androidgraal.hosted.annotate.Emulated;
  * The contents of a Parcel (usually during unmarshalling) does not
  * contain the expected data.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public class ParcelFormatException extends RuntimeException {
     public ParcelFormatException() {

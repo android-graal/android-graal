@@ -29,6 +29,16 @@ public final class PrinterInfo implements Parcelable {
      */
     public static final int STATUS_UNAVAILABLE = 3;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private PrinterInfo() {
     }
 }

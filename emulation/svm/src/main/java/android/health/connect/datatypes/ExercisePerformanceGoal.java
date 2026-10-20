@@ -16,8 +16,9 @@
 
 package android.health.connect.datatypes;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.annotation.FlaggedApi;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.health.connect.datatypes.units.Mass;
 import android.health.connect.datatypes.units.Power;
 import android.health.connect.datatypes.units.Velocity;
@@ -27,12 +28,14 @@ import org.androidgraal.hosted.annotate.Emulated;
 import java.util.Objects;
 
 /** A goal which should be aimed for during a {@link PlannedExerciseStep}. */
+@FlaggedApi("com.android.healthconnect.flags.training_plans")
 @Emulated
 public abstract class ExercisePerformanceGoal {
     /**
      * An {@link ExercisePerformanceGoal} that requires a target power range to be met during the
      * associated {@link PlannedExerciseStep}.
      */
+    @FlaggedApi("com.android.healthconnect.flags.training_plans")
     public static final class PowerGoal extends ExercisePerformanceGoal {
         private final Power mMinPower;
         private final Power mMaxPower;
@@ -83,6 +86,7 @@ public abstract class ExercisePerformanceGoal {
      * An {@link ExercisePerformanceGoal} that requires a target speed range to be met during the
      * associated {@link PlannedExerciseStep}. This can be used to represent pace or speed goals.
      */
+    @FlaggedApi("com.android.healthconnect.flags.training_plans")
     public static final class SpeedGoal extends ExercisePerformanceGoal {
         private final Velocity mMinSpeed;
         private final Velocity mMaxSpeed;
@@ -134,6 +138,7 @@ public abstract class ExercisePerformanceGoal {
      * associated {@link PlannedExerciseStep}. The value may be interpreted as RPM for e.g. cycling
      * activities, or as steps per minute for e.g. walking/running activities.
      */
+    @FlaggedApi("com.android.healthconnect.flags.training_plans")
     public static final class CadenceGoal extends ExercisePerformanceGoal {
         private final double mMinRpm;
         private final double mMaxRpm;
@@ -179,6 +184,7 @@ public abstract class ExercisePerformanceGoal {
      * An {@link ExercisePerformanceGoal} that requires a target heart rate range, in BPM, to be met
      * during the associated {@link PlannedExerciseStep}.
      */
+    @FlaggedApi("com.android.healthconnect.flags.training_plans")
     public static final class HeartRateGoal extends ExercisePerformanceGoal {
         private final int mMinBpm;
         private final int mMaxBpm;
@@ -224,6 +230,7 @@ public abstract class ExercisePerformanceGoal {
      * An {@link ExercisePerformanceGoal} that requires a target weight to be lifted during the
      * associated {@link PlannedExerciseStep}.
      */
+    @FlaggedApi("com.android.healthconnect.flags.training_plans")
     public static final class WeightGoal extends ExercisePerformanceGoal {
         private final Mass mMass;
 
@@ -265,6 +272,7 @@ public abstract class ExercisePerformanceGoal {
      * 0: No exertion (at rest) 1: Very light 2-3: Light 4-5: Moderate 6-7: Hard 8-9: Very hard 10:
      * Maximum effort
      */
+    @FlaggedApi("com.android.healthconnect.flags.training_plans")
     public static final class RateOfPerceivedExertionGoal extends ExercisePerformanceGoal {
         private final int mRpe;
 
@@ -305,6 +313,7 @@ public abstract class ExercisePerformanceGoal {
      * AMRAP (as many reps as possible) sets are often used in conjunction with a duration based
      * completion goal.
      */
+    @FlaggedApi("com.android.healthconnect.flags.training_plans")
     public static final class AmrapGoal extends ExercisePerformanceGoal {
         @NonNull public static final AmrapGoal INSTANCE = new AmrapGoal();
 
@@ -312,6 +321,7 @@ public abstract class ExercisePerformanceGoal {
     }
 
     /** An {@link ExercisePerformanceGoal} that is unknown. */
+    @FlaggedApi("com.android.healthconnect.flags.training_plans")
     public static final class UnknownGoal extends ExercisePerformanceGoal {
         private UnknownGoal() {}
 

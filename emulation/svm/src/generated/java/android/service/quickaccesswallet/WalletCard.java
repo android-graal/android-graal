@@ -28,6 +28,16 @@ public final class WalletCard implements Parcelable {
      */
     public static final int CARD_TYPE_UNKNOWN = 0;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private WalletCard() {
     }
 }

@@ -131,6 +131,16 @@ public final class NdefRecord implements Parcelable {
      */
     public static final short TNF_WELL_KNOWN = 1;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private NdefRecord() {
     }
 }

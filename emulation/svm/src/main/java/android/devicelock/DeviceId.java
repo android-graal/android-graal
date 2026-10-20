@@ -16,7 +16,8 @@
 
 package android.devicelock;
 
-import androidx.annotation.NonNull;
+import android.annotation.IntDef;
+import android.annotation.NonNull;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -32,6 +33,10 @@ import java.lang.annotation.RetentionPolicy;
 public final class DeviceId {
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
+    @IntDef(prefix = "DEVICE_ID_TYPE_", value = {
+        DEVICE_ID_TYPE_IMEI,
+        DEVICE_ID_TYPE_MEID,
+    })
     public @interface DeviceIdType {}
     /** The device id is an IMEI */
     public static final int DEVICE_ID_TYPE_IMEI = 0;

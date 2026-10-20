@@ -16,10 +16,14 @@
 
 package android.hardware;
 
+import android.annotation.IntDef;
+import android.annotation.Nullable;
+import android.annotation.SystemApi;
+import android.annotation.SystemService;
+import android.compat.annotation.UnsupportedAppUsage;
 import android.os.Build;
+import android.util.Log;
 import android.util.SparseArray;
-
-import androidx.annotation.Nullable;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -372,6 +376,7 @@ public abstract class SensorManager {
     /**
      * {@hide}
      */
+    @UnsupportedAppUsage
     public SensorManager() {
     }
 
@@ -1442,6 +1447,7 @@ public abstract class SensorManager {
      * @hide
      */
     @Retention(RetentionPolicy.SOURCE)
+    @IntDef({DATA_INJECTION, REPLAY_DATA_INJECTION, HAL_BYPASS_REPLAY_DATA_INJECTION})
     public @interface DataInjectionMode {}
     /**
      * This mode is only used for testing purposes. Not all HALs support this mode. In this mode,
@@ -1494,6 +1500,7 @@ public abstract class SensorManager {
      *         otherwise.
      * @hide
      */
+    @SystemApi
     public boolean initDataInjection(boolean enable) {
         return initDataInjectionImpl(enable, DATA_INJECTION);
     }
@@ -1561,6 +1568,7 @@ public abstract class SensorManager {
      *         invalid.
      * @hide
      */
+    @SystemApi
     public boolean injectSensorData(Sensor sensor, float[] values, int accuracy,
                 long timestamp) {
         if (sensor == null) {

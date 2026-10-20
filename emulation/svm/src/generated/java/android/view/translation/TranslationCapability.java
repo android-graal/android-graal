@@ -39,6 +39,16 @@ public final class TranslationCapability implements Parcelable {
      */
     public static final int STATE_ON_DEVICE = 3;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private TranslationCapability() {
     }
 }

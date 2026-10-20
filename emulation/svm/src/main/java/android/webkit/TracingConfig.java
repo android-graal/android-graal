@@ -16,7 +16,8 @@
 
 package android.webkit;
 
-import androidx.annotation.NonNull;
+import android.annotation.IntDef;
+import android.annotation.NonNull;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -37,6 +38,9 @@ public class TracingConfig {
     private @TracingMode int mTracingMode;
 
     /** @hide */
+    @IntDef(flag = true, value = {CATEGORIES_NONE, CATEGORIES_ALL, CATEGORIES_ANDROID_WEBVIEW,
+            CATEGORIES_WEB_DEVELOPER, CATEGORIES_INPUT_LATENCY, CATEGORIES_RENDERING,
+            CATEGORIES_JAVASCRIPT_AND_RENDERING, CATEGORIES_FRAME_VIEWER})
     @Retention(RetentionPolicy.SOURCE)
     public @interface PredefinedCategories {}
 
@@ -89,6 +93,7 @@ public class TracingConfig {
     public static final int CATEGORIES_FRAME_VIEWER = 1 << 6;
 
     /** @hide */
+    @IntDef({RECORD_UNTIL_FULL, RECORD_CONTINUOUSLY})
     @Retention(RetentionPolicy.SOURCE)
     public @interface TracingMode {}
 

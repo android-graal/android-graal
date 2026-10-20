@@ -44,6 +44,16 @@ public final class SearchSuggestionSpec implements Parcelable {
      */
     public static final int SUGGESTION_RANKING_STRATEGY_TERM_FREQUENCY = 1;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private SearchSuggestionSpec() {
     }
 }

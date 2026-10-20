@@ -16,12 +16,13 @@
 
 package android.sax;
 
-import org.androidgraal.hosted.annotate.Emulated;
+import org.xml.sax.helpers.DefaultHandler;
 import org.xml.sax.Attributes;
+import org.xml.sax.SAXException;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.Locator;
-import org.xml.sax.SAXException;
-import org.xml.sax.helpers.DefaultHandler;
+
+import org.androidgraal.hosted.annotate.Emulated;
 
 /**
  * The root XML element. The entry point for this API. Not safe for concurrent

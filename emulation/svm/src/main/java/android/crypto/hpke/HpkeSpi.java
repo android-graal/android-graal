@@ -22,8 +22,8 @@ import java.security.GeneralSecurityException;
 import java.security.InvalidKeyException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import libcore.util.NonNull;
+import libcore.util.Nullable;
 
 
 /**

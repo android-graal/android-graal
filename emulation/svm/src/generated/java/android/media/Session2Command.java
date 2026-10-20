@@ -21,6 +21,16 @@ public final class Session2Command implements Parcelable {
      */
     public static final int COMMAND_CODE_CUSTOM = 0;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private Session2Command() {
     }
 

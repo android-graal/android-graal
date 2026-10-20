@@ -4,6 +4,9 @@
 
 package android.net.http;
 
+import android.annotation.IntDef;
+import android.annotation.SuppressLint;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -49,6 +52,12 @@ public abstract class BidirectionalStream {
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
+    @IntDef({
+            BidirectionalStream.STREAM_PRIORITY_IDLE,
+            BidirectionalStream.STREAM_PRIORITY_LOWEST,
+            BidirectionalStream.STREAM_PRIORITY_LOW,
+            BidirectionalStream.STREAM_PRIORITY_MEDIUM,
+            BidirectionalStream.STREAM_PRIORITY_HIGHEST})
     public @interface BidirectionalStreamPriority {}
 
 
@@ -57,6 +66,7 @@ public abstract class BidirectionalStream {
      * it via {@link Builder#build}.
      */
     // SuppressLint: Builder can not be final since this is abstract and inherited
+    @SuppressLint("StaticFinalBuilder")
     public abstract static class Builder {
         /**
          * Sets the HTTP method for the request. Returns builder to facilitate chaining.

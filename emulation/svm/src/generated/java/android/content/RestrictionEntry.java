@@ -69,6 +69,16 @@ public final class RestrictionEntry implements Parcelable {
      */
     public static final int TYPE_STRING = 6;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private RestrictionEntry() {
     }
 }

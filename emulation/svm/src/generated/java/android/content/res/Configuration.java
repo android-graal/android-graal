@@ -532,6 +532,16 @@ public final class Configuration implements Parcelable {
      */
     public static final int UI_MODE_TYPE_WATCH = 6;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private Configuration() {
     }
 }

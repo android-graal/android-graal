@@ -44,6 +44,16 @@ public final class TextBoundsInfo implements Parcelable {
      */
     public static final int FLAG_LINE_IS_RTL = 8;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private TextBoundsInfo() {
     }
 }

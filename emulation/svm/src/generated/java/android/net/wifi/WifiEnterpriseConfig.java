@@ -57,6 +57,16 @@ public final class WifiEnterpriseConfig implements Parcelable {
      */
     public static final String WAPI_USER_CERTIFICATE = "WAPIUSR_";
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private WifiEnterpriseConfig() {
     }
 

@@ -25,6 +25,7 @@ import java.io.IOException;
  * when an error is detected in the data being decoded.  This allows problems with the base64 data
  * to be disambiguated from errors in the underlying streams (e.g. actual connection errors.)
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public class Base64DataException extends IOException {
     public Base64DataException(String detailMessage) {

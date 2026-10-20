@@ -76,6 +76,16 @@ public final class L2capNetworkSpecifier implements Parcelable {
      */
     public static final int ROLE_SERVER = 2;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private L2capNetworkSpecifier() {
     }
 }

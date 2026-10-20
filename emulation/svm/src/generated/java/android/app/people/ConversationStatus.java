@@ -61,6 +61,16 @@ public final class ConversationStatus implements Parcelable {
 
     public static final int AVAILABILITY_UNKNOWN = -1;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private ConversationStatus() {
     }
 }

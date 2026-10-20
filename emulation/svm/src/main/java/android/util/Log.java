@@ -16,8 +16,17 @@
 
 package android.util;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.annotation.IntDef;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.annotation.SystemApi;
+import android.compat.annotation.UnsupportedAppUsage;
+import android.os.DeadSystemException;
+
+import com.android.internal.util.FastPrintWriter;
+import com.android.internal.util.LineBreakBufferedWriter;
+
+import dalvik.annotation.optimization.FastNative;
 
 import org.androidgraal.android.CString;
 import org.androidgraal.hosted.annotate.Emulated;
@@ -26,8 +35,6 @@ import org.graalvm.nativeimage.c.function.CLibrary;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
 import org.graalvm.nativeimage.c.type.CTypeConversion.CCharPointerHolder;
-
-import com.android.internal.util.LineBreakBufferedWriter;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -71,10 +78,16 @@ import java.net.UnknownHostException;
  * releases due to changes in the logging implementation. For the methods that return an integer,
  * a positive value may be considered as a successful invocation.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
+@android.ravenwood.annotation.RavenwoodClassLoadHook(
+        "com.android.platform.test.ravenwood.runtimehelper.ClassLoadHook.onClassLoaded")
+// Uncomment the following annotation to switch to the Java substitution version.
+@android.ravenwood.annotation.RavenwoodRedirectionClass("Log_ravenwood")
 @CLibrary("log")
 @Emulated
 public final class Log {
     /** @hide */
+    @IntDef({ASSERT, ERROR, WARN, INFO, DEBUG, VERBOSE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Level {}
 
@@ -243,6 +256,7 @@ public final class Log {
      *         for Nougat (7.0) and prior releases (API <= 25), there is no
      *         tag limit of concern after this API level.
      */
+    @android.ravenwood.annotation.RavenwoodRedirect
     public static boolean isLoggable(@Nullable String tag, @Level int level) {
         return tag != null && level >= INFO;
     }
@@ -327,6 +341,7 @@ public final class Log {
         return wtf(LOG_ID_MAIN, tag, msg, tr, false, false);
     }
 
+    @UnsupportedAppUsage
     public static int wtf(int logId, @Nullable String tag, @Nullable String msg, @Nullable Throwable tr,
             boolean localStack, boolean system) {
         TerribleFailure what = new TerribleFailure(msg, tr);
@@ -418,6 +433,8 @@ public final class Log {
      * @return A positive value if the message was loggable (see {@link #isLoggable}).
      * @hide
      */
+    @UnsupportedAppUsage
+    @android.ravenwood.annotation.RavenwoodRedirect
     public static int println_native(int bufID, int priority, String tag, String msg) {
         if (msg == null) {
             throw new NullPointerException("println needs a message");
@@ -446,6 +463,7 @@ public final class Log {
      * @return A positive value if the message was loggable (see {@link #isLoggable}).
      * @hide
      */
+    @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
     public static int logToRadioBuffer(@Level int priority, @Nullable String tag,
             @Nullable String message) {
         return println_native(LOG_ID_RADIO, priority, tag, message);
@@ -455,6 +473,7 @@ public final class Log {
      * Return the maximum payload the log daemon accepts without truncation.
      * @return LOGGER_ENTRY_MAX_PAYLOAD.
      */
+    @android.ravenwood.annotation.RavenwoodRedirect
     private static int logger_entry_max_payload_native() {
         // LOGGER_ENTRY_MAX_PAYLOAD of liblog's log/log.h.
         return 4068;

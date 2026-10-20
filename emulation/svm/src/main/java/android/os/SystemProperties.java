@@ -21,12 +21,20 @@ import static org.androidgraal.bionic.Stdlib.strtoll;
 import static org.androidgraal.bionic.SystemProperties.__system_property_find;
 import static org.androidgraal.bionic.SystemProperties.__system_property_read;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.annotation.SystemApi;
+import android.compat.annotation.UnsupportedAppUsage;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.util.Log;
 import android.util.MutableInt;
 
-import androidx.annotation.GuardedBy;
+import com.android.internal.annotations.GuardedBy;
+
+import dalvik.annotation.optimization.CriticalNative;
+import dalvik.annotation.optimization.FastNative;
+
+import libcore.util.HexEncoding;
 
 import org.androidgraal.android.CString;
 import org.androidgraal.android.ScopedUtfChars;
@@ -48,8 +56,6 @@ import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.word.PointerBase;
 import org.graalvm.word.WordFactory;
 
-import libcore.util.HexEncoding;
-
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
@@ -70,6 +76,8 @@ import java.util.HashMap;
  *
  * {@hide}
  */
+@SystemApi
+@RavenwoodKeepWholeClass
 @Emulated
 public class SystemProperties {
     private static final String TAG = "SystemProperties";
@@ -80,11 +88,13 @@ public class SystemProperties {
      * uses reflection to read this whenever text is selected (http://b/36095274).
      * @hide
      */
+    @UnsupportedAppUsage(trackingBug = 172649311)
     public static final int PROP_NAME_MAX = Integer.MAX_VALUE;
 
     /** @hide */
     public static final int PROP_VALUE_MAX = 91;
 
+    @UnsupportedAppUsage
     @GuardedBy("sChangeCallbacks")
     private static final ArrayList<Runnable> sChangeCallbacks = new ArrayList<Runnable>();
 
@@ -116,10 +126,12 @@ public class SystemProperties {
     // we use the two-argument form of native_get all the time, but we can't just delete the
     // one-argument overload: apps use it via reflection, as the UnsupportedAppUsage annotation
     // indicates. Let's just live with having a Java function with a very unusual name.
+    @UnsupportedAppUsage
     private static String native_get(String key) {
         return native_get(key, "");
     }
 
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
     private static String native_get(String key, String def) {
         String[] ret = {def};
         ReadProperty(key, value -> {
@@ -133,18 +145,21 @@ public class SystemProperties {
         return ret[0];
     }
 
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
     private static int native_get_int(String key, int def) {
         long[] ret = {def};
         ReadProperty(key, value -> ParseInt(value, ret, Integer.MIN_VALUE, Integer.MAX_VALUE));
         return (int) ret[0];
     }
 
+    @UnsupportedAppUsage
     private static long native_get_long(String key, long def) {
         long[] ret = {def};
         ReadProperty(key, value -> ParseInt(value, ret, Long.MIN_VALUE, Long.MAX_VALUE));
         return ret[0];
     }
 
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
     private static boolean native_get_boolean(String key, boolean def) {
         ParseBoolResult[] parseResult = {ParseBoolResult.kError};
         ReadProperty(key, value -> parseResult[0] = ParseBool(CString.toJava(value)));
@@ -193,6 +208,7 @@ public class SystemProperties {
      * @hide
      */
     @NonNull
+    @SystemApi
     public static String get(@NonNull String key) {
         if (TRACK_KEY_ACCESS) onKeyAccess(key);
         return native_get(key);
@@ -208,6 +224,7 @@ public class SystemProperties {
      * @hide
      */
     @NonNull
+    @SystemApi
     public static String get(@NonNull String key, @Nullable String def) {
         if (TRACK_KEY_ACCESS) onKeyAccess(key);
         return native_get(key, def);
@@ -222,6 +239,7 @@ public class SystemProperties {
      *         cannot be parsed
      * @hide
      */
+    @SystemApi
     public static int getInt(@NonNull String key, int def) {
         if (TRACK_KEY_ACCESS) onKeyAccess(key);
         return native_get_int(key, def);
@@ -236,6 +254,7 @@ public class SystemProperties {
      *         cannot be parsed
      * @hide
      */
+    @SystemApi
     public static long getLong(@NonNull String key, long def) {
         if (TRACK_KEY_ACCESS) onKeyAccess(key);
         return native_get_long(key, def);
@@ -255,6 +274,7 @@ public class SystemProperties {
      *         not able to be parsed as a boolean.
      * @hide
      */
+    @SystemApi
     public static boolean getBoolean(@NonNull String key, boolean def) {
         if (TRACK_KEY_ACCESS) onKeyAccess(key);
         return native_get_boolean(key, def);
@@ -266,6 +286,7 @@ public class SystemProperties {
      * @param callback The {@link Runnable} that should be removed.
      * @hide
      */
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public static void removeChangeCallback(@NonNull Runnable callback) {
         synchronized (sChangeCallbacks) {
             if (sChangeCallbacks.contains(callback)) {
@@ -305,6 +326,7 @@ public class SystemProperties {
         }
     }
 
+    @UnsupportedAppUsage
     private SystemProperties() {
     }
 

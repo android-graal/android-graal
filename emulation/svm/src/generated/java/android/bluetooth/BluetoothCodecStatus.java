@@ -15,6 +15,16 @@ public final class BluetoothCodecStatus implements Parcelable {
      */
     public static final String EXTRA_CODEC_STATUS = "android.bluetooth.extra.CODEC_STATUS";
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private BluetoothCodecStatus() {
     }
 }

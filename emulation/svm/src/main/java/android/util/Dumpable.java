@@ -15,8 +15,8 @@
  */
 package android.util;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -25,6 +25,7 @@ import java.io.PrintWriter;
 /**
  * Represents an object whose state can be dumped into a {@link PrintWriter}.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public interface Dumpable {
 

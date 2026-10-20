@@ -4,8 +4,6 @@
 
 package android.net.http;
 
-import androidx.annotation.NonNull;
-
 import org.androidgraal.hosted.annotate.Emulated;
 
 import java.io.Closeable;
@@ -49,8 +47,8 @@ public abstract class UploadDataProvider implements Closeable {
      * the
      * {@link CallbackException}.
      */
-    public abstract void read(@NonNull UploadDataSink uploadDataSink,
-            @NonNull ByteBuffer byteBuffer) throws IOException;
+    public abstract void read(UploadDataSink uploadDataSink,
+            ByteBuffer byteBuffer) throws IOException;
 
     /**
      * Rewinds upload data. Each call must be followed be a single call, either synchronous or
@@ -73,7 +71,7 @@ public abstract class UploadDataProvider implements Closeable {
      * the
      * {@link CallbackException}.
      */
-    public abstract void rewind(@NonNull UploadDataSink uploadDataSink) throws IOException;
+    public abstract void rewind(UploadDataSink uploadDataSink) throws IOException;
 
     /**
      * Called when this UploadDataProvider is no longer needed by a request, so that resources (like

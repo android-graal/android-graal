@@ -53,6 +53,16 @@ public final class SurfaceControl implements Parcelable {
      */
     public static final int BUFFER_TRANSFORM_ROTATE_90 = 4;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private SurfaceControl() {
     }
 

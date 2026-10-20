@@ -23,6 +23,7 @@ import org.androidgraal.hosted.annotate.Emulated;
  *
  * @hide
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public class UtilConfig {
     public static boolean sThrowExceptionForUpperArrayOutOfBounds = true;

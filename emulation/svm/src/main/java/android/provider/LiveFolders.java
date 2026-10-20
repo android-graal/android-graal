@@ -16,6 +16,8 @@
 
 package android.provider;
 
+import android.annotation.SdkConstant;
+
 import org.androidgraal.hosted.annotate.Emulated;
 
 /**
@@ -299,6 +301,7 @@ public final class LiveFolders implements BaseColumns {
      * @see #EXTRA_LIVE_FOLDER_BASE_INTENT
      * @see android.content.Intent.ShortcutIconResource
      */
+    @SdkConstant(SdkConstant.SdkConstantType.ACTIVITY_INTENT_ACTION)
     public static final String ACTION_CREATE_LIVE_FOLDER =
             "android.intent.action.CREATE_LIVE_FOLDER";
 

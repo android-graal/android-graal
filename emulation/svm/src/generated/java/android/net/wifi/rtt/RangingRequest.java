@@ -42,6 +42,16 @@ public final class RangingRequest implements Parcelable {
      */
     public static final int SECURITY_MODE_SECURE_AUTH = 2;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private RangingRequest() {
     }
 }

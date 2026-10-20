@@ -52,6 +52,16 @@ public final class PollingFrame implements Parcelable {
      */
     public static final int POLLING_LOOP_TYPE_UNKNOWN = 85;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private PollingFrame() {
     }
 }

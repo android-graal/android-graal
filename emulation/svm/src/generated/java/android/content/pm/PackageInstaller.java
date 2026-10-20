@@ -456,6 +456,16 @@ public final class PackageInstaller {
         @Deprecated
         public static final int STAGED_SESSION_VERIFICATION_FAILED = 1;
 
+        @Override
+        public int describeContents() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void writeToParcel(android.os.Parcel dest, int flags) {
+            throw new UnsupportedOperationException();
+        }
+
         private SessionInfo() {
         }
     }
@@ -523,6 +533,16 @@ public final class PackageInstaller {
          * {@link SessionParams#setRequireUserAction(int)}
          */
         public static final int USER_ACTION_UNSPECIFIED = 0;
+
+        @Override
+        public int describeContents() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void writeToParcel(android.os.Parcel dest, int flags) {
+            throw new UnsupportedOperationException();
+        }
 
         private SessionParams() {
         }

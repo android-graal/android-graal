@@ -228,6 +228,16 @@ public final class Slice implements Parcelable {
     @Deprecated
     public static final String SUBTYPE_VALUE = "value";
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private Slice() {
     }
 }

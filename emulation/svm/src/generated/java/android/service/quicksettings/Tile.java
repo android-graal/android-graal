@@ -35,6 +35,16 @@ public final class Tile implements Parcelable {
      */
     public static final int STATE_UNAVAILABLE = 0;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private Tile() {
     }
 }

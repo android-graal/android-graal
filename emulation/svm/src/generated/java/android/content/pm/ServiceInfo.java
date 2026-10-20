@@ -432,6 +432,16 @@ public final class ServiceInfo implements Parcelable {
      */
     public static final int FOREGROUND_SERVICE_TYPE_SYSTEM_EXEMPTED = 1024;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private ServiceInfo() {
     }
 }

@@ -16,8 +16,9 @@
 
 package android.security.identity;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.annotation.IntRange;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -551,9 +552,9 @@ public abstract class IdentityCredential {
      *                           for replacement. This value must be non-negative.
      */
     public void setAvailableAuthenticationKeys(
-            int keyCount,
-            int maxUsesPerKey,
-            long minValidTimeMillis) {
+            @IntRange(from = 0) int keyCount,
+            @IntRange(from = 1) int maxUsesPerKey,
+            @IntRange(from = 0) long minValidTimeMillis) {
         throw new UnsupportedOperationException();
     }
 

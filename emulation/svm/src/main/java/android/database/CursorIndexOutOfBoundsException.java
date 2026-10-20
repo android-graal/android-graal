@@ -21,6 +21,7 @@ import org.androidgraal.hosted.annotate.Emulated;
 /**
  * An exception indicating that a cursor is out of bounds.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public class CursorIndexOutOfBoundsException extends IndexOutOfBoundsException {
 

@@ -42,6 +42,7 @@ import java.util.List;
  *     TYPE_DATETIME_VARIATION_TIME
  * </dl>
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public interface InputType {
     /**

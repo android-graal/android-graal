@@ -144,6 +144,16 @@ public final class SearchSpec implements Parcelable {
      */
     public static final int TERM_MATCH_PREFIX = 2;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private SearchSpec() {
     }
 }

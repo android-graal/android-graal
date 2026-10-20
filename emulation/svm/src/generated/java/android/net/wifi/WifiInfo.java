@@ -109,6 +109,16 @@ public final class WifiInfo implements Parcelable {
      */
     public static final int SECURITY_TYPE_WEP = 1;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private WifiInfo() {
     }
 }

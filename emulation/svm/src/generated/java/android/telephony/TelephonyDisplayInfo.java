@@ -64,6 +64,16 @@ public final class TelephonyDisplayInfo implements Parcelable {
     @Deprecated
     public static final int OVERRIDE_NETWORK_TYPE_NR_NSA_MMWAVE = 4;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private TelephonyDisplayInfo() {
     }
 }

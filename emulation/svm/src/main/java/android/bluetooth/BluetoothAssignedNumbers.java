@@ -16,6 +16,8 @@
 
 package android.bluetooth;
 
+import android.annotation.SystemApi;
+
 import org.androidgraal.hosted.annotate.Emulated;
 
 /**
@@ -1177,6 +1179,7 @@ public class BluetoothAssignedNumbers {
      *
      * @hide
      */
+    @SystemApi
     public static class OrganizationId {
         /*
          * This is for Bluetooth SIG Organization ID .

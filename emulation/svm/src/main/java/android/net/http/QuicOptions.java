@@ -4,6 +4,8 @@
 
 package android.net.http;
 
+import android.annotation.SuppressLint;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
@@ -22,6 +24,7 @@ import java.util.Set;
  * the HTTP engine.
  */
 // SuppressLint to be consistent with other cronet code
+@SuppressLint("UserHandleName")
 @Emulated
 public class QuicOptions {
     private final Set<String> mQuicHostAllowlist;

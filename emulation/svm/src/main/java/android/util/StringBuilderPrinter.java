@@ -22,6 +22,7 @@ import org.androidgraal.hosted.annotate.Emulated;
  * Implementation of a {@link android.util.Printer} that sends its output
  * to a {@link StringBuilder}.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public class StringBuilderPrinter implements Printer {
     private final StringBuilder mBuilder;

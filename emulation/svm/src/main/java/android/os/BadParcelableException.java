@@ -27,6 +27,7 @@ import org.androidgraal.hosted.annotate.Emulated;
  * passed to another process that doesn't have the same {@link Parcelable} class
  * in its {@link ClassLoader}.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public class BadParcelableException extends AndroidRuntimeException {
     public BadParcelableException(String msg) {

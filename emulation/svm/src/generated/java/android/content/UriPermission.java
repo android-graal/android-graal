@@ -16,6 +16,16 @@ public final class UriPermission implements Parcelable {
      */
     public static final long INVALID_TIME = -9223372036854775808L;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private UriPermission() {
     }
 }

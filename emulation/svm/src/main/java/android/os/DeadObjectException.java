@@ -47,6 +47,7 @@ import org.androidgraal.hosted.annotate.Emulated;
  * this information at runtime. So, you should handle the
  * error, as if the service died.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public class DeadObjectException extends RemoteException {
     public DeadObjectException() {

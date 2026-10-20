@@ -17,6 +17,16 @@ public final class UiccPortInfo implements Parcelable {
      */
     public static final String ICCID_REDACTED = "FFFFFFFFFFFFFFFFFFFF";
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private UiccPortInfo() {
     }
 }

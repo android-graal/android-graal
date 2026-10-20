@@ -16,7 +16,9 @@
 
 package android.app.appsearch;
 
-import androidx.annotation.NonNull;
+import android.annotation.CurrentTimeMillisLong;
+import android.annotation.NonNull;
+import android.app.appsearch.annotation.CanIgnoreReturnValue;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -80,6 +82,7 @@ public final class ReportSystemUsageRequest {
      *
      * <p>The value is in the {@link System#currentTimeMillis} time base.
      */
+    @CurrentTimeMillisLong
     public long getUsageTimestampMillis() {
         return mUsageTimestampMillis;
     }
@@ -124,8 +127,9 @@ public final class ReportSystemUsageRequest {
          * <p>If unset, this defaults to the current timestamp at the time that the {@link
          * ReportSystemUsageRequest} is constructed.
          */
+        @CanIgnoreReturnValue
         public @NonNull ReportSystemUsageRequest.Builder setUsageTimestampMillis(
-                long usageTimestampMillis) {
+                @CurrentTimeMillisLong long usageTimestampMillis) {
             mUsageTimestampMillis = usageTimestampMillis;
             return this;
         }

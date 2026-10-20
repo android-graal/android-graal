@@ -28,6 +28,16 @@ public final class AudioProfile implements Parcelable {
      */
     public static final int AUDIO_ENCAPSULATION_TYPE_PCM = 2;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private AudioProfile() {
     }
 }

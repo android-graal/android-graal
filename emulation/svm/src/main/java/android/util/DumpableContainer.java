@@ -15,13 +15,14 @@
  */
 package android.util;
 
-import androidx.annotation.NonNull;
+import android.annotation.NonNull;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
 /**
  * Represents a container that manages {@link Dumpable dumpables}.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public interface DumpableContainer {
 

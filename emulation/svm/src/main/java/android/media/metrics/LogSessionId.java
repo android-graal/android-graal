@@ -16,8 +16,9 @@
 
 package android.media.metrics;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.annotation.TestApi;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -36,6 +37,7 @@ public final class LogSessionId {
     @NonNull public static final LogSessionId LOG_SESSION_ID_NONE = new LogSessionId("");
 
     /** @hide */
+    @TestApi
     public LogSessionId(@NonNull String id) {
         mSessionId = Objects.requireNonNull(id);
     }

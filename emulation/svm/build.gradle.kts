@@ -21,6 +21,8 @@ dependencies {
     compileOnly("${nativeHost.settings.group}:hosted:$version")
     compileOnly("${nativeHost.settings.group}.graal:svm-shared:$version")
     compileOnly(libs.androidx.annotation)
+    compileOnly(libs.errorprone.annotations)
+    compileOnly(libs.jspecify)
     "declarationsCompileOnly"(project(path))
     // KGP adds kotlin-stdlib to a source set's api unless the source set declares one.
     "declarationsCompileOnly"(embeddedKotlin("stdlib"))

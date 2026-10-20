@@ -16,7 +16,7 @@
 
 package android.text;
 
-import androidx.annotation.NonNull;
+import android.annotation.NonNull;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -50,6 +50,7 @@ import java.util.Set;
  *     </ol>
  * </p>
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public final class EmojiConsistency {
     /* Cannot construct */

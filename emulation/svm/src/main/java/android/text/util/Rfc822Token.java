@@ -16,7 +16,7 @@
 
 package android.text.util;
 
-import androidx.annotation.Nullable;
+import android.annotation.Nullable;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -24,6 +24,7 @@ import org.androidgraal.hosted.annotate.Emulated;
  * This class stores an RFC 822-like name, address, and comment,
  * and provides methods to convert them to quoted strings.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public class Rfc822Token {
     @Nullable

@@ -120,6 +120,16 @@ public final class KeyCharacterMap implements Parcelable {
      */
     public static final int VIRTUAL_KEYBOARD = -1;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private KeyCharacterMap() {
     }
 

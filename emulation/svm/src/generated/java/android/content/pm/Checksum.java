@@ -84,6 +84,16 @@ public final class Checksum implements Parcelable {
     @Deprecated
     public static final int TYPE_WHOLE_SHA512 = 16;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private Checksum() {
     }
 }

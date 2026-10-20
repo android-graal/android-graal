@@ -26,6 +26,7 @@ import org.androidgraal.hosted.annotate.Emulated;
  *
  * @param <T> The class on which the Property is declared.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public abstract class FloatProperty<T> extends Property<T, Float> {
 

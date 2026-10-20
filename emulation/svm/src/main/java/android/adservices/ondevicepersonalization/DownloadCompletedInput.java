@@ -16,8 +16,11 @@
 
 package android.adservices.ondevicepersonalization;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.annotation.FlaggedApi;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
+
+import com.android.adservices.ondevicepersonalization.flags.Flags;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -40,6 +43,7 @@ public final class DownloadCompletedInput {
      *
      * @param downloadedContents a {@link KeyValueStore} that contains the downloaded contents.
      */
+    @FlaggedApi(Flags.FLAG_DATA_CLASS_MISSING_CTORS_AND_GETTERS_ENABLED)
     public DownloadCompletedInput(
             @NonNull KeyValueStore downloadedContents) {
         this.mDownloadedContents = Objects.requireNonNull(downloadedContents);

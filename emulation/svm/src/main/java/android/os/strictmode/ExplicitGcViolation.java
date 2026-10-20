@@ -15,6 +15,8 @@
  */
 package android.os.strictmode;
 
+import android.annotation.TestApi;
+
 import org.androidgraal.hosted.annotate.Emulated;
 
 /**

@@ -5,7 +5,7 @@ package android.os;
  *
  * <p>These effects may be any number of things, from single shot vibrations to complex waveforms.
  */
-public final class VibrationEffect implements Parcelable {
+public abstract class VibrationEffect implements Parcelable {
     /**
      * The default vibration strength of the device.
      */
@@ -30,6 +30,11 @@ public final class VibrationEffect implements Parcelable {
      * A tick effect. This effect is less strong compared to {@link #EFFECT_CLICK}.
      */
     public static final int EFFECT_TICK = 2;
+
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
 
     private VibrationEffect() {
     }

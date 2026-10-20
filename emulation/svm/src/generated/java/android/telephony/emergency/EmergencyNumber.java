@@ -116,6 +116,16 @@ public final class EmergencyNumber implements Parcelable {
      */
     public static final int EMERGENCY_SERVICE_CATEGORY_UNSPECIFIED = 0;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private EmergencyNumber() {
     }
 }

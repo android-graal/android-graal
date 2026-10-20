@@ -35,6 +35,16 @@ public final class WifiSsidPolicy implements Parcelable {
      */
     public static final int WIFI_SSID_POLICY_TYPE_DENYLIST = 1;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private WifiSsidPolicy() {
     }
 }

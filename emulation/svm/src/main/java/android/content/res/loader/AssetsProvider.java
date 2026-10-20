@@ -16,8 +16,8 @@
 
 package android.content.res.loader;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.content.res.AssetFileDescriptor;
 import android.content.res.AssetManager;
 import android.os.ParcelFileDescriptor;

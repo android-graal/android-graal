@@ -40,6 +40,16 @@ public final class WifiAvailableChannel implements Parcelable {
      */
     public static final int OP_MODE_WIFI_DIRECT_GO = 8;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private WifiAvailableChannel() {
     }
 }

@@ -150,6 +150,16 @@ public final class IpSecAlgorithm implements Parcelable {
      */
     public static final String CRYPT_AES_CTR = "rfc3686(ctr(aes))";
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private IpSecAlgorithm() {
     }
 }

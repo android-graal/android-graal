@@ -16,8 +16,9 @@
 
 package android.adservices.ondevicepersonalization;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.annotation.WorkerThread;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -40,6 +41,7 @@ public interface MutableKeyValueStore extends KeyValueStore {
      *
      * @return the previous value associated with key, or null if there was no mapping for key.
      */
+    @WorkerThread
     @Nullable byte[] put(@NonNull String key, @NonNull byte[] value);
 
     /**
@@ -49,5 +51,6 @@ public interface MutableKeyValueStore extends KeyValueStore {
      *
      * @return the previous value associated with key, or null if there was no mapping for key.
      */
+    @WorkerThread
     @Nullable byte[] remove(@NonNull String key);
 }

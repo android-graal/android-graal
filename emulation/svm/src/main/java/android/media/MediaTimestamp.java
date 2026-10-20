@@ -16,6 +16,8 @@
 
 package android.media;
 
+import android.annotation.FloatRange;
+
 import org.androidgraal.hosted.annotate.Emulated;
 
 /**
@@ -76,6 +78,7 @@ public final class MediaTimestamp
      * greater than 1.0 if media clock is faster than the system clock;
      * less than 1.0 if media clock is slower than the system clock.
      */
+    @FloatRange(from = 0.0f, to = Float.MAX_VALUE)
     public float getMediaClockRate() {
         return clockRate;
     }
@@ -96,7 +99,7 @@ public final class MediaTimestamp
      * @param clockRate the rate of the media clock in relation to the system time.
      */
     public MediaTimestamp(long mediaTimeUs, long nanoTimeNs,
-            float clockRate) {
+            @FloatRange(from = 0.0f, to = Float.MAX_VALUE) float clockRate) {
         this.mediaTimeUs = mediaTimeUs;
         this.nanoTime = nanoTimeNs;
         this.clockRate = clockRate;

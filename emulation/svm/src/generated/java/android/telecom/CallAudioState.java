@@ -38,6 +38,16 @@ public final class CallAudioState implements Parcelable {
      */
     public static final int ROUTE_WIRED_OR_EARPIECE = 5;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private CallAudioState() {
     }
 }

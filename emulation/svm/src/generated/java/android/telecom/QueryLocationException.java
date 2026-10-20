@@ -38,6 +38,16 @@ public final class QueryLocationException implements Parcelable {
      */
     public static final int ERROR_UNSPECIFIED = 6;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private QueryLocationException() {
     }
 }

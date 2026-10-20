@@ -21,6 +21,16 @@ public final class ManagedSubscriptionsPolicy implements Parcelable {
      */
     public static final int TYPE_ALL_PERSONAL_SUBSCRIPTIONS = 0;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private ManagedSubscriptionsPolicy() {
     }
 }

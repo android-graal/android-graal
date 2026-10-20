@@ -19,6 +19,16 @@ import android.os.Parcelable;
  * the history will clear out after some pre-defined time).
  */
 public final class FillEventHistory implements Parcelable {
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private FillEventHistory() {
     }
 

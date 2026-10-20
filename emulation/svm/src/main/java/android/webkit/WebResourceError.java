@@ -16,6 +16,8 @@
 
 package android.webkit;
 
+import android.annotation.SystemApi;
+
 import org.androidgraal.hosted.annotate.Emulated;
 
 /**
@@ -44,5 +46,6 @@ public abstract class WebResourceError {
      * This class can not be subclassed by applications.
      * @hide
      */
+    @SystemApi
     public WebResourceError() {}
 }

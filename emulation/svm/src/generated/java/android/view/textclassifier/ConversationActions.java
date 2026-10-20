@@ -8,6 +8,16 @@ import android.os.Parcelable;
  * @see TextClassifier#suggestConversationActions(Request)
  */
 public final class ConversationActions implements Parcelable {
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private ConversationActions() {
     }
 
@@ -26,6 +36,16 @@ public final class ConversationActions implements Parcelable {
          * To indicate the generated actions will be used for notification.
          */
         public static final String HINT_FOR_NOTIFICATION = "notification";
+
+        @Override
+        public int describeContents() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void writeToParcel(android.os.Parcel dest, int flags) {
+            throw new UnsupportedOperationException();
+        }
 
         private Request() {
         }

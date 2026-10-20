@@ -204,6 +204,16 @@ public final class LineBreakConfig implements Parcelable {
      */
     public static final int LINE_BREAK_WORD_STYLE_UNSPECIFIED = -1;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private LineBreakConfig() {
     }
 }

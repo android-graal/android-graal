@@ -16,6 +16,10 @@
 
 package android.app.sdksandbox.sdkprovider;
 
+import android.annotation.FlaggedApi;
+
+import com.android.sdksandbox.flags.Flags;
+
 import org.androidgraal.hosted.annotate.Emulated;
 
 import java.util.concurrent.Executor;
@@ -29,6 +33,7 @@ import java.util.concurrent.Executor;
  * SdkSandboxController#registerSdkSandboxClientImportanceListener(Executor,
  * SdkSandboxClientImportanceListener)}.
  */
+@FlaggedApi(Flags.FLAG_SANDBOX_CLIENT_IMPORTANCE_LISTENER)
 @Emulated
 public interface SdkSandboxClientImportanceListener {
     /**
@@ -40,5 +45,6 @@ public interface SdkSandboxClientImportanceListener {
      *     android.app.ActivityManager.RunningAppProcessInfo#IMPORTANCE_FOREGROUND} or lower and
      *     false when it is the other way round.
      */
+    @FlaggedApi(Flags.FLAG_SANDBOX_CLIENT_IMPORTANCE_LISTENER)
     void onForegroundImportanceChanged(boolean isForeground);
 }

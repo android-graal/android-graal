@@ -906,6 +906,16 @@ public final class AccessibilityEvent implements Parcelable {
      */
     public static final int WINDOWS_CHANGE_TITLE = 4;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private AccessibilityEvent() {
     }
 }

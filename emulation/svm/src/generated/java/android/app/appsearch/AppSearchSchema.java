@@ -12,6 +12,16 @@ import android.os.Parcelable;
  * @see AppSearchSession#setSchema
  */
 public final class AppSearchSchema implements Parcelable {
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private AppSearchSchema() {
     }
 

@@ -19,6 +19,16 @@ public final class AudioMixerAttributes implements Parcelable {
      */
     public static final int MIXER_BEHAVIOR_DEFAULT = 0;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private AudioMixerAttributes() {
     }
 }

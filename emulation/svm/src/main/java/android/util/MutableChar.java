@@ -22,6 +22,7 @@ import org.androidgraal.hosted.annotate.Emulated;
  * @deprecated This class will be removed from a future version of the Android API.
  */
 @Deprecated
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public final class MutableChar {
     public char value;

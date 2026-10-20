@@ -18,6 +18,7 @@ package android.text.style;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public interface WrapTogetherSpan
 extends ParagraphStyle

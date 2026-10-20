@@ -16,7 +16,8 @@
 
 package android.net;
 
-import androidx.annotation.Nullable;
+import android.annotation.Nullable;
+import android.annotation.SystemApi;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -40,6 +41,7 @@ public abstract class NetworkSpecifier {
      *
      * @hide
      */
+    @SystemApi
     public boolean canBeSatisfiedBy(@Nullable NetworkSpecifier other) {
         return false;
     }
@@ -63,6 +65,7 @@ public abstract class NetworkSpecifier {
      *
      * @hide
      */
+    @SystemApi
     @Nullable
     public NetworkSpecifier redact() {
         // TODO (b/122160111): convert default to null once all platform NetworkSpecifiers

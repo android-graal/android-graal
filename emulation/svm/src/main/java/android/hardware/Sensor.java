@@ -17,6 +17,10 @@
 
 package android.hardware;
 
+import android.annotation.SuppressLint;
+import android.annotation.SystemApi;
+import android.annotation.TestApi;
+import android.compat.annotation.UnsupportedAppUsage;
 import android.hardware.input.InputSensorInfo;
 import android.os.Build;
 
@@ -513,6 +517,7 @@ public final class Sensor {
      *
      * @hide Expected to be used internally for always on display.
      */
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public static final int TYPE_PICK_UP_GESTURE = 25;
 
     /**
@@ -532,6 +537,7 @@ public final class Sensor {
      *
      * @hide This sensor is expected to only be used by the system ui
      */
+    @SystemApi
     public static final int TYPE_WRIST_TILT_GESTURE = 26;
 
     /**
@@ -540,6 +546,7 @@ public final class Sensor {
      * @hide This sensor is expected to only be used by the system ui
      * @see #TYPE_WRIST_TILT_GESTURE
      */
+    @SystemApi
     public static final String STRING_TYPE_WRIST_TILT_GESTURE = "android.sensor.wrist_tilt_gesture";
 
     /**
@@ -550,6 +557,7 @@ public final class Sensor {
      * @hide Expected to be used internally for auto-rotate and speaker rotation.
      *
      */
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public static final int TYPE_DEVICE_ORIENTATION = 27;
 
     /**
@@ -639,6 +647,7 @@ public final class Sensor {
      *
      * @hide This sensor is expected to be used only by system services.
      */
+    @SystemApi
     public static final int TYPE_DYNAMIC_SENSOR_META = 32;
 
     /**
@@ -648,6 +657,7 @@ public final class Sensor {
      *
      * @hide This sensor is expected to only be used by the system service
      */
+    @SystemApi
     public static final String STRING_TYPE_DYNAMIC_SENSOR_META =
             "android.sensor.dynamic_sensor_meta";
 
@@ -1024,6 +1034,7 @@ public final class Sensor {
     private String  mStringType;
     private String  mRequiredPermission;
     private int     mMaxDelay;
+    @UnsupportedAppUsage
     private int     mFlags;
     private int     mId;
     private UUID    mUuid;
@@ -1152,6 +1163,7 @@ public final class Sensor {
      *
      * @hide
      */
+    @SystemApi
     public java.util.UUID getUuid() {
         return mUuid;
     }
@@ -1174,7 +1186,9 @@ public final class Sensor {
     }
 
     /** @hide */
-    // Promotion to TestApi
+    @UnsupportedAppUsage
+    @SuppressLint("UnflaggedApi") // Promotion to TestApi
+    @TestApi
     public int getHandle() {
         return mHandle;
     }
@@ -1262,6 +1276,7 @@ public final class Sensor {
      *         false otherwise.
      * @hide
      */
+    @SystemApi
     public boolean isDataInjectionSupported() {
         return (((mFlags & DATA_INJECTION_MASK) >> DATA_INJECTION_SHIFT)) != 0;
     }

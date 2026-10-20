@@ -14,6 +14,16 @@ public final class AdvertisingRequest implements Parcelable {
      */
     public static final long FLAG_SKIP_PROBING = 2L;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private AdvertisingRequest() {
     }
 }

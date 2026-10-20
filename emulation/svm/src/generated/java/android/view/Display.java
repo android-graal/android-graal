@@ -254,6 +254,16 @@ public final class Display {
          */
         public static final float INVALID_LUMINANCE = -1.0f;
 
+        @Override
+        public int describeContents() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void writeToParcel(android.os.Parcel dest, int flags) {
+            throw new UnsupportedOperationException();
+        }
+
         private HdrCapabilities() {
         }
     }

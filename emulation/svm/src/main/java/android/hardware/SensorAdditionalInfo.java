@@ -16,6 +16,8 @@
 
 package android.hardware;
 
+import android.annotation.IntDef;
+
 import org.androidgraal.hosted.annotate.Emulated;
 
 import java.lang.annotation.Retention;
@@ -69,6 +71,15 @@ public class SensorAdditionalInfo {
      *
      * @hide
      */
+    @IntDef(prefix = { "TYPE_" }, value = {
+            TYPE_FRAME_BEGIN,
+            TYPE_FRAME_END,
+            TYPE_UNTRACKED_DELAY,
+            TYPE_INTERNAL_TEMPERATURE,
+            TYPE_VEC3_CALIBRATION,
+            TYPE_SENSOR_PLACEMENT,
+            TYPE_SAMPLING
+    })
     @Retention(RetentionPolicy.SOURCE)
     public @interface AdditionalInfoType {}
 

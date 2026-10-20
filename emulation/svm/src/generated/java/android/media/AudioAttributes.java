@@ -254,6 +254,16 @@ public final class AudioAttributes implements Parcelable {
      */
     public static final int USAGE_VOICE_COMMUNICATION_SIGNALLING = 3;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private AudioAttributes() {
     }
 }

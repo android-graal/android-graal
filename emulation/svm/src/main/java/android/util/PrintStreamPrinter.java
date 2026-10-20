@@ -24,6 +24,7 @@ import java.io.PrintStream;
  * Implementation of a {@link android.util.Printer} that sends its output
  * to a {@link java.io.PrintStream}.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public class PrintStreamPrinter implements Printer {
     private final PrintStream mPS;

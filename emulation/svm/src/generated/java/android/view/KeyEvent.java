@@ -56,7 +56,7 @@ import android.os.Parcelable;
  * input devices and sources represent keys and buttons.
  * </p>
  */
-public final class KeyEvent implements Parcelable {
+public abstract class KeyEvent implements Parcelable {
     /**
      * {@link #getAction} value: the key has been pressed down.
      */
@@ -2228,6 +2228,11 @@ public final class KeyEvent implements Parcelable {
      * @see #getMetaState()
      */
     public static final int META_SYM_ON = 4;
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
 
     private KeyEvent() {
     }

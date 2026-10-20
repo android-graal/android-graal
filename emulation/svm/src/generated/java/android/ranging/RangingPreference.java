@@ -21,6 +21,16 @@ public final class RangingPreference implements Parcelable {
      */
     public static final int DEVICE_ROLE_RESPONDER = 0;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private RangingPreference() {
     }
 }

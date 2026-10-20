@@ -45,6 +45,16 @@ public final class WifiP2pGroup implements Parcelable {
      */
     public static final int SECURITY_TYPE_WPA3_SAE = 2;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private WifiP2pGroup() {
     }
 }

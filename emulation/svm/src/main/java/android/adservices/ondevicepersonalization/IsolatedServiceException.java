@@ -16,7 +16,10 @@
 
 package android.adservices.ondevicepersonalization;
 
-import androidx.annotation.Nullable;
+import android.annotation.FlaggedApi;
+import android.annotation.Nullable;
+
+import com.android.adservices.ondevicepersonalization.flags.Flags;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -49,6 +52,7 @@ public final class IsolatedServiceException extends Exception {
      * @param errorCode An error code defined by the {@link IsolatedService}.
      * @param cause the cause of this exception.
      */
+    @FlaggedApi(Flags.FLAG_DATA_CLASS_MISSING_CTORS_AND_GETTERS_ENABLED)
     public IsolatedServiceException(
             int errorCode,
             @Nullable Throwable cause) {
@@ -64,6 +68,7 @@ public final class IsolatedServiceException extends Exception {
      * @param message the exception message.
      * @param cause the cause of this exception.
      */
+    @FlaggedApi(Flags.FLAG_DATA_CLASS_MISSING_CTORS_AND_GETTERS_ENABLED)
     public IsolatedServiceException(
             int errorCode,
             @Nullable String message,
@@ -75,6 +80,7 @@ public final class IsolatedServiceException extends Exception {
     /**
      * Returns the error code for this exception.
      */
+    @FlaggedApi(Flags.FLAG_DATA_CLASS_MISSING_CTORS_AND_GETTERS_ENABLED)
     public int getErrorCode() {
         return mErrorCode;
     }

@@ -144,6 +144,16 @@ public final class TextClassifierEvent implements Parcelable {
      */
     public static final int TYPE_SMART_SELECTION_SINGLE = 3;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private TextClassifierEvent() {
     }
 }

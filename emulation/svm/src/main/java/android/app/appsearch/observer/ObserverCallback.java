@@ -16,7 +16,7 @@
 
 package android.app.appsearch.observer;
 
-import androidx.annotation.NonNull;
+import org.jspecify.annotations.NonNull;
 
 import org.androidgraal.hosted.annotate.Emulated;
 

@@ -16,7 +16,7 @@
 
 package android.os;
 
-import androidx.annotation.NonNull;
+import android.annotation.NonNull;
 import android.util.AndroidException;
 
 import org.androidgraal.hosted.annotate.Emulated;
@@ -30,6 +30,7 @@ import org.androidgraal.hosted.annotate.Emulated;
  *
  * One common subclass is {@link DeadObjectException}.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public class RemoteException extends AndroidException {
     public RemoteException() {

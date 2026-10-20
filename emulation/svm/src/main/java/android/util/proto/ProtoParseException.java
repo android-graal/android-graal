@@ -16,6 +16,8 @@
 
 package android.util.proto;
 
+import android.annotation.TestApi;
+
 import org.androidgraal.hosted.annotate.Emulated;
 
 /**
@@ -23,6 +25,8 @@ import org.androidgraal.hosted.annotate.Emulated;
  *
  * @hide
  */
+@TestApi
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public class ProtoParseException extends RuntimeException {
 

@@ -25,6 +25,16 @@ public final class WifiNetworkSuggestion implements Parcelable {
      */
     public static final int RANDOMIZATION_PERSISTENT = 0;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private WifiNetworkSuggestion() {
     }
 }

@@ -24,6 +24,7 @@ import java.util.regex.Pattern;
 /**
  * Commonly used regular expression patterns.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public class Patterns {
     /**

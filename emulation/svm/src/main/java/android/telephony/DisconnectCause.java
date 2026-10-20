@@ -16,7 +16,11 @@
 
 package android.telephony;
 
-import androidx.annotation.NonNull;
+import android.annotation.FlaggedApi;
+import android.annotation.NonNull;
+import android.compat.annotation.UnsupportedAppUsage;
+
+import com.android.internal.telephony.flags.Flags;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -382,6 +386,7 @@ public final class DisconnectCause {
      * Returns descriptive string for the specified disconnect cause.
      * @hide
      */
+    @UnsupportedAppUsage
     public static @NonNull String toString(int cause) {
         switch (cause) {
             case NOT_DISCONNECTED:

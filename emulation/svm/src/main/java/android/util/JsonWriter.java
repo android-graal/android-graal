@@ -119,6 +119,7 @@ import java.util.List;
  * Instances of this class are not thread safe. Calls that would result in a
  * malformed JSON string will fail with an {@link IllegalStateException}.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public final class JsonWriter implements Closeable {
 

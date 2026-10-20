@@ -16,8 +16,11 @@
 
 package android.hardware.input;
 
-import androidx.annotation.NonNull;
+import android.annotation.NonNull;
+import android.os.Parcel;
 import android.os.Parcelable;
+
+import com.android.internal.util.DataClass;
 
 import org.androidgraal.hosted.annotate.Emulated;
 /**
@@ -25,6 +28,10 @@ import org.androidgraal.hosted.annotate.Emulated;
  *
  * @hide
  */
+@DataClass(
+        genToString = true,
+        genHiddenConstructor = true,
+        genHiddenConstDefs = true)
 @Emulated
 public class InputSensorInfo implements Parcelable {
 
@@ -65,6 +72,7 @@ public class InputSensorInfo implements Parcelable {
      *
      * @hide
      */
+    @DataClass.Generated.Member
     public InputSensorInfo(
             @NonNull String name,
             @NonNull String vendor,
@@ -110,70 +118,179 @@ public class InputSensorInfo implements Parcelable {
         // onConstructed(); // You can define this method to get a callback
     }
 
+    @DataClass.Generated.Member
     public @NonNull String getName() {
         return mName;
     }
 
+    @DataClass.Generated.Member
     public @NonNull String getVendor() {
         return mVendor;
     }
 
+    @DataClass.Generated.Member
     public int getVersion() {
         return mVersion;
     }
 
+    @DataClass.Generated.Member
     public int getHandle() {
         return mHandle;
     }
 
+    @DataClass.Generated.Member
     public int getType() {
         return mType;
     }
 
+    @DataClass.Generated.Member
     public float getMaxRange() {
         return mMaxRange;
     }
 
+    @DataClass.Generated.Member
     public float getResolution() {
         return mResolution;
     }
 
+    @DataClass.Generated.Member
     public float getPower() {
         return mPower;
     }
 
+    @DataClass.Generated.Member
     public int getMinDelay() {
         return mMinDelay;
     }
 
+    @DataClass.Generated.Member
     public int getFifoReservedEventCount() {
         return mFifoReservedEventCount;
     }
 
+    @DataClass.Generated.Member
     public int getFifoMaxEventCount() {
         return mFifoMaxEventCount;
     }
 
+    @DataClass.Generated.Member
     public @NonNull String getStringType() {
         return mStringType;
     }
 
+    @DataClass.Generated.Member
     public @NonNull String getRequiredPermission() {
         return mRequiredPermission;
     }
 
+    @DataClass.Generated.Member
     public int getMaxDelay() {
         return mMaxDelay;
     }
 
+    @DataClass.Generated.Member
     public int getFlags() {
         return mFlags;
     }
 
+    @DataClass.Generated.Member
     public int getId() {
         return mId;
     }
 
+    @Override
+    @DataClass.Generated.Member
+    public void writeToParcel(@NonNull Parcel dest, int flags) {
+        // You can override field parcelling by defining methods like:
+        // void parcelFieldName(Parcel dest, int flags) { ... }
+
+        dest.writeString(mName);
+        dest.writeString(mVendor);
+        dest.writeInt(mVersion);
+        dest.writeInt(mHandle);
+        dest.writeInt(mType);
+        dest.writeFloat(mMaxRange);
+        dest.writeFloat(mResolution);
+        dest.writeFloat(mPower);
+        dest.writeInt(mMinDelay);
+        dest.writeInt(mFifoReservedEventCount);
+        dest.writeInt(mFifoMaxEventCount);
+        dest.writeString(mStringType);
+        dest.writeString(mRequiredPermission);
+        dest.writeInt(mMaxDelay);
+        dest.writeInt(mFlags);
+        dest.writeInt(mId);
+    }
+
+    @Override
+    @DataClass.Generated.Member
+    public int describeContents() { return 0; }
+
+    /** @hide */
+    @SuppressWarnings({"unchecked", "RedundantCast"})
+    @DataClass.Generated.Member
+    protected InputSensorInfo(@NonNull Parcel in) {
+        // You can override field unparcelling by defining methods like:
+        // static FieldType unparcelFieldName(Parcel in) { ... }
+
+        String name = in.readString();
+        String vendor = in.readString();
+        int version = in.readInt();
+        int handle = in.readInt();
+        int type = in.readInt();
+        float maxRange = in.readFloat();
+        float resolution = in.readFloat();
+        float power = in.readFloat();
+        int minDelay = in.readInt();
+        int fifoReservedEventCount = in.readInt();
+        int fifoMaxEventCount = in.readInt();
+        String stringType = in.readString();
+        String requiredPermission = in.readString();
+        int maxDelay = in.readInt();
+        int flags = in.readInt();
+        int id = in.readInt();
+
+        this.mName = name;
+        com.android.internal.util.AnnotationValidations.validate(
+                NonNull.class, null, mName);
+        this.mVendor = vendor;
+        com.android.internal.util.AnnotationValidations.validate(
+                NonNull.class, null, mVendor);
+        this.mVersion = version;
+        this.mHandle = handle;
+        this.mType = type;
+        this.mMaxRange = maxRange;
+        this.mResolution = resolution;
+        this.mPower = power;
+        this.mMinDelay = minDelay;
+        this.mFifoReservedEventCount = fifoReservedEventCount;
+        this.mFifoMaxEventCount = fifoMaxEventCount;
+        this.mStringType = stringType;
+        com.android.internal.util.AnnotationValidations.validate(
+                NonNull.class, null, mStringType);
+        this.mRequiredPermission = requiredPermission;
+        com.android.internal.util.AnnotationValidations.validate(
+                NonNull.class, null, mRequiredPermission);
+        this.mMaxDelay = maxDelay;
+        this.mFlags = flags;
+        this.mId = id;
+
+        // onConstructed(); // You can define this method to get a callback
+    }
+
+    @DataClass.Generated.Member
+    public static final @NonNull Parcelable.Creator<InputSensorInfo> CREATOR
+            = new Parcelable.Creator<InputSensorInfo>() {
+        @Override
+        public InputSensorInfo[] newArray(int size) {
+            return new InputSensorInfo[size];
+        }
+
+        @Override
+        public InputSensorInfo createFromParcel(@NonNull Parcel in) {
+            return new InputSensorInfo(in);
+        }
+    };
 
     //@formatter:on
     // End of generated code

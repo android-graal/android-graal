@@ -100,6 +100,16 @@ public final class ScanSettings implements Parcelable {
      */
     public static final int SCAN_MODE_OPPORTUNISTIC = -1;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private ScanSettings() {
     }
 }

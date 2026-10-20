@@ -27,6 +27,16 @@ public final class Session2Token implements Parcelable {
      */
     public static final int TYPE_SESSION_SERVICE = 1;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private Session2Token() {
     }
 }

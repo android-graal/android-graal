@@ -81,6 +81,16 @@ public final class PlaybackStateEvent implements Parcelable {
      */
     public static final int STATE_SUPPRESSED_BUFFERING = 10;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private PlaybackStateEvent() {
     }
 }

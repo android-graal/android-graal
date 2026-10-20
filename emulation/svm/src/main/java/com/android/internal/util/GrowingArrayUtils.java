@@ -16,6 +16,9 @@
 
 package com.android.internal.util;
 
+import android.compat.annotation.UnsupportedAppUsage;
+import android.os.Build;
+
 /**
  * A helper class that aims to provide comparable growth performance to ArrayList, but on primitive
  * arrays. Common array operations are implemented for efficient use in dynamic containers.
@@ -26,6 +29,7 @@ package com.android.internal.util;
  *
  * @hide
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 public final class GrowingArrayUtils {
 
     /**
@@ -37,6 +41,7 @@ public final class GrowingArrayUtils {
      * @return the array to which the element was appended. This may be different than the given
      *         array.
      */
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public static <T> T[] append(T[] array, int currentSize, T element) {
         assert currentSize <= array.length;
 
@@ -54,11 +59,27 @@ public final class GrowingArrayUtils {
     /**
      * Primitive int version of {@link #append(Object[], int, Object)}.
      */
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public static int[] append(int[] array, int currentSize, int element) {
         assert currentSize <= array.length;
 
         if (currentSize + 1 > array.length) {
             int[] newArray = ArrayUtils.newUnpaddedIntArray(growSize(currentSize));
+            System.arraycopy(array, 0, newArray, 0, currentSize);
+            array = newArray;
+        }
+        array[currentSize] = element;
+        return array;
+    }
+
+    /**
+     * Primitive boolean version of {@link #append(Object[], int, Object)}.
+     */
+    public static boolean[] append(boolean[] array, int currentSize, boolean element) {
+        assert currentSize <= array.length;
+
+        if (currentSize + 1 > array.length) {
+            boolean[] newArray = ArrayUtils.newUnpaddedBooleanArray(growSize(currentSize));
             System.arraycopy(array, 0, newArray, 0, currentSize);
             array = newArray;
         }
@@ -108,6 +129,25 @@ public final class GrowingArrayUtils {
         }
 
         int[] newArray = ArrayUtils.newUnpaddedIntArray(growSize(currentSize));
+        System.arraycopy(array, 0, newArray, 0, index);
+        newArray[index] = element;
+        System.arraycopy(array, index, newArray, index + 1, array.length - index);
+        return newArray;
+    }
+
+    /**
+     * Primitive boolean version of {@link #insert(Object[], int, int, Object)}.
+     */
+    public static boolean[] insert(boolean[] array, int currentSize, int index, boolean element) {
+        assert currentSize <= array.length;
+
+        if (currentSize + 1 <= array.length) {
+            System.arraycopy(array, index, array, index + 1, currentSize - index);
+            array[index] = element;
+            return array;
+        }
+
+        boolean[] newArray = ArrayUtils.newUnpaddedBooleanArray(growSize(currentSize));
         System.arraycopy(array, 0, newArray, 0, index);
         newArray[index] = element;
         System.arraycopy(array, index, newArray, index + 1, array.length - index);

@@ -16,11 +16,12 @@
 
 package android.graphics;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public enum BlendMode {
 

@@ -17,6 +17,10 @@
 package android.media.quality;
 
 
+import android.annotation.FlaggedApi;
+import android.annotation.StringDef;
+import android.media.tv.flags.Flags;
+
 import org.androidgraal.hosted.annotate.Emulated;
 
 import java.lang.annotation.Retention;
@@ -26,11 +30,18 @@ import java.lang.annotation.RetentionPolicy;
  * The contract between the media quality service and applications. Contains definitions for the
  * commonly used parameter names.
  */
+@FlaggedApi(Flags.FLAG_MEDIA_QUALITY_FW)
 @Emulated
 public class MediaQualityContract {
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
+    @StringDef(prefix = "LEVEL_", value = {
+            LEVEL_LOW,
+            LEVEL_MEDIUM,
+            LEVEL_HIGH,
+            LEVEL_OFF
+    })
     public @interface Level {}
 
     /**
@@ -66,6 +77,18 @@ public class MediaQualityContract {
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
+    @StringDef(prefix = "COLOR_TEMP", value = {
+            COLOR_TEMP_USER,
+            COLOR_TEMP_COOL,
+            COLOR_TEMP_STANDARD,
+            COLOR_TEMP_WARM,
+            COLOR_TEMP_USER_HDR10PLUS,
+            COLOR_TEMP_COOL_HDR10PLUS,
+            COLOR_TEMP_STANDARD_HDR10PLUS,
+            COLOR_TEMP_WARM_HDR10PLUS,
+            COLOR_TEMP_FMMSDR,
+            COLOR_TEMP_FMMHDR,
+    })
     public @interface ColorTempValue {}
 
     /** @hide */

@@ -21,7 +21,7 @@ import org.androidgraal.hosted.annotate.Emulated;
 import java.security.spec.EncodedKeySpec;
 import java.util.Arrays;
 import java.util.Objects;
-import androidx.annotation.NonNull;
+import libcore.util.NonNull;
 
 /**
  * External Diffie–Hellman (XDH) key spec holding either a public or private key.

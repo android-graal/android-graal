@@ -16,7 +16,7 @@
 
 package android.util;
 
-import androidx.annotation.NonNull;
+import android.annotation.NonNull;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -25,10 +25,12 @@ import org.androidgraal.hosted.annotate.Emulated;
  *
  * @hide
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public final class EmptyArray {
     private EmptyArray() {}
 
+    public static final @NonNull boolean[] BOOLEAN = new boolean[0];
     public static final @NonNull int[] INT = new int[0];
     public static final @NonNull Object[] OBJECT = new Object[0];
     public static final @NonNull String[] STRING = new String[0];

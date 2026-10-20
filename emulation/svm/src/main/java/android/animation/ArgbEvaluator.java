@@ -16,6 +16,8 @@
 
 package android.animation;
 
+import android.compat.annotation.UnsupportedAppUsage;
+
 import org.androidgraal.hosted.annotate.Emulated;
 
 /**
@@ -34,6 +36,7 @@ public class ArgbEvaluator implements TypeEvaluator {
      *
      * @hide
      */
+    @UnsupportedAppUsage
     public static ArgbEvaluator getInstance() {
         return sInstance;
     }

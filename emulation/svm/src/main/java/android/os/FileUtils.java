@@ -22,6 +22,10 @@ import static android.os.ParcelFileDescriptor.MODE_READ_ONLY;
 import static android.os.ParcelFileDescriptor.MODE_READ_WRITE;
 import static android.os.ParcelFileDescriptor.MODE_TRUNCATE;
 import static android.os.ParcelFileDescriptor.MODE_WRITE_ONLY;
+import static android.system.OsConstants.EINVAL;
+import static android.system.OsConstants.ENOSYS;
+import static android.system.OsConstants.F_OK;
+import static android.system.OsConstants.EIO;
 import static android.system.OsConstants.O_ACCMODE;
 import static android.system.OsConstants.O_APPEND;
 import static android.system.OsConstants.O_CREAT;
@@ -29,14 +33,63 @@ import static android.system.OsConstants.O_RDONLY;
 import static android.system.OsConstants.O_RDWR;
 import static android.system.OsConstants.O_TRUNC;
 import static android.system.OsConstants.O_WRONLY;
+import static android.system.OsConstants.R_OK;
+import static android.system.OsConstants.S_ISFIFO;
+import static android.system.OsConstants.S_ISREG;
+import static android.system.OsConstants.S_ISSOCK;
+import static android.system.OsConstants.W_OK;
+
+import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.annotation.TestApi;
+import android.compat.annotation.UnsupportedAppUsage;
+import android.system.ErrnoException;
+import android.system.Os;
+import android.system.StructStat;
+import android.text.TextUtils;
+import android.util.EmptyArray;
+import android.util.Log;
+import android.util.Slog;
+
+import com.android.internal.annotations.VisibleForTesting;
+import com.android.internal.util.ArrayUtils;
+
+import libcore.io.IoUtils;
 
 import org.androidgraal.hosted.annotate.Emulated;
+
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.File;
+import java.io.FileDescriptor;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FilenameFilter;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.nio.charset.StandardCharsets;
+import java.security.DigestInputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Objects;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+import java.util.regex.Pattern;
+import java.util.zip.CRC32;
+import java.util.zip.CheckedInputStream;
 
 /**
  * Utility methods useful for working with files.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public final class FileUtils {
+    @UnsupportedAppUsage
     private FileUtils() {
     }
 

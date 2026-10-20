@@ -16,11 +16,30 @@
 
 package dalvik.system;
 
+import static android.annotation.SystemApi.Client.MODULE_LIBRARIES;
+
+import android.annotation.SystemApi;
+import android.annotation.FlaggedApi;
+import android.compat.annotation.ChangeId;
+import android.compat.annotation.EnabledSince;
+import android.compat.annotation.Disabled;
+import android.compat.annotation.UnsupportedAppUsage;
+
+import com.android.libcore.Flags;
+
+import dalvik.annotation.optimization.FastNative;
+
 import org.androidgraal.android.Words;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
+
+import libcore.util.NonNull;
 
 /**
  * Provides an interface to VM-global, Dalvik-specific features.
@@ -29,6 +48,8 @@ import java.util.Map;
  *
  * @hide
  */
+@SystemApi(client = MODULE_LIBRARIES)
+@libcore.api.IntraCoreApi
 public final class VMRuntime {
 
     /**
@@ -53,6 +74,18 @@ public final class VMRuntime {
     }
 
     /**
+     * Magic version number for a current development build, which has not
+     * yet turned into an official release. This number must be larger than
+     * any released version in {@code android.os.Build.VERSION_CODES}.
+     * @hide
+     */
+    @SystemApi(client = MODULE_LIBRARIES)
+    // Must match android.os.Build.VERSION_CODES.CUR_DEVELOPMENT.
+    public static final int SDK_VERSION_CUR_DEVELOPMENT = 10000;
+
+    private int targetSdkVersion = SDK_VERSION_CUR_DEVELOPMENT;
+
+    /**
      * Prevents this class from being instantiated.
      */
     private VMRuntime() {
@@ -64,6 +97,9 @@ public final class VMRuntime {
      *
      * @hide
      */
+    @UnsupportedAppUsage
+    @SystemApi(client = MODULE_LIBRARIES)
+    @libcore.api.IntraCoreApi
     public static VMRuntime getRuntime() {
         return THE_ONE;
     }
@@ -75,8 +111,39 @@ public final class VMRuntime {
      *
      * @hide
      */
+    @UnsupportedAppUsage
+    @SystemApi(client = MODULE_LIBRARIES)
     public boolean is64Bit() {
         return Words.is64Bit();
+    }
+
+    /**
+     * Sets the target SDK version. Should only be called before the
+     * app starts to run, because it may change the VM's behavior in
+     * dangerous ways. Defaults to {@link #SDK_VERSION_CUR_DEVELOPMENT}.
+     *
+     * @param targetSdkVersion the SDK version the app wants to run with.
+     *
+     * @hide
+     */
+    @UnsupportedAppUsage(maxTargetSdk=0, publicAlternatives="Use the {@code targetSdkVersion}"
+        +" attribute in the {@code uses-sdk} manifest tag instead.")
+    @SystemApi(client = MODULE_LIBRARIES)
+    public synchronized void setTargetSdkVersion(int targetSdkVersion) {
+        this.targetSdkVersion = targetSdkVersion;
+    }
+
+    /**
+     * Gets the target SDK version. See {@link #setTargetSdkVersion} for
+     * special values.
+     *
+     * @return the target SDK version.
+     *
+     * @hide
+     */
+    @SystemApi(client = MODULE_LIBRARIES)
+    public synchronized int getTargetSdkVersion() {
+        return targetSdkVersion;
     }
 
     /**
@@ -91,6 +158,7 @@ public final class VMRuntime {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public Object newUnpaddedArray(Class<?> componentType, int minLength) {
         return Array.newInstance(componentType, minLength);
     }
@@ -106,6 +174,8 @@ public final class VMRuntime {
      *
      * @hide
      */
+    @UnsupportedAppUsage
+    @SystemApi(client = MODULE_LIBRARIES)
     public static String getInstructionSet(String abi) {
         final String instructionSet = ABI_TO_INSTRUCTION_SET_MAP.get(abi);
         if (instructionSet == null) {
@@ -124,6 +194,7 @@ public final class VMRuntime {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static boolean is64BitInstructionSet(String instructionSet) {
         return (instructionSet != null) && instructionSet.contains("64");
     }
@@ -137,6 +208,8 @@ public final class VMRuntime {
      *
      * @hide
      */
+    @UnsupportedAppUsage
+    @SystemApi(client = MODULE_LIBRARIES)
     public static boolean is64BitAbi(String abi) {
         return is64BitInstructionSet(getInstructionSet(abi));
     }

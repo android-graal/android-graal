@@ -837,6 +837,16 @@ public final class Notification implements Parcelable {
      */
     public static final int VISIBILITY_SECRET = -1;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private Notification() {
     }
 
@@ -914,6 +924,16 @@ public final class Notification implements Parcelable {
          * mean un-silencing a conversation or currently playing media.
          */
         public static final int SEMANTIC_ACTION_UNMUTE = 7;
+
+        @Override
+        public int describeContents() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void writeToParcel(android.os.Parcel dest, int flags) {
+            throw new UnsupportedOperationException();
+        }
 
         private Action() {
         }

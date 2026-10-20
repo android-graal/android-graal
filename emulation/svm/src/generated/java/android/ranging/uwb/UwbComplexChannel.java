@@ -115,6 +115,16 @@ public final class UwbComplexChannel implements Parcelable {
      */
     public static final int UWB_PREAMBLE_CODE_INDEX_9 = 9;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private UwbComplexChannel() {
     }
 }

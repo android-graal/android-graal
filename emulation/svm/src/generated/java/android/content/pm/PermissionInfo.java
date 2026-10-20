@@ -181,6 +181,16 @@ public final class PermissionInfo implements Parcelable {
     @Deprecated
     public static final int PROTECTION_SIGNATURE_OR_SYSTEM = 3;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private PermissionInfo() {
     }
 }

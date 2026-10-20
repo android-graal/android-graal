@@ -45,6 +45,16 @@ public final class OobInitiatorRangingConfig implements Parcelable {
      */
     public static final int SECURITY_LEVEL_SECURE = 1;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private OobInitiatorRangingConfig() {
     }
 }

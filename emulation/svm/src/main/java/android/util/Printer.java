@@ -24,6 +24,7 @@ import org.androidgraal.hosted.annotate.Emulated;
  * {@link android.util.StringBuilderPrinter}, and
  * {@link android.util.PrintWriterPrinter}.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public interface Printer {
     /**

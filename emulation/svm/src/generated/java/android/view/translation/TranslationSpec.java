@@ -14,6 +14,16 @@ public final class TranslationSpec implements Parcelable {
      */
     public static final int DATA_FORMAT_TEXT = 1;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private TranslationSpec() {
     }
 }

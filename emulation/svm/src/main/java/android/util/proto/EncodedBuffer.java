@@ -16,6 +16,7 @@
 
 package android.util.proto;
 
+import android.annotation.TestApi;
 import android.util.Log;
 
 import org.androidgraal.hosted.annotate.Emulated;
@@ -34,6 +35,8 @@ import java.util.ArrayList;
  *      *BufIndex:  Index of a buffer within the mBuffers list
  * @hide
  */
+@TestApi
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public final class EncodedBuffer {
     private final ArrayList<byte[]> mBuffers = new ArrayList<byte[]>();

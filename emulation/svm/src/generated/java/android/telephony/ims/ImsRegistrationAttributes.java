@@ -14,6 +14,16 @@ public final class ImsRegistrationAttributes implements Parcelable {
      */
     public static final int ATTR_EPDG_OVER_CELL_INTERNET = 1;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private ImsRegistrationAttributes() {
     }
 }

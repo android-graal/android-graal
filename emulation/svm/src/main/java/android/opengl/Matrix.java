@@ -16,8 +16,6 @@
 
 package android.opengl;
 
-import androidx.annotation.NonNull;
-
 import org.androidgraal.hosted.annotate.Emulated;
 
 /**
@@ -868,7 +866,7 @@ public class Matrix {
      * or if rmOffset + 16 > rm.length;
      * rmOffset < 0
      */
-    public static void setRotateEulerM2(@NonNull float[] rm, int rmOffset,
+    public static void setRotateEulerM2(float[] rm, int rmOffset,
             float x, float y, float z) {
         if (rm == null) {
             throw new IllegalArgumentException("rm == null");

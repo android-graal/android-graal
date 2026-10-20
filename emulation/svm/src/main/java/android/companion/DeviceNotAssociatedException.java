@@ -17,7 +17,7 @@
 
 package android.companion;
 
-import androidx.annotation.Nullable;
+import android.annotation.Nullable;
 
 import org.androidgraal.hosted.annotate.Emulated;
 

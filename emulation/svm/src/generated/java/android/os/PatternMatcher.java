@@ -47,6 +47,16 @@ public final class PatternMatcher implements Parcelable {
      */
     public static final int PATTERN_SUFFIX = 4;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private PatternMatcher() {
     }
 }

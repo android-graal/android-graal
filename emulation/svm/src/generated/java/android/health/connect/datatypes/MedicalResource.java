@@ -77,6 +77,16 @@ public final class MedicalResource implements Parcelable {
      */
     public static final int MEDICAL_RESOURCE_TYPE_VITAL_SIGNS = 5;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private MedicalResource() {
     }
 }

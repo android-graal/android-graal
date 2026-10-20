@@ -236,6 +236,16 @@ public final class ApplicationStartInfo implements Parcelable {
      */
     public static final int START_TYPE_WARM = 2;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private ApplicationStartInfo() {
     }
 }

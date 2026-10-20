@@ -16,8 +16,10 @@
 
 package android.util.proto;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.annotation.IntDef;
+import android.annotation.LongDef;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -32,6 +34,7 @@ import java.lang.annotation.RetentionPolicy;
  *
  * @hide
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public class ProtoStream {
 
@@ -45,6 +48,14 @@ public class ProtoStream {
      * Encoding</a>
      */
     @Retention(RetentionPolicy.SOURCE)
+    @IntDef({
+        WIRE_TYPE_VARINT,
+        WIRE_TYPE_FIXED64,
+        WIRE_TYPE_LENGTH_DELIMITED,
+        WIRE_TYPE_START_GROUP,
+        WIRE_TYPE_END_GROUP,
+        WIRE_TYPE_FIXED32
+    })
     public @interface WireType {}
 
     /**

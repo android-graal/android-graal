@@ -60,6 +60,16 @@ public final class BarringInfo implements Parcelable {
      */
     public static final int BARRING_SERVICE_TYPE_SMS = 9;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private BarringInfo() {
     }
 
@@ -86,6 +96,16 @@ public final class BarringInfo implements Parcelable {
          * If a modem does not report barring info, then the barring type will be UNKNOWN
          */
         public static final int BARRING_TYPE_UNKNOWN = -1;
+
+        @Override
+        public int describeContents() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void writeToParcel(android.os.Parcel dest, int flags) {
+            throw new UnsupportedOperationException();
+        }
 
         private BarringServiceInfo() {
         }

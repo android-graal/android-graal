@@ -4,8 +4,6 @@
 
 package android.net.http;
 
-import androidx.annotation.NonNull;
-
 import org.androidgraal.hosted.annotate.Emulated;
 
 /**
@@ -27,7 +25,7 @@ public abstract class UploadDataSink {
      *
      * @param exception Exception passed on to the embedder.
      */
-    public abstract void onReadError(@NonNull Exception exception);
+    public abstract void onReadError(Exception exception);
 
     /**
      * Called by {@link UploadDataProvider} when a rewind succeeds.
@@ -40,5 +38,5 @@ public abstract class UploadDataSink {
      *
      * @param exception Exception passed on to the embedder.
      */
-    public abstract void onRewindError(@NonNull Exception exception);
+    public abstract void onRewindError(Exception exception);
 }

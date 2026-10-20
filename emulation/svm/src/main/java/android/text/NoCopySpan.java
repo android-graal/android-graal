@@ -23,6 +23,7 @@ import org.androidgraal.hosted.annotate.Emulated;
  * into a new Spanned when performing a slice or copy operation on the original
  * Spanned it was placed in.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public interface NoCopySpan {
     /**

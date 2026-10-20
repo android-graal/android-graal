@@ -16,7 +16,9 @@
 
 package android.hardware;
 
-import androidx.annotation.NonNull;
+import android.annotation.NonNull;
+import android.annotation.SuppressLint;
+import android.compat.annotation.UnsupportedAppUsage;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -850,8 +852,10 @@ public class SensorEvent {
      * {@link android.hardware.Sensor#TYPE_HEAD_TRACKER Sensor.TYPE_HEAD_TRACKER} being the notable
      * exception.
      */
+    @SuppressLint("MutableBareField")
     public boolean firstEventAfterDiscontinuity;
 
+    @UnsupportedAppUsage
     private SensorEvent(int valueSize) {
         values = new float[valueSize];
     }

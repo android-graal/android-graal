@@ -16,9 +16,36 @@
 
 package android.os;
 
+import static android.annotation.SystemApi.Client.MODULE_LIBRARIES;
+
+import android.annotation.ElapsedRealtimeLong;
+import android.annotation.FlaggedApi;
+import android.annotation.IntRange;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.annotation.SuppressLint;
+import android.annotation.SystemApi;
+import android.annotation.TestApi;
+import android.annotation.UptimeMillisLong;
+import android.compat.annotation.UnsupportedAppUsage;
+import android.os.Build.VERSION_CODES;
+import android.ravenwood.annotation.RavenwoodKeep;
+import android.ravenwood.annotation.RavenwoodKeepPartialClass;
+import android.ravenwood.annotation.RavenwoodRedirect;
+import android.ravenwood.annotation.RavenwoodRedirectionClass;
+import android.ravenwood.annotation.RavenwoodReplace;
+import android.system.ErrnoException;
 import android.system.Os;
 import android.system.OsConstants;
+import android.system.StructPollfd;
 import android.util.Log;
+import android.util.Pair;
+
+import com.android.sdksandbox.flags.Flags;
+
+import dalvik.system.VMRuntime;
+
+import libcore.io.IoUtils;
 
 import org.androidgraal.android.ScopedUtfChars;
 import org.androidgraal.bionic.Errno;
@@ -35,13 +62,17 @@ import org.graalvm.nativeimage.c.type.CCharPointerPointer;
 import org.graalvm.word.SignedWord;
 import org.graalvm.word.WordFactory;
 
-import dalvik.system.VMRuntime;
-
+import java.io.FileDescriptor;
+import java.io.IOException;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.concurrent.TimeoutException;
 
 /**
  * Tools for managing OS processes.
  */
+@RavenwoodKeepPartialClass
+@RavenwoodRedirectionClass("Process_ravenwood")
 @Emulated
 public class Process {
     private static final String LOG_TAG = "Process";
@@ -75,6 +106,7 @@ public class Process {
      * Defines the UID/GID for the log group.
      * @hide
      */
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public static final int LOG_UID = 1007;
 
     /**
@@ -87,12 +119,14 @@ public class Process {
      * Defines the UID/GID for the mediaserver process.
      * @hide
      */
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public static final int MEDIA_UID = 1013;
 
     /**
      * Defines the UID/GID for the DRM process.
      * @hide
      */
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public static final int DRM_UID = 1019;
 
     /**
@@ -105,6 +139,8 @@ public class Process {
      * Defines the UID/GID for the group that controls VPN services.
      * @hide
      */
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
+    @SystemApi(client = MODULE_LIBRARIES)
     public static final int VPN_UID = 1016;
 
     /**
@@ -123,6 +159,9 @@ public class Process {
      * Defines the UID/GID for the NFC service process.
      * @hide
      */
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
+    @TestApi
+    @SystemApi(client = MODULE_LIBRARIES)
     public static final int NFC_UID = 1027;
 
     /**
@@ -245,6 +284,7 @@ public class Process {
      * {@see SdkSandboxManager}
      * @hide
      */
+    @TestApi
     public static final int SDK_SANDBOX_VIRTUAL_UID = 1090;
 
     /**
@@ -294,30 +334,37 @@ public class Process {
      * First uid used for fully isolated sandboxed processes spawned from an app zygote
      * @hide
      */
+    @TestApi
     public static final int FIRST_APP_ZYGOTE_ISOLATED_UID = 90000;
 
     /**
      * Number of UIDs we allocate per application zygote
      * @hide
      */
+    @TestApi
     public static final int NUM_UIDS_PER_APP_ZYGOTE = 100;
 
     /**
      * Last uid used for fully isolated sandboxed processes spawned from an app zygote
      * @hide
      */
+    @TestApi
     public static final int LAST_APP_ZYGOTE_ISOLATED_UID = 98999;
 
     /**
      * First uid used for fully isolated sandboxed processes (with no permissions of their own)
      * @hide
      */
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
+    @TestApi
     public static final int FIRST_ISOLATED_UID = 99000;
 
     /**
      * Last uid used for fully isolated sandboxed processes (with no permissions of their own)
      * @hide
      */
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
+    @TestApi
     public static final int LAST_ISOLATED_UID = 99999;
 
     /**
@@ -619,6 +666,7 @@ public class Process {
     /**
      * Returns true if the current process is a 64-bit runtime.
      */
+    @RavenwoodKeep
     public static final boolean is64Bit() {
         return VMRuntime.getRuntime().is64Bit();
     }
@@ -627,6 +675,7 @@ public class Process {
      * Returns the identifier of this process, which can be used with
      * {@link #killProcess} and {@link #sendSignal}.
      */
+    @RavenwoodKeep
     public static final int myPid() {
         return Os.getpid();
     }
@@ -635,6 +684,7 @@ public class Process {
      * Returns the identifier of this process' parent.
      * @hide
      */
+    @UnsupportedAppUsage(trackingBug = 171962076)
     public static final int myPpid() {
         return Os.getppid();
     }
@@ -643,6 +693,7 @@ public class Process {
      * Returns the identifier of the calling thread, which be used with
      * {@link #setThreadPriority(int, int)}.
      */
+    @RavenwoodKeep
     public static final int myTid() {
         return Os.gettid();
     }
@@ -653,6 +704,7 @@ public class Process {
      * app-specific sandbox.  It is different from {@link #myUserHandle} in that
      * a uid identifies a specific app sandbox in a specific user.
      */
+    @RavenwoodKeep
     public static final int myUid() {
         return Os.getuid();
     }
@@ -663,6 +715,9 @@ public class Process {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
+    @TestApi
+    @RavenwoodKeep
     // TODO(b/318651609): Deprecate once Process#getSdkSandboxUidForAppUid is rolled out to 100%
     public static final int toSdkSandboxUid(int uid) {
         return uid + (FIRST_SDK_SANDBOX_UID - FIRST_APPLICATION_UID);
@@ -674,6 +729,7 @@ public class Process {
      * @return the uid of the process, or -1 if the process is not running.
      * @hide pending API council review
      */
+    @UnsupportedAppUsage
     public static final int getUidForPid(int pid) {
         String[] procStatusLabels = { "Uid:" };
         long[] procStatusValues = new long[1];
@@ -688,6 +744,7 @@ public class Process {
      * @return the parent process id of the process, or -1 if the process is not running.
      * @hide
      */
+    @UnsupportedAppUsage
     public static final int getParentPid(int pid) {
         String[] procStatusLabels = { "PPid:" };
         long[] procStatusValues = new long[1];
@@ -823,6 +880,7 @@ public class Process {
      * your own log, or the Android Illuminati will find you some night and
      * beat you up.
      */
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
     public static final void sendSignalQuiet(int pid, int signal) {
         if (pid > 0) {
             Signal.kill(pid, signal);
@@ -830,6 +888,7 @@ public class Process {
     }
 
     /** @hide */
+    @UnsupportedAppUsage
     public static final void readProcLines(String path,
             String[] reqFields, long[] outSizes) {
         if (path == null || reqFields == null || outSizes == null) {
@@ -931,28 +990,38 @@ public class Process {
     }
 
     /** @hide */
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public static final int PROC_TERM_MASK = 0xff;
     /** @hide */
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public static final int PROC_ZERO_TERM = 0;
     /** @hide */
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public static final int PROC_SPACE_TERM = (int)' ';
     /** @hide */
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public static final int PROC_TAB_TERM = (int)'\t';
     /** @hide */
     public static final int PROC_NEWLINE_TERM = (int) '\n';
     /** @hide */
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public static final int PROC_COMBINE = 0x100;
     /** @hide */
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public static final int PROC_PARENS = 0x200;
     /** @hide */
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public static final int PROC_QUOTES = 0x400;
     /** @hide */
     public static final int PROC_CHAR = 0x800;
     /** @hide */
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public static final int PROC_OUT_STRING = 0x1000;
     /** @hide */
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public static final int PROC_OUT_LONG = 0x2000;
     /** @hide */
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public static final int PROC_OUT_FLOAT = 0x4000;
 
     /**

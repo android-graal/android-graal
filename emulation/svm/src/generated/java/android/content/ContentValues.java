@@ -9,6 +9,16 @@ import android.os.Parcelable;
 public final class ContentValues implements Parcelable {
     public static final String TAG = "ContentValues";
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private ContentValues() {
     }
 }

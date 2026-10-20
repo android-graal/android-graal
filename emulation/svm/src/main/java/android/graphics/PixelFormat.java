@@ -16,19 +16,25 @@
 
 package android.graphics;
 
+import android.annotation.IntDef;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+
 import org.androidgraal.hosted.annotate.Emulated;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+@RavenwoodKeepWholeClass
 @Emulated
 public class PixelFormat {
     /** @hide */
+    @IntDef({UNKNOWN, TRANSLUCENT, TRANSPARENT, OPAQUE})
     @Retention(RetentionPolicy.SOURCE)
     public @interface Opacity {}
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
+    @IntDef({RGBA_8888, RGBX_8888, RGBA_F16, RGBA_1010102, RGB_888, RGB_565, R_8})
     public @interface Format { }
 
     // NOTE: these constants must match the values from graphics/common/x.x/types.hal

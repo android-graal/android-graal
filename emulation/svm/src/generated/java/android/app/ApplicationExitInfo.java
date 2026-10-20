@@ -137,6 +137,16 @@ public final class ApplicationExitInfo implements Parcelable {
      */
     public static final int REASON_USER_STOPPED = 11;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private ApplicationExitInfo() {
     }
 }

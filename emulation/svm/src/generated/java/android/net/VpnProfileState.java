@@ -26,6 +26,16 @@ public final class VpnProfileState implements Parcelable {
      */
     public static final int STATE_FAILED = 3;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private VpnProfileState() {
     }
 }

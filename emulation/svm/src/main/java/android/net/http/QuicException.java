@@ -4,8 +4,6 @@
 
 package android.net.http;
 
-import androidx.annotation.Nullable;
-
 import org.androidgraal.hosted.annotate.Emulated;
 
 /**
@@ -25,7 +23,7 @@ public abstract class QuicException extends NetworkException {
      * java.io.IOException#getCause getCause()} method). A null value is permitted, and indicates
      * that the cause is nonexistent or unknown.
      */
-    protected QuicException(@Nullable String message, @Nullable Throwable cause) {
+    protected QuicException(String message, Throwable cause) {
         super(message, cause);
     }
 }

@@ -16,7 +16,9 @@
 
 package android.util;
 
-import androidx.annotation.NonNull;
+import android.annotation.NonNull;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+import android.ravenwood.annotation.RavenwoodReplace;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -110,6 +112,7 @@ import org.androidgraal.hosted.annotate.Emulated;
  * in a method, the call to {@code open} should occur just after
  * resource acquisition.
  */
+@RavenwoodKeepWholeClass
 @Emulated
 public final class CloseGuard {
     private final dalvik.system.CloseGuard mImpl;
@@ -132,6 +135,7 @@ public final class CloseGuard {
         mImpl = getImpl();
     }
 
+    @RavenwoodReplace
     private dalvik.system.CloseGuard getImpl() {
         return dalvik.system.CloseGuard.get();
     }

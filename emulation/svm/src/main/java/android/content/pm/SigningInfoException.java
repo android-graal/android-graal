@@ -16,8 +16,9 @@
 
 package android.content.pm;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.annotation.FlaggedApi;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -26,6 +27,7 @@ import org.androidgraal.hosted.annotate.Emulated;
  * <a href="https://source.android.com/docs/security/features/apksigning">app signing</a>
  * information.
  */
+@FlaggedApi(Flags.FLAG_CLOUD_COMPILATION_PM)
 @Emulated
 public class SigningInfoException extends Exception {
     private final int mCode;
@@ -40,6 +42,7 @@ public class SigningInfoException extends Exception {
      * Returns a code representing the cause, in one of the installation parse return codes in
      * {@link PackageManager}.
      */
+    @FlaggedApi(Flags.FLAG_CLOUD_COMPILATION_PM)
     public int getCode() {
         return mCode;
     }

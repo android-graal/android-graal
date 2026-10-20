@@ -16,7 +16,8 @@
 
 package android.security.keystore;
 
-import androidx.annotation.NonNull;
+import android.annotation.DurationMillisLong;
+import android.annotation.NonNull;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -36,7 +37,7 @@ public class BackendBusyException extends ProviderException {
      * Constructs a new {@code BackendBusyException} without detail message and cause.
      *
      */
-    public BackendBusyException(long backOffHintMillis) {
+    public BackendBusyException(@DurationMillisLong long backOffHintMillis) {
         super("The keystore backend has no operation slots available. Retry later.");
         if (backOffHintMillis < 0) {
             throw new IllegalArgumentException("Back-off hint cannot be negative.");
@@ -48,7 +49,7 @@ public class BackendBusyException extends ProviderException {
      * Constructs a new {@code BackendBusyException} with the provided detail message and
      * no cause.
      */
-    public BackendBusyException(long backOffHintMillis,
+    public BackendBusyException(@DurationMillisLong long backOffHintMillis,
             @NonNull String message) {
         super(message);
         if (backOffHintMillis < 0) {
@@ -61,7 +62,7 @@ public class BackendBusyException extends ProviderException {
      * Constructs a new {@code BackendBusyException} with the provided detail message and
      * cause.
      */
-    public BackendBusyException(long backOffHintMillis,
+    public BackendBusyException(@DurationMillisLong long backOffHintMillis,
             @NonNull String message, @NonNull Throwable cause) {
         super(message, cause);
         if (backOffHintMillis < 0) {
@@ -77,7 +78,7 @@ public class BackendBusyException extends ProviderException {
      *
      * @return Number of milliseconds to back off before retrying.
      */
-    public long getBackOffHintMillis() {
+    public @DurationMillisLong long getBackOffHintMillis() {
         return mBackOffHintMillis;
     }
 }

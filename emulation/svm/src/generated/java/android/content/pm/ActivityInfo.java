@@ -549,6 +549,16 @@ public final class ActivityInfo implements Parcelable {
      */
     public static final int UIOPTION_SPLIT_ACTION_BAR_WHEN_NARROW = 1;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private ActivityInfo() {
     }
 }

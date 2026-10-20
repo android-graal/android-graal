@@ -44,6 +44,16 @@ public final class TranslationResponseValue implements Parcelable {
      */
     public static final int STATUS_SUCCESS = 0;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private TranslationResponseValue() {
     }
 }

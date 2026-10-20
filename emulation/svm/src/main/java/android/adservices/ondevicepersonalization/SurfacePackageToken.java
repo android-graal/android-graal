@@ -16,7 +16,9 @@
 
 package android.adservices.ondevicepersonalization;
 
-import androidx.annotation.NonNull;
+import android.annotation.NonNull;
+
+import com.android.internal.annotations.VisibleForTesting;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -34,6 +36,7 @@ public class SurfacePackageToken {
     }
 
     /** @hide */
+    @VisibleForTesting
     @NonNull
     public String getTokenString() {
         return mTokenString;

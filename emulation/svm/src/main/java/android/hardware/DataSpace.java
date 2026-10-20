@@ -15,6 +15,11 @@
  */
 package android.hardware;
 
+import android.annotation.FlaggedApi;
+import android.annotation.IntDef;
+
+import com.android.graphics.flags.Flags;
+
 import org.androidgraal.hosted.annotate.Emulated;
 
 import java.lang.annotation.Retention;
@@ -63,6 +68,20 @@ import java.lang.annotation.RetentionPolicy;
 public final class DataSpace {
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
+    @IntDef(flag = true, value = {
+        STANDARD_UNSPECIFIED,
+        STANDARD_BT709,
+        STANDARD_BT601_625,
+        STANDARD_BT601_625_UNADJUSTED,
+        STANDARD_BT601_525,
+        STANDARD_BT601_525_UNADJUSTED,
+        STANDARD_BT2020,
+        STANDARD_BT2020_CONSTANT_LUMINANCE,
+        STANDARD_BT470M,
+        STANDARD_FILM,
+        STANDARD_DCI_P3,
+        STANDARD_ADOBE_RGB
+    })
     public @interface DataSpaceStandard {};
 
     private static final int STANDARD_MASK = 63 << 16;
@@ -208,6 +227,17 @@ public final class DataSpace {
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
+    @IntDef(flag = true, value = {
+        TRANSFER_UNSPECIFIED,
+        TRANSFER_LINEAR,
+        TRANSFER_SRGB,
+        TRANSFER_SMPTE_170M,
+        TRANSFER_GAMMA2_2,
+        TRANSFER_GAMMA2_6,
+        TRANSFER_GAMMA2_8,
+        TRANSFER_ST2084,
+        TRANSFER_HLG
+    })
     public @interface DataSpaceTransfer {};
 
     private static final int TRANSFER_MASK = 31 << 22;
@@ -318,6 +348,12 @@ public final class DataSpace {
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
+    @IntDef(flag = true, value = {
+        RANGE_UNSPECIFIED,
+        RANGE_FULL,
+        RANGE_LIMITED,
+        RANGE_EXTENDED
+    })
     public @interface DataSpaceRange {};
 
     private static final int RANGE_MASK = 7 << 27;
@@ -415,10 +451,28 @@ public final class DataSpace {
      *    metadata according to ISO/CD 21496‐1.</li>
      * </ul>
      */
+    @FlaggedApi(com.android.internal.camera.flags.Flags.FLAG_CAMERA_HEIF_GAINMAP)
     public static final int DATASPACE_HEIF_ULTRAHDR = 4102;
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
+    @IntDef(flag = true, value = {
+        DATASPACE_UNKNOWN,
+        DATASPACE_SCRGB_LINEAR,
+        DATASPACE_SRGB,
+        DATASPACE_SCRGB,
+        DATASPACE_DISPLAY_P3,
+        DATASPACE_BT2020_HLG,
+        DATASPACE_BT2020_PQ,
+        DATASPACE_ADOBE_RGB,
+        DATASPACE_JFIF,
+        DATASPACE_BT601_625,
+        DATASPACE_BT601_525,
+        DATASPACE_BT2020,
+        DATASPACE_BT709,
+        DATASPACE_DCI_P3,
+        DATASPACE_SRGB_LINEAR
+    })
     public @interface ColorDataSpace {};
 
     /**
@@ -619,10 +673,34 @@ public final class DataSpace {
      *   Transfer: TRANSFER_SRGB
      *   Range: RANGE_FULL</pre>
      */
+    @FlaggedApi(Flags.FLAG_DISPLAY_BT2020_COLORSPACE)
     public static final int DATASPACE_DISPLAY_BT2020 = 142999552;
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
+    @IntDef(flag = true, value = {
+        DATASPACE_DEPTH,
+        DATASPACE_DYNAMIC_DEPTH,
+        DATASPACE_HEIF,
+        DATASPACE_HEIF_ULTRAHDR,
+        DATASPACE_JPEG_R,
+        DATASPACE_UNKNOWN,
+        DATASPACE_SCRGB_LINEAR,
+        DATASPACE_SRGB,
+        DATASPACE_SCRGB,
+        DATASPACE_DISPLAY_P3,
+        DATASPACE_BT2020_HLG,
+        DATASPACE_BT2020_PQ,
+        DATASPACE_ADOBE_RGB,
+        DATASPACE_JFIF,
+        DATASPACE_BT601_625,
+        DATASPACE_BT601_525,
+        DATASPACE_BT2020,
+        DATASPACE_BT709,
+        DATASPACE_DCI_P3,
+        DATASPACE_SRGB_LINEAR,
+        DATASPACE_DISPLAY_BT2020
+    })
     public @interface NamedDataSpace {};
 
     private DataSpace() {}

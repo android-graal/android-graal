@@ -16,6 +16,16 @@ public final class CustomAudience implements Parcelable {
      */
     public static final int FLAG_AUCTION_SERVER_REQUEST_OMIT_ADS = 1;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private CustomAudience() {
     }
 }

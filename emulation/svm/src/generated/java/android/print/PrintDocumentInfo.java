@@ -82,6 +82,16 @@ public final class PrintDocumentInfo implements Parcelable {
      */
     public static final int PAGE_COUNT_UNKNOWN = -1;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private PrintDocumentInfo() {
     }
 }

@@ -23,6 +23,7 @@ import org.androidgraal.hosted.annotate.Emulated;
  * {@link android.content.ClipboardManager} for the modern API.
  */
 @Deprecated
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public abstract class ClipboardManager {
     /**

@@ -16,7 +16,8 @@
 
 package android.security.identity;
 
-import androidx.annotation.NonNull;
+import android.annotation.IntRange;
+import android.annotation.NonNull;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -40,7 +41,7 @@ public final class AuthenticationKeyMetadata {
      *
      * @return the usage count
      */
-    public int getUsageCount() {
+    public @IntRange(from = 0) int getUsageCount() {
         return mUsageCount;
     }
 

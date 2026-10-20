@@ -16,6 +16,9 @@
 
 package android.provider;
 
+import android.annotation.SdkConstant;
+import android.annotation.SdkConstant.SdkConstantType;
+
 import org.androidgraal.hosted.annotate.Emulated;
 
 /**
@@ -67,6 +70,7 @@ public final class AlarmClock {
      * setting this alarm.
      * </ul>
      */
+    @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
     public static final String ACTION_SET_ALARM = "android.intent.action.SET_ALARM";
 
     /**
@@ -103,6 +107,7 @@ public final class AlarmClock {
      *
      * @see #EXTRA_ALARM_SEARCH_MODE
      */
+    @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
     public static final String ACTION_DISMISS_ALARM = "android.intent.action.DISMISS_ALARM";
 
     /**
@@ -121,6 +126,7 @@ public final class AlarmClock {
      *
      * @see #EXTRA_ALARM_SNOOZE_DURATION
      */
+    @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
     public static final String ACTION_SNOOZE_ALARM = "android.intent.action.SNOOZE_ALARM";
 
     /**
@@ -147,6 +153,7 @@ public final class AlarmClock {
      * setting this timer.
      * </ul>
      */
+    @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
     public static final String ACTION_SET_TIMER = "android.intent.action.SET_TIMER";
 
     /**
@@ -158,6 +165,7 @@ public final class AlarmClock {
      * If no data URI is provided, dismiss all expired timers.
      * </p>
      */
+    @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
     public static final String ACTION_DISMISS_TIMER = "android.intent.action.DISMISS_TIMER";
 
     /**
@@ -166,6 +174,7 @@ public final class AlarmClock {
      * This action opens the timers page.
      * </p>
      */
+    @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
     public static final String ACTION_SHOW_TIMERS = "android.intent.action.SHOW_TIMERS";
 
     /**
@@ -174,6 +183,7 @@ public final class AlarmClock {
      * This action opens the alarms page.
      * </p>
      */
+     @SdkConstant(SdkConstantType.ACTIVITY_INTENT_ACTION)
      public static final String ACTION_SHOW_ALARMS = "android.intent.action.SHOW_ALARMS";
 
     /**

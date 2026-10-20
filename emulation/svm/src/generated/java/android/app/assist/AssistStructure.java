@@ -22,6 +22,16 @@ import android.os.Parcelable;
  * <a href="/guide/topics/text/autofill">Autofill Framework</a> guides.
  */
 public final class AssistStructure implements Parcelable {
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private AssistStructure() {
     }
 

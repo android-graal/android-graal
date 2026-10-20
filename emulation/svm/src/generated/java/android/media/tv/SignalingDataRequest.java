@@ -167,6 +167,16 @@ public final class SignalingDataRequest implements Parcelable {
      */
     public static final String SIGNALING_METADATA_VSPD = "VSPD";
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private SignalingDataRequest() {
     }
 }

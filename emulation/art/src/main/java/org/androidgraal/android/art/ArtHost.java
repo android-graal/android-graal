@@ -36,4 +36,9 @@ public final class ArtHost implements ApplicationHost {
         thread.throwPendingException();
         return manager;
     }
+
+    @Override
+    public int targetSdkVersion() {
+        return Image.application().getApplicationInfo().targetSdkVersion;
+    }
 }

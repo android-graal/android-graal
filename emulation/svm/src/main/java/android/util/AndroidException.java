@@ -21,6 +21,7 @@ import org.androidgraal.hosted.annotate.Emulated;
 /**
  * Base class for all checked exceptions thrown by the Android frameworks.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public class AndroidException extends Exception {
     public AndroidException() {

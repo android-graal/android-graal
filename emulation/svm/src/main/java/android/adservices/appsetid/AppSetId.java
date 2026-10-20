@@ -15,7 +15,8 @@
  */
 package android.adservices.appsetid;
 
-import androidx.annotation.NonNull;
+import android.annotation.IntDef;
+import android.annotation.NonNull;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -39,6 +40,10 @@ public class AppSetId {
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
+    @IntDef({
+        SCOPE_APP,
+        SCOPE_DEVELOPER,
+    })
     public @interface AppSetIdScope {}
     /** The appSetId is scoped to an app. All apps on a device will have a different appSetId. */
     public static final int SCOPE_APP = 1;

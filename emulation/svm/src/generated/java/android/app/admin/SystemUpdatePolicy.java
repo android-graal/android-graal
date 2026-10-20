@@ -77,6 +77,16 @@ public final class SystemUpdatePolicy implements Parcelable {
      */
     public static final int TYPE_POSTPONE = 3;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private SystemUpdatePolicy() {
     }
 
@@ -119,6 +129,16 @@ public final class SystemUpdatePolicy implements Parcelable {
          * Validation failed with unknown error.
          */
         public static final int ERROR_UNKNOWN = 1;
+
+        @Override
+        public int describeContents() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void writeToParcel(android.os.Parcel dest, int flags) {
+            throw new UnsupportedOperationException();
+        }
 
         private ValidationFailedException() {
         }

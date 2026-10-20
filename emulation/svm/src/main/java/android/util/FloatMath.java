@@ -32,6 +32,7 @@ import org.androidgraal.hosted.annotate.Emulated;
  * @deprecated Use {@link java.lang.Math} instead.
  */
 @Deprecated
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public class FloatMath {
 

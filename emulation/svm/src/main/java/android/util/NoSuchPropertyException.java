@@ -23,6 +23,7 @@ import org.androidgraal.hosted.annotate.Emulated;
  *
  * @see Property#of(java.lang.Class, java.lang.Class, java.lang.String)
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public class NoSuchPropertyException extends RuntimeException {
 

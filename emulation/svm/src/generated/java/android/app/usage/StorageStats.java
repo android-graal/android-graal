@@ -72,6 +72,16 @@ public final class StorageStats implements Parcelable {
      */
     public static final int APP_DATA_TYPE_LIB = 5;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private StorageStats() {
     }
 }

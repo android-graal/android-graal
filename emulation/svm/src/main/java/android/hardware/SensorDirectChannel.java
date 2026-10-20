@@ -15,10 +15,13 @@
  */
 package android.hardware;
 
+import android.annotation.IntDef;
+
 import dalvik.system.CloseGuard;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
+import java.io.IOException;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.nio.channels.Channel;
@@ -39,6 +42,10 @@ public final class SensorDirectChannel implements Channel {
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
+    @IntDef(flag = true, prefix = { "TYPE_" }, value = {
+            TYPE_MEMORY_FILE,
+            TYPE_HARDWARE_BUFFER
+    })
     public @interface MemoryType {}
 
     /**
@@ -59,6 +66,12 @@ public final class SensorDirectChannel implements Channel {
 
     /** @hide */
     @Retention(RetentionPolicy.SOURCE)
+    @IntDef(prefix = { "RATE_" }, value = {
+            RATE_STOP,
+            RATE_NORMAL,
+            RATE_FAST,
+            RATE_VERY_FAST
+    })
     public @interface RateLevel {}
 
     /**

@@ -97,6 +97,16 @@ public final class ClipDescription implements Parcelable {
      */
     public static final String MIMETYPE_UNKNOWN = "application/octet-stream";
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private ClipDescription() {
     }
 }

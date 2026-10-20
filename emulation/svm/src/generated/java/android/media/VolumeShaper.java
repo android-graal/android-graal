@@ -64,6 +64,16 @@ public final class VolumeShaper {
          */
         public static final int INTERPOLATOR_TYPE_STEP = 0;
 
+        @Override
+        public int describeContents() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void writeToParcel(android.os.Parcel dest, int flags) {
+            throw new UnsupportedOperationException();
+        }
+
         private Configuration() {
         }
     }

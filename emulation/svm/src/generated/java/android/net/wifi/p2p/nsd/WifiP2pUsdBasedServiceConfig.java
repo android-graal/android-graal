@@ -20,6 +20,16 @@ public final class WifiP2pUsdBasedServiceConfig implements Parcelable {
      */
     public static final int SERVICE_PROTOCOL_TYPE_GENERIC = 2;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private WifiP2pUsdBasedServiceConfig() {
     }
 }

@@ -137,6 +137,16 @@ public final class JobInfo implements Parcelable {
      */
     public static final int PRIORITY_MIN = 100;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private JobInfo() {
     }
 
@@ -151,6 +161,16 @@ public final class JobInfo implements Parcelable {
          * {@link android.content.ContentResolver#registerContentObserver}.
          */
         public static final int FLAG_NOTIFY_FOR_DESCENDANTS = 1;
+
+        @Override
+        public int describeContents() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void writeToParcel(android.os.Parcel dest, int flags) {
+            throw new UnsupportedOperationException();
+        }
 
         private TriggerContentUri() {
         }

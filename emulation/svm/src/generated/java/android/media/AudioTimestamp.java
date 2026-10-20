@@ -27,6 +27,16 @@ public final class AudioTimestamp implements Parcelable {
      */
     public static final int TIMEBASE_MONOTONIC = 0;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private AudioTimestamp() {
     }
 }

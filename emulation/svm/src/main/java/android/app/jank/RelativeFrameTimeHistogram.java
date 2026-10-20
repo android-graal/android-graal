@@ -16,7 +16,8 @@
 
 package android.app.jank;
 
-import androidx.annotation.NonNull;
+import android.annotation.FlaggedApi;
+import android.annotation.NonNull;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -42,6 +43,7 @@ import java.util.Arrays;
  * through index {@code i} of {@link #getBucketCounters}.
  *
  */
+@FlaggedApi(Flags.FLAG_DETAILED_APP_JANK_METRICS_API)
 @Emulated
 public class RelativeFrameTimeHistogram {
     private static int[] sBucketEndpoints = new int[]{

@@ -16,7 +16,8 @@
 
 package android.health.connect;
 
-import androidx.annotation.Nullable;
+import android.annotation.IntDef;
+import android.annotation.Nullable;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -120,6 +121,18 @@ public class HealthConnectException extends RuntimeException {
      *
      * @hide
      */
+    @IntDef(
+            value = {
+                ERROR_UNKNOWN,
+                ERROR_INTERNAL,
+                ERROR_INVALID_ARGUMENT,
+                ERROR_IO,
+                ERROR_SECURITY,
+                ERROR_REMOTE,
+                ERROR_DATA_SYNC_IN_PROGRESS,
+                ERROR_RATE_LIMIT_EXCEEDED,
+                ERROR_UNSUPPORTED_OPERATION
+            })
     @Retention(RetentionPolicy.SOURCE)
     public @interface ErrorCode {}
 }

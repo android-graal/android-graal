@@ -26,6 +26,7 @@ import java.util.Calendar;
  *
  * Not thread safe.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public class MonthDisplayHelper {
 

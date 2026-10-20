@@ -33,6 +33,16 @@ public final class WpsInfo implements Parcelable {
      */
     public static final int PBC = 0;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private WpsInfo() {
     }
 }

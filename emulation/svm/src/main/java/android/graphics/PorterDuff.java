@@ -16,6 +16,8 @@
 
 package android.graphics;
 
+import android.compat.annotation.UnsupportedAppUsage;
+
 import org.androidgraal.hosted.annotate.Emulated;
 
 /**
@@ -26,6 +28,7 @@ import org.androidgraal.hosted.annotate.Emulated;
  *
  * Consider using {@link BlendMode} instead as it provides a wider variety of tinting options
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public class PorterDuff {
     /**
@@ -367,6 +370,7 @@ public class PorterDuff {
         /**
          * @hide
          */
+        @UnsupportedAppUsage
         public final int nativeInt;
     }
 

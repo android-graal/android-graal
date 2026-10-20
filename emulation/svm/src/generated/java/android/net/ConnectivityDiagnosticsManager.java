@@ -120,6 +120,16 @@ public final class ConnectivityDiagnosticsManager {
          */
         public static final int NETWORK_VALIDATION_RESULT_VALID = 1;
 
+        @Override
+        public int describeContents() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void writeToParcel(android.os.Parcel dest, int flags) {
+            throw new UnsupportedOperationException();
+        }
+
         private ConnectivityReport() {
         }
     }
@@ -171,6 +181,16 @@ public final class ConnectivityDiagnosticsManager {
          * <p>This value is an int percentage between 0 and 100.
          */
         public static final String KEY_TCP_PACKET_FAIL_RATE = "tcpPacketFailRate";
+
+        @Override
+        public int describeContents() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void writeToParcel(android.os.Parcel dest, int flags) {
+            throw new UnsupportedOperationException();
+        }
 
         private DataStallReport() {
         }

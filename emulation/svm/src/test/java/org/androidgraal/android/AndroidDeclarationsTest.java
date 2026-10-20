@@ -3,13 +3,13 @@ package org.androidgraal.android;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UncheckedIOException;
 import java.lang.classfile.AttributedElement;
 import java.lang.classfile.Attributes;
@@ -22,6 +22,7 @@ import java.lang.classfile.constantpool.ClassEntry;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.AccessFlag;
 import java.lang.reflect.Method;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -30,6 +31,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
@@ -79,10 +82,11 @@ class AndroidDeclarationsTest {
             "android/animation/FloatArrayEvaluator", "android/animation/FloatEvaluator",
             "android/animation/IntArrayEvaluator", "android/animation/IntEvaluator", "android/animation/Keyframe",
             "android/animation/TimeInterpolator", "android/animation/TypeConverter", "android/animation/TypeEvaluator",
-            "android/annotation/SuppressLint", "android/annotation/TargetApi", "android/app/admin/PolicyUpdateResult",
-            "android/app/admin/TargetUser", "android/app/appsearch/PropertyPath",
-            "android/app/appsearch/PropertyPath$PathSegment", "android/app/appsearch/ReportSystemUsageRequest",
-            "android/app/appsearch/ReportSystemUsageRequest$Builder",
+            "android/annotation/SuppressLint", "android/annotation/TargetApi",
+            "dalvik/annotation/optimization/CriticalNative", "dalvik/annotation/optimization/FastNative",
+            "android/app/admin/PolicyUpdateResult", "android/app/admin/TargetUser",
+            "android/app/appsearch/PropertyPath", "android/app/appsearch/PropertyPath$PathSegment",
+            "android/app/appsearch/ReportSystemUsageRequest", "android/app/appsearch/ReportSystemUsageRequest$Builder",
             "android/app/appsearch/observer/DocumentChangeInfo", "android/app/appsearch/observer/ObserverCallback",
             "android/app/appsearch/observer/SchemaChangeInfo", "android/app/jank/AppJankStats",
             "android/app/jank/RelativeFrameTimeHistogram",
@@ -287,7 +291,11 @@ class AndroidDeclarationsTest {
             "android/webkit/SafeBrowsingResponse", "android/webkit/TracingConfig",
             "android/webkit/TracingConfig$Builder", "android/webkit/ValueCallback", "android/webkit/WebResourceError",
             "android/webkit/WebResourceResponse", "android/webkit/WebViewRenderProcess", "android/widget/Advanceable",
-            "android/widget/Checkable", "android/widget/HeterogeneousExpandableList", "android/widget/SectionIndexer");
+            "android/widget/Checkable", "android/widget/HeterogeneousExpandableList", "android/widget/SectionIndexer",
+            "android/os/Parcelable", "android/os/Parcelable$ClassLoaderCreator", "android/os/Parcelable$Creator",
+            "android/os/BaseBundle", "android/util/ArrayMap", "android/util/Size", "android/util/SizeF",
+            "android/util/SparseBooleanArray", "android/util/SparseIntArray", "android/text/Spannable",
+            "android/text/Spannable$Factory", "android/text/SpanWatcher", "android/text/SpannableString");
 
     private static final Map<String, Set<String>> PARTIAL = Map.ofEntries(
             Map.entry("android/content/res/AssetManager", Set.of("method [PROTECTED] finalize()V",
@@ -297,10 +305,7 @@ class AndroidDeclarationsTest {
                     "method [PUBLIC] openXmlResourceParser(Ljava/lang/String;)Landroid/content/res/XmlResourceParser;")),
             Map.entry("android/content/res/AssetManager$AssetInputStream", Set.of("method [PROTECTED] finalize()V")),
             Map.entry("android/content/res/AssetFileDescriptor",
-                    Set.of("field [PUBLIC, STATIC, FINAL] CREATOR Landroid/os/Parcelable$Creator; = -",
-                            "method [PUBLIC] <init>(Landroid/os/ParcelFileDescriptor;JJLandroid/os/Bundle;)V",
-                            "method [PUBLIC] getExtras()Landroid/os/Bundle;",
-                            "method [PUBLIC] writeToParcel(Landroid/os/Parcel;I)V")),
+                    Set.of("field [PUBLIC, STATIC, FINAL] CREATOR Landroid/os/Parcelable$Creator; = -")),
             Map.entry("android/os/FileUtils", Set.of("method [PUBLIC, STATIC] closeQuietly(Ljava/io/FileDescriptor;)V",
                     "method [PUBLIC, STATIC] closeQuietly(Ljava/lang/AutoCloseable;)V",
                     "method [PUBLIC, STATIC] copy(Ljava/io/FileDescriptor;Ljava/io/FileDescriptor;)J",
@@ -314,12 +319,60 @@ class AndroidDeclarationsTest {
                     "method [PUBLIC, STATIC] fromDatagramSocket(Ljava/net/DatagramSocket;)Landroid/os/ParcelFileDescriptor;",
                     "method [PUBLIC, STATIC] fromSocket(Ljava/net/Socket;)Landroid/os/ParcelFileDescriptor;",
                     "method [PUBLIC, STATIC] open(Ljava/io/File;ILandroid/os/Handler;Landroid/os/ParcelFileDescriptor$OnCloseListener;)Landroid/os/ParcelFileDescriptor;",
-                    "method [PUBLIC, STATIC] wrap(Landroid/os/ParcelFileDescriptor;Landroid/os/Handler;Landroid/os/ParcelFileDescriptor$OnCloseListener;)Landroid/os/ParcelFileDescriptor;",
-                    "method [PUBLIC] writeToParcel(Landroid/os/Parcel;I)V")),
-            Map.entry("android/os/Parcelable",
-                    Set.of("method [PUBLIC, ABSTRACT] describeContents()I",
-                            "method [PUBLIC, ABSTRACT] writeToParcel(Landroid/os/Parcel;I)V",
-                            "nested android/os/Parcelable$ClassLoaderCreator", "nested android/os/Parcelable$Creator")),
+                    "method [PUBLIC, STATIC] wrap(Landroid/os/ParcelFileDescriptor;Landroid/os/Handler;Landroid/os/ParcelFileDescriptor$OnCloseListener;)Landroid/os/ParcelFileDescriptor;")),
+            Map.entry("android/os/Parcel", Set.of("method [PROTECTED] finalize()V",
+                    "method [PUBLIC, STATIC] obtain(Landroid/os/IBinder;)Landroid/os/Parcel;",
+                    "method [PUBLIC, VARARGS] createFixedArray(Ljava/lang/Class;Ljava/util/function/Function;[I)Ljava/lang/Object;",
+                    "method [PUBLIC] createBinderArray()[Landroid/os/IBinder;",
+                    "method [PUBLIC] createBinderArrayList()Ljava/util/ArrayList;",
+                    "method [PUBLIC] createInterfaceArray(Ljava/util/function/IntFunction;Ljava/util/function/Function;)[Landroid/os/IInterface;",
+                    "method [PUBLIC] createInterfaceArrayList(Ljava/util/function/Function;)Ljava/util/ArrayList;",
+                    "method [PUBLIC] readBinderArray([Landroid/os/IBinder;)V",
+                    "method [PUBLIC] readBinderList(Ljava/util/List;)V",
+                    "method [PUBLIC] readFileDescriptor()Landroid/os/ParcelFileDescriptor;",
+                    "method [PUBLIC] readFixedArray(Ljava/lang/Object;Ljava/util/function/Function;)V",
+                    "method [PUBLIC] readInterfaceArray([Landroid/os/IInterface;Ljava/util/function/Function;)V",
+                    "method [PUBLIC] readInterfaceList(Ljava/util/List;Ljava/util/function/Function;)V",
+                    "method [PUBLIC] readStrongBinder()Landroid/os/IBinder;",
+                    "method [PUBLIC] writeBinderArray([Landroid/os/IBinder;)V",
+                    "method [PUBLIC] writeBinderList(Ljava/util/List;)V",
+                    "method [PUBLIC] writeFileDescriptor(Ljava/io/FileDescriptor;)V",
+                    "method [PUBLIC] writeInterfaceArray([Landroid/os/IInterface;)V",
+                    "method [PUBLIC] writeInterfaceList(Ljava/util/List;)V",
+                    "method [PUBLIC] writeStrongBinder(Landroid/os/IBinder;)V",
+                    "method [PUBLIC] writeStrongInterface(Landroid/os/IInterface;)V")),
+            Map.entry("android/os/Bundle",
+                    Set.of("method [PUBLIC] getBinder(Ljava/lang/String;)Landroid/os/IBinder;",
+                            "method [PUBLIC] putBinder(Ljava/lang/String;Landroid/os/IBinder;)V")),
+            Map.entry("android/os/PersistableBundle", Set.of(
+                    "method [PUBLIC, STATIC] readFromStream(Ljava/io/InputStream;)Landroid/os/PersistableBundle;",
+                    "method [PUBLIC] writeToStream(Ljava/io/OutputStream;)V")),
+            Map.entry("android/os/Binder",
+                    Set.of("method [PROTECTED] dump(Ljava/io/FileDescriptor;Ljava/io/PrintWriter;[Ljava/lang/String;)V",
+                            "method [PROTECTED] onTransact(ILandroid/os/Parcel;Landroid/os/Parcel;I)Z",
+                            "method [PUBLIC, FINAL] transact(ILandroid/os/Parcel;Landroid/os/Parcel;I)Z",
+                            "method [PUBLIC, STATIC, FINAL] clearCallingIdentity()J",
+                            "method [PUBLIC, STATIC, FINAL] clearCallingWorkSource()J",
+                            "method [PUBLIC, STATIC, FINAL] flushPendingCommands()V",
+                            "method [PUBLIC, STATIC, FINAL] getCallingPid()I",
+                            "method [PUBLIC, STATIC, FINAL] getCallingUid()I",
+                            "method [PUBLIC, STATIC, FINAL] getCallingUidOrThrow()I",
+                            "method [PUBLIC, STATIC, FINAL] getCallingUserHandle()Landroid/os/UserHandle;",
+                            "method [PUBLIC, STATIC, FINAL] getCallingWorkSourceUid()I",
+                            "method [PUBLIC, STATIC, FINAL] joinThreadPool()V",
+                            "method [PUBLIC, STATIC, FINAL] restoreCallingIdentity(J)V",
+                            "method [PUBLIC, STATIC, FINAL] restoreCallingWorkSource(J)V",
+                            "method [PUBLIC, STATIC, FINAL] setCallingWorkSourceUid(I)J", "method [PUBLIC] <init>()V",
+                            "method [PUBLIC] <init>(Ljava/lang/String;)V",
+                            "method [PUBLIC] attachInterface(Landroid/os/IInterface;Ljava/lang/String;)V",
+                            "method [PUBLIC] dump(Ljava/io/FileDescriptor;[Ljava/lang/String;)V",
+                            "method [PUBLIC] dumpAsync(Ljava/io/FileDescriptor;[Ljava/lang/String;)V",
+                            "method [PUBLIC] getInterfaceDescriptor()Ljava/lang/String;",
+                            "method [PUBLIC] isBinderAlive()Z",
+                            "method [PUBLIC] linkToDeath(Landroid/os/IBinder$DeathRecipient;I)V",
+                            "method [PUBLIC] pingBinder()Z",
+                            "method [PUBLIC] queryLocalInterface(Ljava/lang/String;)Landroid/os/IInterface;",
+                            "method [PUBLIC] unlinkToDeath(Landroid/os/IBinder$DeathRecipient;I)Z")),
             Map.entry("android/os/Build", Set.of("method [PUBLIC, STATIC] getSerial()Ljava/lang/String;")),
             Map.entry("android/os/Process", Set.of("method [PUBLIC, STATIC, FINAL] getAppUidForSdkSandboxUid(I)I",
                     "method [PUBLIC, STATIC, FINAL] getElapsedCpuTime()J",
@@ -340,7 +393,6 @@ class AndroidDeclarationsTest {
                     "method [PUBLIC, STATIC] myProcessName()Ljava/lang/String;",
                     "method [PUBLIC, STATIC] myUserHandle()Landroid/os/UserHandle;")),
             Map.entry("android/text/TextUtils", Set.of(
-                    "field [PUBLIC, STATIC, FINAL] CHAR_SEQUENCE_CREATOR Landroid/os/Parcelable$Creator; = -",
                     "method [PUBLIC, STATIC, VARARGS] concat([Ljava/lang/CharSequence;)Ljava/lang/CharSequence;",
                     "method [PUBLIC, STATIC, VARARGS] expandTemplate(Ljava/lang/CharSequence;[Ljava/lang/CharSequence;)Ljava/lang/CharSequence;",
                     "method [PUBLIC, STATIC] commaEllipsize(Ljava/lang/CharSequence;Landroid/text/TextPaint;FLjava/lang/String;Ljava/lang/String;)Ljava/lang/CharSequence;",
@@ -366,8 +418,7 @@ class AndroidDeclarationsTest {
                     "method [PUBLIC, STATIC] regionMatches(Ljava/lang/CharSequence;ILjava/lang/CharSequence;II)Z",
                     "method [PUBLIC, STATIC] replace(Ljava/lang/CharSequence;[Ljava/lang/String;[Ljava/lang/CharSequence;)Ljava/lang/CharSequence;",
                     "method [PUBLIC, STATIC] stringOrSpannedString(Ljava/lang/CharSequence;)Ljava/lang/CharSequence;",
-                    "method [PUBLIC, STATIC] substring(Ljava/lang/CharSequence;II)Ljava/lang/String;",
-                    "method [PUBLIC, STATIC] writeToParcel(Ljava/lang/CharSequence;Landroid/os/Parcel;I)V")),
+                    "method [PUBLIC, STATIC] substring(Ljava/lang/CharSequence;II)Ljava/lang/String;")),
             Map.entry("android/hardware/SensorDirectChannel", Set.of("method [PROTECTED] finalize()V")),
             Map.entry("android/hardware/SensorManager", Set.of(
                     "method [PUBLIC] createDirectChannel(Landroid/hardware/HardwareBuffer;)Landroid/hardware/SensorDirectChannel;",
@@ -424,10 +475,169 @@ class AndroidDeclarationsTest {
                     "method [PUBLIC, STATIC] threadCpuTimeNanos()J", "method [PUBLIC, STATIC] waitForDebugger()V")),
             Map.entry("android/os/Debug$MemoryInfo",
                     Set.of("field [PUBLIC, STATIC, FINAL] CREATOR Landroid/os/Parcelable$Creator; = -",
-                            "method [PUBLIC] readFromParcel(Landroid/os/Parcel;)V",
-                            "method [PUBLIC] writeToParcel(Landroid/os/Parcel;I)V")));
+                            "method [PUBLIC] readFromParcel(Landroid/os/Parcel;)V")));
 
-    private static final Map<String, Set<String>> HIDDEN = Map.ofEntries(
+    private static final Map<String, Set<String>> HIDDEN = Map.ofEntries(Map.entry("android/os/BaseBundle", Set.of(
+            "field [PROTECTED, STATIC, FINAL] TAG Ljava/lang/String; = Bundle",
+            "field [PUBLIC, STATIC, FINAL] DEBUG Z = 0", "field [PUBLIC, STATIC, FINAL] FLAG_DEFUSABLE I = 1",
+            "field [PUBLIC, VOLATILE] mParcelledData Landroid/os/Parcel; = -", "field [PUBLIC] mFlags I = -",
+            "field [PUBLIC] mMap Landroid/util/ArrayMap; = -", "field [PUBLIC] mOwnsLazyValues Z = -",
+            "method [PUBLIC, FINAL, VARARGS] getValue(Ljava/lang/String;Ljava/lang/Class;[Ljava/lang/Class;)Ljava/lang/Object;",
+            "method [PUBLIC, FINAL] getValue(Ljava/lang/String;)Ljava/lang/Object;",
+            "method [PUBLIC, FINAL] unparcel()V",
+            "method [PUBLIC, STATIC] dumpStats(Lcom/android/internal/util/IndentingPrintWriter;Landroid/os/BaseBundle;)V",
+            "method [PUBLIC, STATIC] dumpStats(Lcom/android/internal/util/IndentingPrintWriter;Landroid/util/SparseArray;)V",
+            "method [PUBLIC, STATIC] dumpStats(Lcom/android/internal/util/IndentingPrintWriter;Ljava/lang/String;Ljava/lang/Object;)V",
+            "method [PUBLIC, STATIC] kindofEquals(Landroid/os/BaseBundle;Landroid/os/BaseBundle;)Z",
+            "method [PUBLIC, STATIC] setShouldDefuse(Z)V", "method [PUBLIC] <init>()V", "method [PUBLIC] <init>(I)V",
+            "method [PUBLIC] <init>(Landroid/os/BaseBundle;)V", "method [PUBLIC] <init>(Landroid/os/BaseBundle;Z)V",
+            "method [PUBLIC] <init>(Landroid/os/Parcel;)V", "method [PUBLIC] <init>(Landroid/os/Parcel;I)V",
+            "method [PUBLIC] <init>(Ljava/lang/ClassLoader;)V",
+            "method [PUBLIC] get(Ljava/lang/String;Ljava/lang/Class;)Ljava/lang/Object;",
+            "method [PUBLIC] getArrayList(Ljava/lang/String;Ljava/lang/Class;)Ljava/util/ArrayList;",
+            "method [PUBLIC] getByte(Ljava/lang/String;)B",
+            "method [PUBLIC] getByte(Ljava/lang/String;B)Ljava/lang/Byte;",
+            "method [PUBLIC] getByteArray(Ljava/lang/String;)[B", "method [PUBLIC] getChar(Ljava/lang/String;)C",
+            "method [PUBLIC] getChar(Ljava/lang/String;C)C", "method [PUBLIC] getCharArray(Ljava/lang/String;)[C",
+            "method [PUBLIC] getCharSequence(Ljava/lang/String;)Ljava/lang/CharSequence;",
+            "method [PUBLIC] getCharSequence(Ljava/lang/String;Ljava/lang/CharSequence;)Ljava/lang/CharSequence;",
+            "method [PUBLIC] getCharSequenceArray(Ljava/lang/String;)[Ljava/lang/CharSequence;",
+            "method [PUBLIC] getCharSequenceArrayList(Ljava/lang/String;)Ljava/util/ArrayList;",
+            "method [PUBLIC] getClassLoader()Ljava/lang/ClassLoader;", "method [PUBLIC] getFloat(Ljava/lang/String;)F",
+            "method [PUBLIC] getFloat(Ljava/lang/String;F)F", "method [PUBLIC] getFloatArray(Ljava/lang/String;)[F",
+            "method [PUBLIC] getIntegerArrayList(Ljava/lang/String;)Ljava/util/ArrayList;",
+            "method [PUBLIC] getItemwiseMap()Landroid/util/ArrayMap;",
+            "method [PUBLIC] getPairValue()Ljava/lang/String;",
+            "method [PUBLIC] getSerializable(Ljava/lang/String;)Ljava/io/Serializable;",
+            "method [PUBLIC] getSerializable(Ljava/lang/String;Ljava/lang/Class;)Ljava/io/Serializable;",
+            "method [PUBLIC] getShort(Ljava/lang/String;)S", "method [PUBLIC] getShort(Ljava/lang/String;S)S",
+            "method [PUBLIC] getShortArray(Ljava/lang/String;)[S",
+            "method [PUBLIC] getStringArrayList(Ljava/lang/String;)Ljava/util/ArrayList;",
+            "method [PUBLIC] hasIntent()Z", "method [PUBLIC] isDefinitelyEmpty()Z", "method [PUBLIC] isEmptyParcel()Z",
+            "method [PUBLIC] isParcelled()Z", "method [PUBLIC] isValueParceled(Ljava/lang/String;)Z",
+            "method [PUBLIC] kindofEquals(Landroid/os/BaseBundle;)Z",
+            "method [PUBLIC] putAll(Landroid/util/ArrayMap;)V", "method [PUBLIC] putByte(Ljava/lang/String;B)V",
+            "method [PUBLIC] putByteArray(Ljava/lang/String;[B)V", "method [PUBLIC] putChar(Ljava/lang/String;C)V",
+            "method [PUBLIC] putCharArray(Ljava/lang/String;[C)V",
+            "method [PUBLIC] putCharSequence(Ljava/lang/String;Ljava/lang/CharSequence;)V",
+            "method [PUBLIC] putCharSequenceArray(Ljava/lang/String;[Ljava/lang/CharSequence;)V",
+            "method [PUBLIC] putCharSequenceArrayList(Ljava/lang/String;Ljava/util/ArrayList;)V",
+            "method [PUBLIC] putFloat(Ljava/lang/String;F)V", "method [PUBLIC] putFloatArray(Ljava/lang/String;[F)V",
+            "method [PUBLIC] putIntegerArrayList(Ljava/lang/String;Ljava/util/ArrayList;)V",
+            "method [PUBLIC] putObject(Ljava/lang/String;Ljava/lang/Object;)V",
+            "method [PUBLIC] putSerializable(Ljava/lang/String;Ljava/io/Serializable;)V",
+            "method [PUBLIC] putShort(Ljava/lang/String;S)V", "method [PUBLIC] putShortArray(Ljava/lang/String;[S)V",
+            "method [PUBLIC] putStringArrayList(Ljava/lang/String;Ljava/util/ArrayList;)V",
+            "method [PUBLIC] readFromParcelInner(Landroid/os/Parcel;)V",
+            "method [PUBLIC] setClassLoader(Ljava/lang/ClassLoader;)V", "method [PUBLIC] setHasIntent(Z)V",
+            "method [PUBLIC] typeWarning(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/Object;Ljava/lang/RuntimeException;)V",
+            "method [PUBLIC] typeWarning(Ljava/lang/String;Ljava/lang/Object;Ljava/lang/String;Ljava/lang/RuntimeException;)V",
+            "method [PUBLIC] typeWarning(Ljava/lang/String;Ljava/lang/String;Ljava/lang/RuntimeException;)V",
+            "method [PUBLIC] writeToParcelInner(Landroid/os/Parcel;I)V")),
+            Map.entry("android/util/SparseIntArray", Set.of("method [PUBLIC] copyKeys()[I")),
+            Map.entry("android/util/SparseBooleanArray", Set.of("method [PUBLIC] setKeyAt(II)V")),
+            Map.entry("android/util/ArrayMap", Set.of("field [PUBLIC, STATIC, FINAL] EMPTY Landroid/util/ArrayMap; = -",
+                    "method [PUBLIC] <init>(IZ)V", "method [PUBLIC] append(Ljava/lang/Object;Ljava/lang/Object;)V",
+                    "method [PUBLIC] erase()V", "method [PUBLIC] validate()V")),
+            Map.entry("android/text/SpannableString",
+                    Set.of("method [PUBLIC] <init>(Ljava/lang/CharSequence;Z)V",
+                            "method [PUBLIC] removeSpan(Ljava/lang/Object;I)V")),
+            Map.entry("android/text/Spannable", Set.of("method [PUBLIC] removeSpan(Ljava/lang/Object;I)V")),
+            Map.entry("android/os/PersistableBundle", Set.of(
+                    "method [PUBLIC, STATIC] forPair(Ljava/lang/String;Ljava/lang/String;)Landroid/os/PersistableBundle;",
+                    "method [PUBLIC, STATIC] isValidType(Ljava/lang/Object;)Z",
+                    "method [PUBLIC, SYNCHRONIZED] toShortString()Ljava/lang/String;",
+                    "method [PUBLIC] <init>(Landroid/os/Bundle;)V", "method [PUBLIC] <init>(Landroid/os/Parcel;I)V",
+                    "method [PUBLIC] isBundleContentsWithinLengthLimit(I)Z")),
+            Map.entry("android/os/Parcelable",
+                    Set.of("field [PUBLIC, STATIC, FINAL] PARCELABLE_ELIDE_DUPLICATES I = 2",
+                            "field [PUBLIC, STATIC, FINAL] PARCELABLE_STABILITY_LOCAL I = 0",
+                            "field [PUBLIC, STATIC, FINAL] PARCELABLE_STABILITY_VINTF I = 1",
+                            "method [PUBLIC] getStability()I", "nested android/os/Parcelable$ContentsFlags",
+                            "nested android/os/Parcelable$Stability", "nested android/os/Parcelable$WriteFlags")),
+            Map.entry("android/os/Parcel", Set.of(
+                    "field [PUBLIC, STATIC, FINAL] EX_HAS_NOTED_APPOPS_REPLY_HEADER I = -127",
+                    "field [PUBLIC, STATIC, FINAL] FLAG_IS_REPLY_FROM_BLOCKING_ALLOWED_OBJECT I = 1",
+                    "field [PUBLIC, STATIC, FINAL] FLAG_PROPAGATE_ALLOW_BLOCKING I = 2",
+                    "method [PROTECTED, STATIC] obtain(I)Landroid/os/Parcel;",
+                    "method [PUBLIC, STATIC] compareData(Landroid/os/Parcel;ILandroid/os/Parcel;II)Z",
+                    "method [PUBLIC, STATIC] getExceptionCode(Ljava/lang/Throwable;)I",
+                    "method [PUBLIC, STATIC] getValueType(Ljava/lang/Object;)I",
+                    "method [PUBLIC, STATIC] hasFileDescriptors(Ljava/lang/Object;)Z",
+                    "method [PUBLIC, STATIC] setStackTraceParceling(Z)V", "method [PUBLIC] addFlags(I)V",
+                    "method [PUBLIC] adoptClassCookies(Landroid/os/Parcel;)V", "method [PUBLIC] allowSquashing()Z",
+                    "method [PUBLIC] compareData(Landroid/os/Parcel;)I",
+                    "method [PUBLIC] copyClassCookies()Ljava/util/Map;",
+                    "method [PUBLIC] createExceptionOrNull(ILjava/lang/String;)Ljava/lang/Exception;",
+                    "method [PUBLIC] createShortArray()[S", "method [PUBLIC] createString16Array()[Ljava/lang/String;",
+                    "method [PUBLIC] createString8Array()[Ljava/lang/String;",
+                    "method [PUBLIC] getClassCookie(Ljava/lang/Class;)Ljava/lang/Object;",
+                    "method [PUBLIC] getFlags()I", "method [PUBLIC] hasClassCookie(Ljava/lang/Class;)Z",
+                    "method [PUBLIC] hasReadWriteHelper()Z", "method [PUBLIC] markSensitive()V",
+                    "method [PUBLIC] marshall(Ljava/nio/ByteBuffer;)V",
+                    "method [PUBLIC] maybeWriteSquashed(Landroid/os/Parcelable;)Z", "method [PUBLIC] pushAllowFds(Z)Z",
+                    "method [PUBLIC] putClassCookies(Ljava/util/Map;)V",
+                    "method [PUBLIC] readArrayMap(Landroid/util/ArrayMap;IZZLandroid/os/Parcel$ClassLoaderProvider;[I)V",
+                    "method [PUBLIC] readArrayMap(Landroid/util/ArrayMap;Landroid/os/Parcel$ClassLoaderProvider;)V",
+                    "method [PUBLIC] readArraySet(Ljava/lang/ClassLoader;)Landroid/util/ArraySet;",
+                    "method [PUBLIC] readCharSequence()Ljava/lang/CharSequence;",
+                    "method [PUBLIC] readCharSequenceArray()[Ljava/lang/CharSequence;",
+                    "method [PUBLIC] readCharSequenceList()Ljava/util/ArrayList;",
+                    "method [PUBLIC] readCreator(Landroid/os/Parcelable$Creator;Ljava/lang/ClassLoader;)Landroid/os/Parcelable;",
+                    "method [PUBLIC] readExceptionCode()I", "method [PUBLIC] readShortArray([S)V",
+                    "method [PUBLIC] readSparseIntArray()Landroid/util/SparseIntArray;",
+                    "method [PUBLIC] readSquashed(Landroid/os/Parcel$SquashReadHelper;)Landroid/os/Parcelable;",
+                    "method [PUBLIC] readString16()Ljava/lang/String;",
+                    "method [PUBLIC] readString16Array([Ljava/lang/String;)V",
+                    "method [PUBLIC] readString16NoHelper()Ljava/lang/String;",
+                    "method [PUBLIC] readString8()Ljava/lang/String;",
+                    "method [PUBLIC] readString8Array([Ljava/lang/String;)V",
+                    "method [PUBLIC] readString8NoHelper()Ljava/lang/String;",
+                    "method [PUBLIC] readStringArray()[Ljava/lang/String;",
+                    "method [PUBLIC] readStringNoHelper()Ljava/lang/String;",
+                    "method [PUBLIC] readTypedArray(Landroid/os/Parcelable$Creator;)[Ljava/lang/Object;",
+                    "method [PUBLIC] removeClassCookie(Ljava/lang/Class;Ljava/lang/Object;)V",
+                    "method [PUBLIC] restoreAllowFds(Z)V", "method [PUBLIC] restoreAllowSquashing(Z)V",
+                    "method [PUBLIC] setClassCookie(Ljava/lang/Class;Ljava/lang/Object;)V",
+                    "method [PUBLIC] setFlags(I)V",
+                    "method [PUBLIC] setReadWriteHelper(Landroid/os/Parcel$ReadWriteHelper;)V",
+                    "method [PUBLIC] unmarshall(Ljava/nio/ByteBuffer;)V",
+                    "method [PUBLIC] writeArrayMap(Landroid/util/ArrayMap;)V",
+                    "method [PUBLIC] writeArrayMapInternal(Landroid/util/ArrayMap;)V",
+                    "method [PUBLIC] writeArraySet(Landroid/util/ArraySet;)V",
+                    "method [PUBLIC] writeCharSequence(Ljava/lang/CharSequence;)V",
+                    "method [PUBLIC] writeCharSequenceArray([Ljava/lang/CharSequence;)V",
+                    "method [PUBLIC] writeCharSequenceList(Ljava/util/ArrayList;)V",
+                    "method [PUBLIC] writeMapInternal(Ljava/util/Map;)V", "method [PUBLIC] writeShortArray([S)V",
+                    "method [PUBLIC] writeSparseIntArray(Landroid/util/SparseIntArray;)V",
+                    "method [PUBLIC] writeStackTrace(Ljava/lang/Throwable;)V",
+                    "method [PUBLIC] writeString16(Ljava/lang/String;)V",
+                    "method [PUBLIC] writeString16Array([Ljava/lang/String;)V",
+                    "method [PUBLIC] writeString16NoHelper(Ljava/lang/String;)V",
+                    "method [PUBLIC] writeString8(Ljava/lang/String;)V",
+                    "method [PUBLIC] writeString8Array([Ljava/lang/String;)V",
+                    "method [PUBLIC] writeString8NoHelper(Ljava/lang/String;)V",
+                    "method [PUBLIC] writeStringNoHelper(Ljava/lang/String;)V",
+                    "method [PUBLIC] writeValue(ILjava/lang/Object;)V", "nested android/os/Parcel$ClassLoaderProvider",
+                    "nested android/os/Parcel$ParcelFlags", "nested android/os/Parcel$ReadWriteHelper",
+                    "nested android/os/Parcel$SquashReadHelper")),
+            Map.entry("android/os/Bundle", Set.of("field [PUBLIC, STATIC, FINAL] FLAG_VERIFY_TOKENS_PRESENT I = 8192",
+                    "field [PUBLIC, STATIC, FINAL] STATUS_BINDERS_NOT_PRESENT I = 0",
+                    "field [PUBLIC, STATIC, FINAL] STATUS_BINDERS_PRESENT I = 1",
+                    "field [PUBLIC, STATIC, FINAL] STATUS_BINDERS_UNKNOWN I = 2",
+                    "field [PUBLIC, STATIC, FINAL] STRIPPED Landroid/os/Bundle; = -",
+                    "field [PUBLIC, STATIC] intentClass Ljava/lang/Class; = -",
+                    "method [PUBLIC, STATIC] forPair(Ljava/lang/String;Ljava/lang/String;)Landroid/os/Bundle;",
+                    "method [PUBLIC, STATIC] setDefusable(Landroid/os/Bundle;Z)Landroid/os/Bundle;",
+                    "method [PUBLIC, SYNCHRONIZED] toShortString()Ljava/lang/String;",
+                    "method [PUBLIC] <init>(Landroid/os/Parcel;)V", "method [PUBLIC] <init>(Landroid/os/Parcel;I)V",
+                    "method [PUBLIC] enableTokenVerification()V", "method [PUBLIC] getSize()I",
+                    "method [PUBLIC] hasIntent()Z", "method [PUBLIC] putObject(Ljava/lang/String;Ljava/lang/Object;)V",
+                    "method [PUBLIC] putParcelableList(Ljava/lang/String;Ljava/util/List;)V",
+                    "method [PUBLIC] setAllowFds(Z)Z",
+                    "method [PUBLIC] setClassLoaderSameAsContainerBundleWhenRetrievedFirstTime(Landroid/os/BaseBundle;)V",
+                    "method [PUBLIC] setDefusable(Z)V", "nested android/os/Bundle$HasBinderStatus")),
+            Map.entry("android/os/Binder", Set.of("method [PUBLIC, STATIC, FINAL] isDirectlyHandlingTransaction()Z")),
             Map.entry("android/content/res/AssetManager",
                     Set.of("field [PUBLIC, STATIC, FINAL] COOKIE_UNKNOWN I = -1",
                             "field [PUBLIC, STATIC, FINAL] FRAMEWORK_APK_PATH Ljava/lang/String; = -")),
@@ -1891,7 +2101,40 @@ class AndroidDeclarationsTest {
             "android/os/DeadSystemRuntimeException", "android/os/health/HealthKeys", "android/sax/BadXmlException",
             "android/sax/Children", "android/hardware/input/InputSensorInfo", "android/util/JsonScope",
             "android/util/ReflectiveProperty", "android/util/proto/EncodedBuffer",
-            "android/util/proto/ProtoParseException", "android/util/proto/ProtoStream");
+            "android/util/proto/ProtoParseException", "android/util/proto/ProtoStream",
+            "android/os/BadTypeParcelableException", "android/os/ParcelableException",
+            "android/os/ServiceSpecificException", "android/text/SpannableStringInternal",
+            "android/util/ExceptionUtils", "android/util/IndentingPrintWriter", "android/util/MathUtils",
+            "android/annotation/AnyRes", "android/annotation/AppIdInt", "android/annotation/ArrayRes",
+            "android/annotation/AttrRes", "android/annotation/ColorInt", "android/annotation/CurrentTimeMillisLong",
+            "android/annotation/Dimension", "android/annotation/DurationMillisLong",
+            "android/annotation/ElapsedRealtimeLong", "android/annotation/FlaggedApi", "android/annotation/FloatRange",
+            "android/annotation/HalfFloat", "android/annotation/IntDef", "android/annotation/IntRange",
+            "android/annotation/LongDef", "android/annotation/NonNull", "android/annotation/Nullable",
+            "android/annotation/PluralsRes", "android/annotation/Px", "android/annotation/RequiresNoPermission",
+            "android/annotation/RequiresPermission", "android/annotation/SdkConstant", "android/annotation/Size",
+            "android/annotation/StringDef", "android/annotation/StringRes", "android/annotation/StyleRes",
+            "android/annotation/SuppressAutoDoc", "android/annotation/SystemApi", "android/annotation/SystemService",
+            "android/annotation/TestApi", "android/annotation/UptimeMillisLong", "android/annotation/UserIdInt",
+            "android/annotation/WorkerThread", "android/compat/annotation/ChangeId",
+            "android/compat/annotation/Disabled", "android/compat/annotation/EnabledSince",
+            "android/compat/annotation/UnsupportedAppUsage", "android/ravenwood/annotation/RavenwoodClassLoadHook",
+            "android/ravenwood/annotation/RavenwoodKeep", "android/ravenwood/annotation/RavenwoodKeepPartialClass",
+            "android/ravenwood/annotation/RavenwoodKeepWholeClass", "android/ravenwood/annotation/RavenwoodRedirect",
+            "android/ravenwood/annotation/RavenwoodRedirectionClass", "android/ravenwood/annotation/RavenwoodReplace",
+            "android/ravenwood/annotation/RavenwoodThrow", "com/android/internal/annotations/GuardedBy",
+            "com/android/internal/annotations/VisibleForTesting",
+            "android/app/appsearch/annotation/CanIgnoreReturnValue",
+            "android/app/appsearch/checker/initialization/qual/UnderInitialization",
+            "android/app/appsearch/checker/nullness/qual/RequiresNonNull", "libcore/api/IntraCoreApi",
+            "libcore/util/NonNull", "libcore/util/Nullable", "com/android/internal/util/CollectionUtils",
+            "com/android/internal/util/DataClass", "com/android/internal/util/Parcelling", "android/app/jank/Flags",
+            "android/content/pm/Flags", "android/graphics/pdf/flags/Flags", "android/hardware/flags/Flags",
+            "android/media/tv/flags/Flags", "android/os/Flags", "android/provider/flags/Flags", "android/sdk/Flags",
+            "android/view/inputmethod/Flags");
+
+    private static final Map<String, Set<String>> MISSING_INTERFACES = Map.of("android/os/Binder",
+            Set.of("android/os/IBinder"));
 
     private static final Map<String, Set<String>> JDK_OVERRIDES = Map.of(
             "android/content/res/AssetFileDescriptor$AutoCloseInputStream", Set.of("method [PUBLIC] readAllBytes()[B",
@@ -1900,6 +2143,8 @@ class AndroidDeclarationsTest {
     private static final String DEPRECATED = "Ljava/lang/Deprecated;";
 
     private static final String EMULATED = "Lorg/androidgraal/hosted/annotate/Emulated;";
+
+    private static final String METADATA = "/META-INF/native-image/org.androidgraal.emulation/svm/reachability-metadata.json";
 
     private enum Tree {
         EMULATIONS("android.emulations"), DECLARATIONS("android.declarations");
@@ -1923,14 +2168,27 @@ class AndroidDeclarationsTest {
         List<Arguments> classes = new ArrayList<>();
         for (Tree tree : Tree.values()) {
             Path root = tree.root();
-            try (Stream<Path> files = Files.walk(root.resolve("android"))) {
+            try (Stream<Path> files = Files.walk(tree == Tree.DECLARATIONS ? root.resolve("android") : root)) {
                 files.map(root::relativize).map(path -> path.toString().replace('\\', '/'))
                         .filter(name -> name.endsWith(".class")).map(name -> name.substring(0, name.length() - 6))
+                        .filter(name -> isSwept(tree, name))
                         .filter(name -> !isInvisible(root, name) && !isHiddenNested(name)).sorted()
                         .forEach(name -> classes.add(Arguments.of(tree, name)));
             }
         }
         return classes;
+    }
+
+    private static boolean isSwept(Tree tree, String internalName) {
+        if (internalName.startsWith("android/")) {
+            return true;
+        }
+        try {
+            ClassModel outermost = ClassFile.of().parse(tree.classFile(internalName.split("\\$")[0]));
+            return outermost.flags().has(AccessFlag.ANNOTATION);
+        } catch (IOException e) {
+            throw new UncheckedIOException(e);
+        }
     }
 
     private static boolean isInvisible(Path root, String internalName) {
@@ -1953,15 +2211,47 @@ class AndroidDeclarationsTest {
     }
 
     @Test
-    void everyLedgerEntryIsAnEmulation() {
+    void everyListedClassIsDeclared() {
         Set<String> stale = new TreeSet<>(COMPLETE);
         stale.addAll(PARTIAL.keySet());
         stale.addAll(HIDDEN.keySet());
         stale.addAll(HIDDEN_CLASSES);
+        stale.addAll(MISSING_INTERFACES.keySet());
         stale.addAll(JDK_OVERRIDES.keySet());
         stale.removeIf(name -> Files.isRegularFile(Tree.EMULATIONS.classFile(name)));
-        assertTrue(stale.isEmpty(),
-                "listed in COMPLETE, PARTIAL, HIDDEN, HIDDEN_CLASSES or JDK_OVERRIDES, not emulated: " + stale);
+        assertTrue(stale.isEmpty(), "listed in COMPLETE, PARTIAL, HIDDEN, HIDDEN_CLASSES, MISSING_INTERFACES or "
+                + "JDK_OVERRIDES, not emulated: " + stale);
+    }
+
+    @Test
+    void everyCopiedCreatorHasReachabilityMetadata() throws IOException {
+        String metadata;
+        try (InputStream in = AndroidDeclarationsTest.class.getResourceAsStream(METADATA)) {
+            assertNotNull(in, METADATA + " is not on the test classpath");
+            metadata = new String(in.readAllBytes(), StandardCharsets.UTF_8);
+        }
+        Set<String> listed = new TreeSet<>();
+        Matcher entry = Pattern
+                .compile("\\{\\s*\"type\": \"([^\"]+)\",\\s*\"fields\": \\[\\s*\\{\\s*\"name\": \"CREATOR\"")
+                .matcher(metadata);
+        while (entry.find()) {
+            listed.add(entry.group(1));
+        }
+        Set<String> creators = new TreeSet<>();
+        Path root = Tree.EMULATIONS.root();
+        Path ours = root.resolve("org/androidgraal");
+        try (Stream<Path> files = Files.walk(root)) {
+            for (Path file : (Iterable<Path>) files
+                    .filter(path -> path.toString().endsWith(".class") && !path.startsWith(ours))::iterator) {
+                ClassModel model = ClassFile.of().parse(file);
+                boolean creator = model.fields().stream().anyMatch(field -> field.fieldName().equalsString("CREATOR")
+                        && field.flags().has(AccessFlag.PUBLIC) && field.flags().has(AccessFlag.STATIC));
+                if (creator) {
+                    creators.add(model.thisClass().asInternalName().replace('/', '.'));
+                }
+            }
+        }
+        assertEquals(creators, listed, "copied classes with a public static CREATOR, against " + METADATA);
     }
 
     @Test
@@ -1989,8 +2279,11 @@ class AndroidDeclarationsTest {
             ZipEntry entry = jar.getEntry(internalName + ".class");
             if (HIDDEN_CLASSES.contains(internalName.split("\\$")[0])) {
                 assertEquals(Tree.EMULATIONS, tree, internalName + " is hidden and declared");
-                assertTrue(emulated, internalName + " is hidden and carries no @Emulated");
-                assertNull(entry, internalName + " is listed as hidden, in android.jar");
+                if (internalName.startsWith("android/")) {
+                    assertTrue(emulated, internalName + " is hidden and carries no @Emulated");
+                }
+                assertFalse(entry != null && isPublic(jar, entry),
+                        internalName + " is listed as hidden, public in android.jar");
                 return;
             }
             assertNotNull(entry, internalName + " is not in android.jar");
@@ -2008,7 +2301,13 @@ class AndroidDeclarationsTest {
         if (visibleSuperclass.startsWith("android/")) {
             assertEquals(superclassOf(android), visibleSuperclass, "superclass");
         }
-        assertEquals(providedInterfaces(android), androidInterfaces(ours), "interfaces");
+        Set<String> missingInterfaces = MISSING_INTERFACES.getOrDefault(internalName, Set.of());
+        Set<String> interfaces = providedInterfaces(android);
+        assertTrue(interfaces.containsAll(missingInterfaces), "listed as a missing interface, not in android.jar");
+        interfaces.removeAll(missingInterfaces);
+        Set<String> ourInterfaces = androidInterfaces(ours);
+        ourInterfaces.removeIf(name -> HIDDEN_CLASSES.contains(name) || isHiddenNested(name));
+        assertEquals(interfaces, ourInterfaces, "interfaces");
         if (tree == Tree.DECLARATIONS) {
             assertFalse(Files.exists(Tree.EMULATIONS.classFile(internalName.split("\\$")[0])),
                     internalName + " is both emulated and declared");
@@ -2021,7 +2320,9 @@ class AndroidDeclarationsTest {
             assertTrue(missing.isEmpty(), "missing constants: " + missing);
             return;
         }
-        assertTrue(emulated, internalName + " is written by hand and carries no @Emulated");
+        if (internalName.startsWith("android/")) {
+            assertTrue(emulated, internalName + " is written by hand and carries no @Emulated");
+        }
         Set<String> declaredByUs = declarations(ours, true);
         if (!visibleSuperclass.equals(superclass)) {
             declaredByUs.remove("class " + flags(ours.flags().flags()) + " extends " + superclass);
@@ -2058,6 +2359,10 @@ class AndroidDeclarationsTest {
         } else {
             fail(internalName + " is written by hand and listed in neither COMPLETE nor PARTIAL");
         }
+    }
+
+    private static boolean isPublic(ZipFile jar, ZipEntry entry) throws IOException {
+        return ClassFile.of().parse(jar.getInputStream(entry).readAllBytes()).flags().has(AccessFlag.PUBLIC);
     }
 
     private static void assertDeclares(Set<String> android, Set<String> ours) {
@@ -2130,7 +2435,7 @@ class AndroidDeclarationsTest {
             }
         }
         for (MethodModel method : model.methods()) {
-            if (isVisible(method.flags().flags())) {
+            if (isVisible(method.flags().flags()) && !method.flags().has(AccessFlag.SYNTHETIC)) {
                 declared.add("method " + methodFlags(model, method) + " " + method.methodName().stringValue()
                         + method.methodType().stringValue());
             }

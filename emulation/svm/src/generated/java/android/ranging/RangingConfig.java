@@ -13,7 +13,7 @@ import android.os.Parcelable;
  *     <li>{@link OobInitiatorRangingConfig}</li>
  * </ul>
  */
-public final class RangingConfig implements Parcelable {
+public abstract class RangingConfig implements Parcelable {
     /**
      * Ranging session with the out-of-band negotiations performed by the ranging API.
      */

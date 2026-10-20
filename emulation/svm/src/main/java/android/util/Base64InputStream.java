@@ -26,6 +26,7 @@ import java.io.InputStream;
  * An InputStream that does Base64 decoding on the data read through
  * it.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public class Base64InputStream extends FilterInputStream {
     private final Base64.Coder coder;

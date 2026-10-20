@@ -14,6 +14,16 @@ public final class LauncherUserInfo implements Parcelable {
      */
     public static final String PRIVATE_SPACE_ENTRYPOINT_HIDDEN = "private_space_entrypoint_hidden";
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private LauncherUserInfo() {
     }
 }

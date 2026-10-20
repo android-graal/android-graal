@@ -16,6 +16,10 @@
 
 package libcore.util;
 
+import static android.annotation.SystemApi.Client.MODULE_LIBRARIES;
+
+import android.annotation.SystemApi;
+
 /**
  * <p>The {@code FP16} class is a wrapper and a utility class to manipulate half-precision 16-bit
  * <a href="https://en.wikipedia.org/wiki/Half-precision_floating-point_format">IEEE 754</a>
@@ -86,24 +90,28 @@ package libcore.util;
  * @hide
  */
 
+@SystemApi(client = MODULE_LIBRARIES)
 public final class FP16 {
     /**
      * A Not-a-Number representation of a half-precision float.
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static final short NaN = (short) 0x7e00;
     /**
      * Positive infinity of type half-precision float.
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static final short POSITIVE_INFINITY = (short) 0x7c00;
     /**
      * The offset to shift by to obtain the sign bit.
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static final int SIGN_SHIFT                = 15;
 
     /**
@@ -111,6 +119,7 @@ public final class FP16 {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static final int EXPONENT_SHIFT            = 10;
 
     /**
@@ -118,6 +127,7 @@ public final class FP16 {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static final int SIGN_MASK                 = 0x8000;
 
     /**
@@ -125,6 +135,7 @@ public final class FP16 {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static final int SHIFTED_EXPONENT_MASK     = 0x1f;
 
     /**
@@ -132,6 +143,7 @@ public final class FP16 {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static final int SIGNIFICAND_MASK          = 0x3ff;
 
     /**
@@ -139,6 +151,7 @@ public final class FP16 {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static final int EXPONENT_SIGNIFICAND_MASK = 0x7fff;
 
     /**
@@ -146,6 +159,7 @@ public final class FP16 {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static final int EXPONENT_BIAS             = 15;
 
     private static final int FP32_SIGN_SHIFT            = 31;
@@ -181,6 +195,7 @@ public final class FP16 {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static int compare(short x, short y) {
         if (less(x, y)) return -1;
         if (greater(x, y)) return 1;
@@ -212,6 +227,7 @@ public final class FP16 {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static short rint(short h) {
         int bits = h & 0xffff;
         int abs = bits & EXPONENT_SIGNIFICAND_MASK;
@@ -256,6 +272,7 @@ public final class FP16 {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static short ceil(short h) {
         int bits = h & 0xffff;
         int abs = bits & EXPONENT_SIGNIFICAND_MASK;
@@ -298,6 +315,7 @@ public final class FP16 {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static short floor(short h) {
         int bits = h & 0xffff;
         int abs = bits & EXPONENT_SIGNIFICAND_MASK;
@@ -338,6 +356,7 @@ public final class FP16 {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static short trunc(short h) {
         int bits = h & 0xffff;
         int abs = bits & EXPONENT_SIGNIFICAND_MASK;
@@ -368,6 +387,7 @@ public final class FP16 {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static short min(short x, short y) {
         if (isNaN(x)) return NaN;
         if (isNaN(y)) return NaN;
@@ -395,6 +415,7 @@ public final class FP16 {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static short max(short x, short y) {
         if (isNaN(x)) return NaN;
         if (isNaN(y)) return NaN;
@@ -419,6 +440,7 @@ public final class FP16 {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static boolean less(short x, short y) {
         if (isNaN(x)) return false;
         if (isNaN(y)) return false;
@@ -439,6 +461,7 @@ public final class FP16 {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static boolean lessEquals(short x, short y) {
         if (isNaN(x)) return false;
         if (isNaN(y)) return false;
@@ -459,6 +482,7 @@ public final class FP16 {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static boolean greater(short x, short y) {
         if (isNaN(x)) return false;
         if (isNaN(y)) return false;
@@ -479,6 +503,7 @@ public final class FP16 {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static boolean greaterEquals(short x, short y) {
         if (isNaN(x)) return false;
         if (isNaN(y)) return false;
@@ -499,6 +524,7 @@ public final class FP16 {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static boolean equals(short x, short y) {
         if (isNaN(x)) return false;
         if (isNaN(y)) return false;
@@ -516,6 +542,7 @@ public final class FP16 {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static boolean isInfinite(short h) {
         return (h & EXPONENT_SIGNIFICAND_MASK) == POSITIVE_INFINITY;
     }
@@ -529,6 +556,7 @@ public final class FP16 {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static boolean isNaN(short h) {
         return (h & EXPONENT_SIGNIFICAND_MASK) > POSITIVE_INFINITY;
     }
@@ -545,6 +573,7 @@ public final class FP16 {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static boolean isNormalized(short h) {
         return (h & POSITIVE_INFINITY) != 0 && (h & POSITIVE_INFINITY) != POSITIVE_INFINITY;
     }
@@ -566,6 +595,7 @@ public final class FP16 {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static float toFloat(short h) {
         int bits = h & 0xffff;
         int s = bits & SIGN_MASK;
@@ -622,6 +652,7 @@ public final class FP16 {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static short toHalf(float f) {
         int bits = Float.floatToRawIntBits(f);
         int s = (bits >>> FP32_SIGN_SHIFT    );
@@ -703,6 +734,7 @@ public final class FP16 {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static String toHexString(short h) {
         StringBuilder o = new StringBuilder();
 

@@ -48,6 +48,16 @@ public final class ContentInfo implements Parcelable {
      */
     public static final int SOURCE_PROCESS_TEXT = 5;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private ContentInfo() {
     }
 }

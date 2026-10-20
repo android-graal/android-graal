@@ -16,9 +16,10 @@
 
 package android.sax;
 
-import org.androidgraal.hosted.annotate.Emulated;
 import org.xml.sax.Locator;
 import org.xml.sax.SAXParseException;
+
+import org.androidgraal.hosted.annotate.Emulated;
 
 import java.util.ArrayList;
 

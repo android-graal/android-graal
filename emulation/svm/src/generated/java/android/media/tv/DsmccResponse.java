@@ -26,6 +26,16 @@ public final class DsmccResponse implements Parcelable {
      */
     public static final String BIOP_MESSAGE_TYPE_STREAM = "stream";
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private DsmccResponse() {
     }
 }

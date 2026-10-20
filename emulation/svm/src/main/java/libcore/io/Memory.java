@@ -17,15 +17,23 @@
 
 package libcore.io;
 
-import androidx.annotation.NonNull;
+import static android.annotation.SystemApi.Client.MODULE_LIBRARIES;
+
+import android.compat.annotation.UnsupportedAppUsage;
+import android.annotation.SystemApi;
 
 import java.nio.ByteOrder;
+
+import dalvik.annotation.optimization.FastNative;
+
+import libcore.util.NonNull;
 
 /**
  * Unsafe access to memory.
  *
  * @hide
  */
+@SystemApi(client = MODULE_LIBRARIES)
 public final class Memory {
     private Memory() { }
 
@@ -40,6 +48,7 @@ public final class Memory {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static int peekInt(@NonNull byte[] src, int offset, @NonNull ByteOrder order) {
         if (order == ByteOrder.BIG_ENDIAN) {
             return (((src[offset++] & 0xff) << 24) |
@@ -65,6 +74,7 @@ public final class Memory {
      *
      * @hide
      */
+    @SystemApi(client = MODULE_LIBRARIES)
     public static void pokeInt(@NonNull byte[] dst, int offset, int value, @NonNull ByteOrder order) {
         if (order == ByteOrder.BIG_ENDIAN) {
             dst[offset++] = (byte) ((value >> 24) & 0xff);

@@ -137,6 +137,16 @@ public final class PointerIcon implements Parcelable {
      */
     public static final int TYPE_ZOOM_OUT = 1019;
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private PointerIcon() {
     }
 }

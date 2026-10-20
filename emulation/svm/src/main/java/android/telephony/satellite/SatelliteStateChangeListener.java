@@ -16,6 +16,10 @@
 
 package android.telephony.satellite;
 
+import android.annotation.FlaggedApi;
+
+import com.android.internal.telephony.flags.Flags;
+
 import org.androidgraal.hosted.annotate.Emulated;
 
 import java.util.concurrent.Executor;
@@ -31,6 +35,7 @@ import java.util.concurrent.Executor;
  * @see SatelliteManager#registerStateChangeListener(Executor, SatelliteStateChangeListener)
  * @see SatelliteManager#unregisterStateChangeListener(SatelliteStateChangeListener)
  */
+@FlaggedApi(Flags.FLAG_SATELLITE_STATE_CHANGE_LISTENER)
 @Emulated
 public interface SatelliteStateChangeListener {
     /**

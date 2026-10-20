@@ -16,8 +16,9 @@
 
 package android.app.admin;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.annotation.TestApi;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -36,6 +37,7 @@ public final class TargetUser {
      *
      * @hide
      */
+    @TestApi
     public static final int LOCAL_USER_ID = -1;
 
     /**
@@ -43,6 +45,7 @@ public final class TargetUser {
      *
      * @hide
      */
+    @TestApi
     public static final int PARENT_USER_ID = -2;
 
     /**
@@ -50,6 +53,7 @@ public final class TargetUser {
      *
      * @hide
      */
+    @TestApi
     public static final int GLOBAL_USER_ID = -3;
 
     /**
@@ -57,6 +61,7 @@ public final class TargetUser {
      *
      * @hide
      */
+    @TestApi
     public static final int UNKNOWN_USER_ID = -3;
 
     /**

@@ -16,9 +16,9 @@
 
 package android.util;
 
-import org.androidgraal.hosted.annotate.Emulated;
-
 import com.android.internal.util.StringPool;
+
+import org.androidgraal.hosted.annotate.Emulated;
 
 import java.io.Closeable;
 import java.io.EOFException;
@@ -177,6 +177,7 @@ import java.util.List;
  * <p>Each {@code JsonReader} may be used to read a single JSON stream. Instances
  * of this class are not thread safe.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public final class JsonReader implements Closeable {
 

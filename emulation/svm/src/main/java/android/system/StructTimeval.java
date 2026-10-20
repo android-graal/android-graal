@@ -16,7 +16,7 @@
 
 package android.system;
 
-import androidx.annotation.NonNull;
+import libcore.util.NonNull;
 
 import org.androidgraal.hosted.annotate.Emulated;
 

@@ -16,7 +16,8 @@
 
 package android.view.inspector;
 
-import androidx.annotation.NonNull;
+import android.annotation.AttrRes;
+import android.annotation.NonNull;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -47,7 +48,7 @@ public interface PropertyMapper {
      * @return An integer ID for the property
      * @throws PropertyConflictException If the property name is already mapped as another type.
      */
-    int mapBoolean(@NonNull String name, int attributeId);
+    int mapBoolean(@NonNull String name, @AttrRes int attributeId);
 
     /**
      * Map a string name to an integer ID for a primitive byte property.
@@ -57,7 +58,7 @@ public interface PropertyMapper {
      * @return An integer ID for the property
      * @throws PropertyConflictException If the property name is already mapped as another type.
      */
-    int mapByte(@NonNull String name, int attributeId);
+    int mapByte(@NonNull String name, @AttrRes int attributeId);
 
     /**
      * Map a string name to an integer ID for a primitive char property.
@@ -67,7 +68,7 @@ public interface PropertyMapper {
      * @return An integer ID for the property
      * @throws PropertyConflictException If the property name is already mapped as another type.
      */
-    int mapChar(@NonNull String name, int attributeId);
+    int mapChar(@NonNull String name, @AttrRes int attributeId);
 
     /**
      * Map a string name to an integer ID for a primitive double property.
@@ -77,7 +78,7 @@ public interface PropertyMapper {
      * @return An integer ID for the property
      * @throws PropertyConflictException If the property name is already mapped as another type.
      */
-    int mapDouble(@NonNull String name, int attributeId);
+    int mapDouble(@NonNull String name, @AttrRes int attributeId);
 
     /**
      * Map a string name to an integer ID for a primitive float property.
@@ -87,7 +88,7 @@ public interface PropertyMapper {
      * @return An integer ID for the property
      * @throws PropertyConflictException If the property name is already mapped as another type.
      */
-    int mapFloat(@NonNull String name, int attributeId);
+    int mapFloat(@NonNull String name, @AttrRes int attributeId);
 
     /**
      * Map a string name to an integer ID for a primitive int property.
@@ -97,7 +98,7 @@ public interface PropertyMapper {
      * @return An integer ID for the property
      * @throws PropertyConflictException If the property name is already mapped as another type.
      */
-    int mapInt(@NonNull String name, int attributeId);
+    int mapInt(@NonNull String name, @AttrRes int attributeId);
 
     /**
      * Map a string name to an integer ID for a primitive long property.
@@ -107,7 +108,7 @@ public interface PropertyMapper {
      * @return An integer ID for the property
      * @throws PropertyConflictException If the property name is already mapped as another type.
      */
-    int mapLong(@NonNull String name, int attributeId);
+    int mapLong(@NonNull String name, @AttrRes int attributeId);
 
     /**
      * Map a string name to an integer ID for a primitive short property.
@@ -117,7 +118,7 @@ public interface PropertyMapper {
      * @return An integer ID for the property
      * @throws PropertyConflictException If the property name is already mapped as another type.
      */
-    int mapShort(@NonNull String name, int attributeId);
+    int mapShort(@NonNull String name, @AttrRes int attributeId);
 
     /**
      * Map a string name to an integer ID for an object property.
@@ -127,7 +128,7 @@ public interface PropertyMapper {
      * @return An integer ID for the property
      * @throws PropertyConflictException If the property name is already mapped as another type.
      */
-    int mapObject(@NonNull String name, int attributeId);
+    int mapObject(@NonNull String name, @AttrRes int attributeId);
 
     /**
      * Map a string name to an integer ID for a color property.
@@ -138,7 +139,7 @@ public interface PropertyMapper {
      * @throws PropertyConflictException If the property name is already mapped as another type.
      * @see android.graphics.Color
      */
-    int mapColor(@NonNull String name, int attributeId);
+    int mapColor(@NonNull String name, @AttrRes int attributeId);
 
     /**
      * Map a string name to an integer ID for a gravity property.
@@ -149,7 +150,7 @@ public interface PropertyMapper {
      * @throws PropertyConflictException If the property name is already mapped as another type.
      * @see android.view.Gravity
      */
-    int mapGravity(@NonNull String name, int attributeId);
+    int mapGravity(@NonNull String name, @AttrRes int attributeId);
 
     /**
      * Map a string name to an integer ID for an enumeration packed into an int property.
@@ -162,7 +163,7 @@ public interface PropertyMapper {
      */
     int mapIntEnum(
             @NonNull String name,
-            int attributeId,
+            @AttrRes int attributeId,
             @NonNull IntFunction<String> mapping);
 
     /**
@@ -173,7 +174,7 @@ public interface PropertyMapper {
      * @return An integer ID for the property
      * @throws PropertyConflictException If the property name is already mapped as another type.
      */
-    int mapResourceId(@NonNull String name, int attributeId);
+    int mapResourceId(@NonNull String name, @AttrRes int attributeId);
 
     /**
      * Map a string name to an integer ID for a flag set packed into an int property.
@@ -186,7 +187,7 @@ public interface PropertyMapper {
      */
     int mapIntFlag(
             @NonNull String name,
-            int attributeId,
+            @AttrRes int attributeId,
             @NonNull IntFunction<Set<String>> mapping);
 
     /**

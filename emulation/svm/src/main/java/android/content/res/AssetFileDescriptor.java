@@ -19,8 +19,13 @@ package android.content.res;
 import static android.system.OsConstants.S_ISFIFO;
 import static android.system.OsConstants.S_ISSOCK;
 
+import android.compat.annotation.UnsupportedAppUsage;
+import android.os.Bundle;
+import android.os.Parcel;
 import android.os.ParcelFileDescriptor;
 import android.os.Parcelable;
+import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+import android.ravenwood.annotation.RavenwoodReplace;
 import android.system.ErrnoException;
 import android.system.Os;
 import android.system.StructStat;
@@ -47,6 +52,7 @@ import java.util.Objects;
  * opened FileDescriptor that can be used to read the data, as well as the
  * offset and length of that entry's data in the file.
  */
+@RavenwoodKeepWholeClass
 @Emulated
 public class AssetFileDescriptor implements Parcelable, Closeable {
     /**
@@ -56,9 +62,13 @@ public class AssetFileDescriptor implements Parcelable, Closeable {
      */
     public static final long UNKNOWN_LENGTH = -1;
 
+    @UnsupportedAppUsage
     private final ParcelFileDescriptor mFd;
+    @UnsupportedAppUsage
     private final long mStartOffset;
+    @UnsupportedAppUsage
     private final long mLength;
+    private final Bundle mExtras;
 
     /**
      * Create a new AssetFileDescriptor from the given values.
@@ -71,6 +81,22 @@ public class AssetFileDescriptor implements Parcelable, Closeable {
      */
     public AssetFileDescriptor(ParcelFileDescriptor fd, long startOffset,
             long length) {
+        this(fd, startOffset, length, null);
+    }
+
+    /**
+     * Create a new AssetFileDescriptor from the given values.
+     *
+     * @param fd The underlying file descriptor.
+     * @param startOffset The location within the file that the asset starts.
+     *            This must be 0 if length is UNKNOWN_LENGTH.
+     * @param length The number of bytes of the asset, or
+     *            {@link #UNKNOWN_LENGTH} if it extends to the end of the file.
+     * @param extras additional details that can be used to interpret the
+     *            underlying file descriptor. May be null.
+     */
+    public AssetFileDescriptor(ParcelFileDescriptor fd, long startOffset,
+            long length, Bundle extras) {
         if (fd == null) {
             throw new IllegalArgumentException("fd must not be null");
         }
@@ -81,6 +107,7 @@ public class AssetFileDescriptor implements Parcelable, Closeable {
         mFd = fd;
         mStartOffset = startOffset;
         mLength = length;
+        mExtras = extras;
     }
 
     /**
@@ -105,6 +132,14 @@ public class AssetFileDescriptor implements Parcelable, Closeable {
      */
     public long getStartOffset() {
         return mStartOffset;
+    }
+
+    /**
+     * Returns any additional details that can be used to interpret the
+     * underlying file descriptor. May be null.
+     */
+    public Bundle getExtras() {
+        return mExtras;
     }
 
     /**
@@ -319,6 +354,7 @@ public class AssetFileDescriptor implements Parcelable, Closeable {
             mRemaining = (int) fd.getLength();
         }
 
+        @RavenwoodReplace
         private long skipRaw(long count) throws IOException {
             // OpenJDK doesn't allow skip on pipes, so just use read.
             final byte[] buf = new byte[(int) Math.min(1024, count)];
@@ -716,7 +752,21 @@ public class AssetFileDescriptor implements Parcelable, Closeable {
     }
 
     /* Parcelable interface */
+    @Override
     public int describeContents() {
         return mFd.describeContents();
+    }
+
+    @Override
+    public void writeToParcel(Parcel out, int flags) {
+        mFd.writeToParcel(out, flags);
+        out.writeLong(mStartOffset);
+        out.writeLong(mLength);
+        if (mExtras != null) {
+            out.writeInt(1);
+            out.writeBundle(mExtras);
+        } else {
+            out.writeInt(0);
+        }
     }
 }

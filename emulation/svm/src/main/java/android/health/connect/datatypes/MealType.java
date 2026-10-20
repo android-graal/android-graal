@@ -16,6 +16,8 @@
 
 package android.health.connect.datatypes;
 
+import android.annotation.IntDef;
+
 import org.androidgraal.hosted.annotate.Emulated;
 
 import java.lang.annotation.Retention;
@@ -56,6 +58,13 @@ public final class MealType {
     private MealType() {}
 
     /** @hide */
+    @IntDef({
+        MEAL_TYPE_UNKNOWN,
+        MEAL_TYPE_BREAKFAST,
+        MEAL_TYPE_LUNCH,
+        MEAL_TYPE_DINNER,
+        MEAL_TYPE_SNACK
+    })
     @Retention(RetentionPolicy.SOURCE)
     public @interface MealTypes {}
 }

@@ -22,6 +22,7 @@ import org.androidgraal.hosted.annotate.Emulated;
  * The classes that affect paragraph-level text formatting implement
  * this interface.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public interface ParagraphStyle
 {

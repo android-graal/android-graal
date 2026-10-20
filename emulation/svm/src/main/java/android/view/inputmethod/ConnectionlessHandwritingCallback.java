@@ -16,7 +16,9 @@
 
 package android.view.inputmethod;
 
-import androidx.annotation.NonNull;
+import android.annotation.FlaggedApi;
+import android.annotation.IntDef;
+import android.annotation.NonNull;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -33,10 +35,16 @@ import java.util.concurrent.Executor;
  * InputMethodManager#startConnectionlessStylusHandwritingForDelegation(View, CursorAnchorInfo,
  * String, Executor, ConnectionlessHandwritingCallback)}.
  */
+@FlaggedApi(Flags.FLAG_CONNECTIONLESS_HANDWRITING)
 @Emulated
 public interface ConnectionlessHandwritingCallback {
 
     /** @hide */
+    @IntDef(prefix = {"CONNECTIONLESS_HANDWRITING_ERROR_"}, value = {
+            CONNECTIONLESS_HANDWRITING_ERROR_NO_TEXT_RECOGNIZED,
+            CONNECTIONLESS_HANDWRITING_ERROR_UNSUPPORTED,
+            CONNECTIONLESS_HANDWRITING_ERROR_OTHER
+    })
     @Retention(RetentionPolicy.SOURCE)
     @interface ConnectionlessHandwritingError {
     }

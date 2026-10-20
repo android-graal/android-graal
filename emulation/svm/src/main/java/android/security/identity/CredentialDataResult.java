@@ -18,8 +18,9 @@ package android.security.identity;
 
 import static java.lang.annotation.RetentionPolicy.SOURCE;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.annotation.IntDef;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -249,6 +250,9 @@ public abstract class CredentialDataResult {
          * @hide
          */
         @Retention(SOURCE)
+        @IntDef({STATUS_OK, STATUS_NO_SUCH_ENTRY, STATUS_NOT_REQUESTED,
+                    STATUS_NOT_IN_REQUEST_MESSAGE, STATUS_USER_AUTHENTICATION_FAILED,
+                    STATUS_READER_AUTHENTICATION_FAILED, STATUS_NO_ACCESS_CONTROL_PROFILES})
                     @interface Status {}
     }
 

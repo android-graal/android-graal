@@ -16,6 +16,9 @@
 
 package android.util;
 
+import android.compat.annotation.UnsupportedAppUsage;
+import android.os.Build;
+
 import org.androidgraal.hosted.annotate.Emulated;
 
 import java.io.PrintWriter;
@@ -32,6 +35,7 @@ import java.util.stream.Collectors;
 /**
  * <p>Various utilities for debugging and logging.</p>
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public class DebugUtils {
     /** @hide */ public DebugUtils() {}
@@ -115,6 +119,7 @@ public class DebugUtils {
     }
 
     /** @hide */
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P, trackingBug = 115609023)
     public static void buildShortClassTag(Object cls, StringBuilder out) {
         if (cls == null) {
             out.append("null");

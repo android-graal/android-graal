@@ -16,8 +16,12 @@
 
 package android.app.appsearch;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.annotation.SuppressLint;
+import android.app.appsearch.checker.initialization.qual.UnderInitialization;
+import android.app.appsearch.checker.nullness.qual.RequiresNonNull;
+
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
@@ -74,7 +78,8 @@ public class PropertyPath implements Iterable<PropertyPath.PathSegment> {
         }
     }
 
-    private void recursivePathScan(PropertyPath this, String path)
+    @RequiresNonNull("mPathList")
+    private void recursivePathScan(@UnderInitialization PropertyPath this, String path)
             throws IllegalArgumentException {
         // Determine whether the path is just a raw property name with no control characters
         int controlPos = -1;
@@ -130,8 +135,9 @@ public class PropertyPath implements Iterable<PropertyPath.PathSegment> {
      * @param controlPos the position of the start bracket
      * @return the rest of the path after the end brackets, or null if there is nothing after them
      */
+    @RequiresNonNull("mPathList")
     private @Nullable String consumePropertyWithIndex(
-            PropertyPath this, @NonNull String path, int controlPos) {
+            @UnderInitialization PropertyPath this, @NonNull String path, int controlPos) {
         Objects.requireNonNull(path);
         String propertyName = path.substring(0, controlPos);
         int endBracketIdx = path.indexOf(']', controlPos);
@@ -174,6 +180,7 @@ public class PropertyPath implements Iterable<PropertyPath.PathSegment> {
      */
     // Allow use of the Kotlin indexing operator
     @SuppressWarnings("KotlinOperator")
+    @SuppressLint("KotlinOperator")
     public @NonNull PathSegment get(int index) {
         return mPathList.get(index);
     }

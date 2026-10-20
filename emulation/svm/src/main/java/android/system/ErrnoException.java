@@ -16,12 +16,11 @@
 
 package android.system;
 
-import androidx.annotation.NonNull;
-
 import org.androidgraal.hosted.annotate.Emulated;
 
 import java.io.IOException;
 import java.net.SocketException;
+import libcore.util.NonNull;
 
 /**
  * A checked exception thrown when {@link Os} methods fail. This exception contains the native

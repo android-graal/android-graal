@@ -18,6 +18,7 @@ package android.util;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 class ContainerHelpers {
 

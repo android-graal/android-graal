@@ -16,4 +16,7 @@ public interface ApplicationHost {
 
     /** {@code AAssetManager_fromJava} of the application's {@code AssetManager}. */
     long assetManager();
+
+    /** {@code ApplicationInfo.targetSdkVersion} of the application. */
+    int targetSdkVersion();
 }

@@ -23,6 +23,7 @@ import org.androidgraal.hosted.annotate.Emulated;
  * getChars() method like the one in String that is faster than
  * calling charAt() multiple times.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public interface GetChars
 extends CharSequence

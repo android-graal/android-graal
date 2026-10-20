@@ -16,6 +16,11 @@
 
 package android.adservices.common;
 
+import android.annotation.FlaggedApi;
+import android.annotation.SystemApi;
+
+import com.android.adservices.flags.Flags;
+
 import org.androidgraal.hosted.annotate.Emulated;
 
 /** Permissions used by the AdServices APIs. */
@@ -36,11 +41,13 @@ public class AdServicesPermissions {
             "android.permission.ACCESS_ADSERVICES_CUSTOM_AUDIENCE";
 
     /** This permission needs to be declared by the caller of Protected Signals APIs. */
+    @FlaggedApi(Flags.FLAG_PROTECTED_SIGNALS_ENABLED)
     public static final String ACCESS_ADSERVICES_PROTECTED_SIGNALS =
             "android.permission.ACCESS_ADSERVICES_PROTECTED_SIGNALS";
 
     /** This permission needs to be declared by the caller of Protected Signals APIs. */
     @SuppressWarnings("FlaggedApi") // aconfig not available on this branch
+    @FlaggedApi(Flags.FLAG_PROTECTED_SIGNALS_ENABLED)
     public static final String ACCESS_ADSERVICES_AD_SELECTION =
             "android.permission.ACCESS_ADSERVICES_AD_SELECTION";
 
@@ -55,6 +62,7 @@ public class AdServicesPermissions {
      *
      * @hide
      */
+    @SystemApi
     public static final String ACCESS_PRIVILEGED_AD_ID =
             "android.permission.ACCESS_PRIVILEGED_AD_ID";
 
@@ -65,6 +73,7 @@ public class AdServicesPermissions {
      *
      * @hide
      */
+    @SystemApi
     public static final String ACCESS_PRIVILEGED_APP_SET_ID =
             "android.permission.ACCESS_PRIVILEGED_APP_SET_ID";
 
@@ -73,6 +82,7 @@ public class AdServicesPermissions {
      *
      * @hide
      */
+    @SystemApi
     public static final String MODIFY_ADSERVICES_STATE =
             "android.permission.MODIFY_ADSERVICES_STATE";
 
@@ -81,6 +91,7 @@ public class AdServicesPermissions {
      *
      * @hide
      */
+    @SystemApi
     public static final String MODIFY_ADSERVICES_STATE_COMPAT =
             "android.permission.MODIFY_ADSERVICES_STATE_COMPAT";
 
@@ -89,6 +100,7 @@ public class AdServicesPermissions {
      *
      * @hide
      */
+    @SystemApi
     public static final String ACCESS_ADSERVICES_STATE =
             "android.permission.ACCESS_ADSERVICES_STATE";
 
@@ -97,6 +109,7 @@ public class AdServicesPermissions {
      *
      * @hide
      */
+    @SystemApi
     public static final String ACCESS_ADSERVICES_STATE_COMPAT =
             "android.permission.ACCESS_ADSERVICES_STATE_COMPAT";
 
@@ -115,6 +128,7 @@ public class AdServicesPermissions {
      *
      * @hide
      */
+    @SystemApi
     public static final String ACCESS_PRIVILEGED_ADSERVICES_COBALT_UPLOAD =
             "android.permission.ACCESS_PRIVILEGED_AD_SERVICES_COBALT_UPLOAD";
 
@@ -123,6 +137,7 @@ public class AdServicesPermissions {
      *
      * @hide
      */
+    @SystemApi
     public static final String UPDATE_PRIVILEGED_AD_ID =
             "android.permission.UPDATE_PRIVILEGED_AD_ID";
 
@@ -131,6 +146,7 @@ public class AdServicesPermissions {
      *
      * @hide
      */
+    @SystemApi
     public static final String UPDATE_PRIVILEGED_AD_ID_COMPAT =
             "android.permission.UPDATE_PRIVILEGED_AD_ID_COMPAT";
 }

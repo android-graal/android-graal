@@ -535,6 +535,16 @@ public final class NotificationManager {
          */
         public static final int SUPPRESSED_EFFECT_STATUS_BAR = 32;
 
+        @Override
+        public int describeContents() {
+            throw new UnsupportedOperationException();
+        }
+
+        @Override
+        public void writeToParcel(android.os.Parcel dest, int flags) {
+            throw new UnsupportedOperationException();
+        }
+
         private Policy() {
         }
     }

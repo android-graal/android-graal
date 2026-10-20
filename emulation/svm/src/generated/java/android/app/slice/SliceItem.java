@@ -77,6 +77,16 @@ public final class SliceItem implements Parcelable {
     @Deprecated
     public static final String FORMAT_TEXT = "text";
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private SliceItem() {
     }
 }

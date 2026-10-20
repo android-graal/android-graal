@@ -13,6 +13,16 @@ public final class ViewTranslationRequest implements Parcelable {
      */
     public static final String ID_TEXT = "android:text";
 
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
+
+    @Override
+    public void writeToParcel(android.os.Parcel dest, int flags) {
+        throw new UnsupportedOperationException();
+    }
+
     private ViewTranslationRequest() {
     }
 }

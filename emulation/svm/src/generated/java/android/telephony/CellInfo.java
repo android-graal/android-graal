@@ -5,7 +5,7 @@ import android.os.Parcelable;
 /**
  * Immutable cell information from a point in time.
  */
-public final class CellInfo implements Parcelable {
+public abstract class CellInfo implements Parcelable {
     /**
      * Cell is not a serving cell.
      *
@@ -37,6 +37,11 @@ public final class CellInfo implements Parcelable {
      * This value indicates that the long field is unreported.
      */
     public static final long UNAVAILABLE_LONG = 9223372036854775807L;
+
+    @Override
+    public int describeContents() {
+        throw new UnsupportedOperationException();
+    }
 
     private CellInfo() {
     }

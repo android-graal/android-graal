@@ -16,8 +16,8 @@
 
 package android.util.proto;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
 import android.util.Log;
 
 import org.androidgraal.hosted.annotate.Emulated;
@@ -106,6 +106,7 @@ import java.io.UnsupportedEncodingException;
  * correctly matched pairs of #start and #end calls, and issue
  * errors if they are not matched.
  */
+@android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
 public final class ProtoOutputStream extends ProtoStream {
     /**

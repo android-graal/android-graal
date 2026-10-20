@@ -16,14 +16,17 @@
 
 package android.graphics.pdf;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import android.annotation.FlaggedApi;
+import android.annotation.NonNull;
+import android.annotation.Nullable;
+import android.graphics.pdf.flags.Flags;
 
 import org.androidgraal.hosted.annotate.Emulated;
 
 /**
  * Represents a set of parameters to load the PDF document.
  */
+@FlaggedApi(Flags.FLAG_ENABLE_PDF_VIEWER)
 @Emulated
 public final class LoadParams {
     @Nullable
