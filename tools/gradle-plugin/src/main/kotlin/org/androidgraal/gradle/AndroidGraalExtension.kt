@@ -27,6 +27,9 @@ abstract class AndroidGraalExtension {
 
     abstract val configurationFileDirectories: ConfigurableFileCollection
 
+    /** R8's rules for the image of every minified variant, besides those the image classpath's jars embed. */
+    abstract val proguardFiles: ConfigurableFileCollection
+
     abstract val verbose: Property<Boolean>
 
     /** `-Ob`: a faster build for a slower image. */

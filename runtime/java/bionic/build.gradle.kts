@@ -5,6 +5,6 @@ plugins {
 description = "Bindings of bionic, Android's C library, for the image."
 
 dependencies {
-    api(project(":java:graal:nativeimage"))
-    api(project(":java:graal:word"))
+    compileOnlyApi(project(":java:graal:nativeimage"))
+    compileOnlyApi(project(":java:graal:word"))
 }

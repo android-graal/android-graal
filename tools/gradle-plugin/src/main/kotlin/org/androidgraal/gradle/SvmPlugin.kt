@@ -29,6 +29,7 @@ class SvmPlugin : Plugin<Project> {
         declarations.capabilities { it.requireFeature("declarations") }
         project.dependencies.add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, declarations)
         project.dependencies.add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, Modules.HOSTED)
-        project.dependencies.add(JavaPlugin.COMPILE_ONLY_CONFIGURATION_NAME, Modules.GRAAL_SVM_SHARED)
+        project.dependencies.add(JavaPlugin.TEST_RUNTIME_ONLY_CONFIGURATION_NAME, Modules.GRAAL_WORD)
+        project.dependencies.add(JavaPlugin.TEST_RUNTIME_ONLY_CONFIGURATION_NAME, Modules.GRAAL_NATIVEIMAGE)
     }
 }

@@ -100,13 +100,23 @@ class SvmPluginTest {
     }
 
     @Test
-    fun `SubstrateVM's shared annotations are compile only at the plugin's version`() {
-        val svmShared = "org.androidgraal.graal:svm-shared:$PLUGIN_VERSION"
-        val compileOnly = project.declared("compileOnly")
-        val implementation = project.declared("implementation")
+    fun `SubstrateVM's shared annotations come through the svm runtime, the plugin declares none`() {
+        val declared = project.configurations.flatMap { c -> c.dependencies.map { "${it.group}:${it.name}" } }
 
-        assertTrue(svmShared in compileOnly, "$compileOnly")
-        assertFalse(svmShared in implementation, "$implementation")
+        assertFalse("org.androidgraal.graal:svm-shared" in declared, "$declared")
+    }
+
+    @Test
+    fun `the SDK's word and nativeimage reach the tests' runtime alone, their compile comes through the svm runtime`() {
+        val testRuntimeOnly = project.declared("testRuntimeOnly")
+        val others = listOf("compileOnly", "implementation", "runtimeOnly", "api", "testImplementation")
+            .flatMap { project.declared(it) }
+
+        listOf("word", "nativeimage").forEach {
+            val module = "org.androidgraal.graal:$it:$PLUGIN_VERSION"
+            assertTrue(module in testRuntimeOnly, "$testRuntimeOnly")
+            assertFalse(module in others, "$others")
+        }
     }
 
     @Test

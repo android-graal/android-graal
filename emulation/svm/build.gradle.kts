@@ -19,11 +19,12 @@ dependencies {
     implementation("${nativeHost.settings.group}:svm:$version")
     implementation("${nativeHost.settings.group}:bionic:$version")
     compileOnly("${nativeHost.settings.group}:hosted:$version")
-    compileOnly("${nativeHost.settings.group}.graal:svm-shared:$version")
     compileOnly(libs.androidx.annotation)
     compileOnly(libs.errorprone.annotations)
     compileOnly(libs.jspecify)
     testImplementation(libs.java.diff.utils)
+    testRuntimeOnly("${nativeHost.settings.group}.graal:word:$version")
+    testRuntimeOnly("${nativeHost.settings.group}.graal:nativeimage:$version")
     "declarationsCompileOnly"(project(path))
     // KGP adds kotlin-stdlib to a source set's api unless the source set declares one.
     "declarationsCompileOnly"(embeddedKotlin("stdlib"))

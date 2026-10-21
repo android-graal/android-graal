@@ -1,5 +1,6 @@
 package org.androidgraal.gradle
 
+import com.android.build.api.artifact.SingleArtifact
 import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.variant.ApplicationAndroidComponentsExtension
 import com.android.build.api.variant.ApplicationVariant
@@ -18,6 +19,7 @@ import org.gradle.api.artifacts.Configuration
 import org.gradle.api.artifacts.component.ProjectComponentIdentifier
 import org.gradle.api.artifacts.type.ArtifactTypeDefinition
 import org.gradle.api.attributes.Usage
+import org.gradle.api.file.FileCollection
 import org.gradle.api.plugins.JavaPlugin
 import org.gradle.api.plugins.JvmEcosystemPlugin
 import org.gradle.api.provider.Provider
@@ -106,6 +108,8 @@ class ArtPlugin : Plugin<Project> {
 
         val ndk = androidComponents.sdkComponents.ndkDirectory.map { Ndk(it.asFile) }
         val imageClasspath = project.files(runtimeClasspath)
+        val fullMode = agpSwitch(project, R8_FULL_MODE)
+        val strictFullModeForKeepRules = agpSwitch(project, R8_STRICT_FULL_MODE_FOR_KEEP_RULES)
 
         androidComponents.onVariants(androidComponents.selector().all()) { variant: ApplicationVariant ->
             variant.components.forEach { it.runtimeConfiguration.requestSide(Side.ART) }
@@ -127,6 +131,35 @@ class ArtPlugin : Plugin<Project> {
                 CheckImageClasspathTask::class.java,
             ) {
                 it.setup(variant.name, imageClasspath)
+            }
+
+            val compiledClasspath: FileCollection = if (variant.isMinifyEnabled) {
+                val minify = project.tasks.register(
+                    "minifyImage${capitalized}WithR8",
+                    MinifyImageTask::class.java,
+                ) {
+                    it.setup(
+                        variant.name,
+                        extension,
+                        imageClasspath,
+                        toolchain,
+                        fullMode,
+                        strictFullModeForKeepRules,
+                        variant.debuggable,
+                    )
+                }
+                val mergeMapping = project.tasks.register(
+                    "mergeImageMapping$capitalized",
+                    MergeImageMappingTask::class.java,
+                ) {
+                    it.setup(variant.name, minify.flatMap { m -> m.imageMapping })
+                }
+                variant.artifacts.use(mergeMapping)
+                    .wiredWithFiles(MergeImageMappingTask::appMapping, MergeImageMappingTask::mapping)
+                    .toTransform(SingleArtifact.OBFUSCATION_MAPPING_FILE)
+                project.files(minify.flatMap { it.imageJar })
+            } else {
+                imageClasspath
             }
 
             val generateNativeImage = project.tasks.register(
@@ -153,7 +186,7 @@ class ArtPlugin : Plugin<Project> {
                     "nativeImageCompile$capitalized${target.title}",
                     NativeImageCompileTask::class.java,
                 ) {
-                    it.setup(variant.name, extension, imageClasspath, toolchain, target)
+                    it.setup(variant.name, extension, compiledClasspath, toolchain, target)
                     it.dependsOn(checkImageClasspath)
                 }
 
@@ -239,6 +272,10 @@ class ArtPlugin : Plugin<Project> {
         }
     }
 
+    /** One of AGP's boolean options, which default to `true`. */
+    private fun agpSwitch(project: Project, name: String): Provider<Boolean> =
+        project.providers.gradleProperty(name).map { parseAgpSwitch(name, it) }.orElse(true)
+
     private fun localProperty(project: Project, key: String): String? {
         val text = project.providers
             .fileContents(project.layout.settingsDirectory.file("local.properties"))
@@ -280,6 +317,17 @@ class ArtPlugin : Plugin<Project> {
 
         internal const val CONTRACTS_INPUT_PROPERTY = "androidgraal.contracts"
         private const val JAVA_RESOURCES_ARTIFACT_TYPE = "android-java-res"
+
+        internal const val R8_FULL_MODE = "android.enableR8.fullMode"
+        internal const val R8_STRICT_FULL_MODE_FOR_KEEP_RULES = "android.r8.strictFullModeForKeepRules"
+
+        /** As AGP parses a boolean option set as a Gradle property. */
+        internal fun parseAgpSwitch(name: String, value: String): Boolean {
+            return value.lowercase().toBooleanStrictOrNull() ?: throw IllegalArgumentException(
+                "Cannot parse project property $name='$value' of type '${value.javaClass}' as boolean." +
+                        " Expected 'true' or 'false'.",
+            )
+        }
 
         private const val TOOLCHAIN_LOCAL_PROPERTY = "androidgraal.toolchain.dir"
         private const val TOOLCHAIN_ENV_VAR = "ANDROID_GRAAL_TOOLCHAIN"

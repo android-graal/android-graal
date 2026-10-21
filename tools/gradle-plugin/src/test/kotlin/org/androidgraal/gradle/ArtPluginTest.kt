@@ -1,5 +1,6 @@
 package org.androidgraal.gradle
 
+import org.androidgraal.common.ToolchainLayout
 import org.apache.commons.io.FileUtils
 import org.gradle.api.Named
 import org.gradle.api.Project
@@ -83,7 +84,7 @@ class ArtPluginTest {
     fun `each variant registers the image tasks and NativeImage, nothing else of ours`() {
         evaluateAndroid("")
 
-        val ours = listOf("checkImage", "nativeImage", "generateNativeImage")
+        val ours = listOf("checkImage", "nativeImage", "generateNativeImage", "minifyImage", "mergeImageMapping")
         assertEquals(
             listOf("Debug", "Release").flatMap { variant ->
                 listOf(
@@ -165,6 +166,99 @@ class ArtPluginTest {
         val image = project.tasks.getByName("nativeImageCompileDebugAarch64") as NativeImageCompileTask
         assertEquals(setOf(project.file("image.jar")), image.imageClasspath.files)
         assertTrue(check in image.taskDependencies.getDependencies(image))
+    }
+
+    @Test
+    fun `a minified variant alone shrinks its image classpath with R8 and merges the mappings`() {
+        evaluateAndroid(MINIFIED_RELEASE)
+
+        assertEquals(
+            listOf("mergeImageMappingRelease", "minifyImageReleaseWithR8"),
+            project.tasks.names.filter { it.startsWith("minifyImage") || it.startsWith("mergeImageMapping") }.sorted(),
+        )
+    }
+
+    @Test
+    fun `the image's R8 reads nothing of AGP's, the merge transforms AGP's mapping with the image's`() {
+        evaluateAndroid(MINIFIED_RELEASE)
+
+        val minify = project.tasks.getByName("minifyImageReleaseWithR8") as MinifyImageTask
+        val merge = project.tasks.getByName("mergeImageMappingRelease") as MergeImageMappingTask
+        val r8 = project.tasks.getByName("minifyReleaseWithR8")
+        val build = project.layout.buildDirectory.get().asFile
+        assertFalse(r8 in minify.taskDependencies.getDependencies(minify))
+        assertEquals(
+            setOf(r8, minify),
+            merge.taskDependencies.getDependencies(merge).filter {
+                it == r8 || it == minify
+            }.toSet(),
+        )
+        assertEquals(minify.imageMapping.get().asFile, merge.imageMapping.get().asFile)
+        assertTrue(merge.appMapping.get().asFile.startsWith(build), "${merge.appMapping.get()}")
+        assertEquals(build.resolve("outputs/mapping/release/mapping.txt"), merge.mapping.get().asFile)
+        assertEquals(build.resolve("androidgraal/release/r8"), minify.taskDir.get().asFile)
+        assertEquals(build.resolve("androidgraal/release/mapping"), merge.taskDir.get().asFile)
+    }
+
+    @Test
+    fun `the image's R8 runs in debug mode for a debuggable minified variant, as AGP's does`() {
+        evaluateAndroid("buildTypes { debug { minifyEnabled true }\n release { minifyEnabled true } }")
+
+        val debug = project.tasks.getByName("minifyImageDebugWithR8") as MinifyImageTask
+        val release = project.tasks.getByName("minifyImageReleaseWithR8") as MinifyImageTask
+        assertTrue(debug.debuggable.get())
+        assertFalse(release.debuggable.get())
+    }
+
+    @Test
+    fun `the image's R8 fingerprints the JDK's class library alone`() {
+        evaluateAndroid(MINIFIED_RELEASE)
+
+        val minify = project.tasks.getByName("minifyImageReleaseWithR8") as MinifyImageTask
+        minify.toolchain.set(ToolchainLayout(project.file("toolchain")))
+        assertEquals(project.file("toolchain/graalvm/lib/modules"), minify.jdkModules.get())
+    }
+
+    @Test
+    fun `a minified variant's image compiles from the R8 jar alone, checkImageClasspath reads the image classpath`() {
+        project.file("image.jar").writeText("")
+        project.dependencies.add("nativeImage", project.files("image.jar"))
+
+        evaluateAndroid(MINIFIED_RELEASE)
+
+        val minify = project.tasks.getByName("minifyImageReleaseWithR8") as MinifyImageTask
+        val compile = project.tasks.getByName("nativeImageCompileReleaseAarch64") as NativeImageCompileTask
+        val check = project.tasks.getByName("checkImageClasspathRelease") as CheckImageClasspathTask
+        assertEquals(setOf(project.file("image.jar")), minify.imageClasspath.files)
+        assertEquals(setOf(minify.imageJar.get().asFile), compile.imageClasspath.files)
+        assertTrue(minify in compile.taskDependencies.getDependencies(compile))
+        assertEquals(setOf(project.file("image.jar")), check.imageClasspath.files)
+        val debug = project.tasks.getByName("nativeImageCompileDebugAarch64") as NativeImageCompileTask
+        assertEquals(setOf(project.file("image.jar")), debug.imageClasspath.files)
+    }
+
+    @Test
+    fun `the R8 task takes the DSL's rules and AGP's switches, both on by default`() {
+        project.extensions.getByType(AndroidGraalExtension::class.java).proguardFiles.from("image-rules.pro")
+
+        evaluateAndroid(MINIFIED_RELEASE)
+
+        val minify = project.tasks.getByName("minifyImageReleaseWithR8") as MinifyImageTask
+        assertEquals(setOf(project.file("image-rules.pro")), minify.proguardFiles.files)
+        assertTrue(minify.fullMode.get())
+        assertTrue(minify.strictFullModeForKeepRules.get())
+    }
+
+    @Test
+    fun `AGP's switches parse as AGP parses a boolean option`() {
+        assertTrue(ArtPlugin.parseAgpSwitch(ArtPlugin.R8_FULL_MODE, "TRUE"))
+        assertFalse(ArtPlugin.parseAgpSwitch(ArtPlugin.R8_FULL_MODE, "false"))
+        val failure = runCatching { ArtPlugin.parseAgpSwitch(ArtPlugin.R8_STRICT_FULL_MODE_FOR_KEEP_RULES, "1") }
+        assertEquals(
+            "Cannot parse project property android.r8.strictFullModeForKeepRules='1' as boolean." +
+                " Expected 'true' or 'false'.",
+            failure.exceptionOrNull()?.message,
+        )
     }
 
     @Test
@@ -335,4 +429,8 @@ class ArtPluginTest {
         project.configurations.getByName(configuration).allDependencies.filterIsInstance<FileCollectionDependency>()
 
     private fun <T : Named> AttributeContainer.named(key: Attribute<T>) = getAttribute(key)?.name
+
+    private companion object {
+        const val MINIFIED_RELEASE = "buildTypes { release { minifyEnabled true } }"
+    }
 }

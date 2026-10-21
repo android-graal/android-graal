@@ -19,6 +19,7 @@ spotless = "8.10.2"
 [libraries]
 android-gradle = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 android-gradle-api = { module = "com.android.tools.build:gradle-api", version.ref = "agp" }
+android-builder = { module = "com.android.tools.build:builder", version.ref = "agp" }
 asm = { module = "org.ow2.asm:asm", version.ref = "asm" }
 asm-commons = { module = "org.ow2.asm:asm-commons", version.ref = "asm" }
 commons-io = { module = "commons-io:commons-io", version.ref = "commons-io" }

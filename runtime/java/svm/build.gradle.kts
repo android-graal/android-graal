@@ -6,8 +6,9 @@ description = "The image side of android-graal's runtime: calls into ART, the th
 
 dependencies {
     api(project(":java:shared"))
-    api(project(":java:graal:nativeimage"))
-    api(project(":java:graal:word"))
+    compileOnlyApi(project(":java:graal:nativeimage"))
+    compileOnlyApi(project(":java:graal:word"))
+    compileOnlyApi(project(":java:graal:svm-shared"))
 }
 
 spotless {

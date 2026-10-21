@@ -24,6 +24,9 @@ dependencies {
     shade(libs.asm)
     shade(libs.asm.commons)
     compileOnly(libs.android.gradle.api)
+    // R8, which AGP's builder carries and the task runs from AGP's own class loader.
+    compileOnly(libs.android.builder)
+    testImplementation(libs.android.builder)
     testRuntimeOnly(libs.android.gradle)
 }
 
