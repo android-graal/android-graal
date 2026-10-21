@@ -255,8 +255,8 @@ class ArtPluginTest {
         assertFalse(ArtPlugin.parseAgpSwitch(ArtPlugin.R8_FULL_MODE, "false"))
         val failure = runCatching { ArtPlugin.parseAgpSwitch(ArtPlugin.R8_STRICT_FULL_MODE_FOR_KEEP_RULES, "1") }
         assertEquals(
-            "Cannot parse project property android.r8.strictFullModeForKeepRules='1' as boolean." +
-                " Expected 'true' or 'false'.",
+            "Cannot parse project property android.r8.strictFullModeForKeepRules='1' of type" +
+                " 'class java.lang.String' as boolean. Expected 'true' or 'false'.",
             failure.exceptionOrNull()?.message,
         )
     }

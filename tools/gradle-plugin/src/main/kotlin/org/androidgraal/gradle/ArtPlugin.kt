@@ -325,7 +325,7 @@ class ArtPlugin : Plugin<Project> {
         internal fun parseAgpSwitch(name: String, value: String): Boolean {
             return value.lowercase().toBooleanStrictOrNull() ?: throw IllegalArgumentException(
                 "Cannot parse project property $name='$value' of type '${value.javaClass}' as boolean." +
-                        " Expected 'true' or 'false'.",
+                    " Expected 'true' or 'false'.",
             )
         }
 
