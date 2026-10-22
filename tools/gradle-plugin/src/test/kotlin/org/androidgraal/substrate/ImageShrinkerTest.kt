@@ -13,6 +13,8 @@ import org.objectweb.asm.Type
 import java.io.ByteArrayOutputStream
 import java.io.Closeable
 import java.io.File
+import java.net.URLClassLoader
+import java.util.jar.JarFile
 import java.util.zip.ZipEntry
 import java.util.zip.ZipFile
 import java.util.zip.ZipOutputStream
@@ -20,6 +22,7 @@ import kotlin.io.path.createTempDirectory
 import kotlin.test.AfterTest
 import kotlin.test.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertNull
 import kotlin.test.assertTrue
 
 class ImageShrinkerTest {
@@ -78,10 +81,46 @@ class ImageShrinkerTest {
         assertTrue("-applymapping" !in config.configuration.readText())
     }
 
+    @Test
+    fun `neither a manifest nor a signature entry reaches the image jar, the other META-INF entries do`() {
+        val config = config(entries = SIGNING_ENTRIES.associateWith { "x\n".toByteArray() })
+
+        ImageShrinker(config).shrink(ByteArrayOutputStream())
+
+        val entries = entries(config.outputJar)
+        assertTrue(entries.none { it in SIGNING_ENTRIES }, "$entries")
+        assertTrue(NATIVE_IMAGE_PROPERTIES in entries, "$entries")
+        assertTrue(entries.any { it.startsWith("META-INF/services/") }, "$entries")
+    }
+
+    @Test
+    fun `the image jar of a signed program jar behind a plain one loads`() {
+        val signed = tmp.resolve("signed.jar")
+        jar(
+            signed,
+            mapOf(
+                "q/Signed.class" to classBytes("q/Signed"),
+                "META-INF/com.android.tools/r8/signed.pro" to "-keep class q.Signed\n".toByteArray(),
+            ),
+        )
+        sign(signed)
+        val manifest = "Manifest-Version: 1.0\r\nCreated-By: test\r\n\r\n".toByteArray()
+        val config = config(entries = mapOf("META-INF/MANIFEST.MF" to manifest), more = listOf(signed))
+
+        ImageShrinker(config).shrink(ByteArrayOutputStream())
+
+        URLClassLoader(arrayOf(config.outputJar.toURI().toURL()), null).use { loader ->
+            assertEquals("q.Signed", loader.loadClass("q.Signed").name)
+        }
+        assertNull(JarFile(config.outputJar).use { it.manifest })
+    }
+
     private fun config(
         fullMode: Boolean = true,
         strictFullModeForKeepRules: Boolean = true,
         debuggable: Boolean = false,
+        entries: Map<String, ByteArray> = emptyMap(),
+        more: List<File> = emptyList(),
     ): ImageShrinker.Config {
         val program = tmp.resolve("program.jar")
         val rules = tmp.resolve("rules.pro")
@@ -96,13 +135,13 @@ class ImageShrinkerTest {
                     "META-INF/services/p.Service" to "p.Provider\n".toByteArray(),
                     NATIVE_IMAGE_PROPERTIES to "Args = --verbose\n".toByteArray(),
                     "META-INF/com.android.tools/r8/kept.pro" to "-keep class p.Kept\n".toByteArray(),
-                ),
+                ) + entries,
             )
             rules.writeText("-keepclassmembers class p.Kept { *** run(); }\n")
         }
         val out = tmp.resolve("out-$fullMode-$strictFullModeForKeepRules-$debuggable")
         return ImageShrinker.Config(
-            program = listOf(program),
+            program = listOf(program) + more,
             jdkHome = File(System.getProperty("java.home")),
             rules = listOf(rules),
             outputJar = out.resolve("image.jar"),
@@ -174,6 +213,37 @@ class ImageShrinkerTest {
         }
     }
 
+    private fun sign(jar: File) {
+        val bin = File(System.getProperty("java.home"), "bin")
+        val keystore = tmp.resolve("keystore")
+        val password = "changeit"
+        run(
+            bin.resolve("keytool").path,
+            "-genkeypair",
+            "-keyalg",
+            "RSA",
+            "-keysize",
+            "2048",
+            "-dname",
+            "CN=test",
+            "-alias",
+            "t",
+            "-keystore",
+            keystore.path,
+            "-storepass",
+            password,
+            "-keypass",
+            password,
+        )
+        run(bin.resolve("jarsigner").path, "-keystore", keystore.path, "-storepass", password, jar.path, "t")
+    }
+
+    private fun run(vararg command: String) {
+        val process = ProcessBuilder(*command).redirectErrorStream(true).start()
+        val output = process.inputStream.readBytes().decodeToString()
+        assertEquals(0, process.waitFor(), output)
+    }
+
     private fun entries(file: File): List<String> = ZipFile(file).use { zip -> zip.entries().toList().map { it.name } }
 
     private fun text(file: File, entry: String): String =
@@ -209,5 +279,14 @@ class ImageShrinkerTest {
 
     private companion object {
         const val NATIVE_IMAGE_PROPERTIES = "META-INF/native-image/p/native-image.properties"
+
+        val SIGNING_ENTRIES = listOf(
+            "META-INF/MANIFEST.MF",
+            "META-INF/X.SF",
+            "META-INF/X.RSA",
+            "META-INF/x.dsa",
+            "META-INF/X.EC",
+            "META-INF/SIG-X",
+        )
     }
 }

@@ -1,17 +1,19 @@
 package org.androidgraal.substrate
 
+import com.android.tools.r8.ClassFileConsumer
 import com.android.tools.r8.ClassFileResourceProvider
 import com.android.tools.r8.CompilationMode
+import com.android.tools.r8.DataEntryResource
 import com.android.tools.r8.Diagnostic
 import com.android.tools.r8.DiagnosticsHandler
 import com.android.tools.r8.JdkClassFileProvider
-import com.android.tools.r8.OutputMode
 import com.android.tools.r8.R8
 import com.android.tools.r8.R8Command
 import com.android.tools.r8.StringConsumer
 import java.io.File
 import java.io.OutputStream
 import java.io.PrintStream
+import java.nio.file.Path
 
 class ImageShrinker(private val config: Config) {
 
@@ -36,7 +38,7 @@ class ImageShrinker(private val config: Config) {
             .addProguardConfigurationFiles(config.rules.map(File::toPath))
             .setProguardMapOutputPath(config.imageMapping.toPath())
             .setProguardConfigurationConsumer(StringConsumer.FileConsumer(config.configuration.toPath()))
-            .setOutput(config.outputJar.toPath(), OutputMode.ClassFile, true)
+            .setProgramConsumer(UnsignedJarConsumer(config.outputJar.toPath()))
             .setMode(if (config.debuggable) CompilationMode.DEBUG else CompilationMode.RELEASE)
             .setProguardCompatibility(!config.fullMode)
             .enableLegacyFullModeForKeepRules(!config.strictFullModeForKeepRules)
@@ -51,6 +53,18 @@ class ImageShrinker(private val config: Config) {
         val diagnostics = LogDiagnostics(PrintStream(log, true))
         (JdkClassFileProvider.fromJdkHome(config.jdkHome.toPath()) as JdkClassFileProvider).use { library ->
             R8.run(command(diagnostics, library))
+        }
+    }
+
+    private class UnsignedJarConsumer(jar: Path) : ClassFileConsumer.ArchiveConsumer(jar, true) {
+        override fun accept(resource: DataEntryResource, diagnostics: DiagnosticsHandler) {
+            if (!SIGNING.matches(resource.name)) {
+                super.accept(resource, diagnostics)
+            }
+        }
+
+        private companion object {
+            val SIGNING = Regex("META-INF/(MANIFEST\\.MF|SIG-[^/]*|[^/]*\\.(SF|DSA|RSA|EC))", RegexOption.IGNORE_CASE)
         }
     }
 
