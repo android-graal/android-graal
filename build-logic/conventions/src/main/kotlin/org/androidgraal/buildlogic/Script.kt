@@ -1,5 +1,7 @@
 package org.androidgraal.buildlogic
 
+import org.androidgraal.common.secondsSince
+import org.androidgraal.common.timestamp
 import org.apache.commons.io.output.TeeOutputStream
 import org.gradle.api.DefaultTask
 import org.gradle.api.GradleException
@@ -10,13 +12,7 @@ import org.gradle.api.file.ProjectLayout
 import org.gradle.api.model.ObjectFactory
 import org.gradle.api.provider.Property
 import org.gradle.api.provider.Provider
-import org.gradle.api.tasks.CacheableTask
-import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.InputFiles
-import org.gradle.api.tasks.Internal
-import org.gradle.api.tasks.PathSensitive
-import org.gradle.api.tasks.PathSensitivity
-import org.gradle.api.tasks.TaskAction
+import org.gradle.api.tasks.*
 import org.gradle.process.ExecOperations
 import java.io.File
 import javax.inject.Inject
@@ -196,9 +192,15 @@ abstract class Script :
         try {
             log.outputStream().buffered().use { file ->
                 val out = if (console.get()) TeeOutputStream(file, System.out) else file
-                val context = RunContext(this, out)
-                for (step in steps) {
-                    step.run(context)
+                val startedAt = System.nanoTime()
+                out.line("=== $name started ${timestamp()}")
+                try {
+                    val context = RunContext(this, out)
+                    for (step in steps) {
+                        step.run(context)
+                    }
+                } finally {
+                    out.line("=== $name finished after ${secondsSince(startedAt)} s")
                 }
             }
         } catch (e: Throwable) {

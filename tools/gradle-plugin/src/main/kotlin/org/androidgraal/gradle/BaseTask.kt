@@ -1,5 +1,7 @@
 package org.androidgraal.gradle
 
+import org.androidgraal.common.secondsSince
+import org.androidgraal.common.timestamp
 import org.androidgraal.substrate.ProcessRunner
 import org.apache.commons.io.output.CloseShieldOutputStream
 import org.apache.commons.io.output.TeeOutputStream
@@ -70,7 +72,13 @@ abstract class BaseTask(private val dirName: String) : DefaultTask() {
             file.delete()
             FileOutputStream(file).buffered().use { out ->
                 stream = if (console.get()) TeeOutputStream(out, System.out) else out
-                execute()
+                val startedAt = System.nanoTime()
+                log.line("=== $name started ${timestamp()}")
+                try {
+                    execute()
+                } finally {
+                    log.line("=== $name finished after ${secondsSince(startedAt)} s")
+                }
             }
         } catch (e: Throwable) {
             logger.error("=== $file")
@@ -89,18 +97,25 @@ abstract class BaseTask(private val dirName: String) : DefaultTask() {
     protected fun runner(): ProcessRunner {
         val out = log
         return ProcessRunner { command, workingDir ->
-            out.write("=== $workingDir$ ${command.joinToString(" ")}\n".toByteArray())
-            out.flush()
+            out.line("=== $workingDir$ ${command.joinToString(" ")}")
+            val startedAt = System.nanoTime()
             // Gradle closes each stream from its own forwarder thread.
-            execOperations.exec {
+            val exit = execOperations.exec {
                 it.commandLine = command
                 it.workingDir = workingDir
                 it.standardOutput = CloseShieldOutputStream.wrap(out)
                 it.errorOutput = CloseShieldOutputStream.wrap(out)
                 it.isIgnoreExitValue = true
             }.exitValue
+            out.line("=== exit $exit after ${secondsSince(startedAt)} s")
+            exit
         }
     }
 }
 
 private const val CONSOLE_PROPERTY = "androidgraal.console"
+
+private fun OutputStream.line(text: String) {
+    write("$text\n".toByteArray())
+    flush()
+}

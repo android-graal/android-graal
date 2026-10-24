@@ -1,5 +1,6 @@
 package org.androidgraal.buildlogic
 
+import org.androidgraal.common.secondsSince
 import org.apache.commons.io.output.CloseShieldOutputStream
 import org.apache.commons.io.output.TeeOutputStream
 import org.gradle.api.GradleException
@@ -9,6 +10,7 @@ import java.io.OutputStream
 import java.io.Serializable
 import java.nio.file.FileSystems
 import java.nio.file.Path
+import java.util.Locale
 
 class RunContext private constructor(
     internal val script: Script,
@@ -247,15 +249,16 @@ private fun RunContext.execute(command: List<String>, capture: Boolean): String?
     val standard = CloseShieldOutputStream.wrap(log)
     val captured = if (capture) ByteArrayOutputStream() else null
     // Gradle closes each stream from its own forwarder thread.
-    script.execOperations.exec {
+    val result = script.execOperations.exec {
         workingDir(directory)
         commandLine(resolved)
         environment(resolvedEnvironment)
         standardOutput = if (captured != null) TeeOutputStream(standard, captured) else standard
         errorOutput = CloseShieldOutputStream.wrap(log)
+        isIgnoreExitValue = true
     }
-    val seconds = (System.nanoTime() - startedAt) / 1_000_000_000.0
-    log.line("=== $commandLine took %.1f s".format(seconds))
+    log.line("=== exit ${result.exitValue} after ${secondsSince(startedAt)} s")
+    result.assertNormalExitValue()
 
     if (captured == null) {
         return null

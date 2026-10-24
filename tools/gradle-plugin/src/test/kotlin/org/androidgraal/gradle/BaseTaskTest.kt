@@ -37,7 +37,16 @@ class BaseTaskTest {
 
         assertEquals(0, exit)
         assertEquals(tmp.canonicalFile.resolve("build/task/tool.log"), task.logFile.canonicalFile)
-        assertEquals(listOf("=== $tmp$ $ECHO hello", "hello"), task.logFile.readLines())
+        assertEquals(
+            listOf(
+                "=== tool started <time>",
+                "=== $tmp$ $ECHO hello",
+                "hello",
+                "=== exit 0 after <s> s",
+                "=== tool finished after <s> s",
+            ),
+            task.timedLog(),
+        )
     }
 
     @Test
@@ -49,7 +58,19 @@ class BaseTaskTest {
 
         task.run()
 
-        assertEquals(listOf("=== $tmp$ $ECHO one", "one", "=== $tmp$ $ECHO two", "two"), task.logFile.readLines())
+        assertEquals(
+            listOf(
+                "=== tool started <time>",
+                "=== $tmp$ $ECHO one",
+                "one",
+                "=== exit 0 after <s> s",
+                "=== $tmp$ $ECHO two",
+                "two",
+                "=== exit 0 after <s> s",
+                "=== tool finished after <s> s",
+            ),
+            task.timedLog(),
+        )
     }
 
     @Test
@@ -63,8 +84,9 @@ class BaseTaskTest {
         task.run()
 
         assertEquals(1, exit)
-        val lines = task.logFile.readLines()
-        assertEquals("=== $tmp$ $java -cp $classes $main", lines.first())
+        val lines = task.timedLog()
+        assertEquals(listOf("=== tool started <time>", "=== $tmp$ $java -cp $classes $main"), lines.take(2))
+        assertEquals(listOf("=== exit 1 after <s> s", "=== tool finished after <s> s"), lines.takeLast(2))
         assertTrue("to standard output" in lines, "$lines")
         assertTrue("to standard error" in lines, "$lines")
     }
@@ -80,7 +102,18 @@ class BaseTaskTest {
 
         assertEquals("${task.name} failed, see ${task.logFile}", failure.message)
         assertEquals("false failed with exit code 1", failure.cause?.message)
-        assertEquals(listOf("=== $tmp$ $ECHO before", "before", "=== $tmp$ $FALSE"), task.logFile.readLines())
+        assertEquals(
+            listOf(
+                "=== tool started <time>",
+                "=== $tmp$ $ECHO before",
+                "before",
+                "=== exit 0 after <s> s",
+                "=== $tmp$ $FALSE",
+                "=== exit 1 after <s> s",
+                "=== tool finished after <s> s",
+            ),
+            task.timedLog(),
+        )
     }
 
     @Test
@@ -91,7 +124,16 @@ class BaseTaskTest {
 
         task.run()
 
-        assertEquals(listOf("=== $tmp$ $ECHO fresh", "fresh"), task.logFile.readLines())
+        assertEquals(
+            listOf(
+                "=== tool started <time>",
+                "=== $tmp$ $ECHO fresh",
+                "fresh",
+                "=== exit 0 after <s> s",
+                "=== tool finished after <s> s",
+            ),
+            task.timedLog(),
+        )
     }
 
     @Test
@@ -116,7 +158,16 @@ class BaseTaskTest {
         val printed = captureSystemOut { task.run() }
 
         assertEquals("", printed)
-        assertEquals(listOf("=== $tmp$ $ECHO hidden", "hidden"), task.logFile.readLines())
+        assertEquals(
+            listOf(
+                "=== tool started <time>",
+                "=== $tmp$ $ECHO hidden",
+                "hidden",
+                "=== exit 0 after <s> s",
+                "=== tool finished after <s> s",
+            ),
+            task.timedLog(),
+        )
     }
 
     @Test
@@ -137,6 +188,9 @@ class BaseTaskTest {
 
         assertTrue(task.path in failure.message.orEmpty(), failure.message)
     }
+
+    private fun ToolTask.timedLog(): List<String> =
+        logFile.readLines().map { it.replace(TIME, "<time>").replace(SECONDS, "after <s> s") }
 
     private fun captureSystemOut(block: () -> Unit): String {
         val original = System.out
@@ -161,3 +215,7 @@ abstract class ToolTask : BaseTask("tool") {
 private const val ECHO = "/bin/echo"
 
 private const val FALSE = "/usr/bin/false"
+
+private val TIME = Regex("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}([+-]\\d{2}:\\d{2}|Z)$")
+
+private val SECONDS = Regex("after \\d+\\.\\d s$")

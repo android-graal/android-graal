@@ -2,6 +2,7 @@ package org.androidgraal.buildlogic
 
 import org.gradle.api.GradleException
 import org.gradle.api.Project
+import org.gradle.process.ProcessExecutionException
 import org.gradle.testfixtures.ProjectBuilder
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -14,7 +15,7 @@ import kotlin.test.Test
 import kotlin.test.assertEquals
 import kotlin.test.assertFailsWith
 import kotlin.test.assertFalse
-import kotlin.test.assertNotNull
+import kotlin.test.assertIs
 import kotlin.test.assertTrue
 
 class ScriptTest {
@@ -473,9 +474,28 @@ class ScriptTest {
 
         script.runScript()
 
-        val log = script.logFile.readLines()
-        assertEquals(listOf("first", "second", "second"), log.filter { it.isNotEmpty() && !it.startsWith("=== ") })
-        assertEquals("=== after the processes", log.last())
+        val dir = script.defaultWorkDir
+        assertEquals(
+            listOf(
+                "=== script started <time>",
+                "",
+                "=== $dir$ /bin/echo first",
+                "first",
+                "=== exit 0 after <s> s",
+                "",
+                "=== $dir$ /bin/echo second",
+                "second",
+                "=== exit 0 after <s> s",
+                "=== second = second",
+                "",
+                "=== $dir$ /bin/echo second",
+                "second",
+                "=== exit 0 after <s> s",
+                "=== after the processes",
+                "=== script finished after <s> s",
+            ),
+            script.timedLog(),
+        )
     }
 
     @Test
@@ -496,7 +516,10 @@ class ScriptTest {
 
         script.runScript()
 
-        assertEquals("=== after the expectation", script.logFile.readLines().last())
+        assertEquals(
+            listOf("=== after the expectation", "=== script finished after <s> s"),
+            script.timedLog().takeLast(2),
+        )
     }
 
     @Test
@@ -509,7 +532,10 @@ class ScriptTest {
         val failure = assertFailsWith<GradleException> { script.runScript() }
 
         assertEquals("${script.name}: the device runs arm64-v8a, not armeabi", failure.cause!!.message)
-        assertEquals("=== the device runs arm64-v8a, not armeabi", script.logFile.readLines().last())
+        assertEquals(
+            listOf("=== the device runs arm64-v8a, not armeabi", "=== script finished after <s> s"),
+            script.timedLog().takeLast(2),
+        )
     }
 
     @Test
@@ -521,7 +547,9 @@ class ScriptTest {
 
         assertFailsWith<GradleException> { script.runScript() }
 
-        val log = script.logFile.readLines()
+        val log = script.timedLog()
+        assertEquals("=== script started <time>", log.first())
+        assertEquals(listOf("=== exit 1 after <s> s", "=== script finished after <s> s"), log.takeLast(2))
         assertTrue("to standard output" in log, "$log")
         assertTrue("to standard error" in log, "$log")
     }
@@ -577,7 +605,18 @@ class ScriptTest {
         val failure = assertFailsWith<GradleException> { script.runScript() }
 
         assertEquals("${script.name} failed, see ${script.logFile}", failure.message)
-        assertNotNull(failure.cause)
+        val cause = assertIs<ProcessExecutionException>(failure.cause)
+        assertEquals("Process 'command '/usr/bin/false'' finished with non-zero exit value 1", cause.message)
+        assertEquals(
+            listOf(
+                "=== script started <time>",
+                "",
+                "=== ${script.defaultWorkDir}$ /usr/bin/false",
+                "=== exit 1 after <s> s",
+                "=== script finished after <s> s",
+            ),
+            script.timedLog(),
+        )
     }
 
     private fun captureSystemOut(action: () -> Unit): String {
@@ -593,4 +632,11 @@ class ScriptTest {
     }
 
     private fun script(): Script = project.tasks.register("script", Script::class.java) { console.set(false) }.get()
+
+    private fun Script.timedLog(): List<String> =
+        logFile.readLines().map { it.replace(TIME, "<time>").replace(SECONDS, "after <s> s") }
 }
+
+private val TIME = Regex("\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}([+-]\\d{2}:\\d{2}|Z)$")
+
+private val SECONDS = Regex("after \\d+\\.\\d s$")
