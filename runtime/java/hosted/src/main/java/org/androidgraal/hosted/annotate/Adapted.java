@@ -16,7 +16,8 @@ import java.lang.annotation.Target;
 public @interface Adapted {
     /**
      * The files outside the SDK sources the body is transcribed from, each the gitiles URL of the file at the
-     * platform's tag with the lines transcribed:
+     * platform's tag, or at an older level's {@code android-*} tag for a body transcribing that level's code, with the
+     * lines transcribed:
      * {@code https://android.googlesource.com/platform/<project>/+/refs/tags/<tag>/<path>#L<from>-L<to>}. Empty for an
      * edit of the SDK source's own text.
      */

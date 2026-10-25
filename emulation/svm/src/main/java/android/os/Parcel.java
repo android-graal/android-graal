@@ -2443,7 +2443,13 @@ public final class Parcel {
     }
 
     /** @hide */
-    @Adapted(reason = "the value types of the device's API level, without binders")
+    @Adapted(value = {"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-6.0.0_r1/core/java/android/os/Parcel.java#L1320-L1322",
+            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-6.0.0_r1/core/java/android/os/Parcel.java#L1385-L1395",
+            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-11.0.0_r1/core/java/android/os/Parcel.java#L1805-L1810",
+            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-11.0.0_r1/core/java/android/os/Parcel.java#L1867-L1869",
+            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-12.1.0_r1/core/java/android/os/Parcel.java#L1853-L1858",
+            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-12.1.0_r1/core/java/android/os/Parcel.java#L1921-L1931"},
+            reason = "the value types of the device's API level, without binders")
     public static int getValueType(@Nullable Object v) {
         if (v == null) {
             return VAL_NULL;
@@ -2904,7 +2910,8 @@ public final class Parcel {
      * @see #writeNoException
      * @see #readException
      */
-    @Adapted(reason = "without AppOps and StrictMode, the stack trace header from P on, and a parcelled stack trace throws")
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-8.1.0_r1/core/java/android/os/Parcel.java#L1852-L1900",
+            reason = "without AppOps and StrictMode, the stack trace header from P on, and a parcelled stack trace throws")
     public final void writeException(@NonNull Exception e) {
         int code = getExceptionCode(e);
         writeInt(code);
@@ -2944,7 +2951,9 @@ public final class Parcel {
     }
 
     /** @hide */
-    @Adapted(reason = "EX_PARCELABLE from O on for android.* exceptions only and EX_SERVICE_SPECIFIC from N on")
+    @Adapted(value = {"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-6.0.0_r1/core/java/android/os/Parcel.java#L1476-L1502",
+            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-7.1.0_r1/core/java/android/os/Parcel.java#L1556-L1587"},
+            reason = "EX_PARCELABLE from O on for android.* exceptions only and EX_SERVICE_SPECIFIC from N on")
     public static int getExceptionCode(@NonNull Throwable e) {
         int code = 0;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && e instanceof Parcelable
@@ -3068,7 +3077,8 @@ public final class Parcel {
      * @param code Used to determine which exception class to throw.
      * @param msg The exception message.
      */
-    @Adapted(reason = "reads the stack trace size from P on")
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-8.1.0_r1/core/java/android/os/Parcel.java#L1994-L2022",
+            reason = "reads the stack trace size from P on")
     public final void readException(int code, String msg) {
         String remoteStackTrace = null;
         final int remoteStackPayloadSize =
@@ -4625,7 +4635,9 @@ public final class Parcel {
         return (T) object;
     }
 
-    @Adapted(reason = "false below TIRAMISU")
+    @Adapted(value = {"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-12.1.0_r1/core/java/android/os/Parcel.java#L1834-L1936",
+            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-12.1.0_r1/core/java/android/os/Parcel.java#L3209-L3216"},
+            reason = "false below TIRAMISU")
     private boolean isLengthPrefixed(int type) {
         // In general, we want custom types and containers of custom types to be length-prefixed,
         // this allows clients (eg. Bundle) to skip their content during deserialization. The

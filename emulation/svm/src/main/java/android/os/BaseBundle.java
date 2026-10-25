@@ -1839,7 +1839,8 @@ public class BaseBundle implements Parcel.ClassLoaderProvider {
      * it to be passed through an IBinder connection.
      * @param parcel The parcel to copy this bundle to.
      */
-    @Adapted(reason = "writes mHasIntent from BAKLAVA on")
+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-15.0.0_r1/core/java/android/os/BaseBundle.java#L1808-L1851",
+            reason = "writes mHasIntent from BAKLAVA on")
     void writeToParcelInner(Parcel parcel, int flags) {
         // If the parcel has a read-write helper, we can't just copy the blob, so unparcel it first.
         if (parcel.hasReadWriteHelper()) {
@@ -1902,7 +1903,9 @@ public class BaseBundle implements Parcel.ClassLoaderProvider {
         readFromParcelInner(parcel, length);
     }
 
-    @Adapted(reason = "a native bundle from P on and mHasIntent read from BAKLAVA on")
+    @Adapted(value = {"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-8.1.0_r1/core/java/android/os/BaseBundle.java#L1575-L1578",
+            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-15.0.0_r1/core/java/android/os/BaseBundle.java#L1865-L1912"},
+            reason = "a native bundle from P on and mHasIntent read from BAKLAVA on")
     private void readFromParcelInner(Parcel parcel, int length) {
         if (length < 0) {
             throw new RuntimeException("Bad length in parcel: " + length);

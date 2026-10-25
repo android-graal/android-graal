@@ -358,11 +358,13 @@
      /** @hide */
      public static final int ALIGNMENT_SPAN = 1;
      /** @hide */
-@@ -801,11 +502,16 @@
+@@ -801,11 +502,18 @@
       * Flatten a CharSequence and whatever styles can be copied across processes
       * into the parcel.
       */
-+    @Adapted(reason = "writeString below R, and a span throws")
++    @Adapted(value = {"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-10.0.0_r1/core/java/android/text/TextUtils.java#L747-L748",
++            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-10.0.0_r1/core/java/android/text/TextUtils.java#L783-L785"},
++            reason = "writeString below R, and a span throws")
      public static void writeToParcel(@Nullable CharSequence cs, @NonNull Parcel p,
              int parcelableFlags) {
          if (cs instanceof Spanned) {
@@ -376,7 +378,7 @@
  
              Spanned sp = (Spanned) cs;
              Object[] os = sp.getSpans(0, cs.length(), Object.class);
-@@ -816,33 +522,18 @@
+@@ -816,33 +524,18 @@
              // so one object can be several.
  
              for (int i = 0; i < os.length; i++) {
@@ -416,15 +418,16 @@
              } else {
                  p.writeString8(null);
              }
-@@ -855,6 +546,7 @@
+@@ -855,6 +548,8 @@
          p.writeInt(sp.getSpanFlags(o));
      }
  
-+    @Adapted(reason = "readString below R, and a span throws")
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-10.0.0_r1/core/java/android/text/TextUtils.java#L805-L807",
++            reason = "readString below R, and a span throws")
      public static final Parcelable.Creator<CharSequence> CHAR_SEQUENCE_CREATOR
              = new Parcelable.Creator<CharSequence>() {
          /**
-@@ -864,7 +556,8 @@
+@@ -864,7 +559,8 @@
          public CharSequence createFromParcel(Parcel p) {
              int kind = p.readInt();
  
@@ -434,7 +437,7 @@
              if (string == null) {
                  return null;
              }
-@@ -881,136 +574,7 @@
+@@ -881,136 +577,7 @@
                  if (kind == 0)
                      break;
  
@@ -572,7 +575,7 @@
              }
  
              return sp;
-@@ -1022,301 +586,6 @@
+@@ -1022,301 +589,6 @@
          }
      };
  
@@ -874,7 +877,7 @@
      public enum TruncateAt {
          START,
          MIDDLE,
-@@ -1337,325 +606,6 @@
+@@ -1337,325 +609,6 @@
          public void ellipsized(int start, int end);
      }
  
@@ -1200,7 +1203,7 @@
      // Returns true if the character's presence could affect RTL layout.
      //
      // In order to be fast, the code is intentionally rough and quite conservative in its
-@@ -1688,20 +638,6 @@
+@@ -1688,20 +641,6 @@
          return true;
      }
  
@@ -1221,7 +1224,7 @@
      /* package */ static void recycle(char[] temp) {
          if (temp.length > 1000)
              return;
-@@ -1749,57 +685,6 @@
+@@ -1749,57 +688,6 @@
      }
  
      /**
@@ -1279,7 +1282,7 @@
       * Returns whether the given CharSequence contains any printable characters.
       */
      public static boolean isGraphic(CharSequence str) {
-@@ -2036,56 +921,6 @@
+@@ -2036,56 +924,6 @@
      }
  
      /**
@@ -1336,7 +1339,7 @@
       * Pack 2 int values into a long, useful as a return value for a range
       * @see #unpackRangeStartFromLong(long)
       * @see #unpackRangeEndFromLong(long)
-@@ -2119,25 +954,6 @@
+@@ -2119,25 +957,6 @@
      }
  
      /**
@@ -1362,7 +1365,7 @@
       * Simple alternative to {@link String#format} which purposefully supports
       * only a small handful of substitutions to improve execution speed.
       * Benchmarking reveals this optimized alternative performs 6.5x faster for
-@@ -2251,38 +1067,6 @@
+@@ -2251,38 +1070,6 @@
      }
  
      /**
@@ -1401,7 +1404,7 @@
       * Prepends {@code start} and appends {@code end} to a given {@link StringBuilder}
       *
       * @hide
-@@ -2387,150 +1171,6 @@
+@@ -2387,150 +1174,6 @@
      }
  
      /**

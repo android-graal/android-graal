@@ -190,8 +190,9 @@ class AndroidDeclarationsTest {
             "android/hardware/GeomagneticField", "android/hardware/LutProperties",
             "android/hardware/SensorEventCallback", "android/hardware/SensorEventListener2",
             "android/hardware/SensorListener", "android/hardware/biometrics/PromptContentItem",
-            "android/hardware/biometrics/PromptContentView", "android/hardware/camera2/CameraAccessException",
-            "android/hardware/camera2/params/BlackLevelPattern",
+            "android/hardware/biometrics/PromptContentItemBulletedText",
+            "android/hardware/biometrics/PromptContentItemPlainText", "android/hardware/biometrics/PromptContentView",
+            "android/hardware/camera2/CameraAccessException", "android/hardware/camera2/params/BlackLevelPattern",
             "android/hardware/camera2/params/DeviceStateSensorOrientationMap",
             "android/hardware/camera2/params/DeviceStateSensorOrientationMap$Builder",
             "android/hardware/camera2/params/Face", "android/hardware/camera2/params/Face$Builder",
@@ -1541,6 +1542,10 @@ class AndroidDeclarationsTest {
             Map.entry("android/hardware/LutProperties",
                     Set.of("nested android/hardware/LutProperties$Dimension",
                             "nested android/hardware/LutProperties$SamplingKey")),
+            Map.entry("android/hardware/biometrics/PromptContentItemBulletedText",
+                    Set.of("method [PUBLIC] getText()Ljava/lang/String;")),
+            Map.entry("android/hardware/biometrics/PromptContentItemPlainText",
+                    Set.of("method [PUBLIC] getText()Ljava/lang/String;")),
             Map.entry("android/hardware/camera2/CameraAccessException",
                     Set.of("field [PUBLIC, STATIC, FINAL] CAMERA_DEPRECATED_HAL I = 1000",
                             "method [PUBLIC, STATIC] getDefaultMessage(I)Ljava/lang/String;",
@@ -3151,11 +3156,12 @@ class AndroidDeclarationsTest {
             "android/view/inputmethod/Flags", "android/app/backup/RestoreSet", "android/bluetooth/BluetoothUuid",
             "android/bluetooth/le/BluetoothLeUtils", "android/content/om/CriticalOverlayInfo",
             "android/content/om/OverlayConstraint", "android/graphics/pdf/utils/Preconditions",
-            "android/hardware/camera2/utils/HashCodeHelpers", "android/hardware/radio/AccessNetwork",
-            "android/hardware/radio/network/EutranBands", "android/hardware/radio/network/GeranBands",
-            "android/hardware/radio/network/NgranBands", "android/hardware/radio/network/UtranBands",
-            "android/hardware/security/keymint/Algorithm", "android/hardware/security/keymint/BlockMode",
-            "android/hardware/security/keymint/Digest", "android/hardware/security/keymint/ErrorCode",
+            "android/hardware/biometrics/PromptContentItemParcelable", "android/hardware/camera2/utils/HashCodeHelpers",
+            "android/hardware/radio/AccessNetwork", "android/hardware/radio/network/EutranBands",
+            "android/hardware/radio/network/GeranBands", "android/hardware/radio/network/NgranBands",
+            "android/hardware/radio/network/UtranBands", "android/hardware/security/keymint/Algorithm",
+            "android/hardware/security/keymint/BlockMode", "android/hardware/security/keymint/Digest",
+            "android/hardware/security/keymint/ErrorCode",
             "android/hardware/security/keymint/HardwareAuthenticatorType",
             "android/hardware/security/keymint/KeyFormat", "android/hardware/security/keymint/KeyOrigin",
             "android/hardware/security/keymint/KeyPurpose", "android/hardware/security/keymint/PaddingMode",
@@ -3312,9 +3318,7 @@ class AndroidDeclarationsTest {
         Set<String> interfaces = providedInterfaces(android);
         assertTrue(interfaces.containsAll(missingInterfaces), "listed as a missing interface, not in android.jar");
         interfaces.removeAll(missingInterfaces);
-        Set<String> ourInterfaces = androidInterfaces(ours);
-        ourInterfaces.removeIf(name -> HIDDEN_CLASSES.contains(name) || isHiddenNested(name));
-        assertEquals(interfaces, ourInterfaces, "interfaces");
+        assertEquals(interfaces, visibleInterfaces(tree, ours), "interfaces");
         if (tree == Tree.DECLARATIONS) {
             assertFalse(Files.exists(Tree.EMULATIONS.classFile(internalName.split("\\$")[0])),
                     internalName + " is both emulated and declared");
@@ -3391,6 +3395,18 @@ class AndroidDeclarationsTest {
         for (ClassEntry entry : model.interfaces()) {
             if (entry.asInternalName().startsWith("android/")) {
                 interfaces.add(entry.asInternalName());
+            }
+        }
+        return interfaces;
+    }
+
+    private static Set<String> visibleInterfaces(Tree tree, ClassModel model) throws IOException {
+        Set<String> interfaces = new TreeSet<>();
+        for (String name : androidInterfaces(model)) {
+            if (HIDDEN_CLASSES.contains(name) || isHiddenNested(name)) {
+                interfaces.addAll(visibleInterfaces(tree, ClassFile.of().parse(tree.classFile(name))));
+            } else {
+                interfaces.add(name);
             }
         }
         return interfaces;

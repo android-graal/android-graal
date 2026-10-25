@@ -818,15 +818,21 @@
          } else if (Parcelable.class.isAssignableFrom(componentType)) {
              writeTypedArray((Parcelable[]) val, parcelableFlags);
          } else if (componentType.isArray()) {
-@@ -2635,6 +2443,7 @@
+@@ -2635,6 +2443,13 @@
      }
  
      /** @hide */
-+    @Adapted(reason = "the value types of the device's API level, without binders")
++    @Adapted(value = {"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-6.0.0_r1/core/java/android/os/Parcel.java#L1320-L1322",
++            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-6.0.0_r1/core/java/android/os/Parcel.java#L1385-L1395",
++            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-11.0.0_r1/core/java/android/os/Parcel.java#L1805-L1810",
++            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-11.0.0_r1/core/java/android/os/Parcel.java#L1867-L1869",
++            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-12.1.0_r1/core/java/android/os/Parcel.java#L1853-L1858",
++            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-12.1.0_r1/core/java/android/os/Parcel.java#L1921-L1931"},
++            reason = "the value types of the device's API level, without binders")
      public static int getValueType(@Nullable Object v) {
          if (v == null) {
              return VAL_NULL;
-@@ -2647,10 +2456,12 @@
+@@ -2647,10 +2462,12 @@
          } else if (v instanceof Bundle) {
              // Must be before Parcelable
              return VAL_BUNDLE;
@@ -841,7 +847,7 @@
              // Must be before Parcelable
              return VAL_SIZEF;
          } else if (v instanceof Parcelable) {
-@@ -2684,8 +2495,6 @@
+@@ -2684,8 +2501,6 @@
          } else if (v instanceof CharSequence[]) {
              // Must be after String[] and before Object[]
              return VAL_CHARSEQUENCEARRAY;
@@ -850,7 +856,7 @@
          } else if (v instanceof Parcelable[]) {
              return VAL_PARCELABLEARRAY;
          } else if (v instanceof int[]) {
-@@ -2696,15 +2505,19 @@
+@@ -2696,15 +2511,19 @@
              return VAL_BYTE;
          } else if (v instanceof Size) {
              return VAL_SIZE;
@@ -875,7 +881,7 @@
              return VAL_FLOATARRAY;
          } else {
              Class<?> clazz = v.getClass();
-@@ -2726,6 +2539,7 @@
+@@ -2726,6 +2545,7 @@
       *
       * @hide
       */
@@ -883,7 +889,7 @@
      public void writeValue(int type, @Nullable Object v) {
          switch (type) {
              case VAL_NULL:
-@@ -2784,9 +2598,6 @@
+@@ -2784,9 +2604,6 @@
              case VAL_CHARSEQUENCEARRAY:
                  writeCharSequenceArray((CharSequence[]) v);
                  break;
@@ -893,12 +899,13 @@
              case VAL_PARCELABLEARRAY:
                  writeParcelableArray((Parcelable[]) v, 0);
                  break;
-@@ -3093,13 +2904,10 @@
+@@ -3093,13 +2910,11 @@
       * @see #writeNoException
       * @see #readException
       */
 -    @RavenwoodReplace(blockedBy = AppOpsManager.class)
-+    @Adapted(reason = "without AppOps and StrictMode, the stack trace header from P on, and a parcelled stack trace throws")
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-8.1.0_r1/core/java/android/os/Parcel.java#L1852-L1900",
++            reason = "without AppOps and StrictMode, the stack trace header from P on, and a parcelled stack trace throws")
      public final void writeException(@NonNull Exception e) {
 -        AppOpsManager.prefixParcelWithAppOpsIfNeeded(this);
 -
@@ -908,7 +915,7 @@
          if (code == 0) {
              if (e instanceof RuntimeException) {
                  throw (RuntimeException) e;
-@@ -3107,13 +2915,16 @@
+@@ -3107,13 +2922,16 @@
              throw new RuntimeException(e);
          }
          writeString(e.getMessage());
@@ -932,7 +939,7 @@
          }
          switch (code) {
              case EX_SERVICE_SPECIFIC:
-@@ -3132,24 +2943,13 @@
+@@ -3132,24 +2950,15 @@
          }
      }
  
@@ -950,7 +957,9 @@
 -    }
 -
      /** @hide */
-+    @Adapted(reason = "EX_PARCELABLE from O on for android.* exceptions only and EX_SERVICE_SPECIFIC from N on")
++    @Adapted(value = {"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-6.0.0_r1/core/java/android/os/Parcel.java#L1476-L1502",
++            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-7.1.0_r1/core/java/android/os/Parcel.java#L1556-L1587"},
++            reason = "EX_PARCELABLE from O on for android.* exceptions only and EX_SERVICE_SPECIFIC from N on")
      public static int getExceptionCode(@NonNull Throwable e) {
          int code = 0;
 -        if (e instanceof Parcelable
@@ -961,7 +970,7 @@
              // We only send Parcelable exceptions that are in the
              // BootClassLoader to ensure that the receiver can unpack them
              code = EX_PARCELABLE;
-@@ -3167,7 +2967,8 @@
+@@ -3167,7 +2976,8 @@
              code = EX_NETWORK_MAIN_THREAD;
          } else if (e instanceof UnsupportedOperationException) {
              code = EX_UNSUPPORTED_OPERATION;
@@ -971,7 +980,7 @@
              code = EX_SERVICE_SPECIFIC;
          }
          return code;
-@@ -3198,38 +2999,8 @@
+@@ -3198,38 +3008,8 @@
       * @see #writeException
       * @see #readException
       */
@@ -1011,7 +1020,7 @@
          writeInt(0);
      }
  
-@@ -3265,12 +3036,11 @@
+@@ -3265,12 +3045,11 @@
       */
      @UnsupportedAppUsage
      @TestApi
@@ -1026,7 +1035,7 @@
          }
  
          if (code == EX_HAS_STRICTMODE_REPLY_HEADER) {
-@@ -3282,7 +3052,7 @@
+@@ -3282,7 +3061,7 @@
                  // but discussions around event/RPC tracing suggest we might
                  // put that here too.  If so, switch on sub-header tags here.
                  // But for now, just parse out the StrictMode stuff.
@@ -1035,11 +1044,12 @@
              }
              // And fat response headers are currently only used when
              // there are no exceptions, so return no error:
-@@ -3298,9 +3068,11 @@
+@@ -3298,9 +3077,12 @@
       * @param code Used to determine which exception class to throw.
       * @param msg The exception message.
       */
-+    @Adapted(reason = "reads the stack trace size from P on")
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-8.1.0_r1/core/java/android/os/Parcel.java#L1994-L2022",
++            reason = "reads the stack trace size from P on")
      public final void readException(int code, String msg) {
          String remoteStackTrace = null;
 -        final int remoteStackPayloadSize = readInt();
@@ -1048,7 +1058,7 @@
          if (remoteStackPayloadSize > 0) {
              remoteStackTrace = readString();
          }
-@@ -3444,71 +3216,6 @@
+@@ -3444,71 +3226,6 @@
      }
  
      /**
@@ -1120,7 +1130,7 @@
       * Read a byte value from the parcel at the current dataPosition().
       */
      public final byte readByte() {
-@@ -4073,59 +3780,6 @@
+@@ -4073,59 +3790,6 @@
      }
  
      /**
@@ -1180,7 +1190,7 @@
       * Read into the given List items String objects that were written with
       * {@link #writeStringList} at the current dataPosition().
       *
-@@ -4148,51 +3802,6 @@
+@@ -4148,51 +3812,6 @@
      }
  
      /**
@@ -1232,7 +1242,7 @@
       * Read the list of {@code Parcelable} objects at the current data position into the
       * given {@code list}. The contents of the {@code list} are replaced. If the serialized
       * list was {@code null}, {@code list} is cleared.
-@@ -4346,6 +3955,7 @@
+@@ -4346,6 +3965,7 @@
       * @see #readInterfaceArray
       * @see #readTypedArray
       */
@@ -1240,7 +1250,7 @@
      public <T> void readFixedArray(@NonNull T val) {
          Class<?> componentType = val.getClass().getComponentType();
          if (componentType == boolean.class) {
-@@ -4362,8 +3972,6 @@
+@@ -4362,8 +3982,6 @@
              readFloatArray((float[]) val);
          } else if (componentType == double.class) {
              readDoubleArray((double[]) val);
@@ -1249,7 +1259,7 @@
          } else if (componentType.isArray()) {
              int length = readInt();
              if (length != Array.getLength(val)) {
-@@ -4379,32 +3987,6 @@
+@@ -4379,32 +3997,6 @@
      }
  
      /**
@@ -1282,7 +1292,7 @@
       * Read a new multi-dimensional array of typed parcelables from a parcel.
       * If you want to read IInterface values, use
       * {@link #readFixedArray(Object, Function)}. For values of other types, use
-@@ -4469,6 +4051,7 @@
+@@ -4469,6 +4061,7 @@
       * @see #createTypedArray
       */
      @Nullable
@@ -1290,7 +1300,7 @@
      public <T> T createFixedArray(@NonNull Class<T> cls, @NonNull int... dimensions) {
          // Check if type matches with dimensions
          // If type is one-dimensional array, delegate to other creators
-@@ -4492,8 +4075,6 @@
+@@ -4492,8 +4085,6 @@
              val = (T) createFloatArray();
          } else if (componentType == double.class) {
              val = (T) createDoubleArray();
@@ -1299,7 +1309,7 @@
          } else if (componentType.isArray()) {
              int length = readInt();
              if (length < 0) {
-@@ -4533,66 +4114,6 @@
+@@ -4533,66 +4124,6 @@
      }
  
      /**
@@ -1366,7 +1376,7 @@
       * Read and return a new multi-dimensional array of typed parcelables from a parcel.
       * Returns null if the previously written array object is null.  If you want to read
       * IInterface values, use {@link #createFixedArray(Class, Function, int[])}.
-@@ -4938,6 +4459,7 @@
+@@ -4938,6 +4469,7 @@
       */
      @SuppressWarnings("unchecked")
      @Nullable
@@ -1374,7 +1384,7 @@
      private <T> T readValue(int type, @Nullable ClassLoader loader, @Nullable Class<T> clazz,
              @Nullable Class<?>... itemTypes) {
          final Object object;
-@@ -5013,8 +4535,7 @@
+@@ -5013,8 +4545,7 @@
                  break;
  
              case VAL_IBINDER:
@@ -1384,11 +1394,13 @@
  
              case VAL_OBJECTARRAY: {
                  Class<?> itemType = ArrayUtils.getOrNull(itemTypes, 0);
-@@ -5104,11 +4625,15 @@
+@@ -5104,11 +4635,17 @@
          return (T) object;
      }
  
-+    @Adapted(reason = "false below TIRAMISU")
++    @Adapted(value = {"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-12.1.0_r1/core/java/android/os/Parcel.java#L1834-L1936",
++            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-12.1.0_r1/core/java/android/os/Parcel.java#L3209-L3216"},
++            reason = "false below TIRAMISU")
      private boolean isLengthPrefixed(int type) {
          // In general, we want custom types and containers of custom types to be length-prefixed,
          // this allows clients (eg. Bundle) to skip their content during deserialization. The
@@ -1400,7 +1412,7 @@
          switch (type) {
              case VAL_MAP:
              case VAL_PARCELABLE:
-@@ -5544,33 +5069,8 @@
+@@ -5544,33 +5081,8 @@
          throw new UnsupportedOperationException();
      }
  
@@ -1436,7 +1448,7 @@
          if (DEBUG_RECYCLE) {
              mStack = new RuntimeException();
          }
-@@ -5578,8 +5078,9 @@
+@@ -5578,8 +5090,9 @@
          init(nativePtr);
      }
  
@@ -1448,7 +1460,7 @@
              mNativePtr = nativePtr;
              mOwnsNativeParcelObject = false;
          } else {
-@@ -5597,25 +5098,20 @@
+@@ -5597,25 +5110,20 @@
          mReadWriteHelper = ReadWriteHelper.DEFAULT;
      }
  
@@ -1478,7 +1490,7 @@
      }
  
      /**
-@@ -5860,13 +5356,6 @@
+@@ -5860,13 +5368,6 @@
          }
      }
  

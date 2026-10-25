@@ -43,15 +43,16 @@
              }
          } else if (object instanceof Bundle) {
              Bundle bundle = (Bundle) object;
-@@ -1835,6 +1839,7 @@
+@@ -1835,6 +1839,8 @@
       * it to be passed through an IBinder connection.
       * @param parcel The parcel to copy this bundle to.
       */
-+    @Adapted(reason = "writes mHasIntent from BAKLAVA on")
++    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-15.0.0_r1/core/java/android/os/BaseBundle.java#L1808-L1851",
++            reason = "writes mHasIntent from BAKLAVA on")
      void writeToParcelInner(Parcel parcel, int flags) {
          // If the parcel has a read-write helper, we can't just copy the blob, so unparcel it first.
          if (parcel.hasReadWriteHelper()) {
-@@ -1854,7 +1859,9 @@
+@@ -1854,7 +1860,9 @@
                      parcel.writeInt(length);
                      parcel.writeInt(mParcelledByNative ? BUNDLE_MAGIC_NATIVE : BUNDLE_MAGIC);
                      parcel.appendFrom(mParcelledData, 0, length);
@@ -62,7 +63,7 @@
                  }
                  return;
              }
-@@ -1878,7 +1885,9 @@
+@@ -1878,7 +1886,9 @@
          int length = endPos - startPos;
          parcel.writeInt(length);
          parcel.setDataPosition(endPos);
@@ -73,15 +74,17 @@
      }
  
      /**
-@@ -1893,6 +1902,7 @@
+@@ -1893,6 +1903,9 @@
          readFromParcelInner(parcel, length);
      }
  
-+    @Adapted(reason = "a native bundle from P on and mHasIntent read from BAKLAVA on")
++    @Adapted(value = {"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-8.1.0_r1/core/java/android/os/BaseBundle.java#L1575-L1578",
++            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-15.0.0_r1/core/java/android/os/BaseBundle.java#L1865-L1912"},
++            reason = "a native bundle from P on and mHasIntent read from BAKLAVA on")
      private void readFromParcelInner(Parcel parcel, int length) {
          if (length < 0) {
              throw new RuntimeException("Bad length in parcel: " + length);
-@@ -1907,7 +1917,8 @@
+@@ -1907,7 +1920,8 @@
  
          final int magic = parcel.readInt();
          final boolean isJavaBundle = magic == BUNDLE_MAGIC;
@@ -91,7 +94,7 @@
          if (!isJavaBundle && !isNativeBundle) {
              throw new IllegalStateException("Bad magic number for Bundle: 0x"
                      + Integer.toHexString(magic));
-@@ -1922,7 +1933,7 @@
+@@ -1922,7 +1936,7 @@
                  mOwnsLazyValues = false;
                  initializeFromParcelLocked(parcel, /*ownsParcel*/ false, isNativeBundle);
              }
@@ -100,7 +103,7 @@
              return;
          }
  
-@@ -1941,7 +1952,7 @@
+@@ -1941,7 +1955,7 @@
          mOwnsLazyValues = true;
          mParcelledByNative = isNativeBundle;
          mParcelledData = p;
