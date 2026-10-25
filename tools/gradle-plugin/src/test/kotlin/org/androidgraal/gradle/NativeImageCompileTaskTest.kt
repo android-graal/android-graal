@@ -18,6 +18,8 @@ class NativeImageCompileTaskTest {
     private val extension: AndroidGraalExtension =
         project.extensions.create("androidGraal", AndroidGraalExtension::class.java)
 
+    private val options: TargetOptions = project.objects.newInstance(TargetOptions::class.java, "aarch64")
+
     private val jar = project.file("lib.jar")
 
     private val toolchain = ToolchainLayout(project.file("toolchain"))
@@ -26,6 +28,7 @@ class NativeImageCompileTaskTest {
         it.setup(
             "debug",
             extension,
+            options,
             project.files(jar),
             project.provider { toolchain },
             Target.AARCH64,
@@ -54,7 +57,7 @@ class NativeImageCompileTaskTest {
     @Test
     fun `each target has its own task directory`() {
         val arm32 = project.tasks.register("compileArm32", NativeImageCompileTask::class.java) {
-            it.setup("debug", extension, project.files(jar), project.provider { toolchain }, Target.ARM32)
+            it.setup("debug", extension, options, project.files(jar), project.provider { toolchain }, Target.ARM32)
         }.get()
 
         assertEquals(project.file("build/androidgraal/debug/armeabi-v7a/native-image"), arm32.taskDir.get().asFile)
@@ -69,15 +72,17 @@ class NativeImageCompileTaskTest {
     }
 
     @Test
-    fun `the settings come from the extension`() {
+    fun `the image name comes from the extension, the settings from the target`() {
         extension.imageName.set("hello")
-        extension.buildArgs.set(listOf("-H:+Foo"))
-        extension.jvmArgs.set(listOf("-Xmx4g"))
-        extension.systemProperties.set(mapOf("a" to "b"))
-        extension.configurationFileDirectories.from("config")
-        extension.verbose.set(true)
-        extension.quickBuild.set(true)
-        extension.useLLVM.set(false)
+        options.buildArgs.set(listOf("-H:+Foo"))
+        options.jvmArgs.set(listOf("-Xmx4g"))
+        options.systemProperties.set(mapOf("a" to "b"))
+        options.configurationFileDirectories.from("config")
+        options.verbose.set(true)
+        options.quickBuild.set(true)
+        options.useLLVM.set(false)
+        options.includeLocales.set(listOf("de", "fr"))
+        options.addAllCharsets.set(false)
 
         assertEquals("hello", task.imageName.get())
         assertEquals(listOf("-H:+Foo"), task.buildArgs.get())
@@ -87,11 +92,13 @@ class NativeImageCompileTaskTest {
         assertTrue(task.verbose.get())
         assertTrue(task.quickBuild.get())
         assertFalse(task.useLLVM.get())
+        assertEquals(listOf("de", "fr"), task.includeLocales.get())
+        assertFalse(task.addAllCharsets.get())
     }
 
     @Test
-    fun `a task setting beats the extension`() {
-        extension.verbose.set(true)
+    fun `a task setting beats the target`() {
+        options.verbose.set(true)
 
         task.verbose.set(false)
         assertFalse(task.verbose.get())
@@ -103,7 +110,7 @@ class NativeImageCompileTaskTest {
     @Test
     fun `a task-level LIR backend fails a target it cannot compile for`() {
         val arm32 = project.tasks.register("compileArm32", NativeImageCompileTask::class.java) {
-            it.setup("debug", extension, project.files(jar), project.provider { toolchain }, Target.ARM32)
+            it.setup("debug", extension, options, project.files(jar), project.provider { toolchain }, Target.ARM32)
         }.get()
         arm32.useLLVM.set(false)
 

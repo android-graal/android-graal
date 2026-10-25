@@ -65,6 +65,12 @@ abstract class NativeImageCompileTask : BaseTask("native-image") {
     @get:Input
     abstract val useLLVM: Property<Boolean>
 
+    @get:Input
+    abstract val includeLocales: ListProperty<String>
+
+    @get:Input
+    abstract val addAllCharsets: Property<Boolean>
+
     @get:Internal
     abstract val workDir: DirectoryProperty
 
@@ -74,6 +80,7 @@ abstract class NativeImageCompileTask : BaseTask("native-image") {
     fun setup(
         variantName: String,
         extension: AndroidGraalExtension,
+        options: TargetOptions,
         classpath: FileCollection,
         toolchain: Provider<ToolchainLayout>,
         target: Target,
@@ -88,13 +95,15 @@ abstract class NativeImageCompileTask : BaseTask("native-image") {
         this.target.convention(target)
         this.imageClasspath.convention(classpath)
         this.imageName.convention(extension.imageName)
-        this.buildArgs.convention(extension.buildArgs)
-        this.jvmArgs.convention(extension.jvmArgs)
-        this.systemProperties.convention(extension.systemProperties)
-        this.configurationFileDirectories.convention(extension.configurationFileDirectories)
-        this.verbose.convention(extension.verbose)
-        this.quickBuild.convention(extension.quickBuild)
-        this.useLLVM.convention(extension.useLLVM)
+        this.buildArgs.convention(options.buildArgs)
+        this.jvmArgs.convention(options.jvmArgs)
+        this.systemProperties.convention(options.systemProperties)
+        this.configurationFileDirectories.convention(options.configurationFileDirectories)
+        this.verbose.convention(options.verbose)
+        this.quickBuild.convention(options.quickBuild)
+        this.useLLVM.convention(options.useLLVM)
+        this.includeLocales.convention(options.includeLocales)
+        this.addAllCharsets.convention(options.addAllCharsets)
     }
 
     override fun execute() {
@@ -117,6 +126,8 @@ abstract class NativeImageCompileTask : BaseTask("native-image") {
             verbose = verbose.get(),
             quickBuild = quickBuild.get(),
             useLLVM = useLLVM.get(),
+            includeLocales = includeLocales.get(),
+            addAllCharsets = addAllCharsets.get(),
             target = target.get(),
             host = Host.current(),
         )

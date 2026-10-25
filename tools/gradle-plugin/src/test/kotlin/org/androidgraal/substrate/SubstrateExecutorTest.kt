@@ -160,6 +160,33 @@ class SubstrateExecutorTest {
     }
 
     @Test
+    fun `a locale list replaces every locale, charsets off leaves native-image's standard set`() {
+        val defaults = SubstrateExecutor(minimalConfig(File("/toolchain")), noRunner).command()
+        val narrowed = SubstrateExecutor(
+            minimalConfig(File("/toolchain")).copy(includeLocales = listOf("de", "fr-CA"), addAllCharsets = false),
+            noRunner,
+        ).command()
+
+        assertEquals(
+            listOf(
+                "-H:+ReportExceptionStackTraces",
+                "-H:+AddAllCharsets",
+                "-H:+IncludeAllLocales",
+                "--initialize-at-run-time=java.net.DefaultInterface",
+            ),
+            defaults.window(),
+        )
+        assertEquals(
+            listOf(
+                "-H:+ReportExceptionStackTraces",
+                "-H:IncludeLocales=de,fr-CA",
+                "--initialize-at-run-time=java.net.DefaultInterface",
+            ),
+            narrowed.window(),
+        )
+    }
+
+    @Test
     fun `the boot module check is off only with LLVM on a macOS arm64 host`() {
         val flag = "-H:CheckBootModuleDependencies=0"
         val macos = SubstrateExecutor(
@@ -258,6 +285,11 @@ class SubstrateExecutorTest {
             .writeText("{\nglobal:\n\"Java_org_androidgraal_art_NativeImage_create0\";\nlocal: *;\n};")
         temp.resolve(CompiledImage.STATIC_LIBRARIES).writeText("java\nzip\njvm\n")
         temp.resolve(CompiledImage.LIBRARIES).writeText("m\ndl\nz\n")
+    }
+
+    private fun List<String>.window(): List<String> {
+        val from = indexOf("-H:+ReportExceptionStackTraces")
+        return subList(from, indexOf("--initialize-at-run-time=java.net.DefaultInterface") + 1)
     }
 
     private val noRunner = ProcessRunner { _, _ -> 0 }

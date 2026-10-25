@@ -40,4 +40,6 @@ enum class Target(
     ;
 
     val title: String = name.lowercase().replaceFirstChar(Char::uppercase)
+
+    val dslName: String = name.lowercase()
 }

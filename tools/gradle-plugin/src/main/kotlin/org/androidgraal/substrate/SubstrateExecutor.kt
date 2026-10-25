@@ -25,6 +25,8 @@ class SubstrateExecutor(private val config: Config, private val runner: ProcessR
         val verbose: Boolean = false,
         val quickBuild: Boolean = false,
         val useLLVM: Boolean = true,
+        val includeLocales: List<String> = emptyList(),
+        val addAllCharsets: Boolean = true,
     )
 
     fun command(): List<String> {
@@ -49,8 +51,12 @@ class SubstrateExecutor(private val config: Config, private val runner: ProcessR
             config.workDir.resolve(config.imageName).absolutePath,
             "-march=${target.march}",
             "-H:+ReportExceptionStackTraces",
-            "-H:+AddAllCharsets",
-            "-H:+IncludeAllLocales",
+            *argsIf(config.addAllCharsets, "-H:+AddAllCharsets"),
+            if (config.includeLocales.isEmpty()) {
+                "-H:+IncludeAllLocales"
+            } else {
+                "-H:IncludeLocales=" + config.includeLocales.joinToString(",")
+            },
             // The builder runs on the host JDK, whose macOS `DefaultInterface` caches the host's default
             // `NetworkInterface`, and graal initializes it at run time only for Darwin targets.
             "--initialize-at-run-time=java.net.DefaultInterface",

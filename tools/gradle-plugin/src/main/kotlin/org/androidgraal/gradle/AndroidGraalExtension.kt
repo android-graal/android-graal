@@ -2,11 +2,10 @@ package org.androidgraal.gradle
 
 import org.gradle.api.file.ConfigurableFileCollection
 import org.gradle.api.file.DirectoryProperty
-import org.gradle.api.provider.ListProperty
-import org.gradle.api.provider.MapProperty
+import org.gradle.api.plugins.ExtensionAware
 import org.gradle.api.provider.Property
 
-abstract class AndroidGraalExtension {
+abstract class AndroidGraalExtension : ExtensionAware {
 
     /** Required. The plugin produces `lib<imageName>.so`. */
     abstract val imageName: Property<String>
@@ -17,26 +16,6 @@ abstract class AndroidGraalExtension {
      */
     abstract val toolchainDir: DirectoryProperty
 
-    abstract val buildArgs: ListProperty<String>
-
-    /** For the image builder's JVM. */
-    abstract val jvmArgs: ListProperty<String>
-
-    /** Seen by the image builder, not by the running image. */
-    abstract val systemProperties: MapProperty<String, String>
-
-    abstract val configurationFileDirectories: ConfigurableFileCollection
-
     /** R8's rules for the image of every minified variant, besides those the image classpath's jars embed. */
     abstract val proguardFiles: ConfigurableFileCollection
-
-    abstract val verbose: Property<Boolean>
-
-    /** `-Ob`: a faster build for a slower image. */
-    abstract val quickBuild: Property<Boolean>
-
-    /** Default `true`, `false` selects graal's own LIR backend. */
-    abstract val useLLVM: Property<Boolean>
 }
-
-internal const val ANDROID_GRAAL_EXTENSION_NAME = "androidGraal"

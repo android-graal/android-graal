@@ -17,6 +17,8 @@ class NativeImageLinkTaskTest {
     private val extension: AndroidGraalExtension =
         project.extensions.create("androidGraal", AndroidGraalExtension::class.java)
 
+    private val options: TargetOptions = project.objects.newInstance(TargetOptions::class.java, "aarch64")
+
     private val toolchain = ToolchainLayout(project.file("toolchain"))
 
     private val ndkRoot = project.file("ndk")
@@ -27,6 +29,7 @@ class NativeImageLinkTaskTest {
         it.setup(
             "debug",
             extension,
+            options,
             project.provider { toolchain },
             Target.AARCH64,
             project.provider { Ndk(ndkRoot) },
@@ -53,6 +56,7 @@ class NativeImageLinkTaskTest {
             it.setup(
                 "debug",
                 extension,
+                options,
                 project.provider { toolchain },
                 Target.ARM32,
                 project.provider { Ndk(ndkRoot) },
@@ -72,17 +76,17 @@ class NativeImageLinkTaskTest {
     }
 
     @Test
-    fun `the settings come from the extension`() {
+    fun `the image name comes from the extension, the backend from the target`() {
         extension.imageName.set("hello")
-        extension.useLLVM.set(false)
+        options.useLLVM.set(false)
 
         assertEquals("hello", task.imageName.get())
         assertFalse(task.useLLVM.get())
     }
 
     @Test
-    fun `a task setting beats the extension`() {
-        extension.useLLVM.set(true)
+    fun `a task setting beats the target`() {
+        options.useLLVM.set(true)
 
         task.useLLVM.set(false)
         assertFalse(task.useLLVM.get())

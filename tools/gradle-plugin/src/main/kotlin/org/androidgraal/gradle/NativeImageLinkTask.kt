@@ -61,6 +61,7 @@ abstract class NativeImageLinkTask : BaseTask("link") {
     fun setup(
         variantName: String,
         extension: AndroidGraalExtension,
+        options: TargetOptions,
         toolchain: Provider<ToolchainLayout>,
         target: Target,
         ndk: Provider<Ndk>,
@@ -75,7 +76,7 @@ abstract class NativeImageLinkTask : BaseTask("link") {
         this.toolchain.convention(toolchain)
         this.target.convention(target)
         this.imageName.convention(extension.imageName)
-        this.useLLVM.convention(extension.useLLVM)
+        this.useLLVM.convention(options.useLLVM)
         this.ndk.convention(ndk)
         this.minSdk.convention(minSdk)
         this.objectsDir.convention(objectsDir)

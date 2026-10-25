@@ -3,6 +3,7 @@ package org.androidgraal.gradle
 import org.androidgraal.common.ToolchainLayout
 import org.apache.commons.io.FileUtils
 import org.gradle.api.Named
+import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.Project
 import org.gradle.api.artifacts.FileCollectionDependency
 import org.gradle.api.attributes.Attribute
@@ -15,6 +16,7 @@ import org.gradle.api.attributes.java.TargetJvmEnvironment
 import org.gradle.api.internal.TaskInputsInternal
 import org.gradle.api.internal.project.ProjectInternal
 import org.gradle.api.plugins.JavaBasePlugin
+import org.gradle.api.reflect.TypeOf
 import org.gradle.internal.fingerprint.DirectorySensitivity
 import org.gradle.internal.fingerprint.FileNormalizer
 import org.gradle.internal.fingerprint.LineEndingSensitivity
@@ -122,22 +124,101 @@ class ArtPluginTest {
     }
 
     @Test
-    fun `the LIR backend fails a variant with an ABI it cannot compile for, naming both`() {
-        project.extensions.getByType(AndroidGraalExtension::class.java).useLLVM.set(false)
+    fun `the targets are the toolchain's, each with the defaults reaching its tasks`() {
+        assertEquals(listOf("aarch64", "arm32"), targets().names.toList())
+
+        evaluateAndroid("", abis = listOf("arm64-v8a", "armeabi-v7a"))
+
+        listOf("Aarch64", "Arm32").forEach { title ->
+            val compile = project.tasks.getByName("nativeImageCompileDebug$title") as NativeImageCompileTask
+            val link = project.tasks.getByName("nativeImageLinkDebug$title") as NativeImageLinkTask
+            assertEquals(emptyList(), compile.buildArgs.get())
+            assertEquals(emptyList(), compile.jvmArgs.get())
+            assertEquals(emptyMap(), compile.systemProperties.get())
+            assertEquals(emptySet(), compile.configurationFileDirectories.files)
+            assertFalse(compile.verbose.get())
+            assertFalse(compile.quickBuild.get())
+            assertTrue(compile.useLLVM.get())
+            assertEquals(emptyList(), compile.includeLocales.get())
+            assertTrue(compile.addAllCharsets.get())
+            assertTrue(link.useLLVM.get())
+        }
+    }
+
+    @Test
+    fun `all and a target's block add to one list in script order, each target's tasks take their own`() {
+        val script = project.file("graal.gradle")
+        script.writeText(
+            """
+            androidGraal {
+                targets {
+                    all { buildArgs.add('-H:+A') }
+                    aarch64 {
+                        buildArgs.add('-H:+B')
+                        includeLocales.add('de')
+                    }
+                    arm32 { addAllCharsets = false }
+                }
+            }
+            """.trimIndent(),
+        )
+        project.apply(mapOf("from" to script))
+        targets().getByName("aarch64").buildArgs.add("-H:+C")
+
+        evaluateAndroid("", abis = listOf("arm64-v8a", "armeabi-v7a"))
+
+        val aarch64 = project.tasks.getByName("nativeImageCompileReleaseAarch64") as NativeImageCompileTask
+        val arm32 = project.tasks.getByName("nativeImageCompileReleaseArm32") as NativeImageCompileTask
+        assertEquals(listOf("-H:+A", "-H:+B", "-H:+C"), aarch64.buildArgs.get())
+        assertEquals(listOf("de"), aarch64.includeLocales.get())
+        assertTrue(aarch64.addAllCharsets.get())
+        assertEquals(listOf("-H:+A"), arm32.buildArgs.get())
+        assertEquals(emptyList(), arm32.includeLocales.get())
+        assertFalse(arm32.addAllCharsets.get())
+    }
+
+    @Test
+    fun `the LIR backend on aarch64 builds next to LLVM on arm32`() {
+        targets().getByName("aarch64").useLLVM.set(false)
+
+        evaluateAndroid("", abis = listOf("arm64-v8a", "armeabi-v7a"))
+
+        listOf("Aarch64" to false, "Arm32" to true).forEach { (title, llvm) ->
+            val compile = project.tasks.getByName("nativeImageCompileDebug$title") as NativeImageCompileTask
+            val link = project.tasks.getByName("nativeImageLinkDebug$title") as NativeImageLinkTask
+            assertEquals(llvm, compile.useLLVM.get(), title)
+            assertEquals(llvm, link.useLLVM.get(), title)
+        }
+    }
+
+    @Test
+    fun `the LIR backend fails a variant whose target it cannot compile for, naming both`() {
+        targets().getByName("arm32").useLLVM.set(false)
 
         val failure = runCatching { evaluateAndroid("", abis = listOf("arm64-v8a", "armeabi-v7a")) }.exceptionOrNull()
 
         val messages = generateSequence(failure) { it.cause }.mapNotNull { it.message }.toList()
-        assertTrue(messages.any { "useLLVM = false" in it && "[armeabi-v7a]" in it }, "$messages")
+        assertTrue(
+            messages.any { "androidGraal.targets.arm32 { useLLVM = false }" in it && "for armeabi-v7a of" in it },
+            "$messages",
+        )
     }
 
     @Test
-    fun `the LIR backend builds an ABI it compiles for`() {
-        project.extensions.getByType(AndroidGraalExtension::class.java).useLLVM.set(false)
+    fun `a target's backend is not read for a variant without that target`() {
+        targets().getByName("arm32").useLLVM.set(false)
 
         evaluateAndroid("")
 
         assertTrue("nativeImageCompileDebugAarch64" in project.tasks.names)
+    }
+
+    @Test
+    fun `a target name outside the toolchain's fails where it is created`() {
+        val failure = runCatching { targets().create("mips") }.exceptionOrNull()
+
+        val messages = generateSequence(failure) { it.cause }.mapNotNull { it.message }.toList()
+        assertTrue(messages.any { "androidGraal.targets holds [aarch64, arm32], not mips" in it }, "$messages")
     }
 
     @Test
@@ -255,8 +336,8 @@ class ArtPluginTest {
         assertFalse(ArtPlugin.parseAgpSwitch(ArtPlugin.R8_FULL_MODE, "false"))
         val failure = runCatching { ArtPlugin.parseAgpSwitch(ArtPlugin.R8_STRICT_FULL_MODE_FOR_KEEP_RULES, "1") }
         assertEquals(
-            "Cannot parse project property android.r8.strictFullModeForKeepRules='1' of type" +
-                " 'class java.lang.String' as boolean. Expected 'true' or 'false'.",
+            "Cannot parse project property android.r8.strictFullModeForKeepRules='1' of type 'class java.lang.String'" +
+                " as boolean. Expected 'true' or 'false'.",
             failure.exceptionOrNull()?.message,
         )
     }
@@ -424,6 +505,10 @@ class ArtPluginTest {
         project.apply(mapOf("from" to script))
         (project as ProjectInternal).evaluate()
     }
+
+    private fun targets(): NamedDomainObjectContainer<TargetOptions> =
+        project.extensions.getByType(AndroidGraalExtension::class.java).extensions
+            .getByType(object : TypeOf<NamedDomainObjectContainer<TargetOptions>>() {})
 
     private fun fileDependencies(configuration: String): List<FileCollectionDependency> =
         project.configurations.getByName(configuration).allDependencies.filterIsInstance<FileCollectionDependency>()

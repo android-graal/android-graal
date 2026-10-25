@@ -12,6 +12,7 @@ import org.androidgraal.common.Target
 import org.androidgraal.common.Toolchain
 import org.androidgraal.common.ToolchainLayout
 import org.gradle.api.GradleException
+import org.gradle.api.NamedDomainObjectContainer
 import org.gradle.api.NamedDomainObjectProvider
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -35,9 +36,25 @@ class ArtPlugin : Plugin<Project> {
 
     override fun apply(project: Project) {
         val extension = project.extensions.create(ANDROID_GRAAL_EXTENSION_NAME, AndroidGraalExtension::class.java)
-        extension.verbose.convention(false)
-        extension.quickBuild.convention(false)
-        extension.useLLVM.convention(true)
+        val targetOptions = project.objects.domainObjectContainer(TargetOptions::class.java) { name ->
+            val validNames = Target.entries.map { it.dslName }
+            if (name !in validNames) {
+                throw GradleException(
+                    "$ANDROID_GRAAL_EXTENSION_NAME.$TARGETS_EXTENSION_NAME holds $validNames, not $name",
+                )
+            }
+            project.objects.newInstance(TargetOptions::class.java, name)
+        }
+
+        targetOptions.configureEach {
+            it.verbose.convention(false)
+            it.quickBuild.convention(false)
+            it.useLLVM.convention(true)
+            it.addAllCharsets.convention(true)
+        }
+
+        Target.entries.forEach { targetOptions.register(it.dslName) }
+        extension.extensions.add(TARGETS_EXTENSION_NAME, targetOptions)
 
         project.pluginManager.apply(JvmEcosystemPlugin::class.java)
         project.dependencies.attributesSchema.attribute(SIDE_ATTRIBUTE)
@@ -84,7 +101,7 @@ class ArtPlugin : Plugin<Project> {
         project.plugins.withId(ANDROID_APPLICATION) {
             project.dependencies.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, Modules.runtime(Side.ART))
             project.dependencies.add(JavaPlugin.IMPLEMENTATION_CONFIGURATION_NAME, Modules.EMULATION_ART)
-            configureAndroid(project, extension, runtimeClasspath, toolchainClasspath)
+            configureAndroid(project, extension, targetOptions, runtimeClasspath, toolchainClasspath)
         }
 
         project.afterEvaluate {
@@ -100,6 +117,7 @@ class ArtPlugin : Plugin<Project> {
     private fun configureAndroid(
         project: Project,
         extension: AndroidGraalExtension,
+        targetOptions: NamedDomainObjectContainer<TargetOptions>,
         runtimeClasspath: NamedDomainObjectProvider<out Configuration>,
         toolchainClasspath: NamedDomainObjectProvider<out Configuration>,
     ) {
@@ -114,12 +132,15 @@ class ArtPlugin : Plugin<Project> {
         androidComponents.onVariants(androidComponents.selector().all()) { variant: ApplicationVariant ->
             variant.components.forEach { it.runtimeConfiguration.requestSide(Side.ART) }
             val android = project.extensions.getByType(ApplicationExtension::class.java)
-            val targets = targets(variant, android)
-            val withoutLir = targets.filter { !it.lirBackend }.map { it.abi.abiString }
-            if (!extension.useLLVM.get() && withoutLir.isNotEmpty()) {
+            val targets = targets(variant, android).associateWith { targetOptions.getByName(it.dslName) }
+            val withoutLir = targets.entries.firstOrNull { (target, options) ->
+                !target.lirBackend && !options.useLLVM.get()
+            }
+            if (withoutLir != null) {
                 throw GradleException(
-                    "$ANDROID_GRAAL_EXTENSION_NAME { useLLVM = false } selects native-image's LIR backend," +
-                        " which does not compile for $withoutLir of variant '${variant.name}'",
+                    "$ANDROID_GRAAL_EXTENSION_NAME.$TARGETS_EXTENSION_NAME.${withoutLir.value.name}" +
+                        " { useLLVM = false } selects native-image's LIR backend, which does not compile for" +
+                        " ${withoutLir.key.abi.abiString} of variant '${variant.name}'",
                 )
             }
 
@@ -181,12 +202,12 @@ class ArtPlugin : Plugin<Project> {
             val jniLibs = variant.sources.jniLibs
                 ?: throw GradleException("variant '${variant.name}' has no jniLibs sources")
 
-            for (target in targets) {
+            for ((target, options) in targets) {
                 val compileTask = project.tasks.register(
                     "nativeImageCompile$capitalized${target.title}",
                     NativeImageCompileTask::class.java,
                 ) {
-                    it.setup(variant.name, extension, compiledClasspath, toolchain, target)
+                    it.setup(variant.name, extension, options, compiledClasspath, toolchain, target)
                     it.dependsOn(checkImageClasspath)
                 }
 
@@ -197,6 +218,7 @@ class ArtPlugin : Plugin<Project> {
                     it.setup(
                         variant.name,
                         extension,
+                        options,
                         toolchain,
                         target,
                         ndk,
@@ -315,8 +337,11 @@ class ArtPlugin : Plugin<Project> {
         private const val TOOLCHAIN_CONFIGURATION_NAME = "androidGraalToolchain"
         private const val TOOLCHAIN_CLASSPATH_CONFIGURATION_NAME = "androidGraalToolchainClasspath"
 
+        internal const val ANDROID_GRAAL_EXTENSION_NAME = "androidGraal"
+        internal const val TARGETS_EXTENSION_NAME = "targets"
+
         internal const val CONTRACTS_INPUT_PROPERTY = "androidgraal.contracts"
-        private const val JAVA_RESOURCES_ARTIFACT_TYPE = "android-java-res"
+        internal const val JAVA_RESOURCES_ARTIFACT_TYPE = "android-java-res"
 
         internal const val R8_FULL_MODE = "android.enableR8.fullMode"
         internal const val R8_STRICT_FULL_MODE_FOR_KEEP_RULES = "android.r8.strictFullModeForKeepRules"
