@@ -1,0 +1,135 @@
+--- a/emulation/svm/src/main/java/android/net/Uri.java
++++ b/emulation/svm/src/main/java/android/net/Uri.java
+@@ -20,14 +20,13 @@
+ import android.annotation.Nullable;
+ import android.annotation.SystemApi;
+ import android.compat.annotation.UnsupportedAppUsage;
+-import android.content.Intent;
+ import android.content.pm.Flags;
+-import android.os.Environment;
+ import android.os.Parcel;
+ import android.os.Parcelable;
+-import android.os.StrictMode;
+ import android.util.Log;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.io.File;
+ import java.io.IOException;
+ import java.io.UnsupportedEncodingException;
+@@ -54,6 +53,7 @@
+  * forgiving--in the face of invalid input, it will return garbage
+  * rather than throw an exception unless otherwise specified.
+  */
++@Emulated
+ public abstract class Uri implements Parcelable, Comparable<Uri> {
+ 
+     /*
+@@ -1976,20 +1976,6 @@
+     }
+ 
+     /**
+-     * Encodes a value it wasn't already encoded.
+-     *
+-     * @param value string to encode
+-     * @param allow characters to allow
+-     * @return encoded value
+-     * @hide
+-     */
+-    public static String encodeIfNotEncoded(@Nullable String value, @Nullable String allow) {
+-        if (value == null) return null;
+-        if (!Flags.encodeAppIntent() || isEncoded(value, allow)) return value;
+-        return encode(value, allow);
+-    }
+-
+-    /**
+      * Returns true if the given string is already encoded to safe characters.
+      *
+      * @param value string to check
+@@ -2029,18 +2015,6 @@
+     }
+ 
+     /**
+-     * Decodes a string if it was encoded, indicated by containing a %.
+-     * @param value encoded string to decode
+-     * @return decoded value
+-     * @hide
+-     */
+-    public static String decodeIfNeeded(@Nullable String value) {
+-        if (value == null) return null;
+-        if (Flags.encodeAppIntent() && value.contains("%")) return decode(value);
+-        return value;
+-    }
+-
+-    /**
+      * Support for part implementations.
+      */
+     static abstract class AbstractPart {
+@@ -2355,67 +2329,6 @@
+     }
+ 
+     /**
+-     * If this {@link Uri} is {@code file://}, then resolve and return its
+-     * canonical path. Also fixes legacy emulated storage paths so they are
+-     * usable across user boundaries. Should always be called from the app
+-     * process before sending elsewhere.
+-     *
+-     * @hide
+-     */
+-    @UnsupportedAppUsage
+-    public Uri getCanonicalUri() {
+-        if ("file".equals(getScheme())) {
+-            final String canonicalPath;
+-            try {
+-                canonicalPath = new File(getPath()).getCanonicalPath();
+-            } catch (IOException e) {
+-                return this;
+-            }
+-
+-            if (Environment.isExternalStorageEmulated()) {
+-                final String legacyPath = Environment.getLegacyExternalStorageDirectory()
+-                        .toString();
+-
+-                // Splice in user-specific path when legacy path is found
+-                if (canonicalPath.startsWith(legacyPath)) {
+-                    return Uri.fromFile(new File(
+-                            Environment.getExternalStorageDirectory().toString(),
+-                            canonicalPath.substring(legacyPath.length() + 1)));
+-                }
+-            }
+-
+-            return Uri.fromFile(new File(canonicalPath));
+-        } else {
+-            return this;
+-        }
+-    }
+-
+-    /**
+-     * If this is a {@code file://} Uri, it will be reported to
+-     * {@link StrictMode}.
+-     *
+-     * @hide
+-     */
+-    public void checkFileUriExposed(String location) {
+-        if ("file".equals(getScheme())
+-                && (getPath() != null) && !getPath().startsWith("/system/")) {
+-            StrictMode.onFileUriExposed(this, location);
+-        }
+-    }
+-
+-    /**
+-     * If this is a {@code content://} Uri without access flags, it will be
+-     * reported to {@link StrictMode}.
+-     *
+-     * @hide
+-     */
+-    public void checkContentUriWithoutPermission(String location, int flags) {
+-        if ("content".equals(getScheme()) && !Intent.isAccessUriMode(flags)) {
+-            StrictMode.onContentUriWithoutPermission(this, location);
+-        }
+-    }
+-
+-    /**
+      * Test if this is a path prefix match against the given Uri. Verifies that
+      * scheme, authority, and atomic path segments match.
+      *

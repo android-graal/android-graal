@@ -1,0 +1,19 @@
+--- a/emulation/svm/src/main/java/android/health/connect/changelog/ChangeLogsRequest.java
++++ b/emulation/svm/src/main/java/android/health/connect/changelog/ChangeLogsRequest.java
+@@ -21,13 +21,15 @@
+ 
+ import android.annotation.IntRange;
+ import android.annotation.NonNull;
+-import android.health.connect.HealthConnectManager;
+ import android.os.Parcel;
+ import android.os.Parcelable;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.util.Objects;
+ 
+ /** Request class for {@link HealthConnectManager#getChangeLogs} */
++@Emulated
+ public final class ChangeLogsRequest implements Parcelable {
+     private final String mToken;
+     private final int mPageSize;

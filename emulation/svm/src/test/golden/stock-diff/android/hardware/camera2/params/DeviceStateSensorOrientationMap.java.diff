@@ -1,0 +1,22 @@
+--- a/emulation/svm/src/main/java/android/hardware/camera2/params/DeviceStateSensorOrientationMap.java
++++ b/emulation/svm/src/main/java/android/hardware/camera2/params/DeviceStateSensorOrientationMap.java
+@@ -19,9 +19,10 @@
+ import android.annotation.LongDef;
+ import android.annotation.NonNull;
+ import android.annotation.SuppressLint;
+-import android.hardware.camera2.CameraCharacteristics;
+ import android.hardware.camera2.utils.HashCodeHelpers;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+ import java.util.ArrayList;
+@@ -43,6 +44,7 @@
+  *
+  * @see CameraCharacteristics#SENSOR_ORIENTATION
+  */
++@Emulated
+ public final class DeviceStateSensorOrientationMap {
+     /**
+      *  Needs to be kept in sync with the HIDL/AIDL DeviceState

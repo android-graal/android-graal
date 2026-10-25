@@ -1,0 +1,21 @@
+--- a/emulation/svm/src/main/java/android/telephony/mbms/MbmsDownloadSessionCallback.java
++++ b/emulation/svm/src/main/java/android/telephony/mbms/MbmsDownloadSessionCallback.java
+@@ -17,8 +17,9 @@
+ package android.telephony.mbms;
+ 
+ import android.annotation.IntDef;
+-import android.telephony.MbmsDownloadSession;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+ import java.util.List;
+@@ -27,6 +28,7 @@
+  * A callback class that apps should use to receive information on file downloads over
+  * cell-broadcast.
+  */
++@Emulated
+ public class MbmsDownloadSessionCallback {
+     /** @hide */
+     @Retention(RetentionPolicy.SOURCE)

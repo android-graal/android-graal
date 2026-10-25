@@ -1,0 +1,40 @@
+--- a/emulation/svm/src/main/java/android/app/backup/RestoreSet.java
++++ b/emulation/svm/src/main/java/android/app/backup/RestoreSet.java
+@@ -18,10 +18,11 @@
+ 
+ import android.annotation.Nullable;
+ import android.annotation.SystemApi;
+-import android.app.backup.BackupAgent.BackupTransportFlags;
+ import android.os.Parcel;
+ import android.os.Parcelable;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ /**
+  * Descriptive information about a set of backed-up app data available for restore.
+  * Used by IRestoreSession clients.
+@@ -29,6 +30,7 @@
+  * @hide
+  */
+ @SystemApi
++@Emulated
+ public class RestoreSet implements Parcelable {
+     /**
+      * Name of this restore set.  May be user generated, may simply be the name
+@@ -55,7 +57,6 @@
+      * Properties of the {@link BackupTransport} transport that was used to obtain the data in
+      * this restore set.
+      */
+-    @BackupTransportFlags
+     public final int backupTransportFlags;
+ 
+     /**
+@@ -89,7 +90,7 @@
+      *                             flag values.
+      */
+     public RestoreSet(@Nullable String name, @Nullable String device, long token,
+-            @BackupTransportFlags int backupTransportFlags) {
++            int backupTransportFlags) {
+         this.name = name;
+         this.device = device;
+         this.token = token;

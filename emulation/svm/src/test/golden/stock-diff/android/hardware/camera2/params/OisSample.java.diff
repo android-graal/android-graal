@@ -1,0 +1,21 @@
+--- a/emulation/svm/src/main/java/android/hardware/camera2/params/OisSample.java
++++ b/emulation/svm/src/main/java/android/hardware/camera2/params/OisSample.java
+@@ -16,15 +16,17 @@
+ 
+ package android.hardware.camera2.params;
+ 
+-import android.hardware.camera2.CaptureResult;
+ import android.hardware.camera2.utils.HashCodeHelpers;
+ 
+ import com.android.internal.util.Preconditions;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ /**
+  * Immutable class to store an
+  * {@link CaptureResult#STATISTICS_OIS_SAMPLES optical image stabilization sample}.
+  */
++@Emulated
+ public final class OisSample {
+     /**
+      * Create a new {@link OisSample}.

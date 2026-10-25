@@ -1,0 +1,38 @@
+--- a/emulation/svm/src/main/java/android/view/textclassifier/TextClassificationContext.java
++++ b/emulation/svm/src/main/java/android/view/textclassifier/TextClassificationContext.java
+@@ -20,8 +20,9 @@
+ import android.annotation.Nullable;
+ import android.os.Parcel;
+ import android.os.Parcelable;
+-import android.view.textclassifier.TextClassifier.WidgetType;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.util.Locale;
+ import java.util.Objects;
+ 
+@@ -29,6 +30,7 @@
+  * A representation of the context in which text classification would be performed.
+  * @see TextClassificationManager#createTextClassificationSession(TextClassificationContext)
+  */
++@Emulated
+ public final class TextClassificationContext implements Parcelable {
+ 
+     private String mPackageName;
+@@ -76,7 +78,6 @@
+      * Returns the widget type for this classification context.
+      */
+     @NonNull
+-    @WidgetType
+     public String getWidgetType() {
+         return mWidgetType;
+     }
+@@ -116,7 +117,7 @@
+          *
+          * @return this builder
+          */
+-        public Builder(@NonNull String packageName, @NonNull @WidgetType String widgetType) {
++        public Builder(@NonNull String packageName, @NonNull String widgetType) {
+             mPackageName = Objects.requireNonNull(packageName);
+             mWidgetType = Objects.requireNonNull(widgetType);
+         }

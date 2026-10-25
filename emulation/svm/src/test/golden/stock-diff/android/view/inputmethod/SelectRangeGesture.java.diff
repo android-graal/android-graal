@@ -1,0 +1,21 @@
+--- a/emulation/svm/src/main/java/android/view/inputmethod/SelectRangeGesture.java
++++ b/emulation/svm/src/main/java/android/view/inputmethod/SelectRangeGesture.java
+@@ -22,8 +22,9 @@
+ import android.graphics.RectF;
+ import android.os.Parcel;
+ import android.os.Parcelable;
+-import android.widget.TextView;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.util.Objects;
+ 
+ /**
+@@ -34,6 +35,7 @@
+  * <p>Note: this selects text within a range <em>between</em> two given areas. To select all text
+  * <em>within</em> a single area, use {@link SelectGesture}</p>
+  */
++@Emulated
+ public final class SelectRangeGesture extends PreviewableHandwritingGesture implements Parcelable {
+ 
+     private @Granularity int mGranularity;

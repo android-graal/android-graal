@@ -1,0 +1,21 @@
+--- a/emulation/svm/src/main/java/android/view/inputmethod/DeleteRangeGesture.java
++++ b/emulation/svm/src/main/java/android/view/inputmethod/DeleteRangeGesture.java
+@@ -22,8 +22,9 @@
+ import android.graphics.RectF;
+ import android.os.Parcel;
+ import android.os.Parcelable;
+-import android.widget.TextView;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.util.Objects;
+ 
+ /**
+@@ -34,6 +35,7 @@
+  * <p>Note: this deletes text within a range <em>between</em> two given areas. To delete all text
+  * <em>within</em> a single area, use {@link DeleteGesture}.</p>
+  */
++@Emulated
+ public final class DeleteRangeGesture extends PreviewableHandwritingGesture implements Parcelable {
+ 
+     private @Granularity int mGranularity;

@@ -1,0 +1,54 @@
+--- a/emulation/svm/src/main/java/android/bluetooth/le/BluetoothLeUtils.java
++++ b/emulation/svm/src/main/java/android/bluetooth/le/BluetoothLeUtils.java
+@@ -16,9 +16,10 @@
+ 
+ package android.bluetooth.le;
+ 
+-import android.bluetooth.BluetoothAdapter;
+ import android.util.SparseArray;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.util.Arrays;
+ import java.util.Iterator;
+ import java.util.Map;
+@@ -31,6 +32,7 @@
+  *
+  * @hide
+  */
++@Emulated
+ public class BluetoothLeUtils {
+     /** Returns a string composed from a byte array. */
+     static String toString(byte[] data) {
+@@ -136,31 +138,4 @@
+         }
+         return true;
+     }
+-
+-    /**
+-     * Ensure Bluetooth is turned on.
+-     *
+-     * @throws IllegalStateException If {@code adapter} is null or Bluetooth state is not {@link
+-     *     BluetoothAdapter#STATE_ON}.
+-     */
+-    static void checkAdapterStateOn(BluetoothAdapter adapter) {
+-        if (adapter == null || !adapter.isLeEnabled()) {
+-            throw new IllegalStateException("BT Adapter is not turned ON");
+-        }
+-    }
+-
+-    /**
+-     * Compares two UUIDs with a UUID mask.
+-     *
+-     * @return true if both UUIDs are equals when masked, false otherwise.
+-     */
+-    static boolean maskedEquals(UUID data, UUID uuid, UUID mask) {
+-        if (mask == null) {
+-            return Objects.equals(data, uuid);
+-        }
+-        return (data.getLeastSignificantBits() & mask.getLeastSignificantBits())
+-                        == (uuid.getLeastSignificantBits() & mask.getLeastSignificantBits())
+-                && (data.getMostSignificantBits() & mask.getMostSignificantBits())
+-                        == (uuid.getMostSignificantBits() & mask.getMostSignificantBits());
+-    }
+ }
