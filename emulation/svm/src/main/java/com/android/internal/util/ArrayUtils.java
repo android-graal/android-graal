@@ -61,6 +61,14 @@ public class ArrayUtils {
         return (boolean[])VMRuntime.getRuntime().newUnpaddedArray(boolean.class, minLen);
     }
 
+    public static long[] newUnpaddedLongArray(int minLen) {
+        return (long[])VMRuntime.getRuntime().newUnpaddedArray(long.class, minLen);
+    }
+
+    public static float[] newUnpaddedFloatArray(int minLen) {
+        return (float[])VMRuntime.getRuntime().newUnpaddedArray(float.class, minLen);
+    }
+
     public static Object[] newUnpaddedObjectArray(int minLen) {
         return (Object[])VMRuntime.getRuntime().newUnpaddedArray(Object.class, minLen);
     }
@@ -101,6 +109,56 @@ public class ArrayUtils {
      */
     public static int size(@Nullable Object[] array) {
         return array == null ? 0 : array.length;
+    }
+
+    /**
+     * Checks that value is present as at least one of the elements of the array.
+     * @param array the array to check in
+     * @param value the value to check for
+     * @return true if the value is present in the array
+     */
+    @UnsupportedAppUsage
+    public static <T> boolean contains(@Nullable T[] array, T value) {
+        return indexOf(array, value) != -1;
+    }
+
+    /**
+     * Return first index of {@code value} in {@code array}, or {@code -1} if
+     * not found.
+     */
+    @UnsupportedAppUsage
+    public static <T> int indexOf(@Nullable T[] array, T value) {
+        if (array == null) return -1;
+        for (int i = 0; i < array.length; i++) {
+            if (Objects.equals(array[i], value)) return i;
+        }
+        return -1;
+    }
+
+    /**
+     * Test if all {@code check} items are contained in {@code array}.
+     */
+    public static <T> boolean containsAll(@Nullable T[] array, T[] check) {
+        if (check == null) return true;
+        for (T checkItem : check) {
+            if (!contains(array, checkItem)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * Throws {@link ArrayIndexOutOfBoundsException} if the index is out of bounds.
+     *
+     * @param len length of the array. Must be non-negative
+     * @param index the index to check
+     * @throws ArrayIndexOutOfBoundsException if the {@code index} is out of bounds of the array
+     */
+    public static void checkBounds(int len, int index) {
+        if (index < 0 || len <= index) {
+            throw new ArrayIndexOutOfBoundsException("length=" + len + "; index=" + index);
+        }
     }
 
     /**

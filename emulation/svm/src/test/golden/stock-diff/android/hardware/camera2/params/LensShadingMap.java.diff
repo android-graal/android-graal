@@ -1,0 +1,22 @@
+--- a/emulation/svm/src/main/java/android/hardware/camera2/params/LensShadingMap.java
++++ b/emulation/svm/src/main/java/android/hardware/camera2/params/LensShadingMap.java
+@@ -26,9 +26,10 @@
+ import static com.android.internal.util.Preconditions.checkArgumentPositive;
+ import static com.android.internal.util.Preconditions.checkArrayElementsInRange;
+ 
+-import android.hardware.camera2.CaptureResult;
+ import android.hardware.camera2.utils.HashCodeHelpers;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.util.Arrays;
+ import java.util.Objects;
+ 
+@@ -37,6 +38,7 @@
+  *
+  * @see CaptureResult#STATISTICS_LENS_SHADING_CORRECTION_MAP
+  */
++@Emulated
+ public final class LensShadingMap {
+ 
+     /**

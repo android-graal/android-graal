@@ -1,0 +1,23 @@
+--- a/emulation/svm/src/main/java/android/content/LocusId.java
++++ b/emulation/svm/src/main/java/android/content/LocusId.java
+@@ -19,10 +19,11 @@
+ import android.annotation.Nullable;
+ import android.os.Parcel;
+ import android.os.Parcelable;
+-import android.view.contentcapture.ContentCaptureManager;
+ 
+ import com.android.internal.util.Preconditions;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.io.PrintWriter;
+ 
+ /**
+@@ -66,6 +67,7 @@
+  * NOTE: The LocusId is only used by an on-device intelligence service provided by the Android
+  * System, see {@link ContentCaptureManager} for more details.
+  */
++@Emulated
+ public final class LocusId implements Parcelable {
+ 
+     private final String mId;

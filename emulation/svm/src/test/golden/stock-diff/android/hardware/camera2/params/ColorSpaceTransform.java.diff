@@ -1,0 +1,23 @@
+--- a/emulation/svm/src/main/java/android/hardware/camera2/params/ColorSpaceTransform.java
++++ b/emulation/svm/src/main/java/android/hardware/camera2/params/ColorSpaceTransform.java
+@@ -18,10 +18,11 @@
+ 
+ import static com.android.internal.util.Preconditions.*;
+ 
+-import android.hardware.camera2.CameraMetadata;
+ import android.hardware.camera2.utils.HashCodeHelpers;
+ import android.util.Rational;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.util.Arrays;
+ 
+ /**
+@@ -33,6 +34,7 @@
+  *
+  * @see CameraMetadata
+  */
++@Emulated
+ public final class ColorSpaceTransform {
+ 
+     /** The number of rows in this matrix. */

@@ -1,0 +1,27 @@
+--- a/emulation/svm/src/main/java/android/telephony/euicc/DownloadableSubscription.java
++++ b/emulation/svm/src/main/java/android/telephony/euicc/DownloadableSubscription.java
+@@ -18,7 +18,6 @@
+ import android.annotation.NonNull;
+ import android.annotation.Nullable;
+ import android.annotation.SystemApi;
+-import android.app.PendingIntent;
+ import android.compat.annotation.UnsupportedAppUsage;
+ import android.os.Build;
+ import android.os.Parcel;
+@@ -27,6 +26,8 @@
+ 
+ import com.android.internal.util.Preconditions;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.util.ArrayList;
+ import java.util.Arrays;
+ import java.util.List;
+@@ -39,6 +40,7 @@
+  * a QR code. A server address can be parsed from the activation code to download more information
+  * about the profile, such as carrier name, access rules, etc.
+  */
++@Emulated
+ public final class DownloadableSubscription implements Parcelable {
+ 
+     public static final @android.annotation.NonNull Creator<DownloadableSubscription> CREATOR =

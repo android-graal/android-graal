@@ -19,22 +19,7 @@
      @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
      public static int[] newUnpaddedIntArray(int minLen) {
          return (int[])VMRuntime.getRuntime().newUnpaddedArray(int.class, minLen);
-@@ -71,14 +61,6 @@
-         return (boolean[])VMRuntime.getRuntime().newUnpaddedArray(boolean.class, minLen);
-     }
- 
--    public static long[] newUnpaddedLongArray(int minLen) {
--        return (long[])VMRuntime.getRuntime().newUnpaddedArray(long.class, minLen);
--    }
--
--    public static float[] newUnpaddedFloatArray(int minLen) {
--        return (float[])VMRuntime.getRuntime().newUnpaddedArray(float.class, minLen);
--    }
--
-     public static Object[] newUnpaddedObjectArray(int minLen) {
-         return (Object[])VMRuntime.getRuntime().newUnpaddedArray(Object.class, minLen);
-     }
-@@ -90,96 +72,6 @@
+@@ -90,96 +80,6 @@
      }
  
      /**
@@ -131,7 +116,7 @@
       * Returns an empty array of the specified type.  The intent is that
       * it will return the same empty array every time to avoid reallocation,
       * although this is not guaranteed.
-@@ -205,63 +97,6 @@
+@@ -205,63 +105,6 @@
      }
  
      /**
@@ -195,7 +180,7 @@
       * Length of the given array or 0 if it's null.
       */
      public static int size(@Nullable Object[] array) {
-@@ -269,613 +104,6 @@
+@@ -269,20 +112,6 @@
      }
  
      /**
@@ -213,43 +198,13 @@
 -    }
 -
 -    /**
--     * Checks that value is present as at least one of the elements of the array.
--     * @param array the array to check in
--     * @param value the value to check for
--     * @return true if the value is present in the array
--     */
--    @UnsupportedAppUsage
--    public static <T> boolean contains(@Nullable T[] array, T value) {
--        return indexOf(array, value) != -1;
--    }
--
--    /**
--     * Return first index of {@code value} in {@code array}, or {@code -1} if
--     * not found.
--     */
--    @UnsupportedAppUsage
--    public static <T> int indexOf(@Nullable T[] array, T value) {
--        if (array == null) return -1;
--        for (int i = 0; i < array.length; i++) {
--            if (Objects.equals(array[i], value)) return i;
--        }
--        return -1;
--    }
--
--    /**
--     * Test if all {@code check} items are contained in {@code array}.
--     */
--    public static <T> boolean containsAll(@Nullable T[] array, T[] check) {
--        if (check == null) return true;
--        for (T checkItem : check) {
--            if (!contains(array, checkItem)) {
--                return false;
--            }
--        }
--        return true;
--    }
--
--    /**
+      * Checks that value is present as at least one of the elements of the array.
+      * @param array the array to check in
+      * @param value the value to check for
+@@ -320,549 +149,6 @@
+     }
+ 
+     /**
 -     * Test if any {@code check} items are contained in {@code array}.
 -     */
 -    public static <T> boolean containsAny(@Nullable T[] array, T[] check) {
@@ -793,23 +748,10 @@
 -    }
 -
 -    /**
--     * Throws {@link ArrayIndexOutOfBoundsException} if the index is out of bounds.
--     *
--     * @param len length of the array. Must be non-negative
--     * @param index the index to check
--     * @throws ArrayIndexOutOfBoundsException if the {@code index} is out of bounds of the array
--     */
--    public static void checkBounds(int len, int index) {
--        if (index < 0 || len <= index) {
--            throw new ArrayIndexOutOfBoundsException("length=" + len + "; index=" + index);
--        }
--    }
--
--    /**
-      * Throws {@link ArrayIndexOutOfBoundsException} if the range is out of bounds.
+      * Throws {@link ArrayIndexOutOfBoundsException} if the index is out of bounds.
+      *
       * @param len length of the array. Must be non-negative
-      * @param offset start index of the range. Must be non-negative
-@@ -894,90 +122,6 @@
+@@ -894,90 +180,6 @@
          }
      }
  
@@ -900,7 +842,7 @@
      public static String deepToString(Object value) {
          if (value != null && value.getClass().isArray()) {
              if (value.getClass() == boolean[].class) {
-@@ -1012,22 +156,4 @@
+@@ -1012,22 +214,4 @@
      public static <T> T getOrNull(@Nullable T[] items, int i) {
          return (items != null && items.length > i) ? items[i] : null;
      }

@@ -1,0 +1,34 @@
+--- a/emulation/svm/src/main/java/android/content/pm/Signature.java
++++ b/emulation/svm/src/main/java/android/content/pm/Signature.java
+@@ -23,8 +23,9 @@
+ import android.os.Parcelable;
+ 
+ import com.android.internal.util.ArrayUtils;
+-import com.android.modules.utils.TypedXmlSerializer;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.io.ByteArrayInputStream;
+ import java.io.IOException;
+ import java.io.InputStream;
+@@ -44,6 +45,7 @@
+  * This class name is slightly misleading, since it's not actually a signature.
+  */
+ @android.ravenwood.annotation.RavenwoodKeepWholeClass
++@Emulated
+ public class Signature implements Parcelable {
+     private final byte[] mSignature;
+     private int mHashCode;
+@@ -297,12 +299,6 @@
+         }
+     };
+ 
+-    /** {@hide} */
+-    public void writeToXmlAttributeBytesHex(@NonNull TypedXmlSerializer out,
+-            @Nullable String namespace, @NonNull String name) throws IOException {
+-        out.attributeBytesHex(namespace, name, mSignature);
+-    }
+-
+     private Signature(Parcel source) {
+         mSignature = source.createByteArray();
+     }

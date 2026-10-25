@@ -1,0 +1,48 @@
+--- a/emulation/svm/src/main/java/android/app/blob/BlobHandle.java
++++ b/emulation/svm/src/main/java/android/app/blob/BlobHandle.java
+@@ -29,10 +29,8 @@
+ import android.util.IndentingPrintWriter;
+ 
+ import com.android.internal.util.Preconditions;
+-import com.android.internal.util.XmlUtils;
+ 
+-import org.xmlpull.v1.XmlPullParser;
+-import org.xmlpull.v1.XmlSerializer;
++import org.androidgraal.hosted.annotate.Emulated;
+ 
+ import java.io.IOException;
+ import java.util.Arrays;
+@@ -42,6 +40,7 @@
+  * An identifier to represent a blob.
+  */
+ // TODO: use datagen tool?
++@Emulated
+ public final class BlobHandle implements Parcelable {
+     /** @hide */
+     public static final String ALGO_SHA_256 = "SHA-256";
+@@ -281,25 +280,4 @@
+             return new BlobHandle[size];
+         }
+     };
+-
+-    /** @hide */
+-    public void writeToXml(@NonNull XmlSerializer out) throws IOException {
+-        XmlUtils.writeStringAttribute(out, ATTR_ALGO, algorithm);
+-        XmlUtils.writeByteArrayAttribute(out, ATTR_DIGEST, digest);
+-        XmlUtils.writeStringAttribute(out, ATTR_LABEL, label);
+-        XmlUtils.writeLongAttribute(out, ATTR_EXPIRY_TIME, expiryTimeMillis);
+-        XmlUtils.writeStringAttribute(out, ATTR_TAG, tag);
+-    }
+-
+-    /** @hide */
+-    @NonNull
+-    public static BlobHandle createFromXml(@NonNull XmlPullParser in) throws IOException {
+-        final String algo = XmlUtils.readStringAttribute(in, ATTR_ALGO);
+-        final byte[] digest = XmlUtils.readByteArrayAttribute(in, ATTR_DIGEST);
+-        final CharSequence label = XmlUtils.readStringAttribute(in, ATTR_LABEL);
+-        final long expiryTimeMs = XmlUtils.readLongAttribute(in, ATTR_EXPIRY_TIME);
+-        final String tag = XmlUtils.readStringAttribute(in, ATTR_TAG);
+-
+-        return BlobHandle.create(algo, digest, label, expiryTimeMs, tag);
+-    }
+ }

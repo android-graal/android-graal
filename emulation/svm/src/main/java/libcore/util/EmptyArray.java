@@ -44,4 +44,8 @@ public final class EmptyArray {
     @Adapted(reason = "without @UnsupportedAppUsage")
     public static final @NonNull Object[] OBJECT = new Object[0];
 
+    /** @hide */
+    @SystemApi(client = MODULE_LIBRARIES)
+    public static final @NonNull String[] STRING = new String[0];
+
 }

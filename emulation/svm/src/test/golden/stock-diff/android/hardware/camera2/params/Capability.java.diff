@@ -1,0 +1,25 @@
+--- a/emulation/svm/src/main/java/android/hardware/camera2/params/Capability.java
++++ b/emulation/svm/src/main/java/android/hardware/camera2/params/Capability.java
+@@ -20,12 +20,12 @@
+ import static com.android.internal.util.Preconditions.checkArgumentPositive;
+ 
+ import android.annotation.NonNull;
+-import android.hardware.camera2.CameraCharacteristics;
+-import android.hardware.camera2.CameraMetadata;
+ import android.hardware.camera2.utils.HashCodeHelpers;
+ import android.util.Range;
+ import android.util.Size;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ /**
+  * Immutable class to store the camera capability, its corresponding maximum
+  * streaming dimension and zoom range.
+@@ -33,6 +33,7 @@
+  * @see CameraCharacteristics#CONTROL_AVAILABLE_EXTENDED_SCENE_MODE_CAPABILITIES
+  */
+ 
++@Emulated
+ public final class Capability {
+     /**
+      * @hide

@@ -1,0 +1,23 @@
+--- a/emulation/svm/src/main/java/android/hardware/camera2/params/MeteringRectangle.java
++++ b/emulation/svm/src/main/java/android/hardware/camera2/params/MeteringRectangle.java
+@@ -21,10 +21,10 @@
+ 
+ import android.graphics.Point;
+ import android.graphics.Rect;
+-import android.hardware.camera2.CameraCharacteristics;
+-import android.hardware.camera2.CaptureRequest;
+ import android.hardware.camera2.utils.HashCodeHelpers;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ /**
+  * An immutable class to represent a rectangle {@code (x, y, width, height)} with an additional
+  * weight component.
+@@ -53,6 +53,7 @@
+  * output the used sections in the result metadata.
+  * </p>
+  */
++@Emulated
+ public final class MeteringRectangle {
+     /**
+      * The minimum value of valid metering weight.
