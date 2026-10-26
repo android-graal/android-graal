@@ -15,7 +15,16 @@ public final class Time {
     }
 
     @CConstant
+    public static native int CLOCK_BOOTTIME();
+
+    @CConstant
     public static native int CLOCK_MONOTONIC();
+
+    @CConstant
+    public static native int CLOCK_REALTIME();
+
+    @CConstant
+    public static native int CLOCK_THREAD_CPUTIME_ID();
 
     @CStruct(addStructKeyword = true)
     public interface timespec extends PointerBase {
@@ -23,7 +32,13 @@ public final class Time {
         SignedWord tv_sec();
 
         @CField
+        void tv_sec(SignedWord value);
+
+        @CField
         SignedWord tv_nsec();
+
+        @CField
+        void tv_nsec(SignedWord value);
     }
 
     @CStruct(addStructKeyword = true)

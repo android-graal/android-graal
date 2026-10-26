@@ -29,6 +29,7 @@ object Toolchain {
         "AArch64LibCHelperDirectives.cap", "AMD64LibCHelperDirectives.cap", "AndroidDirectives.cap",
         "ARM32LibCHelperDirectives.cap", "BionicDirectives.cap", "BuiltinDirectives.cap",
         "ContainerLibraryDirectives.cap", "JNI_JNIHeaderDirectives.cap", "JNIHeaderDirectives.cap",
-        "LLVMDirectives.cap", "LocaleDirectives.cap", "PosixDirectives.cap", "RISCV64LibCHelperDirectives.cap",
+        "LLVMDirectives.cap", "LocaleDirectives.cap", "LooperDirectives.cap", "PosixDirectives.cap",
+        "RISCV64LibCHelperDirectives.cap",
     )
 }
