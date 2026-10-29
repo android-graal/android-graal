@@ -13,8 +13,6 @@ import org.graalvm.nativeimage.c.function.CEntryPoint.IsolateThreadContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint.Publish;
 import org.graalvm.nativeimage.c.function.CEntryPointLiteral;
 import org.graalvm.nativeimage.c.function.CFunctionPointer;
-import org.graalvm.nativeimage.c.type.CIntPointer;
-import org.graalvm.nativeimage.c.type.WordPointer;
 import org.graalvm.word.PointerBase;
 import org.graalvm.word.WordFactory;
 
@@ -61,7 +59,8 @@ public final class NativeMessageQueue {
         queue.pollObj = obj;
         POLLING.set(queue);
         queue.polling = true;
-        ALooper.ALooper_pollOnce(timeoutMillis, WordFactory.nullPointer(), WordFactory.nullPointer(), WordFactory.nullPointer());
+        ALooper.ALooper_pollOnce(timeoutMillis, WordFactory.nullPointer(), WordFactory.nullPointer(),
+                WordFactory.nullPointer());
         queue.polling = false;
         POLLING.remove();
         queue.pollObj = null;
