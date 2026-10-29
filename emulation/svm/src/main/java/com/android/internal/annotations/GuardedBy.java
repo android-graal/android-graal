@@ -19,6 +19,8 @@ package com.android.internal.annotations;
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
 
+import org.androidgraal.hosted.annotate.Emulated;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
@@ -29,6 +31,7 @@ import java.lang.annotation.Target;
  */
 @Target({FIELD, METHOD})
 @Retention(RetentionPolicy.CLASS)
+@Emulated
 public @interface GuardedBy {
     /**
      * Specifies a list of locks to be held in order to access the field/method

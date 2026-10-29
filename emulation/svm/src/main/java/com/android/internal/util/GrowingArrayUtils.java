@@ -19,6 +19,8 @@ package com.android.internal.util;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.os.Build;
 
+import org.androidgraal.hosted.annotate.Emulated;
+
 /**
  * A helper class that aims to provide comparable growth performance to ArrayList, but on primitive
  * arrays. Common array operations are implemented for efficient use in dynamic containers.
@@ -30,6 +32,7 @@ import android.os.Build;
  * @hide
  */
 @android.ravenwood.annotation.RavenwoodKeepWholeClass
+@Emulated
 public final class GrowingArrayUtils {
 
     /**

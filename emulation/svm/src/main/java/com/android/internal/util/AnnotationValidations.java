@@ -23,6 +23,8 @@ import android.annotation.NonNull;
 import android.annotation.Size;
 import android.annotation.UserIdInt;
 
+import org.androidgraal.hosted.annotate.Emulated;
+
 import java.lang.annotation.Annotation;
 
 /**
@@ -37,6 +39,7 @@ import java.lang.annotation.Annotation;
  * The ignored {@link Annotation} parameter is used to differentiate between overloads that would
  * otherwise have the same jvm signature. It's usually null at runtime.
  */
+@Emulated
 public class AnnotationValidations {
     private AnnotationValidations() {}
 

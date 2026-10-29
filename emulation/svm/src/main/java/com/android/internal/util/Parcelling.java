@@ -23,6 +23,8 @@ import android.text.TextUtils;
 import android.util.ArrayMap;
 import android.util.ArraySet;
 
+import org.androidgraal.hosted.annotate.Emulated;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +41,7 @@ import java.util.regex.Pattern;
  * @param <T> the type being [un]parcelled
  */
 @android.ravenwood.annotation.RavenwoodKeepWholeClass
+@Emulated
 public interface Parcelling<T> {
 
     /**

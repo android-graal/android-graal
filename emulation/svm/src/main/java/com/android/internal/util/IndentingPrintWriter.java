@@ -19,6 +19,8 @@ package com.android.internal.util;
 import android.compat.annotation.UnsupportedAppUsage;
 import android.os.Build;
 
+import org.androidgraal.hosted.annotate.Emulated;
+
 import java.io.Writer;
 
 /**
@@ -27,6 +29,7 @@ import java.io.Writer;
 @Deprecated
 // Exported to Mainline modules; cannot use annotations
 // @android.ravenwood.annotation.RavenwoodKeepWholeClass
+@Emulated
 public class IndentingPrintWriter extends android.util.IndentingPrintWriter {
 
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)

@@ -26,6 +26,10 @@ import static android.opengl.GLES32.GL_MULTISAMPLE_LINE_WIDTH_RANGE;
 import static android.opengl.GLES32.GL_PRIMITIVE_BOUNDING_BOX;
 import static android.opengl.GLES32.GL_TEXTURE_BORDER_COLOR;
 
+import org.androidgraal.hosted.annotate.Adapted;
+import org.androidgraal.hosted.annotate.Premise;
+import org.androidgraal.hosted.annotate.Transcribed;
+
 public final class Counts {
 
     private static final int GL_VIEWPORT_BOUNDS_RANGE_OES = 0x825D;
@@ -34,6 +38,8 @@ public final class Counts {
     private Counts() {
     }
 
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_opengl_GLES20.cpp#L239-L319")
+    @Adapted(reason = "counts GL_DEPTH_RANGE, GL_MULTISAMPLE_LINE_WIDTH_RANGE, GL_VIEWPORT_BOUNDS_RANGE_OES and GL_PRIMITIVE_BOUNDING_BOX by the tables", premise = Premise.GL_STATE_TABLES)
     public static int stateCount(int pname) {
         return switch (pname) {
             case GL_ALIASED_LINE_WIDTH_RANGE, GL_ALIASED_POINT_SIZE_RANGE, GL_DEPTH_RANGE, GL_MAX_VIEWPORT_DIMS,
@@ -62,6 +68,8 @@ public final class Counts {
         return pname == GL_COMPUTE_WORK_GROUP_SIZE ? 3 : 1;
     }
 
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_opengl_GLES20.cpp#L3909-L3919")
+    @Adapted(reason = "applies the switch to the integer forms too", premise = Premise.GL_STATE_TABLES)
     public static int vertexAttribCount(int pname) {
         return pname == GL_CURRENT_VERTEX_ATTRIB ? 4 : 1;
     }

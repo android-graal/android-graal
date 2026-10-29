@@ -1,6 +1,23 @@
 --- a/emulation/svm/src/main/java/com/android/internal/util/IndentingPrintWriter.java
 +++ b/emulation/svm/src/main/java/com/android/internal/util/IndentingPrintWriter.java
-@@ -34,24 +34,6 @@
+@@ -19,6 +19,8 @@
+ import android.compat.annotation.UnsupportedAppUsage;
+ import android.os.Build;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.io.Writer;
+ 
+ /**
+@@ -27,6 +29,7 @@
+ @Deprecated
+ // Exported to Mainline modules; cannot use annotations
+ // @android.ravenwood.annotation.RavenwoodKeepWholeClass
++@Emulated
+ public class IndentingPrintWriter extends android.util.IndentingPrintWriter {
+ 
+     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
+@@ -34,24 +37,6 @@
          super(writer, singleIndent, -1);
      }
  
@@ -25,7 +42,7 @@
      @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
      public IndentingPrintWriter increaseIndent() {
          super.increaseIndent();
-@@ -63,19 +45,4 @@
+@@ -63,19 +48,4 @@
          super.decreaseIndent();
          return this;
      }

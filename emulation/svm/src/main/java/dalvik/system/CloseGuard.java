@@ -23,6 +23,7 @@ import android.compat.annotation.UnsupportedAppUsage;
 import android.util.Log;
 
 import org.androidgraal.hosted.annotate.Adapted;
+import org.androidgraal.hosted.annotate.Emulated;
 import org.androidgraal.hosted.annotate.Premise;
 import org.androidgraal.hosted.annotate.Transcribed;
 
@@ -120,6 +121,7 @@ import org.androidgraal.hosted.annotate.Transcribed;
  */
 @SystemApi(client = MODULE_LIBRARIES)
 @libcore.api.IntraCoreApi
+@Emulated
 public final class CloseGuard {
 
     /**

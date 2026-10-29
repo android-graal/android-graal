@@ -1,6 +1,19 @@
 --- a/emulation/svm/src/main/java/libcore/io/Memory.java
 +++ b/emulation/svm/src/main/java/libcore/io/Memory.java
-@@ -38,23 +38,6 @@
+@@ -28,33 +28,19 @@
+ 
+ import libcore.util.NonNull;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ /**
+  * Unsafe access to memory.
+  *
+  * @hide
+  */
+ @SystemApi(client = MODULE_LIBRARIES)
++@Emulated
+ public final class Memory {
      private Memory() { }
  
      /**
@@ -24,7 +37,7 @@
       * Gets int value from a byte buffer {@code src} at offset {@code offset} using
       * {@code order} byte order.
       *
-@@ -81,53 +64,6 @@
+@@ -81,53 +67,6 @@
      }
  
      /**
@@ -78,7 +91,7 @@
       * Writes given int value {@code value} to a byte buffer {@code dst} using
       * {@code order} byte order.
       *
-@@ -152,258 +88,4 @@
+@@ -152,258 +91,4 @@
              dst[offset  ] = (byte) ((value >> 24) & 0xff);
          }
      }

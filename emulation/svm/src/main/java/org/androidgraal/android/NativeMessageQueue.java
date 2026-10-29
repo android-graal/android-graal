@@ -6,6 +6,9 @@ import android.util.LongSparseArray;
 import android.util.SparseIntArray;
 import libcore.util.SneakyThrow;
 import org.androidgraal.bionic.ALooper;
+import org.androidgraal.hosted.annotate.Adapted;
+import org.androidgraal.hosted.annotate.Premise;
+import org.androidgraal.hosted.annotate.Transcribed;
 import org.graalvm.nativeimage.CurrentIsolate;
 import org.graalvm.nativeimage.IsolateThread;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
@@ -29,11 +32,15 @@ public final class NativeMessageQueue {
     private Throwable exception;
     private volatile boolean polling;
 
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_MessageQueue.cpp#L94-L101")
     private NativeMessageQueue(PointerBase looper, IsolateThread thread) {
         this.looper = looper;
         this.thread = thread;
     }
 
+    @Transcribed({
+            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_MessageQueue.cpp#L94-L101",
+            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_MessageQueue.cpp#L207-L216"})
     public static long nativeInit() {
         PointerBase looper = ALooper.ALooper_prepare(0);
         ALooper.ALooper_acquire(looper);
@@ -45,6 +52,7 @@ public final class NativeMessageQueue {
         }
     }
 
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_MessageQueue.cpp#L218-L221")
     public static void nativeDestroy(long ptr) {
         NativeMessageQueue queue;
         synchronized (QUEUES) {
@@ -54,6 +62,9 @@ public final class NativeMessageQueue {
         ALooper.ALooper_release(queue.looper);
     }
 
+    @Transcribed({
+            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_MessageQueue.cpp#L123-L135",
+            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_MessageQueue.cpp#L223-L227"})
     public static void nativePollOnce(MessageQueue obj, long ptr, int timeoutMillis) {
         NativeMessageQueue queue = getQueue(ptr);
         queue.pollObj = obj;
@@ -72,14 +83,22 @@ public final class NativeMessageQueue {
         }
     }
 
+    @Transcribed({
+            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_MessageQueue.cpp#L137-L139",
+            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_MessageQueue.cpp#L229-L232"})
     public static void nativeWake(long ptr) {
         ALooper.ALooper_wake(getQueue(ptr).looper);
     }
 
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_MessageQueue.cpp#L234-L237")
+    @Adapted(reason = "true for the whole pollOnce, callbacks included", premise = Premise.NDK_LOOPER)
     public static boolean nativeIsPolling(long ptr) {
         return getQueue(ptr).polling;
     }
 
+    @Transcribed({
+            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_MessageQueue.cpp#L141-L156",
+            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_MessageQueue.cpp#L239-L243"})
     public static void nativeSetFileDescriptorEvents(long ptr, int fd, int events) {
         getQueue(ptr).setFileDescriptorEvents(fd, events);
     }
@@ -90,6 +109,7 @@ public final class NativeMessageQueue {
         }
     }
 
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_MessageQueue.cpp#L141-L156")
     private void setFileDescriptorEvents(int fd, int events) {
         if (events != 0) {
             int looperEvents = 0;
@@ -112,6 +132,7 @@ public final class NativeMessageQueue {
         }
     }
 
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_MessageQueue.cpp#L158-L179")
     private int handleEvent(int fd, int looperEvents) {
         int events = 0;
         if ((looperEvents & ALooper.ALOOPER_EVENT_INPUT()) != 0) {
@@ -142,6 +163,8 @@ public final class NativeMessageQueue {
     }
 
     @CEntryPoint(publishAs = Publish.NotPublished)
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_MessageQueue.cpp#L191-L197")
+    @Adapted(reason = "finds the queue through the polling thread's slot and stores a thrown exception for the poll's return", premise = Premise.NDK_LOOPER)
     private static int looperCallback(int fd, int looperEvents, @IsolateThreadContext IsolateThread data) {
         NativeMessageQueue queue = null;
         try {

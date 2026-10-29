@@ -16,6 +16,8 @@
 
 package com.android.internal.util;
 
+import org.androidgraal.hosted.annotate.Emulated;
+
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.util.Arrays;
@@ -28,6 +30,7 @@ import java.util.Arrays;
  * Note: this class is not thread-safe.
  */
 @android.ravenwood.annotation.RavenwoodKeepWholeClass
+@Emulated
 public class LineBreakBufferedWriter extends PrintWriter {
 
     /**

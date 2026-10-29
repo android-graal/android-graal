@@ -26,6 +26,8 @@ import android.util.EmptyArray;
 
 import dalvik.system.VMRuntime;
 
+import org.androidgraal.hosted.annotate.Emulated;
+
 import java.io.File;
 import java.lang.reflect.Array;
 import java.util.ArrayList;
@@ -46,6 +48,7 @@ import java.util.function.IntFunction;
  * <code>atest FrameworksUtilTestsRavenwood:com.android.internal.util.ArrayUtilsTest</code>
  */
 @android.ravenwood.annotation.RavenwoodKeepWholeClass
+@Emulated
 public class ArrayUtils {
     private static final int CACHE_SIZE = 73;
     private static Object[] sCache = new Object[CACHE_SIZE];

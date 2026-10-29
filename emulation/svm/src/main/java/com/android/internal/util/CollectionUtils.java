@@ -24,6 +24,8 @@ import android.util.ArrayMap;
 import android.util.ArraySet;
 import android.util.ExceptionUtils;
 
+import org.androidgraal.hosted.annotate.Emulated;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,6 +44,7 @@ import java.util.stream.Stream;
  * collection of that type.
  */
 @android.ravenwood.annotation.RavenwoodKeepWholeClass
+@Emulated
 public class CollectionUtils {
     private CollectionUtils() { /* cannot be instantiated */ }
 

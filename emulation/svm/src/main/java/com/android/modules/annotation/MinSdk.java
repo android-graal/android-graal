@@ -21,6 +21,8 @@ import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.CLASS;
 
+import org.androidgraal.hosted.annotate.Emulated;
+
 import java.lang.annotation.Repeatable;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
@@ -52,6 +54,7 @@ import java.lang.annotation.Target;
  */
 @Retention(CLASS)
 @Target({CONSTRUCTOR, METHOD, FIELD, TYPE})
+@Emulated
 public @interface MinSdk {
     int value();
 }

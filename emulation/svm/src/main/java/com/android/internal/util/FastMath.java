@@ -18,10 +18,13 @@ package com.android.internal.util;
 
 import android.compat.annotation.UnsupportedAppUsage;
 
+import org.androidgraal.hosted.annotate.Emulated;
+
 /**
  * Fast and loose math routines.
  */
 @android.ravenwood.annotation.RavenwoodKeepWholeClass
+@Emulated
 public class FastMath {
 
     /**

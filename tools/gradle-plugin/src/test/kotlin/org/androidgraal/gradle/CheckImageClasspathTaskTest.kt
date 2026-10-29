@@ -61,8 +61,41 @@ class CheckImageClasspathTaskTest {
     }
 
     @Test
-    fun `classes outside android are never reported`() {
-        val other = fixture("other.jar", "com/example/A" to false, "androidx/x/A" to false)
+    fun `an unmarked libcore class is reported`() {
+        val core = fixture("core.jar", "libcore/x/A" to false)
+
+        assertEquals(listOf(error("libcore/x/A", "core.jar")), errors(core))
+    }
+
+    @Test
+    fun `an unmarked dalvik class is reported`() {
+        val core = fixture("core.jar", "dalvik/x/A" to false)
+
+        assertEquals(listOf(error("dalvik/x/A", "core.jar")), errors(core))
+    }
+
+    @Test
+    fun `an unmarked internal class is reported`() {
+        val core = fixture("core.jar", "com/android/internal/x/A" to false)
+
+        assertEquals(listOf(error("com/android/internal/x/A", "core.jar")), errors(core))
+    }
+
+    @Test
+    fun `an unmarked modules class is reported`() {
+        val core = fixture("core.jar", "com/android/modules/x/A" to false)
+
+        assertEquals(listOf(error("com/android/modules/x/A", "core.jar")), errors(core))
+    }
+
+    @Test
+    fun `classes outside Android's class library are never reported`() {
+        val other = fixture(
+            "other.jar",
+            "com/example/A" to false,
+            "androidx/x/A" to false,
+            "com/android/billingclient/x/A" to false,
+        )
 
         assertEquals(listOf("image classpath:", "  other.jar"), check(other).readLines())
     }
@@ -81,7 +114,8 @@ class CheckImageClasspathTaskTest {
     }
 
     private fun error(name: String, file: String): String =
-        "android-graal: $name is an Android class on the image classpath without @Emulated - Android classes do not work in the image."
+        "android-graal: $name is a class of Android's class library on the image classpath without @Emulated -" +
+            " only emulated classes work in the image."
 
     /** A directory, or a jar when [name] ends in `.jar`, holding [classes] by internal name, each marked or not. */
     private fun fixture(name: String, vararg classes: Pair<String, Boolean>): File {

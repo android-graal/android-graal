@@ -25,6 +25,8 @@ import android.text.TextUtils;
 
 import com.google.errorprone.annotations.CompileTimeConstant;
 
+import org.androidgraal.hosted.annotate.Emulated;
+
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Objects;
@@ -33,6 +35,7 @@ import java.util.Objects;
  * Simple static methods to be called at the start of your own methods to verify
  * correct arguments and state.
  */
+@Emulated
 public class Preconditions {
 
     /**

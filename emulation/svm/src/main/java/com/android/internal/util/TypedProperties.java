@@ -16,6 +16,8 @@
 
 package com.android.internal.util;
 
+import org.androidgraal.hosted.annotate.Emulated;
+
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StreamTokenizer;
@@ -27,6 +29,7 @@ import java.util.regex.Pattern;
  * A {@code Map} that publishes a set of typed properties, defined by
  * zero or more {@code Reader}s containing textual definitions and assignments.
  */
+@Emulated
 public class TypedProperties extends HashMap<String, Object> {
     /**
      * Instantiates a {@link java.io.StreamTokenizer} and sets its syntax tables

@@ -1,5 +1,8 @@
 package com.android.adservices.flags;
+import org.androidgraal.hosted.annotate.Emulated;
+
 /** @hide */
+@Emulated
 public final class Flags {
     /** @hide */
     public static final String FLAG_ADSERVICES_OUTCOMERECEIVER_R_API_DEPRECATED = "com.android.adservices.flags.adservices_outcomereceiver_r_api_deprecated";

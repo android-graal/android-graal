@@ -21,6 +21,8 @@ import static android.annotation.SystemApi.Client.MODULE_LIBRARIES;
 import android.annotation.SystemApi;
 import android.compat.annotation.UnsupportedAppUsage;
 
+import org.androidgraal.hosted.annotate.Emulated;
+
 /**
  * Network security policy for this process/application.
  *
@@ -36,6 +38,7 @@ import android.compat.annotation.UnsupportedAppUsage;
  */
 @SystemApi(client = MODULE_LIBRARIES)
 @libcore.api.IntraCoreApi
+@Emulated
 public abstract class NetworkSecurityPolicy {
 
     private static volatile NetworkSecurityPolicy instance = new DefaultNetworkSecurityPolicy();

@@ -20,6 +20,8 @@ import android.compat.annotation.UnsupportedAppUsage;
 import android.util.Log;
 import android.util.Printer;
 
+import org.androidgraal.hosted.annotate.Emulated;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.PrintWriter;
@@ -33,6 +35,7 @@ import java.nio.charset.CoderResult;
 import java.nio.charset.CodingErrorAction;
 
 @android.ravenwood.annotation.RavenwoodKeepWholeClass
+@Emulated
 public class FastPrintWriter extends PrintWriter {
     private static class DummyWriter extends Writer {
         @Override

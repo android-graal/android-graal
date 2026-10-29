@@ -1,6 +1,23 @@
 --- a/emulation/svm/src/main/java/com/android/internal/util/TypedProperties.java
 +++ b/emulation/svm/src/main/java/com/android/internal/util/TypedProperties.java
-@@ -407,283 +407,6 @@
+@@ -16,6 +16,8 @@
+ 
+ package com.android.internal.util;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.io.IOException;
+ import java.io.Reader;
+ import java.io.StreamTokenizer;
+@@ -27,6 +29,7 @@
+  * A {@code Map} that publishes a set of typed properties, defined by
+  * zero or more {@code Reader}s containing textual definitions and assignments.
+  */
++@Emulated
+ public class TypedProperties extends HashMap<String, Object> {
+     /**
+      * Instantiates a {@link java.io.StreamTokenizer} and sets its syntax tables
+@@ -407,283 +410,6 @@
          return value;
      }
  

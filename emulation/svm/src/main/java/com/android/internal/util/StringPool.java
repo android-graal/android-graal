@@ -16,6 +16,8 @@
 
 package com.android.internal.util;
 
+import org.androidgraal.hosted.annotate.Emulated;
+
 /**
  * A pool of string instances. Unlike the {@link String#intern() VM's
  * interned strings}, this pool provides no guarantee of reference equality.
@@ -24,6 +26,7 @@ package com.android.internal.util;
  * @hide
  */
 @android.ravenwood.annotation.RavenwoodKeepWholeClass
+@Emulated
 public final class StringPool {
 
     private final String[] mPool = new String[512];

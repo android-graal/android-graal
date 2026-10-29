@@ -5,9 +5,14 @@ import static java.nio.charset.StandardCharsets.UTF_8;
 import com.oracle.svm.shared.AlwaysInline;
 import java.util.Arrays;
 import java.util.Objects;
+import org.androidgraal.hosted.annotate.Adapted;
+import org.androidgraal.hosted.annotate.Premise;
+import org.androidgraal.hosted.annotate.Transcribed;
 import org.graalvm.nativeimage.PinnedObject;
 import org.graalvm.nativeimage.c.type.CCharPointer;
 
+@Transcribed("https://android.googlesource.com/platform/libnativehelper/+/refs/tags/android-16.0.0_r1/header_only_include/nativehelper/scoped_utf_chars.h#L42-L108")
+@Adapted(reason = "encodes standard UTF-8 and counts its bytes", premise = Premise.STANDARD_UTF8)
 public final class ScopedUtfChars implements AutoCloseable {
 
     private final PinnedObject pin;

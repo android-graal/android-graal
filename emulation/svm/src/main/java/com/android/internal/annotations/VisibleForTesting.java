@@ -16,6 +16,8 @@
 
 package com.android.internal.annotations;
 
+import org.androidgraal.hosted.annotate.Emulated;
+
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
@@ -28,6 +30,7 @@ import java.lang.annotation.RetentionPolicy;
  * The default is to consider the element private.
  */
 @Retention(RetentionPolicy.CLASS)
+@Emulated
 public @interface VisibleForTesting {
     /**
      * Intended visibility if the element had not been made public or package-private for

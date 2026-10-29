@@ -1,7 +1,19 @@
 --- a/emulation/svm/src/main/java/libcore/util/FP16.java
 +++ b/emulation/svm/src/main/java/libcore/util/FP16.java
-@@ -93,66 +93,6 @@
+@@ -20,6 +20,8 @@
+ 
+ import android.annotation.SystemApi;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ /**
+  * <p>The {@code FP16} class is a wrapper and a utility class to manipulate half-precision 16-bit
+  * <a href="https://en.wikipedia.org/wiki/Half-precision_floating-point_format">IEEE 754</a>
+@@ -91,68 +93,9 @@
+  */
+ 
  @SystemApi(client = MODULE_LIBRARIES)
++@Emulated
  public final class FP16 {
      /**
 -     * The number of bits used to represent a half-precision float value.
@@ -67,7 +79,7 @@
       * A Not-a-Number representation of a half-precision float.
       *
       * @hide
-@@ -160,20 +100,6 @@
+@@ -160,20 +103,6 @@
      @SystemApi(client = MODULE_LIBRARIES)
      public static final short NaN = (short) 0x7e00;
      /**
@@ -88,7 +100,7 @@
       * Positive infinity of type half-precision float.
       *
       * @hide
-@@ -181,14 +107,6 @@
+@@ -181,14 +110,6 @@
      @SystemApi(client = MODULE_LIBRARIES)
      public static final short POSITIVE_INFINITY = (short) 0x7c00;
      /**

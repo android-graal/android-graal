@@ -20,11 +20,14 @@ import static android.annotation.SystemApi.Client.MODULE_LIBRARIES;
 
 import android.annotation.SystemApi;
 
+import org.androidgraal.hosted.annotate.Emulated;
+
 /**
  * Hexadecimal encoding where each byte is represented by two hexadecimal digits.
  * @hide
  */
 @SystemApi(client = MODULE_LIBRARIES)
+@Emulated
 public class HexEncoding {
 
     private static final char[] LOWER_CASE_DIGITS = {

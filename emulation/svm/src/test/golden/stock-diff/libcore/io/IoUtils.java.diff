@@ -1,6 +1,6 @@
 --- a/emulation/svm/src/main/java/libcore/io/IoUtils.java
 +++ b/emulation/svm/src/main/java/libcore/io/IoUtils.java
-@@ -21,8 +21,14 @@
+@@ -21,8 +21,15 @@
  import android.annotation.SystemApi;
  import android.compat.annotation.UnsupportedAppUsage;
  import android.system.ErrnoException;
@@ -9,13 +9,22 @@
  
 +import org.androidgraal.android.FileDescriptors;
 +import org.androidgraal.hosted.annotate.Adapted;
++import org.androidgraal.hosted.annotate.Emulated;
 +import org.androidgraal.hosted.annotate.Premise;
 +import org.androidgraal.hosted.annotate.Transcribed;
 +
  import java.io.File;
  import java.io.FileDescriptor;
  import java.io.FileNotFoundException;
-@@ -64,109 +70,18 @@
+@@ -43,6 +50,7 @@
+ 
+ /** @hide */
+ @SystemApi(client = MODULE_LIBRARIES)
++@Emulated
+ public final class IoUtils {
+     private IoUtils() {
+     }
+@@ -64,109 +72,18 @@
       * @hide
       */
      @SystemApi(client = MODULE_LIBRARIES)
@@ -128,7 +137,7 @@
       * Closes a file descriptor, so that it no longer refers to any file and may
       * be reused. Also resets the internal int to -1.
       *
-@@ -176,31 +91,13 @@
+@@ -176,31 +93,13 @@
       * @hide
       */
      @SystemApi(client = MODULE_LIBRARIES)
@@ -163,7 +172,7 @@
       * Calls {@link #close(FileDescriptor)}, ignoring any exceptions.
       *
       * @param fd is {@link FileDescriptor} instance, invalid value is ignored.
-@@ -217,26 +114,6 @@
+@@ -217,26 +116,6 @@
      }
  
      /**
@@ -190,7 +199,7 @@
       * Sets file descriptor to be blocking or non-blocking.
       *
       * @param fd is {@link FileDescriptor} instance
-@@ -247,200 +124,18 @@
+@@ -247,200 +126,18 @@
       */
      @UnsupportedAppUsage
      @SystemApi(client = MODULE_LIBRARIES)

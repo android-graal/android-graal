@@ -1,14 +1,23 @@
 --- a/emulation/svm/src/main/java/libcore/util/EmptyArray.java
 +++ b/emulation/svm/src/main/java/libcore/util/EmptyArray.java
-@@ -20,7 +20,6 @@
+@@ -20,8 +20,9 @@
  
  import android.annotation.SystemApi;
  import android.compat.annotation.UnsupportedAppUsage;
 -import dalvik.annotation.compat.VersionCodes;
  
++import org.androidgraal.hosted.annotate.Emulated;
++
  import java.lang.annotation.Annotation;
  
-@@ -35,61 +34,14 @@
+ /**
+@@ -30,66 +31,20 @@
+  * @hide
+  */
+ @SystemApi(client = MODULE_LIBRARIES)
++@Emulated
+ public final class EmptyArray {
+     private EmptyArray() {}
  
      /** @hide */
      @SystemApi(client = MODULE_LIBRARIES)

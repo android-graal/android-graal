@@ -31,6 +31,7 @@ import dalvik.annotation.optimization.FastNative;
 
 import org.androidgraal.android.Words;
 import org.androidgraal.hosted.annotate.Adapted;
+import org.androidgraal.hosted.annotate.Emulated;
 import org.androidgraal.hosted.annotate.Premise;
 import org.androidgraal.hosted.annotate.Transcribed;
 
@@ -53,6 +54,7 @@ import libcore.util.NonNull;
  */
 @SystemApi(client = MODULE_LIBRARIES)
 @libcore.api.IntraCoreApi
+@Emulated
 public final class VMRuntime {
 
     /**

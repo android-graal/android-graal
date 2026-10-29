@@ -28,12 +28,15 @@ import dalvik.annotation.optimization.FastNative;
 
 import libcore.util.NonNull;
 
+import org.androidgraal.hosted.annotate.Emulated;
+
 /**
  * Unsafe access to memory.
  *
  * @hide
  */
 @SystemApi(client = MODULE_LIBRARIES)
+@Emulated
 public final class Memory {
     private Memory() { }
 

@@ -26,7 +26,9 @@ abstract class CheckImageClasspathTask : BaseTask("checkImageClasspath") {
 
     fun setup(variantName: String, imageClasspath: FileCollection) {
         group = "verification"
-        description = "Checks that every Android class on the image classpath is an emulated class ($variantName)."
+        description =
+            "Checks that every class of Android's class library on the image classpath is an emulated class " +
+            "($variantName)."
         this.variantName.convention(variantName)
         this.report.convention(taskDir.file("report.txt"))
         this.imageClasspath.convention(imageClasspath)
@@ -47,7 +49,7 @@ abstract class CheckImageClasspathTask : BaseTask("checkImageClasspath") {
     }
 
     private fun problems(image: List<File>): List<String> {
-        val android = mutableSetOf<String>()
+        val library = mutableSetOf<String>()
         val emulated = mutableSetOf<String>()
         scan(image) { bytes ->
             val visitor = object : ClassVisitor(Opcodes.ASM9) {
@@ -62,7 +64,7 @@ abstract class CheckImageClasspathTask : BaseTask("checkImageClasspath") {
                     interfaces: Array<String>?,
                 ) {
                     this.name = name
-                    if (name.startsWith("android/")) android += name.substringBefore('$')
+                    if (LIBRARY.any(name::startsWith)) library += name.substringBefore('$')
                 }
 
                 override fun visitAnnotation(descriptor: String, visible: Boolean): AnnotationVisitor? {
@@ -75,14 +77,16 @@ abstract class CheckImageClasspathTask : BaseTask("checkImageClasspath") {
                 ClassReader.SKIP_CODE or ClassReader.SKIP_DEBUG or ClassReader.SKIP_FRAMES,
             )
         }
-        return (android - emulated).sorted().map {
-            "$it is an Android class on the image classpath without @Emulated -" +
-                " Android classes do not work in the image."
+        return (library - emulated).sorted().map {
+            "$it is a class of Android's class library on the image classpath without @Emulated -" +
+                " only emulated classes work in the image."
         }
     }
 
     companion object {
         private const val EMULATED = "Lorg/androidgraal/hosted/annotate/Emulated;"
+
+        private val LIBRARY = listOf("android/", "libcore/", "dalvik/", "com/android/internal/", "com/android/modules/")
     }
 }
 

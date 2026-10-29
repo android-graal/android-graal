@@ -1,6 +1,23 @@
 --- a/emulation/svm/src/main/java/com/android/internal/util/FastPrintWriter.java
 +++ b/emulation/svm/src/main/java/com/android/internal/util/FastPrintWriter.java
-@@ -86,24 +86,6 @@
+@@ -20,6 +20,8 @@
+ import android.util.Log;
+ import android.util.Printer;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.io.IOException;
+ import java.io.OutputStream;
+ import java.io.PrintWriter;
+@@ -33,6 +35,7 @@
+ import java.nio.charset.CodingErrorAction;
+ 
+ @android.ravenwood.annotation.RavenwoodKeepWholeClass
++@Emulated
+ public class FastPrintWriter extends PrintWriter {
+     private static class DummyWriter extends Writer {
+         @Override
+@@ -86,24 +89,6 @@
  
      /**
       * Constructs a new {@code PrintWriter} with {@code out} as its target
@@ -25,7 +42,7 @@
       * stream and a custom buffer size. The parameter {@code autoFlush} determines
       * if the print writer automatically flushes its contents to the target stream
       * when a newline is encountered.
-@@ -137,42 +119,6 @@
+@@ -137,42 +122,6 @@
  
      /**
       * Constructs a new {@code PrintWriter} with {@code wr} as its target
@@ -68,7 +85,7 @@
       * writer and a custom buffer size. The parameter {@code autoFlush} determines
       * if the print writer automatically flushes its contents to the target writer
       * when a newline is encountered.
-@@ -205,84 +151,6 @@
+@@ -205,84 +154,6 @@
      }
  
      /**
@@ -153,7 +170,7 @@
       * Sets the error flag of this writer to true.
       */
      protected void setError() {
-@@ -297,16 +165,6 @@
+@@ -297,16 +168,6 @@
          mCharset.onUnmappableCharacter(CodingErrorAction.REPLACE);
      }
  
@@ -170,7 +187,7 @@
      private void appendLocked(String str, int i, final int length) throws IOException {
          final int BUFFER_LEN = mBufferLen;
          if (length > BUFFER_LEN) {
-@@ -327,26 +185,6 @@
+@@ -327,26 +188,6 @@
          mPos = pos + length;
      }
  
@@ -197,7 +214,7 @@
      private void flushBytesLocked() throws IOException {
          if (!mIoError) {
              int position;
-@@ -401,31 +239,7 @@
+@@ -401,31 +242,7 @@
          }
      }
  
@@ -229,7 +246,7 @@
      public void close() {
          synchronized (lock) {
              try {
-@@ -443,44 +257,6 @@
+@@ -443,44 +260,6 @@
      }
  
      /**
@@ -274,7 +291,7 @@
       * Prints a string to the target. The string is converted to an array of
       * bytes using the encoding chosen during the construction of this writer.
       * The bytes are then written to the target with {@code write(int)}.
-@@ -506,24 +282,6 @@
+@@ -506,24 +285,6 @@
      }
  
  
@@ -299,7 +316,7 @@
      /**
       * Prints a newline. Flushes this writer if the autoFlush flag is set to {@code true}.
       */
-@@ -540,166 +298,4 @@
+@@ -540,166 +301,4 @@
              }
          }
      }

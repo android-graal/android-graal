@@ -1,5 +1,8 @@
 package com.android.adservices.ondevicepersonalization.flags;
+import org.androidgraal.hosted.annotate.Emulated;
+
 /** @hide */
+@Emulated
 public final class Flags {
     /** @hide */
     public static final String FLAG_DATA_CLASS_MISSING_CTORS_AND_GETTERS_ENABLED = "com.android.adservices.ondevicepersonalization.flags.data_class_missing_ctors_and_getters_enabled";

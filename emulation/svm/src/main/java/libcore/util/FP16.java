@@ -20,6 +20,8 @@ import static android.annotation.SystemApi.Client.MODULE_LIBRARIES;
 
 import android.annotation.SystemApi;
 
+import org.androidgraal.hosted.annotate.Emulated;
+
 /**
  * <p>The {@code FP16} class is a wrapper and a utility class to manipulate half-precision 16-bit
  * <a href="https://en.wikipedia.org/wiki/Half-precision_floating-point_format">IEEE 754</a>
@@ -91,6 +93,7 @@ import android.annotation.SystemApi;
  */
 
 @SystemApi(client = MODULE_LIBRARIES)
+@Emulated
 public final class FP16 {
     /**
      * A Not-a-Number representation of a half-precision float.

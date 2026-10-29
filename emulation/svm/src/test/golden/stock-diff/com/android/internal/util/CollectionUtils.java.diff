@@ -1,15 +1,20 @@
 --- a/emulation/svm/src/main/java/com/android/internal/util/CollectionUtils.java
 +++ b/emulation/svm/src/main/java/com/android/internal/util/CollectionUtils.java
-@@ -24,8 +24,6 @@
+@@ -24,7 +24,7 @@
  import android.util.ArraySet;
  import android.util.ExceptionUtils;
  
 -import com.android.internal.util.FunctionalUtils.ThrowingConsumer;
--
++import org.androidgraal.hosted.annotate.Emulated;
+ 
  import java.util.ArrayList;
  import java.util.Collection;
- import java.util.Collections;
-@@ -48,133 +46,6 @@
+@@ -44,137 +44,11 @@
+  * collection of that type.
+  */
+ @android.ravenwood.annotation.RavenwoodKeepWholeClass
++@Emulated
+ public class CollectionUtils {
      private CollectionUtils() { /* cannot be instantiated */ }
  
      /**
@@ -143,7 +148,7 @@
       * Returns the given list, or an immutable empty list if the provided list is null
       *
       * This can be used to guarantee null-safety without paying the price of extra allocations
-@@ -184,310 +55,4 @@
+@@ -184,310 +58,4 @@
      public static @NonNull <T> List<T> emptyIfNull(@Nullable List<T> cur) {
          return cur == null ? Collections.emptyList() : cur;
      }

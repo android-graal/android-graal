@@ -20,6 +20,8 @@ import static android.annotation.SystemApi.Client.MODULE_LIBRARIES;
 
 import android.annotation.SystemApi;
 
+import org.androidgraal.hosted.annotate.Emulated;
+
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
@@ -38,6 +40,7 @@ import libcore.util.Nullable;
  * @hide
  */
 @SystemApi(client = MODULE_LIBRARIES)
+@Emulated
 public final class MimeMap {
 
     /**

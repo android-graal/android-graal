@@ -26,6 +26,7 @@ import android.system.StructStat;
 
 import org.androidgraal.android.FileDescriptors;
 import org.androidgraal.hosted.annotate.Adapted;
+import org.androidgraal.hosted.annotate.Emulated;
 import org.androidgraal.hosted.annotate.Premise;
 import org.androidgraal.hosted.annotate.Transcribed;
 
@@ -49,6 +50,7 @@ import static android.system.OsConstants.O_RDONLY;
 
 /** @hide */
 @SystemApi(client = MODULE_LIBRARIES)
+@Emulated
 public final class IoUtils {
     private IoUtils() {
     }

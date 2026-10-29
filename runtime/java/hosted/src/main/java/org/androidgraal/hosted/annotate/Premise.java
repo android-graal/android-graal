@@ -79,5 +79,22 @@ public enum Premise {
     /**
      * A type the stock member names is not in the image. Stops holding when that type is emulated.
      */
-    ABSENT_TYPE
+    ABSENT_TYPE,
+
+    /**
+     * The image reaches the looper through the NDK's {@code ALooper}, which exposes neither {@code Looper::isPolling}
+     * nor a weak callback. Stops holding with a binding of libutils' {@code Looper}.
+     */
+    NDK_LOOPER,
+
+    /**
+     * A GLES wrapper sizes a buffer check by the ES state tables where Android checks one element. Holds by design.
+     */
+    GL_STATE_TABLES,
+
+    /**
+     * A string crossing to C or back is standard UTF-8, not ART's modified form, which bionic and the GL driver never
+     * expect. Holds by design.
+     */
+    STANDARD_UTF8
 }

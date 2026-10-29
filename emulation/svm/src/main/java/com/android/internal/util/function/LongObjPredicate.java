@@ -15,6 +15,8 @@
  */
 package com.android.internal.util.function;
 
+import org.androidgraal.hosted.annotate.Emulated;
+
 /**
  * Represents a predicate (boolean-valued function) of a {@code long}-valued argument
  * and an object-valued argument.
@@ -22,6 +24,7 @@ package com.android.internal.util.function;
  * @param <T> the type of the object-valued argument to the predicate
  */
 @FunctionalInterface
+@Emulated
 public interface LongObjPredicate<T> {
     /**
      * Evaluates this predicate on the given arguments.

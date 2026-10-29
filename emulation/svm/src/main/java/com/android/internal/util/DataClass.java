@@ -28,6 +28,8 @@ import android.annotation.Nullable;
 import android.annotation.StringDef;
 import android.os.Parcelable;
 
+import org.androidgraal.hosted.annotate.Emulated;
+
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -36,6 +38,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.SOURCE)
 @Target(ElementType.TYPE)
+@Emulated
 public @interface DataClass {
 
     /**

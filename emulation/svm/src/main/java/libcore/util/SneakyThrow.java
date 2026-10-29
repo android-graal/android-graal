@@ -20,6 +20,8 @@ import static android.annotation.SystemApi.Client.MODULE_LIBRARIES;
 
 import android.annotation.SystemApi;
 
+import org.androidgraal.hosted.annotate.Emulated;
+
 /**
  * Provides a hacky method that always throws {@code t} even if {@code t} is a checked exception.
  * and is not declared to be thrown.
@@ -30,6 +32,7 @@ import android.annotation.SystemApi;
  * @hide
  */
 @SystemApi(client = MODULE_LIBRARIES)
+@Emulated
 public class SneakyThrow {
 
     private SneakyThrow() {

@@ -21,6 +21,8 @@ import static android.annotation.SystemApi.Client.MODULE_LIBRARIES;
 import android.annotation.SystemApi;
 import android.compat.annotation.UnsupportedAppUsage;
 
+import org.androidgraal.hosted.annotate.Emulated;
+
 import java.lang.annotation.Annotation;
 
 /**
@@ -29,6 +31,7 @@ import java.lang.annotation.Annotation;
  * @hide
  */
 @SystemApi(client = MODULE_LIBRARIES)
+@Emulated
 public final class EmptyArray {
     private EmptyArray() {}
 

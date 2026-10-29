@@ -1,19 +1,28 @@
 --- a/emulation/svm/src/main/java/dalvik/system/CloseGuard.java
 +++ b/emulation/svm/src/main/java/dalvik/system/CloseGuard.java
-@@ -20,7 +20,12 @@
+@@ -20,7 +20,13 @@
  
  import android.annotation.SystemApi;
  import android.compat.annotation.UnsupportedAppUsage;
 +import android.util.Log;
  
 +import org.androidgraal.hosted.annotate.Adapted;
++import org.androidgraal.hosted.annotate.Emulated;
 +import org.androidgraal.hosted.annotate.Premise;
 +import org.androidgraal.hosted.annotate.Transcribed;
 +
  /**
   * CloseGuard is a mechanism for flagging implicit finalizer cleanup of
   * resources that should have been cleaned up by explicit close
-@@ -330,6 +335,7 @@
+@@ -115,6 +121,7 @@
+  */
+ @SystemApi(client = MODULE_LIBRARIES)
+ @libcore.api.IntraCoreApi
++@Emulated
+ public final class CloseGuard {
+ 
+     /**
+@@ -330,6 +337,7 @@
      @UnsupportedAppUsage(trackingBug=111170242)
      @SystemApi(client = MODULE_LIBRARIES)
      @libcore.api.IntraCoreApi
@@ -21,7 +30,7 @@
      public void warnIfOpen() {
          if (closerNameOrAllocationInfo != null) {
              if (closerNameOrAllocationInfo instanceof Throwable) {
-@@ -337,7 +343,7 @@
+@@ -337,7 +345,7 @@
              } else if (stackAndTrackingEnabled) {
                  reporter.report(MESSAGE + " Callsite: " + closerNameOrAllocationInfo);
              } else {
@@ -30,7 +39,7 @@
                          + (String) closerNameOrAllocationInfo + ". ");
              }
          }
-@@ -386,13 +392,17 @@
+@@ -386,13 +394,17 @@
          @UnsupportedAppUsage
          private DefaultReporter() {}
  

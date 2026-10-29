@@ -1,5 +1,8 @@
 package com.android.text.flags;
+import org.androidgraal.hosted.annotate.Emulated;
+
 /** @hide */
+@Emulated
 public final class Flags {
     /** @hide */
     public static final String FLAG_NO_BREAK_NO_HYPHENATION_SPAN = "com.android.text.flags.no_break_no_hyphenation_span";

@@ -1,6 +1,6 @@
 --- a/emulation/svm/src/main/java/dalvik/system/VMRuntime.java
 +++ b/emulation/svm/src/main/java/dalvik/system/VMRuntime.java
-@@ -27,10 +27,14 @@
+@@ -27,10 +27,15 @@
  
  import com.android.libcore.Flags;
  
@@ -10,6 +10,7 @@
 -import java.lang.ref.FinalizerReference;
 +import org.androidgraal.android.Words;
 +import org.androidgraal.hosted.annotate.Adapted;
++import org.androidgraal.hosted.annotate.Emulated;
 +import org.androidgraal.hosted.annotate.Premise;
 +import org.androidgraal.hosted.annotate.Transcribed;
 +
@@ -17,7 +18,15 @@
  import java.util.ArrayList;
  import java.util.HashMap;
  import java.util.List;
-@@ -73,134 +77,6 @@
+@@ -49,6 +54,7 @@
+  */
+ @SystemApi(client = MODULE_LIBRARIES)
+ @libcore.api.IntraCoreApi
++@Emulated
+ public final class VMRuntime {
+ 
+     /**
+@@ -73,134 +79,6 @@
      }
  
      /**
@@ -152,7 +161,7 @@
       * Magic version number for a current development build, which has not
       * yet turned into an official release. This number must be larger than
       * any released version in {@code android.os.Build.VERSION_CODES}.
-@@ -210,21 +86,8 @@
+@@ -210,21 +88,8 @@
      // Must match android.os.Build.VERSION_CODES.CUR_DEVELOPMENT.
      public static final int SDK_VERSION_CUR_DEVELOPMENT = 10000;
  
@@ -174,7 +183,7 @@
      /**
       * Prevents this class from being instantiated.
       */
-@@ -245,57 +108,6 @@
+@@ -245,57 +110,6 @@
      }
  
      /**
@@ -232,7 +241,7 @@
       * Returns whether the VM is running in 64-bit mode.
       *
       * @return true if VM is running in 64-bit mode, false otherwise.
-@@ -304,74 +116,9 @@
+@@ -304,74 +118,9 @@
       */
      @UnsupportedAppUsage
      @SystemApi(client = MODULE_LIBRARIES)
@@ -310,7 +319,7 @@
      }
  
      /**
-@@ -386,79 +133,13 @@
+@@ -386,79 +135,13 @@
      @UnsupportedAppUsage(maxTargetSdk=0, publicAlternatives="Use the {@code targetSdkVersion}"
          +" attribute in the {@code uses-sdk} manifest tag instead.")
      @SystemApi(client = MODULE_LIBRARIES)
@@ -392,7 +401,7 @@
       * Gets the target SDK version. See {@link #setTargetSdkVersion} for
       * special values.
       *
-@@ -471,142 +152,7 @@
+@@ -471,142 +154,7 @@
          return targetSdkVersion;
      }
  
@@ -535,7 +544,7 @@
       * Returns an array of at least {@code minLength}, but potentially larger. The increased size
       * comes from avoiding any padding after the array. The amount of padding varies depending on
       * the componentType and the memory allocator implementation.
-@@ -619,310 +165,13 @@
+@@ -619,310 +167,13 @@
       * @hide
       */
      @SystemApi(client = MODULE_LIBRARIES)
@@ -850,7 +859,7 @@
       * Returns the runtime instruction set corresponding to a given ABI. Multiple
       * compatible ABIs might map to the same instruction set. For example
       * {@code armeabi-v7a} and {@code armeabi} might map to the instruction set {@code arm}.
-@@ -972,183 +221,4 @@
+@@ -972,183 +223,4 @@
      public static boolean is64BitAbi(String abi) {
          return is64BitInstructionSet(getInstructionSet(abi));
      }
