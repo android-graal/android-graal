@@ -118,6 +118,39 @@ public class FastPrintWriter extends PrintWriter {
     }
 
     /**
+     * Constructs a new {@code PrintWriter} with {@code wr} as its target
+     * writer and a custom buffer size. The parameter {@code autoFlush} determines
+     * if the print writer automatically flushes its contents to the target writer
+     * when a newline is encountered.
+     *
+     * @param wr
+     *            the target writer.
+     * @param autoFlush
+     *            indicates whether to flush contents upon encountering a
+     *            newline sequence.
+     * @param bufferLen
+     *            specifies the size of the FastPrintWriter's internal buffer; the
+     *            default is 8192.
+     * @throws NullPointerException
+     *             if {@code wr} is {@code null}.
+     */
+    public FastPrintWriter(Writer wr, boolean autoFlush, int bufferLen) {
+        super(new DummyWriter(), autoFlush);
+        if (wr == null) {
+            throw new NullPointerException("wr is null");
+        }
+        mBufferLen = bufferLen;
+        mText = new char[bufferLen];
+        mBytes = null;
+        mOutputStream = null;
+        mWriter = wr;
+        mPrinter = null;
+        mAutoFlush = autoFlush;
+        mSeparator = System.lineSeparator();
+        initDefaultEncoder();
+    }
+
+    /**
      * Sets the error flag of this writer to true.
      */
     protected void setError() {

@@ -16,8 +16,8 @@
 
 package android.system;
 
-import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
+import org.androidgraal.hosted.annotate.Transcribed;
 
 import java.io.FileDescriptor;
 import java.util.Arrays;
@@ -47,28 +47,40 @@ public final class StructPollfd {
      */
     public Object userData;
 
-    @Adapted(reason = "Objects.toString's output spelled out over the fields in name order")
+    @Transcribed("https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/java/libcore/util/Objects.java#L31-L84")
     @Override public String toString() {
-        return "StructPollfd[events=" + events + ",fd=" + fd + ",revents=" + revents + ",userData="
-                + valueOf(userData) + "]";
+        return "StructPollfd[events=" + events + ",fd=" + valueOf(fd) + ",revents=" + revents
+                + ",userData=" + valueOf(userData) + "]";
     }
 
-    @Adapted(reason = "a field value as Objects.toString prints it")
+    @Transcribed("https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/java/libcore/util/Objects.java#L51-L77")
     private static String valueOf(Object value) {
-        return switch (value) {
-            case null -> "null";
-            case boolean[] array -> Arrays.toString(array);
-            case byte[] array -> Arrays.toString(array);
-            case char[] array -> Arrays.toString(array);
-            case double[] array -> Arrays.toString(array);
-            case float[] array -> Arrays.toString(array);
-            case int[] array -> Arrays.toString(array);
-            case long[] array -> Arrays.toString(array);
-            case short[] array -> Arrays.toString(array);
-            case Object[] array -> Arrays.toString(array);
-            case Character character -> "'" + character + "'";
-            case String string -> "\"" + string + "\"";
-            default -> value.toString();
-        };
+        if (value.getClass().isArray()) {
+            if (value.getClass() == boolean[].class) {
+                return Arrays.toString((boolean[]) value);
+            } else if (value.getClass() == byte[].class) {
+                return Arrays.toString((byte[]) value);
+            } else if (value.getClass() == char[].class) {
+                return Arrays.toString((char[]) value);
+            } else if (value.getClass() == double[].class) {
+                return Arrays.toString((double[]) value);
+            } else if (value.getClass() == float[].class) {
+                return Arrays.toString((float[]) value);
+            } else if (value.getClass() == int[].class) {
+                return Arrays.toString((int[]) value);
+            } else if (value.getClass() == long[].class) {
+                return Arrays.toString((long[]) value);
+            } else if (value.getClass() == short[].class) {
+                return Arrays.toString((short[]) value);
+            } else {
+                return Arrays.toString((Object[]) value);
+            }
+        } else if (value.getClass() == Character.class) {
+            return "'" + value + "'";
+        } else if (value.getClass() == String.class) {
+            return "\"" + value + "\"";
+        } else {
+            return String.valueOf(value);
+        }
     }
 }

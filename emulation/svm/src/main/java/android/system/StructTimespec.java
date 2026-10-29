@@ -16,8 +16,8 @@
 
 package android.system;
 
-import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
+import org.androidgraal.hosted.annotate.Transcribed;
 
 /**
  * Corresponds to C's {@code struct timespec} from {@code <time.h>}.
@@ -75,7 +75,7 @@ public final class StructTimespec implements Comparable<StructTimespec> {
     }
 
     @Override
-    @Adapted(reason = "Objects.toString's output spelled out over the fields in name order")
+    @Transcribed("https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/java/libcore/util/Objects.java#L31-L84")
     public String toString() {
         return "StructTimespec[tv_nsec=" + tv_nsec + ",tv_sec=" + tv_sec + "]";
     }

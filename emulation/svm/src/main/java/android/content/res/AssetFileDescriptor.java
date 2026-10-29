@@ -31,7 +31,10 @@ import android.system.Os;
 import android.system.StructStat;
 
 import org.androidgraal.hosted.annotate.Adapted;
+import org.androidgraal.hosted.annotate.Added;
 import org.androidgraal.hosted.annotate.Emulated;
+import org.androidgraal.hosted.annotate.Premise;
+import org.androidgraal.hosted.annotate.Transcribed;
 
 import java.io.ByteArrayOutputStream;
 import java.io.Closeable;
@@ -229,7 +232,7 @@ public class AssetFileDescriptor implements Parcelable, Closeable {
      */
     public static class AutoCloseInputStream
             extends ParcelFileDescriptor.AutoCloseInputStream {
-        @Adapted(reason = "the buffer size of the three FileInputStream overrides")
+        @Added(reason = "the buffer size of the three FileInputStream overrides")
         private static final int TRANSFER_BUFFER_SIZE = 16384;
 
         private ParcelFileDescriptor.AutoCloseInputStream mDelegateInputStream;
@@ -295,13 +298,13 @@ public class AssetFileDescriptor implements Parcelable, Closeable {
         }
 
         @Override
-        @Adapted(reason = "reads through this stream's read instead of FileInputStream's whole-file override")
+        @Transcribed("https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/ojluni/src/main/java/java/io/FileInputStream.java#L356-L438")
         public byte[] readAllBytes() throws IOException {
             return readNBytes(Integer.MAX_VALUE);
         }
 
         @Override
-        @Adapted(reason = "reads through this stream's read instead of FileInputStream's whole-file override")
+        @Transcribed("https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/ojluni/src/main/java/java/io/FileInputStream.java#L356-L438")
         public byte[] readNBytes(int len) throws IOException {
             if (len < 0) {
                 throw new IllegalArgumentException("len < 0");
@@ -322,7 +325,7 @@ public class AssetFileDescriptor implements Parcelable, Closeable {
         }
 
         @Override
-        @Adapted(reason = "reads through this stream's read instead of FileInputStream's whole-file override")
+        @Transcribed("https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/ojluni/src/main/java/java/io/InputStream.java#L777-L787")
         public long transferTo(OutputStream out) throws IOException {
             Objects.requireNonNull(out, "out");
             long transferred = 0;
@@ -360,7 +363,8 @@ public class AssetFileDescriptor implements Parcelable, Closeable {
         }
 
         @RavenwoodReplace
-        @Adapted(reason = "the body of skipRaw$ravenwood, reading instead of skipping")
+        @Adapted(reason = "the body of skipRaw$ravenwood, reading instead of skipping",
+                premise = Premise.NO_LIBCORE_JDK)
         private long skipRaw(long count) throws IOException {
             // OpenJDK doesn't allow skip on pipes, so just use read.
             final byte[] buf = new byte[(int) Math.min(1024, count)];

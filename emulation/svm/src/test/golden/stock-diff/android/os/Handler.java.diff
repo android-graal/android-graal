@@ -1,0 +1,44 @@
+--- a/emulation/svm/src/main/java/android/os/Handler.java
++++ b/emulation/svm/src/main/java/android/os/Handler.java
+@@ -25,6 +25,8 @@
+ import android.util.Log;
+ import android.util.Printer;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.lang.reflect.Modifier;
+ 
+ /**
+@@ -67,6 +69,7 @@
+  * in the Handler's message queue and processed when appropriate.
+  */
+ @android.ravenwood.annotation.RavenwoodKeepWholeClass
++@Emulated
+ public class Handler {
+     /*
+      * Set this flag to true to detect anonymous, local or member classes
+@@ -959,24 +962,6 @@
+         + "}";
+     }
+ 
+-    @UnsupportedAppUsage
+-    final IMessenger getIMessenger() {
+-        synchronized (mQueue) {
+-            if (mMessenger != null) {
+-                return mMessenger;
+-            }
+-            mMessenger = new MessengerImpl();
+-            return mMessenger;
+-        }
+-    }
+-
+-    private final class MessengerImpl extends IMessenger.Stub {
+-        public void send(Message msg) {
+-            msg.sendingUid = Binder.getCallingUid();
+-            Handler.this.sendMessage(msg);
+-        }
+-    }
+-
+     private static Message getPostMessage(Runnable r) {
+         Message m = Message.obtain();
+         m.callback = r;

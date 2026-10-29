@@ -12,18 +12,20 @@
  import android.ravenwood.annotation.RavenwoodKeepWholeClass;
  import android.ravenwood.annotation.RavenwoodThrow;
  import android.system.ErrnoException;
-@@ -55,6 +50,10 @@
+@@ -55,6 +50,12 @@
  import libcore.io.IoUtils;
  import libcore.io.Memory;
  
 +import org.androidgraal.android.FileDescriptors;
 +import org.androidgraal.hosted.annotate.Adapted;
 +import org.androidgraal.hosted.annotate.Emulated;
++import org.androidgraal.hosted.annotate.Premise;
++import org.androidgraal.hosted.annotate.Transcribed;
 +
  import java.io.Closeable;
  import java.io.File;
  import java.io.FileDescriptor;
-@@ -73,6 +72,7 @@
+@@ -73,6 +74,7 @@
   * you to close it when done with it.
   */
  @RavenwoodKeepWholeClass
@@ -31,11 +33,11 @@
  public class ParcelFileDescriptor implements Parcelable, Closeable {
      private static final String TAG = "ParcelFileDescriptor";
  
-@@ -194,18 +194,15 @@
+@@ -194,18 +196,15 @@
      }
  
      /** {@hide} */
-+    @Adapted(reason = "without IoUtils.setFdOwner")
++    @Adapted(reason = "without IoUtils.setFdOwner", premise = Premise.NO_FDSAN)
      public ParcelFileDescriptor(FileDescriptor fd, FileDescriptor commChannel) {
          if (fd == null) {
              throw new NullPointerException("FileDescriptor must not be null");
@@ -51,7 +53,7 @@
  
          mGuard.open("close");
      }
-@@ -236,104 +233,6 @@
+@@ -236,104 +235,6 @@
          return new ParcelFileDescriptor(fd);
      }
  
@@ -156,11 +158,11 @@
      private static FileDescriptor openInternal(File file, int mode) throws FileNotFoundException {
          if ((mode & MODE_WRITE_ONLY) != 0 && (mode & MODE_APPEND) == 0
                  && (mode & MODE_TRUNCATE) == 0 && ((mode & MODE_READ_ONLY) == 0)
-@@ -367,11 +266,12 @@
+@@ -367,11 +268,12 @@
       * new file descriptor shared state such as file position with the
       * original file descriptor.
       */
-+    @Adapted(reason = "sets the int through FileDescriptors instead of setInt$")
++    @Transcribed
      public static ParcelFileDescriptor dup(FileDescriptor orig) throws IOException {
          try {
              final FileDescriptor fd = new FileDescriptor();
@@ -170,11 +172,11 @@
              return new ParcelFileDescriptor(fd);
          } catch (ErrnoException e) {
              throw e.rethrowAsIOException();
-@@ -402,14 +302,15 @@
+@@ -402,14 +304,15 @@
       * @return Returns a new ParcelFileDescriptor holding a FileDescriptor
       * for a dup of the given fd.
       */
-+    @Adapted(reason = "sets the int through FileDescriptors instead of setInt$")
++    @Transcribed
      public static ParcelFileDescriptor fromFd(int fd) throws IOException {
          final FileDescriptor original = new FileDescriptor();
 -        original.setInt$(fd);
@@ -188,11 +190,11 @@
              return new ParcelFileDescriptor(dup);
          } catch (ErrnoException e) {
              throw e.rethrowAsIOException();
-@@ -430,82 +331,15 @@
+@@ -430,82 +333,15 @@
       * @return Returns a new ParcelFileDescriptor holding a FileDescriptor
       * for the given fd.
       */
-+    @Adapted(reason = "sets the int through FileDescriptors instead of setInt$")
++    @Transcribed
      public static ParcelFileDescriptor adoptFd(int fd) {
          final FileDescriptor fdesc = new FileDescriptor();
 -        fdesc.setInt$(fd);
@@ -273,7 +275,7 @@
       * Create two ParcelFileDescriptors structured as a data pipe.  The first
       * ParcelFileDescriptor in the returned array is the read side; the second
       * is the write side.
-@@ -619,34 +453,6 @@
+@@ -619,34 +455,6 @@
      }
  
      /**
@@ -308,11 +310,11 @@
       * Converts a string representing a file mode, such as "rw", into a bitmask suitable for use
       * with {@link #open}.
       * <p>
-@@ -687,9 +493,10 @@
+@@ -687,9 +495,10 @@
       */
      @TestApi
      @RavenwoodThrow(reason = "Os.readlink() and Os.stat()")
-+    @Adapted(reason = "reads the int through FileDescriptors instead of getInt$")
++    @Transcribed
      public static File getFile(FileDescriptor fd) throws IOException {
          try {
 -            final String path = Os.readlink("/proc/self/fd/" + fd.getInt$());
@@ -320,15 +322,15 @@
              if (OsConstants.S_ISREG(Os.stat(path).st_mode)
                      || OsConstants.S_ISCHR(Os.stat(path).st_mode)) {
                  return new File(path);
-@@ -762,6 +569,7 @@
+@@ -762,6 +571,7 @@
       * <strong>WARNING:</strong> Do not call close on the return value of this
       * function or pass it to a function that assumes ownership of the fd.
       */
-+    @Adapted(reason = "reads the int through FileDescriptors instead of getInt$")
++    @Transcribed
      public int getFd() {
          if (mWrapped != null) {
              return mWrapped.getFd();
-@@ -769,7 +577,7 @@
+@@ -769,7 +579,7 @@
              if (mClosed) {
                  throw new IllegalStateException("Already closed");
              }
@@ -337,11 +339,11 @@
          }
      }
  
-@@ -1089,21 +897,8 @@
+@@ -1089,21 +899,8 @@
      }
  
      @Override
-+    @Adapted(reason = "empty, the image runs no finalizer")
++    @Adapted(reason = "empty", premise = Premise.NO_FINALIZER)
      protected void finalize() throws Throwable {
 -        if (mWrapped != null) {
 -            releaseResources();
@@ -360,15 +362,15 @@
      }
  
      @Override
-@@ -1121,6 +916,7 @@
+@@ -1121,6 +918,7 @@
       * the file descriptor will be closed after a copy is written to the Parcel.
       */
      @Override
-+    @Adapted(reason = "writing the descriptor throws")
++    @Adapted(reason = "writing the descriptor throws", premise = Premise.NO_BINDER)
      public void writeToParcel(Parcel out, int flags) {
          if (mWrapped != null) {
              try {
-@@ -1129,40 +925,10 @@
+@@ -1129,40 +927,10 @@
                  releaseResources();
              }
          } else {

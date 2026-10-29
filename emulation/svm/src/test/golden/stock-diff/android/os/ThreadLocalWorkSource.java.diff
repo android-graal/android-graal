@@ -1,0 +1,43 @@
+--- a/emulation/svm/src/main/java/android/os/ThreadLocalWorkSource.java
++++ b/emulation/svm/src/main/java/android/os/ThreadLocalWorkSource.java
+@@ -16,6 +16,8 @@
+ 
+ package android.os;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ /**
+  * Tracks who triggered the work currently executed on this thread.
+  *
+@@ -38,6 +40,7 @@
+  * @hide Only for use within system server.
+  */
+ @android.ravenwood.annotation.RavenwoodKeepWholeClass
++@Emulated
+ public final class ThreadLocalWorkSource {
+     public static final int UID_NONE = Message.UID_NONE;
+     private static final ThreadLocal<int []> sWorkSourceUid =
+@@ -77,23 +80,6 @@
+         sWorkSourceUid.get()[0] = parseUidFromToken(token);
+     }
+ 
+-    /**
+-     * Clears the stored work source uid.
+-     *
+-     * <p>This method should be used when we do not know who to blame. If the UID to blame is the
+-     * UID of the current process, it is better to attribute the work to the current process
+-     * explicitly instead of clearing the work source:
+-     *
+-     * <pre>
+-     * ThreadLocalWorkSource.setUid(Process.myUid());
+-     * </pre>
+-     *
+-     * @return a token that can be used to restore the state.
+-     */
+-    public static long clear() {
+-        return setUid(UID_NONE);
+-    }
+-
+     private static int parseUidFromToken(long token) {
+         return (int) token;
+     }

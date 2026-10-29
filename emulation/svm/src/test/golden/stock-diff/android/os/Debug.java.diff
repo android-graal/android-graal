@@ -1,6 +1,6 @@
 --- a/emulation/svm/src/main/java/android/os/Debug.java
 +++ b/emulation/svm/src/main/java/android/os/Debug.java
-@@ -19,22 +19,18 @@
+@@ -19,22 +19,20 @@
  import android.annotation.FlaggedApi;
  import android.annotation.NonNull;
  import android.annotation.Nullable;
@@ -18,6 +18,8 @@
 +import org.androidgraal.bionic.Malloc;
 +import org.androidgraal.hosted.annotate.Adapted;
 +import org.androidgraal.hosted.annotate.Emulated;
++import org.androidgraal.hosted.annotate.Premise;
++import org.androidgraal.hosted.annotate.Transcribed;
 +import org.graalvm.nativeimage.StackValue;
  
 -import org.apache.harmony.dalvik.ddmc.Chunk;
@@ -27,7 +29,7 @@
  import java.io.File;
  import java.io.FileDescriptor;
  import java.io.FileNotFoundException;
-@@ -64,6 +60,7 @@
+@@ -64,6 +62,7 @@
   * trace files, call one of the startMethodTracing() methods. To stop tracing,
   * call {@link #stopMethodTracing()}.
   */
@@ -35,11 +37,11 @@
  public final class Debug
  {
      private static final String TAG = "Debug";
-@@ -913,181 +910,14 @@
+@@ -913,181 +912,14 @@
              return 0;
          }
  
-+        @Adapted(reason = "throws instead of writing the fields")
++        @Adapted(reason = "throws instead of writing the fields", premise = Premise.DEVICE_LEVEL)
          public void writeToParcel(Parcel dest, int flags) {
 -            dest.writeInt(dalvikPss);
 -            dest.writeInt(dalvikSwappablePss);
@@ -219,7 +221,7 @@
       * Returns "true" if one or more threads is waiting for a debugger
       * to attach.
       */
-@@ -1096,34 +926,6 @@
+@@ -1096,34 +928,6 @@
      }
  
      /**
@@ -254,7 +256,7 @@
       * Returns an array of strings that identify Framework features. This is
       * used by DDMS to determine what sorts of operations the Framework can
       * perform.
-@@ -1235,418 +1037,6 @@
+@@ -1235,418 +1039,6 @@
      }
  
      /**
@@ -673,7 +675,7 @@
       * This method exists for compatibility and always returns 0.
       * @deprecated This method is now obsolete.
       */
-@@ -1711,51 +1101,6 @@
+@@ -1711,51 +1103,6 @@
      public static void resetGlobalExternalFreedSize() {}
  
      /**
@@ -725,7 +727,7 @@
       * This method exists for compatibility and has no effect.
       * @deprecated This method is now obsolete.
       */
-@@ -1788,220 +1133,41 @@
+@@ -1788,220 +1135,38 @@
      public static void resetThreadExternalAllocSize() {}
  
      /**
@@ -872,8 +874,7 @@
       * @return The size of the native heap in bytes.
       */
 -    public static native long getNativeHeapSize();
-+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Debug.cpp#L105-L109",
-+            reason = "the native's body in Java over bionic's mallinfo")
++    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Debug.cpp#L105-L109")
 +    public static long getNativeHeapSize() {
 +        Malloc.mallinfo info = StackValue.get(Malloc.mallinfo.class);
 +        Malloc.mallinfo(info);
@@ -885,8 +886,7 @@
       * @return The allocated size in bytes.
       */
 -    public static native long getNativeHeapAllocatedSize();
-+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Debug.cpp#L111-L115",
-+            reason = "the native's body in Java over bionic's mallinfo")
++    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Debug.cpp#L111-L115")
 +    public static long getNativeHeapAllocatedSize() {
 +        Malloc.mallinfo info = StackValue.get(Malloc.mallinfo.class);
 +        Malloc.mallinfo(info);
@@ -898,8 +898,7 @@
       * @return The freed size in bytes.
       */
 -    public static native long getNativeHeapFreeSize();
-+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Debug.cpp#L117-L121",
-+            reason = "the native's body in Java over bionic's mallinfo")
++    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Debug.cpp#L117-L121")
 +    public static long getNativeHeapFreeSize() {
 +        Malloc.mallinfo info = StackValue.get(Malloc.mallinfo.class);
 +        Malloc.mallinfo(info);
@@ -967,7 +966,7 @@
      /** @hide */
      public static final int MEMINFO_TOTAL = 0;
      /** @hide */
-@@ -2062,14 +1228,6 @@
+@@ -2062,14 +1227,6 @@
      public static final int MEMINFO_COUNT = 26;
  
      /**
@@ -982,7 +981,7 @@
       * Establish an object allocation limit in the current thread.
       * This feature was never enabled in release builds.  The
       * allocation limits feature was removed in Honeycomb.  This
-@@ -2097,167 +1255,6 @@
+@@ -2097,167 +1254,6 @@
      }
  
      /**
@@ -1150,7 +1149,7 @@
       * API for gathering and querying instruction counts.
       *
       * Example usage:
-@@ -2542,63 +1539,6 @@
+@@ -2542,63 +1538,6 @@
      }
  
      /**
@@ -1214,7 +1213,7 @@
       * Return a String describing the calling method and location at a particular stack depth.
       * @param callStack the Thread stack
       * @param depth the depth of stack to return information for.
-@@ -2671,124 +1611,4 @@
+@@ -2671,124 +1610,4 @@
          return getCaller(Thread.currentThread().getStackTrace(), 0);
      }
  

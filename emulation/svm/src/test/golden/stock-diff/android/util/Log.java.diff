@@ -1,6 +1,6 @@
 --- a/emulation/svm/src/main/java/android/util/Log.java
 +++ b/emulation/svm/src/main/java/android/util/Log.java
-@@ -23,12 +23,20 @@
+@@ -23,12 +23,23 @@
  import android.compat.annotation.UnsupportedAppUsage;
  import android.os.DeadSystemException;
  
@@ -12,7 +12,10 @@
  
 +import org.androidgraal.android.CString;
 +import org.androidgraal.hosted.annotate.Adapted;
++import org.androidgraal.hosted.annotate.Added;
 +import org.androidgraal.hosted.annotate.Emulated;
++import org.androidgraal.hosted.annotate.Premise;
++import org.androidgraal.hosted.annotate.Transcribed;
 +import org.graalvm.nativeimage.c.function.CFunction;
 +import org.graalvm.nativeimage.c.function.CLibrary;
 +import org.graalvm.nativeimage.c.type.CCharPointer;
@@ -22,67 +25,50 @@
  import java.io.PrintWriter;
  import java.io.StringWriter;
  import java.io.Writer;
-@@ -76,6 +84,9 @@
+@@ -76,6 +87,9 @@
          "com.android.platform.test.ravenwood.runtimehelper.ClassLoadHook.onClassLoaded")
  // Uncomment the following annotation to switch to the Java substitution version.
  @android.ravenwood.annotation.RavenwoodRedirectionClass("Log_ravenwood")
 +@CLibrary("log")
 +@Emulated
-+@Adapted(reason = "links liblog")
++@Added(reason = "links liblog")
  public final class Log {
      /** @hide */
      @IntDef({ASSERT, ERROR, WARN, INFO, DEBUG, VERBOSE})
-@@ -129,9 +140,9 @@
+@@ -129,9 +143,10 @@
          void onTerribleFailure(String tag, TerribleFailure what, boolean system);
      }
  
-+    @Adapted(reason = "the default handler skips RuntimeInit.wtf")
++    @Adapted(reason = "the default handler skips RuntimeInit.wtf",
++            premise = Premise.NO_FRAMEWORK_PROCESS)
      private static TerribleFailureHandler sWtfHandler = new TerribleFailureHandler() {
              public void onTerribleFailure(String tag, TerribleFailure what, boolean system) {
 -                RuntimeInit.wtf(tag, what, system);
              }
          };
  
-@@ -248,9 +259,13 @@
+@@ -248,9 +263,13 @@
       *         for Nougat (7.0) and prior releases (API <= 25), there is no
       *         tag limit of concern after this API level.
       */
 -    @FastNative
      @android.ravenwood.annotation.RavenwoodRedirect
 -    public static native boolean isLoggable(@Nullable String tag, @Level int level);
-+    @Adapted(value = {"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Log.cpp#L45-L47",
-+            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Log.cpp#L49-L64"},
-+            reason = "the native's default of INFO and above without the log.tag properties")
++    @Transcribed({"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Log.cpp#L45-L47",
++            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Log.cpp#L49-L64"})
++    @Adapted(reason = "answers by the level alone", premise = Premise.NO_LOG_PROPERTIES)
 +    public static boolean isLoggable(@Nullable String tag, @Level int level) {
 +        return tag != null && level >= INFO;
 +    }
  
      /**
       * Send a {@link #WARN} log message and log the exception.
-@@ -374,6 +389,7 @@
-      * @param tr An exception to log.
-      */
-     @NonNull
-+    @Adapted(reason = "a PrintWriter instead of FastPrintWriter")
-     public static String getStackTraceString(@Nullable Throwable tr) {
-         if (tr == null) {
-             return "";
-@@ -390,7 +406,7 @@
-         }
- 
-         StringWriter sw = new StringWriter();
--        PrintWriter pw = new FastPrintWriter(sw, false, 256);
-+        PrintWriter pw = new PrintWriter(sw);
-         tr.printStackTrace(pw);
-         pw.flush();
-         return sw.toString();
-@@ -426,7 +442,20 @@
+@@ -426,7 +445,19 @@
       */
      @UnsupportedAppUsage
      @android.ravenwood.annotation.RavenwoodRedirect
 -    public static native int println_native(int bufID, int priority, String tag, String msg);
-+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Log.cpp#L74-L101",
-+            reason = "the native's body in Java over liblog")
++    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Log.cpp#L74-L101")
 +    public static int println_native(int bufID, int priority, String tag, String msg) {
 +        if (msg == null) {
 +            throw new NullPointerException("println needs a message");
@@ -98,52 +84,29 @@
  
      /**
       * Send a log message to the "radio" log buffer, which can be dumped with
-@@ -454,7 +483,12 @@
+@@ -454,7 +485,11 @@
       * @return LOGGER_ENTRY_MAX_PAYLOAD.
       */
      @android.ravenwood.annotation.RavenwoodRedirect
 -    private static native int logger_entry_max_payload_native();
-+    @Adapted(value = {"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Log.cpp#L107-L111",
-+            "https://android.googlesource.com/platform/system/logging/+/refs/tags/android-16.0.0_r1/liblog/include/log/log.h#L71-L71"},
-+            reason = "liblog's LOGGER_ENTRY_MAX_PAYLOAD as a literal")
++    @Transcribed({"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Log.cpp#L107-L111",
++            "https://android.googlesource.com/platform/system/logging/+/refs/tags/android-16.0.0_r1/liblog/include/log/log.h#L71-L71"})
 +    private static int logger_entry_max_payload_native() {
 +        return 4068;
 +    }
  
      /**
       * Helper function for long messages. Uses the LineBreakBufferedWriter to break
-@@ -463,6 +497,7 @@
-      * @return A positive value if the message was loggable (see {@link #isLoggable}).
-      * @hide
-      */
-+    @Adapted(reason = "without the DeadSystemException case")
-     public static int printlns(int bufID, int priority, @Nullable String tag, @NonNull String msg,
-             @Nullable Throwable tr) {
-         ImmediateLogWriter logWriter = new ImmediateLogWriter(bufID, priority, tag);
-@@ -489,11 +524,6 @@
-                 if (t instanceof UnknownHostException) {
-                     break;
-                 }
--                if (t instanceof DeadSystemException) {
--                    lbbw.println("DeadSystemException: The system died; "
--                            + "earlier logs will point to the root cause");
--                    break;
--                }
-                 t = t.getCause();
-             }
-             if (t == null) {
-@@ -559,4 +589,14 @@
+@@ -559,4 +594,12 @@
              // Ignored.
          }
      }
 +
-+    @Adapted(value = "https://android.googlesource.com/platform/system/logging/+/refs/tags/android-16.0.0_r1/liblog/include/android/log.h#L151-L181",
-+            reason = "liblog's LOG_ID_MAX as a literal")
++    @Transcribed("https://android.googlesource.com/platform/system/logging/+/refs/tags/android-16.0.0_r1/liblog/include/android/log.h#L151-L181")
 +    private static final int LOG_ID_MAX = 8;
 +
 +    @CFunction("__android_log_buf_write")
-+    @Adapted(value = "https://android.googlesource.com/platform/system/logging/+/refs/tags/android-16.0.0_r1/liblog/include/android/log.h#L197-L197",
-+            reason = "binds liblog's __android_log_buf_write")
++    @Added(reason = "binds liblog's __android_log_buf_write")
 +    private static native int androidLogBufWrite(int bufID, int priority, CCharPointer tag,
 +            CCharPointer text);
  }

@@ -16,8 +16,8 @@
 
 package android.system;
 
-import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
+import org.androidgraal.hosted.annotate.Transcribed;
 
 import java.io.IOException;
 import java.net.SocketException;
@@ -59,7 +59,7 @@ public final class ErrnoException extends Exception {
      * We do this here rather than in the constructor so that callers only pay for
      * this if they need it.
      */
-    @Adapted(reason = "Os.strerror instead of Libcore.os")
+    @Transcribed
     @Override public String getMessage() {
         String errnoName = OsConstants.errnoName(errno);
         if (errnoName == null) {

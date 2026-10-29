@@ -1,0 +1,246 @@
+--- a/emulation/svm/src/main/java/android/os/MessageQueue.java
++++ b/emulation/svm/src/main/java/android/os/MessageQueue.java
+@@ -21,8 +21,6 @@
+ import android.annotation.Nullable;
+ import android.annotation.SuppressLint;
+ import android.annotation.TestApi;
+-import android.app.ActivityThread;
+-import android.app.Instrumentation;
+ import android.compat.annotation.UnsupportedAppUsage;
+ import android.ravenwood.annotation.RavenwoodKeepWholeClass;
+ import android.ravenwood.annotation.RavenwoodRedirect;
+@@ -36,6 +34,13 @@
+ 
+ import dalvik.annotation.optimization.NeverCompile;
+ 
++import org.androidgraal.android.FileDescriptors;
++import org.androidgraal.android.NativeMessageQueue;
++import org.androidgraal.hosted.annotate.Adapted;
++import org.androidgraal.hosted.annotate.Emulated;
++import org.androidgraal.hosted.annotate.Premise;
++import org.androidgraal.hosted.annotate.Transcribed;
++
+ import java.io.FileDescriptor;
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+@@ -60,6 +65,7 @@
+  */
+ @RavenwoodKeepWholeClass
+ @RavenwoodRedirectionClass("MessageQueue_ravenwood")
++@Emulated
+ public final class MessageQueue {
+     private static final String TAG_L = "LegacyMessageQueue";
+     private static final String TAG_C = "ConcurrentMessageQueue";
+@@ -115,18 +121,40 @@
+     private static Boolean sIsProcessAllowedToUseConcurrent = null;
+ 
+     @RavenwoodRedirect
+-    private native static long nativeInit();
++    @Transcribed({"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_MessageQueue.cpp#L94-L101",
++            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_MessageQueue.cpp#L207-L216"})
++    private static long nativeInit() {
++        return NativeMessageQueue.nativeInit();
++    }
+     @RavenwoodRedirect
+-    private native static void nativeDestroy(long ptr);
++    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_MessageQueue.cpp#L218-L221")
++    private static void nativeDestroy(long ptr) {
++        NativeMessageQueue.nativeDestroy(ptr);
++    }
+     @UnsupportedAppUsage
+     @RavenwoodRedirect
+-    private native void nativePollOnce(long ptr, int timeoutMillis); /*non-static for callbacks*/
++    @Transcribed({"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_MessageQueue.cpp#L123-L135",
++            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_MessageQueue.cpp#L223-L227"})
++    private void nativePollOnce(long ptr, int timeoutMillis) { /*non-static for callbacks*/
++        NativeMessageQueue.nativePollOnce(this, ptr, timeoutMillis);
++    }
+     @RavenwoodRedirect
+-    private native static void nativeWake(long ptr);
++    @Transcribed({"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_MessageQueue.cpp#L137-L139",
++            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_MessageQueue.cpp#L229-L232"})
++    private static void nativeWake(long ptr) {
++        NativeMessageQueue.nativeWake(ptr);
++    }
+     @RavenwoodRedirect
+-    private native static boolean nativeIsPolling(long ptr);
++    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_MessageQueue.cpp#L234-L237")
++    private static boolean nativeIsPolling(long ptr) {
++        return NativeMessageQueue.nativeIsPolling(ptr);
++    }
+     @RavenwoodRedirect
+-    private native static void nativeSetFileDescriptorEvents(long ptr, int fd, int events);
++    @Transcribed({"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_MessageQueue.cpp#L141-L179",
++            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_MessageQueue.cpp#L239-L243"})
++    private static void nativeSetFileDescriptorEvents(long ptr, int fd, int events) {
++        NativeMessageQueue.nativeSetFileDescriptorEvents(ptr, fd, events);
++    }
+ 
+     MessageQueue(boolean quitAllowed) {
+         initIsProcessAllowedToUseConcurrent();
+@@ -195,35 +223,9 @@
+         // authors to test Looper and MessageQueue without resorting to reflection.
+     }
+ 
+-    @RavenwoodReplace
+-    private static void throwIfNotTest() {
+-        final ActivityThread activityThread = ActivityThread.currentActivityThread();
+-        if (activityThread == null) {
+-            // Only tests can reach here.
+-            return;
+-        }
+-        final Instrumentation instrumentation = activityThread.getInstrumentation();
+-        if (instrumentation == null) {
+-            // Only tests can reach here.
+-            return;
+-        }
+-        if (instrumentation.isInstrumenting()) {
+-            return;
+-        }
+-        throw new IllegalStateException("Test-only API called not from a test!");
+-    }
+-
+-    private static void throwIfNotTest$ravenwood() {
+-        return;
+-    }
+-
+     @Override
++    @Adapted(reason = "empty", premise = Premise.NO_FINALIZER)
+     protected void finalize() throws Throwable {
+-        try {
+-            dispose();
+-        } finally {
+-            super.finalize();
+-        }
+     }
+ 
+     private void decAndTraceMessageCount() {
+@@ -517,9 +519,10 @@
+     }
+ 
+     @RavenwoodThrow(blockedBy = android.os.ParcelFileDescriptor.class)
++    @Transcribed
+     private void updateOnFileDescriptorEventListenerLocked(FileDescriptor fd, int events,
+             OnFileDescriptorEventListener listener) {
+-        final int fdNum = fd.getInt$();
++        final int fdNum = FileDescriptors.getFd(fd);
+ 
+         int index = -1;
+         FileDescriptorRecord record = null;
+@@ -1448,64 +1451,6 @@
+         return null;
+     }
+ 
+-    /**
+-     * Get the timestamp of the next executable message in our priority queue.
+-     * Returns null if there are no messages ready for delivery.
+-     *
+-     * Caller must ensure that this doesn't race 'next' from the Looper thread.
+-     */
+-    @SuppressLint("VisiblySynchronized") // Legacy MessageQueue synchronizes on this
+-    Long peekWhenForTest() {
+-        throwIfNotTest();
+-        Message ret;
+-        if (mUseConcurrent) {
+-            ret = nextMessage(true, true);
+-        } else {
+-            ret = legacyPeekOrPoll(true);
+-        }
+-        return ret != null ? ret.when : null;
+-    }
+-
+-    /**
+-     * Return the next executable message in our priority queue.
+-     * Returns null if there are no messages ready for delivery
+-     *
+-     * Caller must ensure that this doesn't race 'next' from the Looper thread.
+-     */
+-    @SuppressLint("VisiblySynchronized") // Legacy MessageQueue synchronizes on this
+-    @Nullable
+-    Message pollForTest() {
+-        throwIfNotTest();
+-        if (mUseConcurrent) {
+-            return nextMessage(false, true);
+-        } else {
+-            return legacyPeekOrPoll(false);
+-        }
+-    }
+-
+-    /**
+-     * @return true if we are blocked on a sync barrier
+-     *
+-     * Calls to this method must not be allowed to race with `next`.
+-     * Specifically, the Looper thread must be paused before calling this method,
+-     * and may not be resumed until after returning from this method.
+-     */
+-    boolean isBlockedOnSyncBarrier() {
+-        throwIfNotTest();
+-        if (mUseConcurrent) {
+-            // Call nextMessage to get the stack drained into our priority queues
+-            nextMessage(true, false);
+-
+-            Iterator<MessageNode> queueIter = mPriorityQueue.iterator();
+-            MessageNode queueNode = iterateNext(queueIter);
+-
+-            return (queueNode != null && queueNode.isBarrier());
+-        } else {
+-            Message msg = mMessages;
+-            return msg != null && msg.target == null;
+-        }
+-    }
+-
+     private static final class MatchHandlerWhatAndObject extends MessageCompare {
+         @Override
+         public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
+@@ -2229,51 +2174,6 @@
+         }
+     }
+ 
+-    @NeverCompile
+-    private int dumpPriorityQueue(ConcurrentSkipListSet<MessageNode> queue,
+-            ProtoOutputStream proto) {
+-        int count = 0;
+-
+-        for (MessageNode msgNode : queue) {
+-            Message msg = msgNode.mMessage;
+-            msg.dumpDebug(proto, MessageQueueProto.MESSAGES);
+-            count++;
+-        }
+-        return count;
+-    }
+-
+-    @NeverCompile
+-    void dumpDebug(ProtoOutputStream proto, long fieldId) {
+-        if (mUseConcurrent) {
+-            final long messageQueueToken = proto.start(fieldId);
+-
+-            StackNode node = (StackNode) sState.getVolatile(this);
+-            while (node.isMessageNode()) {
+-                Message msg = ((MessageNode) node).mMessage;
+-                msg.dumpDebug(proto, MessageQueueProto.MESSAGES);
+-                node = ((MessageNode) node).mNext;
+-            }
+-
+-            dumpPriorityQueue(mPriorityQueue, proto);
+-            dumpPriorityQueue(mAsyncPriorityQueue, proto);
+-
+-            proto.write(MessageQueueProto.IS_POLLING_LOCKED, isPolling());
+-            proto.write(MessageQueueProto.IS_QUITTING, (boolean) sQuitting.getVolatile(this));
+-            proto.end(messageQueueToken);
+-            return;
+-        }
+-
+-        final long messageQueueToken = proto.start(fieldId);
+-        synchronized (this) {
+-            for (Message msg = mMessages; msg != null; msg = msg.next) {
+-                msg.dumpDebug(proto, MessageQueueProto.MESSAGES);
+-            }
+-            proto.write(MessageQueueProto.IS_POLLING_LOCKED, isPollingLocked());
+-            proto.write(MessageQueueProto.IS_QUITTING, mQuitting);
+-        }
+-        proto.end(messageQueueToken);
+-    }
+-
+     /**
+      * Callback interface for discovering when a thread is going to block
+      * waiting for more messages.

@@ -1,6 +1,6 @@
 --- a/emulation/svm/src/main/java/android/hardware/SensorManager.java
 +++ b/emulation/svm/src/main/java/android/hardware/SensorManager.java
-@@ -21,13 +21,13 @@
+@@ -21,13 +21,12 @@
  import android.annotation.SystemApi;
  import android.annotation.SystemService;
  import android.compat.annotation.UnsupportedAppUsage;
@@ -11,23 +11,21 @@
  import android.util.Log;
  import android.util.SparseArray;
  
-+import org.androidgraal.hosted.annotate.Adapted;
 +import org.androidgraal.hosted.annotate.Emulated;
 +
  import java.lang.annotation.Retention;
  import java.lang.annotation.RetentionPolicy;
  import java.util.ArrayList;
-@@ -90,7 +90,8 @@
+@@ -90,7 +89,7 @@
   * @see Sensor
   *
   */
 -@SystemService(Context.SENSOR_SERVICE)
 +@Emulated
-+@Adapted(reason = "without @SystemService")
  public abstract class SensorManager {
      /** @hide */
      protected static final String TAG = "SensorManager";
-@@ -101,9 +102,6 @@
+@@ -101,9 +100,6 @@
      private final SparseArray<List<Sensor>> mSensorListByType =
              new SparseArray<List<Sensor>>();
  
@@ -37,7 +35,7 @@
      /* NOTE: sensor IDs must be a power of 2 */
  
      /**
-@@ -397,16 +395,6 @@
+@@ -397,16 +393,6 @@
      protected abstract List<Sensor> getFullDynamicSensorList();
  
      /**
@@ -54,7 +52,7 @@
       * Use this method to get the list of available sensors of a certain type.
       * Make multiple calls to get sensors of different types or use
       * {@link android.hardware.Sensor#TYPE_ALL Sensor.TYPE_ALL} to get all the
-@@ -580,90 +568,8 @@
+@@ -580,90 +566,8 @@
      }
  
      /**
@@ -145,7 +143,7 @@
       * <p class="note">
       * Note: Don't use this method with a one shot trigger sensor such as
       * {@link Sensor#TYPE_SIGNIFICANT_MOTION}.
-@@ -708,193 +614,8 @@
+@@ -708,193 +612,8 @@
      /** @hide */
      protected abstract void unregisterListenerImpl(SensorEventListener listener, Sensor sensor);
  
@@ -339,7 +337,7 @@
       * Flushes the FIFO of all the sensors registered for this listener. If there are events
       * in the FIFO of the sensor, they are returned as if the maxReportLatency of the FIFO has
       * expired. Events are returned in the usual way through the SensorEventListener.
-@@ -921,56 +642,7 @@
+@@ -921,56 +640,7 @@
      /** @hide */
      protected abstract boolean flushImpl(SensorEventListener listener);
  
@@ -396,7 +394,7 @@
      void destroyDirectChannel(SensorDirectChannel channel) {
          destroyDirectChannelImpl(channel);
      }
-@@ -1004,42 +676,6 @@
+@@ -1004,42 +674,6 @@
  
  
      /**
@@ -439,7 +437,7 @@
       * Remove a {@link android.hardware.SensorManager.DynamicSensorCallback
       * DynamicSensorCallback} to stop sending dynamic sensor connection events to that
       * callback.
-@@ -1065,10 +701,6 @@
+@@ -1065,10 +699,6 @@
      }
  
      /** @hide */
@@ -450,7 +448,7 @@
      protected abstract void unregisterDynamicSensorCallbackImpl(
              DynamicSensorCallback callback);
  
-@@ -1967,17 +1599,6 @@
+@@ -1967,17 +1597,6 @@
      protected abstract boolean injectSensorDataImpl(Sensor sensor, float[] values, int accuracy,
                  long timestamp);
  

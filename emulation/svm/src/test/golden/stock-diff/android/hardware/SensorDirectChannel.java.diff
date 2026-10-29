@@ -1,6 +1,6 @@
 --- a/emulation/svm/src/main/java/android/hardware/SensorDirectChannel.java
 +++ b/emulation/svm/src/main/java/android/hardware/SensorDirectChannel.java
-@@ -16,10 +16,12 @@
+@@ -16,10 +16,13 @@
  package android.hardware;
  
  import android.annotation.IntDef;
@@ -10,11 +10,12 @@
  
 +import org.androidgraal.hosted.annotate.Adapted;
 +import org.androidgraal.hosted.annotate.Emulated;
++import org.androidgraal.hosted.annotate.Premise;
 +
  import java.io.IOException;
  import java.lang.annotation.Retention;
  import java.lang.annotation.RetentionPolicy;
-@@ -34,6 +36,7 @@
+@@ -34,6 +37,7 @@
   * (see {@link #configure(Sensor, int)})
   * to start delivery of sensor events into shared memory buffer.
   */
@@ -22,7 +23,7 @@
  public final class SensorDirectChannel implements Channel {
  
      // shared memory types
-@@ -203,32 +206,9 @@
+@@ -203,32 +207,9 @@
          return mNativeHandle;
      }
  
@@ -42,7 +43,7 @@
 -    }
 -
      @Override
-+    @Adapted(reason = "empty, the image runs no finalizer")
++    @Adapted(reason = "empty", premise = Premise.NO_FINALIZER)
      protected void finalize() throws Throwable {
 -        try {
 -            if (mCloseGuard != null) {

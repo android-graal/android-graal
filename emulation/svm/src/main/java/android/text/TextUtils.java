@@ -40,6 +40,8 @@ import com.android.internal.util.Preconditions;
 
 import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
+import org.androidgraal.hosted.annotate.Premise;
+import org.androidgraal.hosted.annotate.Transcribed;
 
 import java.lang.annotation.Retention;
 import java.lang.reflect.Array;
@@ -502,9 +504,10 @@ public class TextUtils {
      * Flatten a CharSequence and whatever styles can be copied across processes
      * into the parcel.
      */
-    @Adapted(value = {"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-10.0.0_r1/core/java/android/text/TextUtils.java#L747-L748",
-            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-10.0.0_r1/core/java/android/text/TextUtils.java#L783-L785"},
-            reason = "writeString below R, and a span throws")
+    @Transcribed({"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-10.0.0_r1/core/java/android/text/TextUtils.java#L747-L748",
+            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-10.0.0_r1/core/java/android/text/TextUtils.java#L783-L785"})
+    @Adapted(reason = "writeString below R, and a span throws",
+            premise = {Premise.ABSENT_TYPE, Premise.DEVICE_LEVEL})
     public static void writeToParcel(@Nullable CharSequence cs, @NonNull Parcel p,
             int parcelableFlags) {
         if (cs instanceof Spanned) {
@@ -548,8 +551,9 @@ public class TextUtils {
         p.writeInt(sp.getSpanFlags(o));
     }
 
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-10.0.0_r1/core/java/android/text/TextUtils.java#L805-L807",
-            reason = "readString below R, and a span throws")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-10.0.0_r1/core/java/android/text/TextUtils.java#L805-L807")
+    @Adapted(reason = "readString below R, and a span throws",
+            premise = {Premise.ABSENT_TYPE, Premise.DEVICE_LEVEL})
     public static final Parcelable.Creator<CharSequence> CHAR_SEQUENCE_CREATOR
             = new Parcelable.Creator<CharSequence>() {
         /**

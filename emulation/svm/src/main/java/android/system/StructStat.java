@@ -16,8 +16,8 @@
 
 package android.system;
 
-import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
+import org.androidgraal.hosted.annotate.Transcribed;
 
 /**
  * File information returned by {@link Os#fstat}, {@link Os#lstat}, and {@link Os#stat}.
@@ -117,7 +117,7 @@ public final class StructStat {
         this.st_blocks = st_blocks;
     }
 
-    @Adapted(reason = "Objects.toString's output spelled out over the fields in name order")
+    @Transcribed("https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/java/libcore/util/Objects.java#L31-L84")
     @Override public String toString() {
         return "StructStat[st_atim=" + st_atim + ",st_atime=" + st_atime + ",st_blksize="
                 + st_blksize + ",st_blocks=" + st_blocks + ",st_ctim=" + st_ctim + ",st_ctime="

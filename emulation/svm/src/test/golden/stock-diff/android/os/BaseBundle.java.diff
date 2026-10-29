@@ -8,17 +8,19 @@
  import android.util.ArrayMap;
  import android.util.Log;
  import android.util.MathUtils;
-@@ -33,6 +32,9 @@
+@@ -33,6 +32,11 @@
  import com.android.internal.util.IndentingPrintWriter;
  import com.android.internal.util.Preconditions;
  
 +import org.androidgraal.hosted.annotate.Adapted;
 +import org.androidgraal.hosted.annotate.Emulated;
++import org.androidgraal.hosted.annotate.Premise;
++import org.androidgraal.hosted.annotate.Transcribed;
 +
  import java.io.Serializable;
  import java.lang.ref.WeakReference;
  import java.util.ArrayList;
-@@ -46,6 +48,7 @@
+@@ -46,6 +50,7 @@
   */
  @android.ravenwood.annotation.RavenwoodKeepWholeClass
  @SuppressWarnings("HiddenSuperclass")
@@ -26,15 +28,15 @@
  public class BaseBundle implements Parcel.ClassLoaderProvider {
      /** @hide */
      protected static final String TAG = "Bundle";
-@@ -419,6 +422,7 @@
+@@ -419,6 +424,7 @@
       */
      @SuppressWarnings("unchecked")
      @Nullable
-+    @Adapted(reason = "the creator token check throws")
++    @Adapted(reason = "the creator token check throws", premise = Premise.ABSENT_TYPE)
      final <T> T getValueAt(int i, @Nullable Class<T> clazz, @Nullable Class<?>... itemTypes) {
          Object object = mMap.valueAt(i);
          if (object instanceof BiFunction<?, ?, ?>) {
-@@ -426,7 +430,7 @@
+@@ -426,7 +432,7 @@
                  object = unwrapLazyValueFromMapLocked(i, clazz, itemTypes);
              }
              if ((mFlags & Bundle.FLAG_VERIFY_TOKENS_PRESENT) != 0) {
@@ -43,16 +45,16 @@
              }
          } else if (object instanceof Bundle) {
              Bundle bundle = (Bundle) object;
-@@ -1835,6 +1839,8 @@
+@@ -1835,6 +1841,8 @@
       * it to be passed through an IBinder connection.
       * @param parcel The parcel to copy this bundle to.
       */
-+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-15.0.0_r1/core/java/android/os/BaseBundle.java#L1808-L1851",
-+            reason = "writes mHasIntent from BAKLAVA on")
++    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-15.0.0_r1/core/java/android/os/BaseBundle.java#L1808-L1851")
++    @Adapted(reason = "writes mHasIntent from BAKLAVA on", premise = Premise.DEVICE_LEVEL)
      void writeToParcelInner(Parcel parcel, int flags) {
          // If the parcel has a read-write helper, we can't just copy the blob, so unparcel it first.
          if (parcel.hasReadWriteHelper()) {
-@@ -1854,7 +1860,9 @@
+@@ -1854,7 +1862,9 @@
                      parcel.writeInt(length);
                      parcel.writeInt(mParcelledByNative ? BUNDLE_MAGIC_NATIVE : BUNDLE_MAGIC);
                      parcel.appendFrom(mParcelledData, 0, length);
@@ -63,7 +65,7 @@
                  }
                  return;
              }
-@@ -1878,7 +1886,9 @@
+@@ -1878,7 +1888,9 @@
          int length = endPos - startPos;
          parcel.writeInt(length);
          parcel.setDataPosition(endPos);
@@ -74,17 +76,18 @@
      }
  
      /**
-@@ -1893,6 +1903,9 @@
+@@ -1893,6 +1905,10 @@
          readFromParcelInner(parcel, length);
      }
  
-+    @Adapted(value = {"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-8.1.0_r1/core/java/android/os/BaseBundle.java#L1575-L1578",
-+            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-15.0.0_r1/core/java/android/os/BaseBundle.java#L1865-L1912"},
-+            reason = "a native bundle from P on and mHasIntent read from BAKLAVA on")
++    @Transcribed({"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-8.1.0_r1/core/java/android/os/BaseBundle.java#L1575-L1578",
++            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-15.0.0_r1/core/java/android/os/BaseBundle.java#L1865-L1912"})
++    @Adapted(reason = "a native bundle from P on and mHasIntent read from BAKLAVA on",
++            premise = Premise.DEVICE_LEVEL)
      private void readFromParcelInner(Parcel parcel, int length) {
          if (length < 0) {
              throw new RuntimeException("Bad length in parcel: " + length);
-@@ -1907,7 +1920,8 @@
+@@ -1907,7 +1923,8 @@
  
          final int magic = parcel.readInt();
          final boolean isJavaBundle = magic == BUNDLE_MAGIC;
@@ -94,7 +97,7 @@
          if (!isJavaBundle && !isNativeBundle) {
              throw new IllegalStateException("Bad magic number for Bundle: 0x"
                      + Integer.toHexString(magic));
-@@ -1922,7 +1936,7 @@
+@@ -1922,7 +1939,7 @@
                  mOwnsLazyValues = false;
                  initializeFromParcelLocked(parcel, /*ownsParcel*/ false, isNativeBundle);
              }
@@ -103,7 +106,7 @@
              return;
          }
  
-@@ -1941,7 +1955,7 @@
+@@ -1941,7 +1958,7 @@
          mOwnsLazyValues = true;
          mParcelledByNative = isNativeBundle;
          mParcelledData = p;

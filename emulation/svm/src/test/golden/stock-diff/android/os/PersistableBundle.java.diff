@@ -1,6 +1,6 @@
 --- a/emulation/svm/src/main/java/android/os/PersistableBundle.java
 +++ b/emulation/svm/src/main/java/android/os/PersistableBundle.java
-@@ -22,17 +22,11 @@
+@@ -22,17 +22,12 @@
  import android.annotation.Nullable;
  import android.util.ArrayMap;
  import android.util.Slog;
@@ -12,6 +12,7 @@
 -import com.android.modules.utils.TypedXmlSerializer;
 +import org.androidgraal.hosted.annotate.Adapted;
 +import org.androidgraal.hosted.annotate.Emulated;
++import org.androidgraal.hosted.annotate.Premise;
  
 -import org.xmlpull.v1.XmlPullParser;
 -import org.xmlpull.v1.XmlPullParserException;
@@ -20,19 +21,19 @@
  import java.io.IOException;
  import java.io.InputStream;
  import java.io.OutputStream;
-@@ -50,8 +44,9 @@
+@@ -50,8 +45,9 @@
   * @see Bundle
   */
  @android.ravenwood.annotation.RavenwoodKeepWholeClass
 -public final class PersistableBundle extends BaseBundle implements Cloneable, Parcelable,
 -        XmlUtils.WriteMapCallback {
 +@Emulated
-+@Adapted(reason = "does not implement XmlUtils.WriteMapCallback")
++@Adapted(reason = "does not implement XmlUtils.WriteMapCallback", premise = Premise.ABSENT_TYPE)
 +public final class PersistableBundle extends BaseBundle implements Cloneable, Parcelable {
      private static final String TAG = "PersistableBundle";
  
      private static final String TAG_PERSISTABLEMAP = "pbundle_as_map";
-@@ -261,40 +256,6 @@
+@@ -261,40 +257,6 @@
                  }
              };
  
@@ -73,7 +74,7 @@
      /**
       * Checks whether all keys and values are within the given character limit.
       * Note: Maximum character limit of String that can be saved to XML as part of bundle is 65535.
-@@ -332,18 +293,6 @@
+@@ -332,18 +294,6 @@
          return true;
      }
  
@@ -92,7 +93,7 @@
      /**
       * Report the nature of this Parcelable's contents
       */
-@@ -367,33 +316,6 @@
+@@ -367,33 +317,6 @@
          }
      }
  
@@ -126,7 +127,7 @@
      /**
       * Returns a string representation of the {@link PersistableBundle} that may be suitable for
       * debugging. It won't print the internal map if its content hasn't been unparcelled.
-@@ -423,60 +345,4 @@
+@@ -423,60 +346,4 @@
          return mMap.toString();
      }
  

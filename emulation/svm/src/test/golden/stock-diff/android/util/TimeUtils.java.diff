@@ -1,0 +1,118 @@
+--- a/emulation/svm/src/main/java/android/util/TimeUtils.java
++++ b/emulation/svm/src/main/java/android/util/TimeUtils.java
+@@ -23,10 +23,7 @@
+ import android.os.Build;
+ import android.os.SystemClock;
+ 
+-import com.android.i18n.timezone.CountryTimeZones;
+-import com.android.i18n.timezone.CountryTimeZones.TimeZoneMapping;
+-import com.android.i18n.timezone.TimeZoneFinder;
+-import com.android.i18n.timezone.ZoneInfoDb;
++import org.androidgraal.hosted.annotate.Emulated;
+ 
+ import java.io.PrintWriter;
+ import java.text.SimpleDateFormat;
+@@ -43,6 +40,7 @@
+  */
+ @android.ravenwood.annotation.RavenwoodKeepPartialClass
+ @android.ravenwood.annotation.RavenwoodKeepStaticInitializer
++@Emulated
+ public class TimeUtils {
+     /** @hide */ public TimeUtils() {}
+     /** {@hide} */
+@@ -79,95 +77,6 @@
+     public static final Instant MIN_USE_DATE_OF_TIMEZONE =
+             Instant.ofEpochMilli(1546300800000L); // 1/1/2019 00:00 UTC
+ 
+-    /**
+-     * Tries to return a time zone that would have had the specified offset
+-     * and DST value at the specified moment in the specified country.
+-     * Returns null if no suitable zone could be found.
+-     */
+-    public static java.util.TimeZone getTimeZone(
+-            int offset, boolean dst, long when, String country) {
+-
+-        android.icu.util.TimeZone icuTimeZone = getIcuTimeZone(offset, dst, when, country);
+-        // We must expose a java.util.TimeZone here for API compatibility because this is a public
+-        // API method.
+-        return icuTimeZone != null ? java.util.TimeZone.getTimeZone(icuTimeZone.getID()) : null;
+-    }
+-
+-    /**
+-     * Returns a frozen ICU time zone that has / would have had the specified offset and DST value
+-     * at the specified moment in the specified country. Returns null if no suitable zone could be
+-     * found.
+-     */
+-    private static android.icu.util.TimeZone getIcuTimeZone(
+-            int offsetMillis, boolean isDst, long whenMillis, String countryIso) {
+-        if (countryIso == null) {
+-            return null;
+-        }
+-
+-        android.icu.util.TimeZone bias = android.icu.util.TimeZone.getDefault();
+-        CountryTimeZones countryTimeZones =
+-                TimeZoneFinder.getInstance().lookupCountryTimeZones(countryIso);
+-        if (countryTimeZones == null) {
+-            return null;
+-        }
+-        CountryTimeZones.OffsetResult offsetResult = countryTimeZones.lookupByOffsetWithBias(
+-                whenMillis, bias, offsetMillis, isDst);
+-        return offsetResult != null ? offsetResult.getTimeZone() : null;
+-    }
+-
+-    /**
+-     * Returns time zone IDs for time zones known to be associated with a country.
+-     *
+-     * <p>The list returned may be different from other on-device sources like
+-     * {@link android.icu.util.TimeZone#getRegion(String)} as it can be curated to avoid
+-     * contentious or obsolete mappings.
+-     *
+-     * @param countryCode the ISO 3166-1 alpha-2 code for the country as can be obtained using
+-     *     {@link java.util.Locale#getCountry()}
+-     * @return IDs that can be passed to {@link java.util.TimeZone#getTimeZone(String)} or similar
+-     *     methods, or {@code null} if the countryCode is unrecognized
+-     */
+-    public static @Nullable List<String> getTimeZoneIdsForCountryCode(@NonNull String countryCode) {
+-        if (countryCode == null) {
+-            throw new NullPointerException("countryCode == null");
+-        }
+-        TimeZoneFinder timeZoneFinder = TimeZoneFinder.getInstance();
+-        CountryTimeZones countryTimeZones =
+-                timeZoneFinder.lookupCountryTimeZones(countryCode.toLowerCase());
+-        if (countryTimeZones == null) {
+-            return null;
+-        }
+-
+-        List<String> timeZoneIds = new ArrayList<>();
+-        for (TimeZoneMapping timeZoneMapping : countryTimeZones.getTimeZoneMappings()) {
+-            if (timeZoneMapping.isShownInPickerAt(MIN_USE_DATE_OF_TIMEZONE)) {
+-                timeZoneIds.add(timeZoneMapping.getTimeZoneId());
+-            }
+-        }
+-        return Collections.unmodifiableList(timeZoneIds);
+-    }
+-
+-    /**
+-     * Returns a String indicating the version of the time zone database currently
+-     * in use.  The format of the string is dependent on the underlying time zone
+-     * database implementation, but will typically contain the year in which the database
+-     * was updated plus a letter from a to z indicating changes made within that year.
+-     *
+-     * <p>Time zone database updates should be expected to occur periodically due to
+-     * political and legal changes that cannot be anticipated in advance.  Therefore,
+-     * when computing the time for a future event, applications should be aware that the
+-     * results may differ following a time zone database update.  This method allows
+-     * applications to detect that a database change has occurred, and to recalculate any
+-     * cached times accordingly.
+-     *
+-     * <p>The time zone database may be assumed to change only when the device runtime
+-     * is restarted.  Therefore, it is not necessary to re-query the database version
+-     * during the lifetime of an activity.
+-     */
+-    public static String getTimeZoneDatabaseVersion() {
+-        return ZoneInfoDb.getInstance().getVersion();
+-    }
+-
+     /** @hide Field length that can hold 999 days of time */
+     public static final int HUNDRED_DAY_FIELD_LEN = 19;
+ 

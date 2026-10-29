@@ -39,6 +39,7 @@ import dalvik.system.VMRuntime;
 
 import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
+import org.androidgraal.hosted.annotate.Premise;
 
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -373,7 +374,8 @@ public class Build {
          * android.os.Build.VERSION_CODES_FULL}.
          */
         @FlaggedApi(Flags.FLAG_MAJOR_MINOR_VERSIONING_SCHEME)
-        @Adapted(reason = "SDK_INT when ro.build.version.sdk_full is unset")
+        @Adapted(reason = "SDK_INT when ro.build.version.sdk_full is unset",
+                premise = Premise.DEVICE_LEVEL)
         public static final int SDK_INT_FULL = parseFullVersion(SystemProperties.get(
                     "ro.build.version.sdk_full", Integer.toString(SDK_INT)));
 

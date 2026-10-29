@@ -1,0 +1,33 @@
+--- a/emulation/svm/src/main/java/android/os/HandlerThread.java
++++ b/emulation/svm/src/main/java/android/os/HandlerThread.java
+@@ -19,6 +19,8 @@
+ import android.annotation.NonNull;
+ import android.annotation.Nullable;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.util.concurrent.Executor;
+ 
+ /**
+@@ -28,6 +30,7 @@
+  * Note that just like with a regular {@link Thread}, {@link #start()} must still be called.
+  */
+ @android.ravenwood.annotation.RavenwoodKeepWholeClass
++@Emulated
+ public class HandlerThread extends Thread {
+     int mPriority;
+     int mTid = -1;
+@@ -58,13 +61,6 @@
+     protected void onCreated() {
+     }
+ 
+-    /** @hide */
+-    protected void onCreated$ravenwood() {
+-        // Mark ourselves as daemon to enable tests to terminate quickly when finished, despite
+-        // any HandlerThread instances that may be lingering around
+-        setDaemon(true);
+-    }
+-
+     /**
+      * Call back method that can be explicitly overridden if needed to execute some
+      * setup before Looper loops.

@@ -16,8 +16,8 @@
 
 package android.system;
 
-import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
+import org.androidgraal.hosted.annotate.Transcribed;
 
 /**
  * A signed 64bit integer reference suitable for passing to lower-level system calls.
@@ -30,7 +30,7 @@ public class Int64Ref {
         this.value = value;
     }
 
-    @Adapted(reason = "Objects.toString's output spelled out")
+    @Transcribed("https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/java/libcore/util/Objects.java#L31-L84")
     @Override public String toString() {
         return "Int64Ref[value=" + value + "]";
     }

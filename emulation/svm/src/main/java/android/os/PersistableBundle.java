@@ -26,6 +26,7 @@ import android.util.proto.ProtoOutputStream;
 
 import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
+import org.androidgraal.hosted.annotate.Premise;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -45,7 +46,7 @@ import java.util.ArrayList;
  */
 @android.ravenwood.annotation.RavenwoodKeepWholeClass
 @Emulated
-@Adapted(reason = "does not implement XmlUtils.WriteMapCallback")
+@Adapted(reason = "does not implement XmlUtils.WriteMapCallback", premise = Premise.ABSENT_TYPE)
 public final class PersistableBundle extends BaseBundle implements Cloneable, Parcelable {
     private static final String TAG = "PersistableBundle";
 

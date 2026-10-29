@@ -8,7 +8,7 @@
  import android.annotation.FlaggedApi;
  import android.annotation.IntDef;
  import android.annotation.NonNull;
-@@ -26,25 +25,21 @@
+@@ -26,25 +25,22 @@
  import android.annotation.SuppressLint;
  import android.annotation.SystemApi;
  import android.annotation.TestApi;
@@ -33,11 +33,12 @@
  
 +import org.androidgraal.hosted.annotate.Adapted;
 +import org.androidgraal.hosted.annotate.Emulated;
++import org.androidgraal.hosted.annotate.Premise;
 +
  import java.lang.annotation.Retention;
  import java.lang.annotation.RetentionPolicy;
  import java.util.ArrayList;
-@@ -57,6 +52,7 @@
+@@ -57,6 +53,7 @@
   * Information about the current build, extracted from system properties.
   */
  @RavenwoodKeepWholeClass
@@ -45,7 +46,7 @@
  public class Build {
      private static final String TAG = "Build";
  
-@@ -225,60 +221,6 @@
+@@ -225,60 +222,6 @@
      public static final String SERIAL = getString("no.such.thing");
  
      /**
@@ -106,18 +107,19 @@
       * An ordered list of ABIs supported by this device. The most preferred ABI is the first
       * element in the list.
       *
-@@ -431,8 +373,9 @@
+@@ -431,8 +374,10 @@
           * android.os.Build.VERSION_CODES_FULL}.
           */
          @FlaggedApi(Flags.FLAG_MAJOR_MINOR_VERSIONING_SCHEME)
-+        @Adapted(reason = "SDK_INT when ro.build.version.sdk_full is unset")
++        @Adapted(reason = "SDK_INT when ro.build.version.sdk_full is unset",
++                premise = Premise.DEVICE_LEVEL)
          public static final int SDK_INT_FULL = parseFullVersion(SystemProperties.get(
 -                    "ro.build.version.sdk_full", ""));
 +                    "ro.build.version.sdk_full", Integer.toString(SDK_INT)));
  
          /**
           * The SDK version of the software that <em>initially</em> shipped on
-@@ -1660,30 +1603,6 @@
+@@ -1660,30 +1605,6 @@
      public @interface BackportedFixStatus {
      }
  
@@ -148,7 +150,7 @@
      private static boolean isBitSet(List<Long> bitsetLongArray, int bitIndex) {
          // Because java.util.BitSet is not threadsafe do the calculations here instead.
          if (bitIndex < 0) {
-@@ -1716,23 +1635,6 @@
+@@ -1716,23 +1637,6 @@
      }
  
      /**
@@ -172,7 +174,7 @@
       * A multiplier for various timeouts on the system.
       *
       * The intent is that products targeting software emulators that are orders of magnitude slower
-@@ -1752,85 +1654,6 @@
+@@ -1752,85 +1656,6 @@
      public static final boolean IS_TREBLE_ENABLED =
          SystemProperties.getBoolean("ro.treble.enabled", false);
  

@@ -1,16 +1,17 @@
 --- a/emulation/svm/src/main/java/android/os/Bundle.java
 +++ b/emulation/svm/src/main/java/android/os/Bundle.java
-@@ -33,6 +33,9 @@
+@@ -33,6 +33,10 @@
  
  import com.android.internal.annotations.VisibleForTesting;
  
 +import org.androidgraal.hosted.annotate.Adapted;
 +import org.androidgraal.hosted.annotate.Emulated;
++import org.androidgraal.hosted.annotate.Premise;
 +
  import java.io.Serializable;
  import java.lang.annotation.Retention;
  import java.lang.annotation.RetentionPolicy;
-@@ -48,6 +51,7 @@
+@@ -48,6 +52,7 @@
   * @see PersistableBundle
   */
  @android.ravenwood.annotation.RavenwoodKeepWholeClass
@@ -18,7 +19,7 @@
  public final class Bundle extends BaseBundle implements Cloneable, Parcelable {
      @VisibleForTesting
      static final int FLAG_HAS_FDS = 1 << 8;
-@@ -440,35 +444,6 @@
+@@ -440,35 +445,6 @@
      }
  
      /**
@@ -54,15 +55,15 @@
       * Returns if the bundle definitely contains at least an intent. This method returns false does
       * not guarantee the bundle does not contain a nested intent. An intent could still exist in a
       * ParcelableArrayList, ParcelableArray, ParcelableList, a bundle in this bundle, etc.
-@@ -480,6 +455,7 @@
+@@ -480,6 +456,7 @@
  
      /** {@hide} */
      @Override
-+    @Adapted(reason = "a Binder value throws")
++    @Adapted(reason = "a Binder value throws", premise = Premise.ABSENT_TYPE)
      public void putObject(@Nullable String key, @Nullable Object value) {
          if (value instanceof Byte) {
              putByte(key, (Byte) value);
-@@ -520,9 +496,7 @@
+@@ -520,9 +497,7 @@
          } else if (value instanceof Bundle) {
              putBundle(key, (Bundle) value);
          } else if (value instanceof Binder) {
@@ -73,7 +74,7 @@
          } else {
              super.putObject(key, value);
          }
-@@ -812,44 +786,6 @@
+@@ -812,44 +787,6 @@
      }
  
      /**
@@ -118,7 +119,7 @@
       * Returns the value associated with the given key, or (byte) 0 if
       * no mapping of the desired type exists for the given key.
       *
-@@ -1469,57 +1405,6 @@
+@@ -1469,57 +1406,6 @@
          return super.getCharSequenceArray(key);
      }
  
@@ -176,7 +177,7 @@
      public static final @android.annotation.NonNull Parcelable.Creator<Bundle> CREATOR =
          new Parcelable.Creator<Bundle>() {
          @Override
-@@ -1602,20 +1487,4 @@
+@@ -1602,20 +1488,4 @@
          return mMap.toString();
      }
  

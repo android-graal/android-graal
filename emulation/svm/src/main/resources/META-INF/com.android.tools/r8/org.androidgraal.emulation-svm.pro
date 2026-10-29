@@ -7,10 +7,14 @@
 
 # native-image.properties initializes it at build time by this name.
 -keepnames class android.os.SystemProperties$Thunk
+-keepnames class org.androidgraal.android.NativeMessageQueue$LooperCallback
 
 # CEntryPointLiteral.create finds it by this name.
 -keepclassmembernames class android.os.SystemProperties {
     void thunk(...);
+}
+-keepclassmembernames class org.androidgraal.android.NativeMessageQueue {
+    int looperCallback(...);
 }
 
 # reachability-metadata.json names the type and the constructor ApplicationAssets calls.
@@ -35,4 +39,24 @@
 }
 -keep,allowobfuscation class android.system.StructTimeval {
     <init>(long, long);
+}
+-keep,allowobfuscation class android.os.MessageQueue {
+    int dispatchEvents(int, int);
+}
+-keepclassmembers class android.os.MessageQueue {
+    int dispatchEvents(int, int);
+}
+
+# MessageQueue's static initializers find these fields with MethodHandles.Lookup.findVarHandle by name.
+-keepclassmembers class android.os.MessageQueue {
+    android.os.MessageQueue$StackNode mStateValue;
+    long mNextInsertSeqValue;
+    long mNextFrontInsertSeqValue;
+    boolean mQuittingValue;
+}
+-keepclassmembers class android.os.MessageQueue$MessageNode {
+    boolean mRemovedFromStackValue;
+}
+-keepclassmembers class android.os.MessageQueue$MessageCounts {
+    long mCountsValue;
 }

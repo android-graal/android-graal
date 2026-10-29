@@ -1,0 +1,57 @@
+--- a/emulation/svm/src/main/java/android/os/Message.java
++++ b/emulation/svm/src/main/java/android/os/Message.java
+@@ -23,6 +23,8 @@
+ 
+ import com.android.internal.annotations.VisibleForTesting;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.util.concurrent.atomic.AtomicLong;
+ 
+ /**
+@@ -37,6 +39,7 @@
+  * them from a pool of recycled objects.</p>
+  */
+ @android.ravenwood.annotation.RavenwoodKeepWholeClass
++@Emulated
+ public final class Message implements Parcelable {
+     /**
+      * For tracing
+@@ -600,37 +603,6 @@
+         return b.toString();
+     }
+ 
+-    void dumpDebug(ProtoOutputStream proto, long fieldId) {
+-        final long messageToken = proto.start(fieldId);
+-        proto.write(MessageProto.WHEN, when);
+-
+-        if (target != null) {
+-            if (callback != null) {
+-                proto.write(MessageProto.CALLBACK, callback.getClass().getName());
+-            } else {
+-                proto.write(MessageProto.WHAT, what);
+-            }
+-
+-            if (arg1 != 0) {
+-                proto.write(MessageProto.ARG1, arg1);
+-            }
+-
+-            if (arg2 != 0) {
+-                proto.write(MessageProto.ARG2, arg2);
+-            }
+-
+-            if (obj != null) {
+-                proto.write(MessageProto.OBJ, obj.toString());
+-            }
+-
+-            proto.write(MessageProto.TARGET, target.getClass().getName());
+-        } else {
+-            proto.write(MessageProto.BARRIER, arg1);
+-        }
+-
+-        proto.end(messageToken);
+-    }
+-
+     public static final @android.annotation.NonNull Parcelable.Creator<Message> CREATOR
+             = new Parcelable.Creator<Message>() {
+         public Message createFromParcel(Parcel source) {

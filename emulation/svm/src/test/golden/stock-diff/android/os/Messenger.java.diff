@@ -1,0 +1,87 @@
+--- a/emulation/svm/src/main/java/android/os/Messenger.java
++++ b/emulation/svm/src/main/java/android/os/Messenger.java
+@@ -18,6 +18,10 @@
+ 
+ import android.annotation.Nullable;
+ 
++import org.androidgraal.hosted.annotate.Adapted;
++import org.androidgraal.hosted.annotate.Emulated;
++import org.androidgraal.hosted.annotate.Premise;
++
+ /**
+  * Reference to a Handler, which others can use to send messages to it.
+  * This allows for the implementation of message-based communication across
+@@ -31,6 +35,7 @@
+  * the system that your process needs to continue running), the connection will
+  * break if your process goes away for any reason, etc.</p>
+  */
++@Emulated
+ public final class Messenger implements Parcelable {
+     private final IMessenger mTarget;
+ 
+@@ -42,8 +47,9 @@
+      * 
+      * @param target The Handler that will receive sent messages.
+      */
++    @Adapted(reason = "the Handler's messenger throws", premise = Premise.NO_BINDER)
+     public Messenger(Handler target) {
+-        mTarget = target.getIMessenger();
++        throw new UnsupportedOperationException();
+     }
+     
+     /**
+@@ -93,15 +99,16 @@
+         return 0;
+     }
+ 
++    @Adapted(reason = "writing the binder throws", premise = Premise.NO_BINDER)
+     public void writeToParcel(Parcel out, int flags) {
+-        out.writeStrongBinder(mTarget.asBinder());
++        throw new UnsupportedOperationException();
+     }
+ 
++    @Adapted(reason = "reading the binder throws", premise = Premise.NO_BINDER)
+     public static final @android.annotation.NonNull Parcelable.Creator<Messenger> CREATOR
+             = new Parcelable.Creator<Messenger>() {
+         public Messenger createFromParcel(Parcel in) {
+-            IBinder target = in.readStrongBinder();
+-            return target != null ? new Messenger(target) : null;
++            throw new UnsupportedOperationException();
+         }
+ 
+         public Messenger[] newArray(int size) {
+@@ -117,10 +124,10 @@
+      * @param messenger The Messenger to write, or null.
+      * @param out Where to write the Messenger.
+      */
++    @Adapted(reason = "writing the binder throws", premise = Premise.NO_BINDER)
+     public static void writeMessengerOrNullToParcel(Messenger messenger,
+             Parcel out) {
+-        out.writeStrongBinder(messenger != null ? messenger.mTarget.asBinder()
+-                : null);
++        throw new UnsupportedOperationException();
+     }
+     
+     /**
+@@ -133,9 +140,9 @@
+      * @return Returns the Messenger read from the Parcel, or null if null had
+      * been written.
+      */
++    @Adapted(reason = "reading the binder throws", premise = Premise.NO_BINDER)
+     public static Messenger readMessengerOrNullFromParcel(Parcel in) {
+-        IBinder b = in.readStrongBinder();
+-        return b != null ? new Messenger(b) : null;
++        throw new UnsupportedOperationException();
+     }
+     
+     /**
+@@ -144,7 +151,8 @@
+      * 
+      * @param target The IBinder this Messenger should communicate with.
+      */
++    @Adapted(reason = "the binder's messenger throws", premise = Premise.NO_BINDER)
+     public Messenger(IBinder target) {
+-        mTarget = IMessenger.Stub.asInterface(target);
++        throw new UnsupportedOperationException();
+     }
+ }

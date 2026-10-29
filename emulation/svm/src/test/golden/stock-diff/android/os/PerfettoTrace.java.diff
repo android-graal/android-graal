@@ -1,0 +1,300 @@
+--- a/emulation/svm/src/main/java/android/os/PerfettoTrace.java
++++ b/emulation/svm/src/main/java/android/os/PerfettoTrace.java
+@@ -16,12 +16,12 @@
+ 
+ package android.os;
+ 
+-import com.android.internal.ravenwood.RavenwoodEnvironment;
+-
+ import dalvik.annotation.optimization.CriticalNative;
+ import dalvik.annotation.optimization.FastNative;
+ 
+-import libcore.util.NativeAllocationRegistry;
++import org.androidgraal.hosted.annotate.Adapted;
++import org.androidgraal.hosted.annotate.Emulated;
++import org.androidgraal.hosted.annotate.Premise;
+ 
+ import java.util.concurrent.atomic.AtomicInteger;
+ 
+@@ -35,9 +35,8 @@
+  * @hide
+  */
+ @android.ravenwood.annotation.RavenwoodKeepWholeClass
++@Emulated
+ public final class PerfettoTrace {
+-    private static final String TAG = "PerfettoTrace";
+-
+     // Keep in sync with C++
+     private static final int PERFETTO_TE_TYPE_SLICE_BEGIN = 1;
+     private static final int PERFETTO_TE_TYPE_SLICE_END = 2;
+@@ -60,16 +59,11 @@
+      */
+     @android.ravenwood.annotation.RavenwoodKeepWholeClass
+     public static final class Category implements PerfettoTrackEventExtra.PerfettoPointer {
+-        private static final NativeAllocationRegistry sRegistry =
+-                NativeAllocationRegistry.createMalloced(
+-                        Category.class.getClassLoader(), native_delete());
+-
+         private final long mPtr;
+         private final long mExtraPtr;
+         private final String mName;
+         private final String mTag;
+         private final String mSeverity;
+-        private boolean mIsRegistered;
+ 
+         /**
+          * Category ctor.
+@@ -85,79 +79,33 @@
+          *
+          * @param name The category name.
+          * @param tag An atrace tag name that this category maps to.
+-         */
+-        public Category(String name, String tag) {
+-            this(name, tag, "");
+-        }
+-
+-        /**
+-         * Category ctor.
+-         *
+-         * @param name The category name.
+-         * @param tag An atrace tag name that this category maps to.
+          * @param severity A Log style severity string for the category.
+          */
++        @Adapted(reason = "registers no native allocation", premise = Premise.NO_FINALIZER)
+         public Category(String name, String tag, String severity) {
+             mName = name;
+             mTag = tag;
+             mSeverity = severity;
+             mPtr = native_init(name, tag, severity);
+             mExtraPtr = native_get_extra_ptr(mPtr);
+-            if (!RavenwoodEnvironment.getInstance().isRunningOnRavenwood()) {
+-                sRegistry.registerNativeAllocation(this, mPtr);
+-            }
+         }
+ 
+-        @FastNative
+         @android.ravenwood.annotation.RavenwoodReplace
+-        private static native long native_init(String name, String tag, String severity);
+-        @CriticalNative
+-        @android.ravenwood.annotation.RavenwoodReplace
+-        private static native long native_delete();
+-        @CriticalNative
+-        private static native void native_register(long ptr);
+-        @CriticalNative
+-        private static native void native_unregister(long ptr);
+-        @CriticalNative
+-        private static native boolean native_is_enabled(long ptr);
+-        @CriticalNative
+-        @android.ravenwood.annotation.RavenwoodReplace
+-        private static native long native_get_extra_ptr(long ptr);
+-
+-        private static long native_init$ravenwood(String name, String tag, String severity) {
+-            // Tracing currently completely disabled under Ravenwood
++        @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++        private static long native_init(String name, String tag, String severity) {
+             return 0;
+         }
+-
+-        private static long native_delete$ravenwood() {
+-            // Tracing currently completely disabled under Ravenwood
+-            return 0;
++        @Adapted(reason = "returns false", premise = Premise.NO_TRACING)
++        private static boolean native_is_enabled(long ptr) {
++            return false;
+         }
+-
+-        private static long native_get_extra_ptr$ravenwood(long ptr) {
+-            // Tracing currently completely disabled under Ravenwood
++        @android.ravenwood.annotation.RavenwoodReplace
++        @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++        private static long native_get_extra_ptr(long ptr) {
+             return 0;
+         }
+ 
+         /**
+-         * Register the category.
+-         */
+-        public Category register() {
+-            native_register(mPtr);
+-            mIsRegistered = true;
+-            return this;
+-        }
+-
+-        /**
+-         * Unregister the category.
+-         */
+-        public Category unregister() {
+-            native_unregister(mPtr);
+-            mIsRegistered = false;
+-            return this;
+-        }
+-
+-        /**
+          * Whether the category is enabled or not.
+          */
+         @android.ravenwood.annotation.RavenwoodReplace
+@@ -165,19 +113,7 @@
+             return IS_FLAG_ENABLED && native_is_enabled(mPtr);
+         }
+ 
+-        public boolean isEnabled$ravenwood() {
+-            // Tracing currently completely disabled under Ravenwood
+-            return false;
+-        }
+-
+         /**
+-         * Whether the category is registered or not.
+-         */
+-        public boolean isRegistered() {
+-            return mIsRegistered;
+-        }
+-
+-        /**
+          * Returns the native pointer for the category.
+          */
+         @Override
+@@ -186,45 +122,11 @@
+         }
+     }
+ 
+-    /**
+-     * Manages a perfetto tracing session.
+-     * Constructing this object with a config automatically starts a tracing session. Each session
+-     * must be closed after use and then the resulting trace bytes can be read.
+-     *
+-     * The session could be in process or system wide, depending on {@code isBackendInProcess}.
+-     * This functionality is intended for testing.
+-     */
+-    public static final class Session {
+-        private final long mPtr;
+-
+-        /**
+-         * Session ctor.
+-         */
+-        public Session(boolean isBackendInProcess, byte[] config) {
+-            mPtr = native_start_session(isBackendInProcess, config);
+-        }
+-
+-        /**
+-         * Closes the session and returns the trace.
+-         */
+-        public byte[] close() {
+-            return native_stop_session(mPtr);
+-        }
++    @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++    private static long native_get_thread_track_uuid(long tid) {
++        return 0;
+     }
+ 
+-    @CriticalNative
+-    private static native long native_get_process_track_uuid();
+-    @CriticalNative
+-    private static native long native_get_thread_track_uuid(long tid);
+-
+-    @FastNative
+-    private static native void native_activate_trigger(String name, int ttlMs);
+-    @FastNative
+-    private static native void native_register(boolean isBackendInProcess);
+-
+-    private static native long native_start_session(boolean isBackendInProcess, byte[] config);
+-    private static native byte[] native_stop_session(long ptr);
+-
+     /**
+      * Writes a trace message to indicate a given section of code was invoked.
+      *
+@@ -272,42 +174,6 @@
+     }
+ 
+     /**
+-     * Writes a trace message to indicate the value of a given section of code.
+-     *
+-     * @param category The perfetto category.
+-     * @param value The value of the counter.
+-     * @param trackName The trackName for the event.
+-     */
+-    public static PerfettoTrackEventExtra.Builder counter(
+-            Category category, long value, String trackName) {
+-        return counter(category, value).usingProcessCounterTrack(trackName);
+-    }
+-
+-    /**
+-     * Writes a trace message to indicate the value of a given section of code.
+-     *
+-     * @param category The perfetto category.
+-     * @param value The value of the counter.
+-     */
+-    public static PerfettoTrackEventExtra.Builder counter(Category category, double value) {
+-        return PerfettoTrackEventExtra.builder(category.isEnabled())
+-            .init(PERFETTO_TE_TYPE_COUNTER, category)
+-            .setCounter(value);
+-    }
+-
+-    /**
+-     * Writes a trace message to indicate the value of a given section of code.
+-     *
+-     * @param category The perfetto category.
+-     * @param value The value of the counter.
+-     * @param trackName The trackName for the event.
+-     */
+-    public static PerfettoTrackEventExtra.Builder counter(
+-            Category category, double value, String trackName) {
+-        return counter(category, value).usingProcessCounterTrack(trackName);
+-    }
+-
+-    /**
+      * Returns the next flow id to be used.
+      */
+     public static int getFlowId() {
+@@ -315,23 +181,6 @@
+     }
+ 
+     /**
+-     * Returns the global track uuid that can be used as a parent track uuid.
+-     */
+-    public static long getGlobalTrackUuid() {
+-        return 0;
+-    }
+-
+-    /**
+-     * Returns the process track uuid that can be used as a parent track uuid.
+-     */
+-    public static long getProcessTrackUuid() {
+-        if (!IS_FLAG_ENABLED) {
+-            return 0;
+-        }
+-        return native_get_process_track_uuid();
+-    }
+-
+-    /**
+      * Given a thread tid, returns the thread track uuid that can be used as a parent track uuid.
+      */
+     public static long getThreadTrackUuid(long tid) {
+@@ -340,28 +189,4 @@
+         }
+         return native_get_thread_track_uuid(tid);
+     }
+-
+-    /**
+-     * Activates a trigger by name {@code triggerName} with expiry in {@code ttlMs}.
+-     */
+-    public static void activateTrigger(String triggerName, int ttlMs) {
+-        if (!IS_FLAG_ENABLED) {
+-            return;
+-        }
+-        native_activate_trigger(triggerName, ttlMs);
+-    }
+-
+-    /**
+-     * Registers the process with Perfetto.
+-     */
+-    public static void register(boolean isBackendInProcess) {
+-        native_register(isBackendInProcess);
+-    }
+-
+-    /**
+-     * Registers categories with Perfetto.
+-     */
+-    public static void registerCategories() {
+-        MQ_CATEGORY.register();
+-    }
+ }

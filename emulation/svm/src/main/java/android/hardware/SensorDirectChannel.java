@@ -21,6 +21,7 @@ import dalvik.system.CloseGuard;
 
 import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
+import org.androidgraal.hosted.annotate.Premise;
 
 import java.io.IOException;
 import java.lang.annotation.Retention;
@@ -207,7 +208,7 @@ public final class SensorDirectChannel implements Channel {
     }
 
     @Override
-    @Adapted(reason = "empty, the image runs no finalizer")
+    @Adapted(reason = "empty", premise = Premise.NO_FINALIZER)
     protected void finalize() throws Throwable {
     }
 

@@ -1,5 +1,6 @@
 package org.androidgraal.android;
 
+import android.os.Process;
 import dalvik.system.CloseGuard;
 import dalvik.system.VMRuntime;
 import org.androidgraal.android.host.ApplicationHost;
@@ -24,6 +25,7 @@ public final class EmulationRoot implements Emulation {
         CloseGuard.setEnabled(false);
         host = applicationHost;
         VMRuntime.getRuntime().setTargetSdkVersion(applicationHost.targetSdkVersion());
+        Process.setArgV0(applicationHost.processName());
     }
 
     public static boolean isAttached() {

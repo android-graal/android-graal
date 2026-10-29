@@ -25,7 +25,6 @@ import android.os.Build;
 import android.util.Log;
 import android.util.SparseArray;
 
-import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
 
 import java.lang.annotation.Retention;
@@ -91,7 +90,6 @@ import java.util.List;
  *
  */
 @Emulated
-@Adapted(reason = "without @SystemService")
 public abstract class SensorManager {
     /** @hide */
     protected static final String TAG = "SensorManager";

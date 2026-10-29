@@ -1,7 +1,9 @@
 package android.system;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import java.io.FileDescriptor;
 import org.junit.jupiter.api.Test;
 
 class StructsTest {
@@ -24,26 +26,40 @@ class StructsTest {
     }
 
     @Test
-    void structUtsnameQuotesStringsAndPrintsNullBare() {
-        StructUtsname uts = new StructUtsname("Linux", "localhost", "6.1.0", "#1 SMP", null);
-        assertEquals("StructUtsname[machine=null,nodename=\"localhost\",release=\"6.1.0\",sysname=\"Linux\","
+    void structUtsnameQuotesStrings() {
+        StructUtsname uts = new StructUtsname("Linux", "localhost", "6.1.0", "#1 SMP", "aarch64");
+        assertEquals("StructUtsname[machine=\"aarch64\",nodename=\"localhost\",release=\"6.1.0\",sysname=\"Linux\","
                 + "version=\"#1 SMP\"]", uts.toString());
+    }
+
+    @Test
+    void structUtsnameThrowsOnANullField() {
+        StructUtsname uts = new StructUtsname("Linux", "localhost", "6.1.0", "#1 SMP", null);
+        assertThrows(NullPointerException.class, uts::toString);
     }
 
     @Test
     void structPollfdPrintsUserDataByItsType() {
         StructPollfd pollfd = new StructPollfd();
+        pollfd.fd = new FileDescriptor();
         pollfd.events = 1;
         pollfd.revents = 4;
-        assertEquals("StructPollfd[events=1,fd=null,revents=4,userData=null]", pollfd.toString());
+        String fields = "StructPollfd[events=1,fd=" + pollfd.fd + ",revents=4,userData=";
         pollfd.userData = "key";
-        assertEquals("StructPollfd[events=1,fd=null,revents=4,userData=\"key\"]", pollfd.toString());
+        assertEquals(fields + "\"key\"]", pollfd.toString());
         pollfd.userData = 'c';
-        assertEquals("StructPollfd[events=1,fd=null,revents=4,userData='c']", pollfd.toString());
+        assertEquals(fields + "'c']", pollfd.toString());
         pollfd.userData = new int[] {1, 2};
-        assertEquals("StructPollfd[events=1,fd=null,revents=4,userData=[1, 2]]", pollfd.toString());
+        assertEquals(fields + "[1, 2]]", pollfd.toString());
         pollfd.userData = 7L;
-        assertEquals("StructPollfd[events=1,fd=null,revents=4,userData=7]", pollfd.toString());
+        assertEquals(fields + "7]", pollfd.toString());
+    }
+
+    @Test
+    void structPollfdThrowsOnANullField() {
+        StructPollfd pollfd = new StructPollfd();
+        pollfd.fd = new FileDescriptor();
+        assertThrows(NullPointerException.class, pollfd::toString);
     }
 
     @Test

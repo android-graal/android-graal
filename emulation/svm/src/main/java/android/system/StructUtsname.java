@@ -16,8 +16,8 @@
 
 package android.system;
 
-import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
+import org.androidgraal.hosted.annotate.Transcribed;
 
 /**
  * Information returned by {@link Os#uname}.
@@ -51,15 +51,16 @@ public final class StructUtsname {
         this.machine = machine;
     }
 
-    @Adapted(reason = "Objects.toString's output spelled out over the fields in name order")
+    @Transcribed("https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/java/libcore/util/Objects.java#L31-L84")
     @Override public String toString() {
         return "StructUtsname[machine=" + quoted(machine) + ",nodename=" + quoted(nodename)
                 + ",release=" + quoted(release) + ",sysname=" + quoted(sysname) + ",version="
                 + quoted(version) + "]";
     }
 
-    @Adapted(reason = "a String field as Objects.toString prints it")
+    @Transcribed("https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/java/libcore/util/Objects.java#L51-L77")
     private static String quoted(String value) {
-        return value == null ? "null" : "\"" + value + "\"";
+        java.util.Objects.requireNonNull(value);
+        return "\"" + value + "\"";
     }
 }

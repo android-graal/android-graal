@@ -26,6 +26,8 @@ import android.system.StructStat;
 
 import org.androidgraal.android.FileDescriptors;
 import org.androidgraal.hosted.annotate.Adapted;
+import org.androidgraal.hosted.annotate.Premise;
+import org.androidgraal.hosted.annotate.Transcribed;
 
 import java.io.File;
 import java.io.FileDescriptor;
@@ -68,7 +70,8 @@ public final class IoUtils {
      * @hide
      */
     @SystemApi(client = MODULE_LIBRARIES)
-    @Adapted(reason = "releases the int through FileDescriptors without fdsan")
+    @Adapted(reason = "releases the int through FileDescriptors without fdsan",
+            premise = Premise.NO_FDSAN)
     public static int acquireRawFd(@NonNull FileDescriptor fd) {
         Objects.requireNonNull(fd);
 
@@ -88,7 +91,8 @@ public final class IoUtils {
      * @hide
      */
     @SystemApi(client = MODULE_LIBRARIES)
-    @Adapted(reason = "closes through FileDescriptors instead of IoBridge.closeAndSignalBlockedThreads")
+    @Adapted(reason = "closes through FileDescriptors instead of IoBridge.closeAndSignalBlockedThreads",
+            premise = Premise.NO_LIBCORE_JDK)
     public static void close(@Nullable FileDescriptor fd) throws IOException {
         FileDescriptors.close(fd);
     }
@@ -120,7 +124,7 @@ public final class IoUtils {
      */
     @UnsupportedAppUsage
     @SystemApi(client = MODULE_LIBRARIES)
-    @Adapted(reason = "calls Os instead of Libcore.os")
+    @Transcribed
     public static void setBlocking(@NonNull FileDescriptor fd, boolean blocking) throws IOException {
         try {
             int flags = Os.fcntlVoid(fd, F_GETFL);

@@ -34,6 +34,8 @@ import com.android.internal.util.Preconditions;
 
 import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
+import org.androidgraal.hosted.annotate.Premise;
+import org.androidgraal.hosted.annotate.Transcribed;
 
 import java.io.Serializable;
 import java.lang.ref.WeakReference;
@@ -422,7 +424,7 @@ public class BaseBundle implements Parcel.ClassLoaderProvider {
      */
     @SuppressWarnings("unchecked")
     @Nullable
-    @Adapted(reason = "the creator token check throws")
+    @Adapted(reason = "the creator token check throws", premise = Premise.ABSENT_TYPE)
     final <T> T getValueAt(int i, @Nullable Class<T> clazz, @Nullable Class<?>... itemTypes) {
         Object object = mMap.valueAt(i);
         if (object instanceof BiFunction<?, ?, ?>) {
@@ -1839,8 +1841,8 @@ public class BaseBundle implements Parcel.ClassLoaderProvider {
      * it to be passed through an IBinder connection.
      * @param parcel The parcel to copy this bundle to.
      */
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-15.0.0_r1/core/java/android/os/BaseBundle.java#L1808-L1851",
-            reason = "writes mHasIntent from BAKLAVA on")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-15.0.0_r1/core/java/android/os/BaseBundle.java#L1808-L1851")
+    @Adapted(reason = "writes mHasIntent from BAKLAVA on", premise = Premise.DEVICE_LEVEL)
     void writeToParcelInner(Parcel parcel, int flags) {
         // If the parcel has a read-write helper, we can't just copy the blob, so unparcel it first.
         if (parcel.hasReadWriteHelper()) {
@@ -1903,9 +1905,10 @@ public class BaseBundle implements Parcel.ClassLoaderProvider {
         readFromParcelInner(parcel, length);
     }
 
-    @Adapted(value = {"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-8.1.0_r1/core/java/android/os/BaseBundle.java#L1575-L1578",
-            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-15.0.0_r1/core/java/android/os/BaseBundle.java#L1865-L1912"},
-            reason = "a native bundle from P on and mHasIntent read from BAKLAVA on")
+    @Transcribed({"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-8.1.0_r1/core/java/android/os/BaseBundle.java#L1575-L1578",
+            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-15.0.0_r1/core/java/android/os/BaseBundle.java#L1865-L1912"})
+    @Adapted(reason = "a native bundle from P on and mHasIntent read from BAKLAVA on",
+            premise = Premise.DEVICE_LEVEL)
     private void readFromParcelInner(Parcel parcel, int length) {
         if (length < 0) {
             throw new RuntimeException("Bad length in parcel: " + length);

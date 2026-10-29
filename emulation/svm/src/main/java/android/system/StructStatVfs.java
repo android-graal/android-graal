@@ -16,8 +16,8 @@
 
 package android.system;
 
-import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
+import org.androidgraal.hosted.annotate.Transcribed;
 
 /**
  * File information returned by {@link Os#fstatvfs} and {@link Os#statvfs}.
@@ -76,7 +76,7 @@ public final class StructStatVfs {
         this.f_namemax = f_namemax;
     }
 
-    @Adapted(reason = "Objects.toString's output spelled out over the fields in name order")
+    @Transcribed("https://android.googlesource.com/platform/libcore/+/refs/tags/android-16.0.0_r1/luni/src/main/java/libcore/util/Objects.java#L31-L84")
     @Override public String toString() {
         return "StructStatVfs[f_bavail=" + f_bavail + ",f_bfree=" + f_bfree + ",f_blocks="
                 + f_blocks + ",f_bsize=" + f_bsize + ",f_favail=" + f_favail + ",f_ffree=" + f_ffree

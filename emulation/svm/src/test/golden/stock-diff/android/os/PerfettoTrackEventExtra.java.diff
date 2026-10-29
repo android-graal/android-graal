@@ -1,0 +1,954 @@
+--- a/emulation/svm/src/main/java/android/os/PerfettoTrackEventExtra.java
++++ b/emulation/svm/src/main/java/android/os/PerfettoTrackEventExtra.java
+@@ -16,12 +16,12 @@
+ 
+ package android.os;
+ 
+-import com.android.internal.ravenwood.RavenwoodEnvironment;
+-
+ import dalvik.annotation.optimization.CriticalNative;
+ import dalvik.annotation.optimization.FastNative;
+ 
+-import libcore.util.NativeAllocationRegistry;
++import org.androidgraal.hosted.annotate.Adapted;
++import org.androidgraal.hosted.annotate.Emulated;
++import org.androidgraal.hosted.annotate.Premise;
+ 
+ import java.util.ArrayList;
+ import java.util.List;
+@@ -34,6 +34,7 @@
+  * @hide
+  */
+ @android.ravenwood.annotation.RavenwoodKeepWholeClass
++@Emulated
+ public final class PerfettoTrackEventExtra {
+     private static final boolean DEBUG = false;
+     private static final int DEFAULT_EXTRA_CACHE_SIZE = 5;
+@@ -46,10 +47,8 @@
+                 }
+             };
+     private static final AtomicLong sNamedTrackId = new AtomicLong();
+-    private static final Supplier<Flow> sFlowSupplier = Flow::new;
+     private static final Supplier<Builder> sBuilderSupplier = Builder::new;
+     private static final Supplier<FieldInt64> sFieldInt64Supplier = FieldInt64::new;
+-    private static final Supplier<FieldDouble> sFieldDoubleSupplier = FieldDouble::new;
+     private static final Supplier<FieldString> sFieldStringSupplier = FieldString::new;
+     private static final Supplier<FieldNested> sFieldNestedSupplier = FieldNested::new;
+ 
+@@ -247,86 +246,6 @@
+         }
+ 
+         /**
+-         * Adds a debug arg with key {@code name} and value {@code val}.
+-         */
+-        public Builder addArg(String name, long val) {
+-            if (!mIsCategoryEnabled) {
+-                return this;
+-            }
+-            if (DEBUG) {
+-                checkParent();
+-            }
+-            ArgInt64 arg = mArgInt64Cache.get(name.hashCode());
+-            if (arg == null || !arg.getName().equals(name)) {
+-                arg = new ArgInt64(name);
+-                mArgInt64Cache.put(name.hashCode(), arg);
+-            }
+-            arg.setValue(val);
+-            mExtra.addPerfettoPointer(arg);
+-            return this;
+-        }
+-
+-        /**
+-         * Adds a debug arg with key {@code name} and value {@code val}.
+-         */
+-        public Builder addArg(String name, boolean val) {
+-            if (!mIsCategoryEnabled) {
+-                return this;
+-            }
+-            if (DEBUG) {
+-                checkParent();
+-            }
+-            ArgBool arg = mArgBoolCache.get(name.hashCode());
+-            if (arg == null || !arg.getName().equals(name)) {
+-                arg = new ArgBool(name);
+-                mArgBoolCache.put(name.hashCode(), arg);
+-            }
+-            arg.setValue(val);
+-            mExtra.addPerfettoPointer(arg);
+-            return this;
+-        }
+-
+-        /**
+-         * Adds a debug arg with key {@code name} and value {@code val}.
+-         */
+-        public Builder addArg(String name, double val) {
+-            if (!mIsCategoryEnabled) {
+-                return this;
+-            }
+-            if (DEBUG) {
+-                checkParent();
+-            }
+-            ArgDouble arg = mArgDoubleCache.get(name.hashCode());
+-            if (arg == null || !arg.getName().equals(name)) {
+-                arg = new ArgDouble(name);
+-                mArgDoubleCache.put(name.hashCode(), arg);
+-            }
+-            arg.setValue(val);
+-            mExtra.addPerfettoPointer(arg);
+-            return this;
+-        }
+-
+-        /**
+-         * Adds a debug arg with key {@code name} and value {@code val}.
+-         */
+-        public Builder addArg(String name, String val) {
+-            if (!mIsCategoryEnabled) {
+-                return this;
+-            }
+-            if (DEBUG) {
+-                checkParent();
+-            }
+-            ArgString arg = mArgStringCache.get(name.hashCode());
+-            if (arg == null || !arg.getName().equals(name)) {
+-                arg = new ArgString(name);
+-                mArgStringCache.put(name.hashCode(), arg);
+-            }
+-            arg.setValue(val);
+-            mExtra.addPerfettoPointer(arg);
+-            return this;
+-        }
+-
+-        /**
+          * Adds a flow with {@code id}.
+          */
+         public Builder setFlow(long id) {
+@@ -357,49 +276,6 @@
+         }
+ 
+         /**
+-         * Adds the events to a named track instead of the thread track where the
+-         * event occurred.
+-         */
+-        public Builder usingNamedTrack(long parentUuid, String name) {
+-            if (!mIsCategoryEnabled) {
+-                return this;
+-            }
+-            if (DEBUG) {
+-                checkParent();
+-            }
+-
+-            NamedTrack track = mNamedTrackCache.get(name.hashCode());
+-            if (track == null || !track.getName().equals(name)) {
+-                track = new NamedTrack(name, parentUuid);
+-                mNamedTrackCache.put(name.hashCode(), track);
+-            }
+-            mExtra.addPerfettoPointer(track);
+-            return this;
+-        }
+-
+-        /**
+-         * Adds the events to a process scoped named track instead of the thread track where the
+-         * event occurred.
+-         */
+-        public Builder usingProcessNamedTrack(String name) {
+-            if (!mIsCategoryEnabled) {
+-                return this;
+-            }
+-            return usingNamedTrack(PerfettoTrace.getProcessTrackUuid(), name);
+-        }
+-
+-        /**
+-         * Adds the events to a thread scoped named track instead of the thread track where the
+-         * event occurred.
+-         */
+-        public Builder usingThreadNamedTrack(long tid, String name) {
+-            if (!mIsCategoryEnabled) {
+-                return this;
+-            }
+-            return usingNamedTrack(PerfettoTrace.getThreadTrackUuid(tid), name);
+-        }
+-
+-        /**
+          * Adds the events to a counter track instead. This is required for
+          * setting counter values.
+          */
+@@ -421,17 +297,6 @@
+         }
+ 
+         /**
+-         * Adds the events to a process scoped counter track instead. This is required for
+-         * setting counter values.
+-         */
+-        public Builder usingProcessCounterTrack(String name) {
+-            if (!mIsCategoryEnabled) {
+-                return this;
+-            }
+-            return usingCounterTrack(PerfettoTrace.getProcessTrackUuid(), name);
+-        }
+-
+-        /**
+          * Adds the events to a thread scoped counter track instead. This is required for
+          * setting counter values.
+          */
+@@ -459,22 +324,6 @@
+         }
+ 
+         /**
+-         * Sets a double counter value on the event.
+-         *
+-         */
+-        public Builder setCounter(double val) {
+-            if (!mIsCategoryEnabled) {
+-                return this;
+-            }
+-            if (DEBUG) {
+-                checkParent();
+-            }
+-            mCounterDouble.setValue(val);
+-            mExtra.addPerfettoPointer(mCounterDouble);
+-            return this;
+-        }
+-
+-        /**
+          * Adds a proto field with field id {@code id} and value {@code val}.
+          */
+         public Builder addField(long id, long val) {
+@@ -493,22 +342,6 @@
+         /**
+          * Adds a proto field with field id {@code id} and value {@code val}.
+          */
+-        public Builder addField(long id, double val) {
+-            if (!mIsCategoryEnabled) {
+-                return this;
+-            }
+-            if (DEBUG) {
+-                checkContainer();
+-            }
+-            FieldDouble field = mFieldDoubleCache.get(sFieldDoubleSupplier);
+-            field.setValue(id, val);
+-            mExtra.addPerfettoPointer(mCurrentContainer, field);
+-            return this;
+-        }
+-
+-        /**
+-         * Adds a proto field with field id {@code id} and value {@code val}.
+-         */
+         public Builder addField(long id, String val) {
+             if (!mIsCategoryEnabled) {
+                 return this;
+@@ -645,18 +478,11 @@
+     private final Pool<FieldNested> mFieldNestedCache = new Pool(DEFAULT_EXTRA_CACHE_SIZE);
+     private final Pool<Builder> mBuilderCache = new Pool(DEFAULT_EXTRA_CACHE_SIZE);
+ 
+-    private static final NativeAllocationRegistry sRegistry =
+-            NativeAllocationRegistry.createMalloced(
+-                    PerfettoTrackEventExtra.class.getClassLoader(), native_delete());
+-
+     private final long mPtr;
+-    private static final String TAG = "PerfettoTrackEventExtra";
+ 
++    @Adapted(reason = "registers no native allocation", premise = Premise.NO_FINALIZER)
+     private PerfettoTrackEventExtra() {
+         mPtr = native_init();
+-        if (!RavenwoodEnvironment.getInstance().isRunningOnRavenwood()) {
+-            sRegistry.registerNativeAllocation(this, mPtr);
+-        }
+     }
+ 
+     /**
+@@ -732,17 +558,13 @@
+     }
+ 
+     private static final class Flow implements PerfettoPointer {
+-        private static final NativeAllocationRegistry sRegistry =
+-                NativeAllocationRegistry.createMalloced(
+-                        Flow.class.getClassLoader(), native_delete());
+-
+         private final long mPtr;
+         private final long mExtraPtr;
+ 
++        @Adapted(reason = "registers no native allocation", premise = Premise.NO_FINALIZER)
+         Flow() {
+             mPtr = native_init();
+             mExtraPtr = native_get_extra_ptr(mPtr);
+-            sRegistry.registerNativeAllocation(this, mPtr);
+         }
+ 
+         public void setProcessFlow(long type) {
+@@ -758,32 +580,32 @@
+             return mExtraPtr;
+         }
+ 
+-        @CriticalNative
+-        private static native long native_init();
+-        @CriticalNative
+-        private static native long native_delete();
+-        @CriticalNative
+-        private static native void native_set_process_flow(long ptr, long type);
+-        @CriticalNative
+-        private static native void native_set_process_terminating_flow(long ptr, long id);
+-        @CriticalNative
+-        private static native long native_get_extra_ptr(long ptr);
++        @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++        private static long native_init() {
++            return 0;
++        }
++        @Adapted(reason = "does nothing", premise = Premise.NO_TRACING)
++        private static void native_set_process_flow(long ptr, long type) {
++        }
++        @Adapted(reason = "does nothing", premise = Premise.NO_TRACING)
++        private static void native_set_process_terminating_flow(long ptr, long id) {
++        }
++        @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++        private static long native_get_extra_ptr(long ptr) {
++            return 0;
++        }
+     }
+ 
+     private static class NamedTrack implements PerfettoPointer {
+-        private static final NativeAllocationRegistry sRegistry =
+-                NativeAllocationRegistry.createMalloced(
+-                        NamedTrack.class.getClassLoader(), native_delete());
+-
+         private final long mPtr;
+         private final long mExtraPtr;
+         private final String mName;
+ 
++        @Adapted(reason = "registers no native allocation", premise = Premise.NO_FINALIZER)
+         NamedTrack(String name, long parentUuid) {
+             mPtr = native_init(sNamedTrackId.incrementAndGet(), name, parentUuid);
+             mExtraPtr = native_get_extra_ptr(mPtr);
+             mName = name;
+-            sRegistry.registerNativeAllocation(this, mPtr);
+         }
+ 
+         @Override
+@@ -791,32 +613,26 @@
+             return mExtraPtr;
+         }
+ 
+-        public String getName() {
+-            return mName;
++        @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++        private static long native_init(long id, String name, long parentUuid) {
++            return 0;
+         }
+-
+-        @FastNative
+-        private static native long native_init(long id, String name, long parentUuid);
+-        @CriticalNative
+-        private static native long native_delete();
+-        @CriticalNative
+-        private static native long native_get_extra_ptr(long ptr);
++        @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++        private static long native_get_extra_ptr(long ptr) {
++            return 0;
++        }
+     }
+ 
+     private static final class CounterTrack implements PerfettoPointer {
+-        private static final NativeAllocationRegistry sRegistry =
+-                NativeAllocationRegistry.createMalloced(
+-                        CounterTrack.class.getClassLoader(), native_delete());
+-
+         private final long mPtr;
+         private final long mExtraPtr;
+         private final String mName;
+ 
++        @Adapted(reason = "registers no native allocation", premise = Premise.NO_FINALIZER)
+         CounterTrack(String name, long parentUuid) {
+             mPtr = native_init(name, parentUuid);
+             mExtraPtr = native_get_extra_ptr(mPtr);
+             mName = name;
+-            sRegistry.registerNativeAllocation(this, mPtr);
+         }
+ 
+         @Override
+@@ -828,26 +644,24 @@
+             return mName;
+         }
+ 
+-        @FastNative
+-        private static native long native_init(String name, long parentUuid);
+-        @CriticalNative
+-        private static native long native_delete();
+-        @CriticalNative
+-        private static native long native_get_extra_ptr(long ptr);
++        @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++        private static long native_init(String name, long parentUuid) {
++            return 0;
++        }
++        @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++        private static long native_get_extra_ptr(long ptr) {
++            return 0;
++        }
+     }
+ 
+     private static final class CounterInt64 implements PerfettoPointer {
+-        private static final NativeAllocationRegistry sRegistry =
+-                NativeAllocationRegistry.createMalloced(
+-                        CounterInt64.class.getClassLoader(), native_delete());
+-
+         private final long mPtr;
+         private final long mExtraPtr;
+ 
++        @Adapted(reason = "registers no native allocation", premise = Premise.NO_FINALIZER)
+         CounterInt64() {
+             mPtr = native_init();
+             mExtraPtr = native_get_extra_ptr(mPtr);
+-            sRegistry.registerNativeAllocation(this, mPtr);
+         }
+ 
+         @Override
+@@ -859,28 +673,27 @@
+             native_set_value(mPtr, value);
+         }
+ 
+-        @CriticalNative
+-        private static native long native_init();
+-        @CriticalNative
+-        private static native long native_delete();
+-        @CriticalNative
+-        private static native void native_set_value(long ptr, long value);
+-        @CriticalNative
+-        private static native long native_get_extra_ptr(long ptr);
++        @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++        private static long native_init() {
++            return 0;
++        }
++        @Adapted(reason = "does nothing", premise = Premise.NO_TRACING)
++        private static void native_set_value(long ptr, long value) {
++        }
++        @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++        private static long native_get_extra_ptr(long ptr) {
++            return 0;
++        }
+     }
+ 
+     private static final class CounterDouble implements PerfettoPointer {
+-        private static final NativeAllocationRegistry sRegistry =
+-                NativeAllocationRegistry.createMalloced(
+-                        CounterDouble.class.getClassLoader(), native_delete());
+-
+         private final long mPtr;
+         private final long mExtraPtr;
+ 
++        @Adapted(reason = "registers no native allocation", premise = Premise.NO_FINALIZER)
+         CounterDouble() {
+             mPtr = native_init();
+             mExtraPtr = native_get_extra_ptr(mPtr);
+-            sRegistry.registerNativeAllocation(this, mPtr);
+         }
+ 
+         @Override
+@@ -888,25 +701,17 @@
+             return mExtraPtr;
+         }
+ 
+-        public void setValue(double value) {
+-            native_set_value(mPtr, value);
++        @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++        private static long native_init() {
++            return 0;
+         }
+-
+-        @CriticalNative
+-        private static native long native_init();
+-        @CriticalNative
+-        private static native long native_delete();
+-        @CriticalNative
+-        private static native void native_set_value(long ptr, double value);
+-        @CriticalNative
+-        private static native long native_get_extra_ptr(long ptr);
++        @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++        private static long native_get_extra_ptr(long ptr) {
++            return 0;
++        }
+     }
+ 
+     private static final class ArgInt64 implements PerfettoPointer {
+-        private static final NativeAllocationRegistry sRegistry =
+-                NativeAllocationRegistry.createMalloced(
+-                        ArgInt64.class.getClassLoader(), native_delete());
+-
+         // Private pointer holding Perfetto object with metadata
+         private final long mPtr;
+ 
+@@ -915,11 +720,11 @@
+ 
+         private final String mName;
+ 
++        @Adapted(reason = "registers no native allocation", premise = Premise.NO_FINALIZER)
+         ArgInt64(String name) {
+             mPtr = native_init(name);
+             mExtraPtr = native_get_extra_ptr(mPtr);
+             mName = name;
+-            sRegistry.registerNativeAllocation(this, mPtr);
+         }
+ 
+         @Override
+@@ -927,29 +732,17 @@
+             return mExtraPtr;
+         }
+ 
+-        public String getName() {
+-            return mName;
++        @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++        private static long native_init(String name) {
++            return 0;
+         }
+-
+-        public void setValue(long val) {
+-            native_set_value(mPtr, val);
++        @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++        private static long native_get_extra_ptr(long ptr) {
++            return 0;
+         }
+-
+-        @FastNative
+-        private static native long native_init(String name);
+-        @CriticalNative
+-        private static native long native_delete();
+-        @CriticalNative
+-        private static native long native_get_extra_ptr(long ptr);
+-        @CriticalNative
+-        private static native void native_set_value(long ptr, long val);
+     }
+ 
+     private static final class ArgBool implements PerfettoPointer {
+-        private static final NativeAllocationRegistry sRegistry =
+-                NativeAllocationRegistry.createMalloced(
+-                        ArgBool.class.getClassLoader(), native_delete());
+-
+         // Private pointer holding Perfetto object with metadata
+         private final long mPtr;
+ 
+@@ -958,11 +751,11 @@
+ 
+         private final String mName;
+ 
++        @Adapted(reason = "registers no native allocation", premise = Premise.NO_FINALIZER)
+         ArgBool(String name) {
+             mPtr = native_init(name);
+             mExtraPtr = native_get_extra_ptr(mPtr);
+             mName = name;
+-            sRegistry.registerNativeAllocation(this, mPtr);
+         }
+ 
+         @Override
+@@ -970,29 +763,17 @@
+             return mExtraPtr;
+         }
+ 
+-        public String getName() {
+-            return mName;
++        @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++        private static long native_init(String name) {
++            return 0;
+         }
+-
+-        public void setValue(boolean val) {
+-            native_set_value(mPtr, val);
++        @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++        private static long native_get_extra_ptr(long ptr) {
++            return 0;
+         }
+-
+-        @FastNative
+-        private static native long native_init(String name);
+-        @CriticalNative
+-        private static native long native_delete();
+-        @CriticalNative
+-        private static native long native_get_extra_ptr(long ptr);
+-        @CriticalNative
+-        private static native void native_set_value(long ptr, boolean val);
+     }
+ 
+     private static final class ArgDouble implements PerfettoPointer {
+-        private static final NativeAllocationRegistry sRegistry =
+-                NativeAllocationRegistry.createMalloced(
+-                        ArgDouble.class.getClassLoader(), native_delete());
+-
+         // Private pointer holding Perfetto object with metadata
+         private final long mPtr;
+ 
+@@ -1001,11 +782,11 @@
+ 
+         private final String mName;
+ 
++        @Adapted(reason = "registers no native allocation", premise = Premise.NO_FINALIZER)
+         ArgDouble(String name) {
+             mPtr = native_init(name);
+             mExtraPtr = native_get_extra_ptr(mPtr);
+             mName = name;
+-            sRegistry.registerNativeAllocation(this, mPtr);
+         }
+ 
+         @Override
+@@ -1013,29 +794,17 @@
+             return mExtraPtr;
+         }
+ 
+-        public String getName() {
+-            return mName;
++        @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++        private static long native_init(String name) {
++            return 0;
+         }
+-
+-        public void setValue(double val) {
+-            native_set_value(mPtr, val);
++        @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++        private static long native_get_extra_ptr(long ptr) {
++            return 0;
+         }
+-
+-        @FastNative
+-        private static native long native_init(String name);
+-        @CriticalNative
+-        private static native long native_delete();
+-        @CriticalNative
+-        private static native long native_get_extra_ptr(long ptr);
+-        @CriticalNative
+-        private static native void native_set_value(long ptr, double val);
+     }
+ 
+     private static final class ArgString implements PerfettoPointer {
+-        private static final NativeAllocationRegistry sRegistry =
+-                NativeAllocationRegistry.createMalloced(
+-                        ArgString.class.getClassLoader(), native_delete());
+-
+         // Private pointer holding Perfetto object with metadata
+         private final long mPtr;
+ 
+@@ -1044,11 +813,11 @@
+ 
+         private final String mName;
+ 
++        @Adapted(reason = "registers no native allocation", premise = Premise.NO_FINALIZER)
+         ArgString(String name) {
+             mPtr = native_init(name);
+             mExtraPtr = native_get_extra_ptr(mPtr);
+             mName = name;
+-            sRegistry.registerNativeAllocation(this, mPtr);
+         }
+ 
+         @Override
+@@ -1056,39 +825,27 @@
+             return mExtraPtr;
+         }
+ 
+-        public String getName() {
+-            return mName;
++        @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++        private static long native_init(String name) {
++            return 0;
+         }
+-
+-        public void setValue(String val) {
+-            native_set_value(mPtr, val);
++        @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++        private static long native_get_extra_ptr(long ptr) {
++            return 0;
+         }
+-
+-        @FastNative
+-        private static native long native_init(String name);
+-        @CriticalNative
+-        private static native long native_delete();
+-        @CriticalNative
+-        private static native long native_get_extra_ptr(long ptr);
+-        @FastNative
+-        private static native void native_set_value(long ptr, String val);
+     }
+ 
+     private static final class Proto implements PerfettoPointer, FieldContainer {
+-        private static final NativeAllocationRegistry sRegistry =
+-                NativeAllocationRegistry.createMalloced(
+-                        Proto.class.getClassLoader(), native_delete());
+-
+         // Private pointer holding Perfetto object with metadata
+         private final long mPtr;
+ 
+         // Public pointer to Perfetto object itself
+         private final long mExtraPtr;
+ 
++        @Adapted(reason = "registers no native allocation", premise = Premise.NO_FINALIZER)
+         Proto() {
+             mPtr = native_init();
+             mExtraPtr = native_get_extra_ptr(mPtr);
+-            sRegistry.registerNativeAllocation(this, mPtr);
+         }
+ 
+         @Override
+@@ -1105,33 +862,33 @@
+             native_clear_fields(mPtr);
+         }
+ 
+-        @CriticalNative
+-        private static native long native_init();
+-        @CriticalNative
+-        private static native long native_delete();
+-        @CriticalNative
+-        private static native long native_get_extra_ptr(long ptr);
+-        @CriticalNative
+-        private static native void native_add_field(long ptr, long extraPtr);
+-        @CriticalNative
+-        private static native void native_clear_fields(long ptr);
++        @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++        private static long native_init() {
++            return 0;
++        }
++        @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++        private static long native_get_extra_ptr(long ptr) {
++            return 0;
++        }
++        @Adapted(reason = "does nothing", premise = Premise.NO_TRACING)
++        private static void native_add_field(long ptr, long extraPtr) {
++        }
++        @Adapted(reason = "does nothing", premise = Premise.NO_TRACING)
++        private static void native_clear_fields(long ptr) {
++        }
+     }
+ 
+     private static final class FieldInt64 implements PerfettoPointer {
+-        private static final NativeAllocationRegistry sRegistry =
+-                NativeAllocationRegistry.createMalloced(
+-                        FieldInt64.class.getClassLoader(), native_delete());
+-
+         // Private pointer holding Perfetto object with metadata
+         private final long mPtr;
+ 
+         // Public pointer to Perfetto object itself
+         private final long mFieldPtr;
+ 
++        @Adapted(reason = "registers no native allocation", premise = Premise.NO_FINALIZER)
+         FieldInt64() {
+             mPtr = native_init();
+             mFieldPtr = native_get_extra_ptr(mPtr);
+-            sRegistry.registerNativeAllocation(this, mPtr);
+         }
+ 
+         @Override
+@@ -1143,31 +900,30 @@
+             native_set_value(mPtr, id, val);
+         }
+ 
+-        @CriticalNative
+-        private static native long native_init();
+-        @CriticalNative
+-        private static native long native_delete();
+-        @CriticalNative
+-        private static native long native_get_extra_ptr(long ptr);
+-        @CriticalNative
+-        private static native void native_set_value(long ptr, long id, long val);
++        @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++        private static long native_init() {
++            return 0;
++        }
++        @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++        private static long native_get_extra_ptr(long ptr) {
++            return 0;
++        }
++        @Adapted(reason = "does nothing", premise = Premise.NO_TRACING)
++        private static void native_set_value(long ptr, long id, long val) {
++        }
+     }
+ 
+     private static final class FieldDouble implements PerfettoPointer {
+-        private static final NativeAllocationRegistry sRegistry =
+-                NativeAllocationRegistry.createMalloced(
+-                        FieldDouble.class.getClassLoader(), native_delete());
+-
+         // Private pointer holding Perfetto object with metadata
+         private final long mPtr;
+ 
+         // Public pointer to Perfetto object itself
+         private final long mFieldPtr;
+ 
++        @Adapted(reason = "registers no native allocation", premise = Premise.NO_FINALIZER)
+         FieldDouble() {
+             mPtr = native_init();
+             mFieldPtr = native_get_extra_ptr(mPtr);
+-            sRegistry.registerNativeAllocation(this, mPtr);
+         }
+ 
+         @Override
+@@ -1175,35 +931,27 @@
+             return mFieldPtr;
+         }
+ 
+-        public void setValue(long id, double val) {
+-            native_set_value(mPtr, id, val);
++        @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++        private static long native_init() {
++            return 0;
+         }
+-
+-        @CriticalNative
+-        private static native long native_init();
+-        @CriticalNative
+-        private static native long native_delete();
+-        @CriticalNative
+-        private static native long native_get_extra_ptr(long ptr);
+-        @CriticalNative
+-        private static native void native_set_value(long ptr, long id, double val);
++        @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++        private static long native_get_extra_ptr(long ptr) {
++            return 0;
++        }
+     }
+ 
+     private static final class FieldString implements PerfettoPointer {
+-        private static final NativeAllocationRegistry sRegistry =
+-                NativeAllocationRegistry.createMalloced(
+-                        FieldString.class.getClassLoader(), native_delete());
+-
+         // Private pointer holding Perfetto object with metadata
+         private final long mPtr;
+ 
+         // Public pointer to Perfetto object itself
+         private final long mFieldPtr;
+ 
++        @Adapted(reason = "registers no native allocation", premise = Premise.NO_FINALIZER)
+         FieldString() {
+             mPtr = native_init();
+             mFieldPtr = native_get_extra_ptr(mPtr);
+-            sRegistry.registerNativeAllocation(this, mPtr);
+         }
+ 
+         @Override
+@@ -1215,31 +963,30 @@
+             native_set_value(mPtr, id, val);
+         }
+ 
+-        @CriticalNative
+-        private static native long native_init();
+-        @CriticalNative
+-        private static native long native_delete();
+-        @CriticalNative
+-        private static native long native_get_extra_ptr(long ptr);
+-        @FastNative
+-        private static native void native_set_value(long ptr, long id, String val);
++        @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++        private static long native_init() {
++            return 0;
++        }
++        @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++        private static long native_get_extra_ptr(long ptr) {
++            return 0;
++        }
++        @Adapted(reason = "does nothing", premise = Premise.NO_TRACING)
++        private static void native_set_value(long ptr, long id, String val) {
++        }
+     }
+ 
+     private static final class FieldNested implements PerfettoPointer, FieldContainer {
+-        private static final NativeAllocationRegistry sRegistry =
+-                NativeAllocationRegistry.createMalloced(
+-                        FieldNested.class.getClassLoader(), native_delete());
+-
+         // Private pointer holding Perfetto object with metadata
+         private final long mPtr;
+ 
+         // Public pointer to Perfetto object itself
+         private final long mFieldPtr;
+ 
++        @Adapted(reason = "registers no native allocation", premise = Premise.NO_FINALIZER)
+         FieldNested() {
+             mPtr = native_init();
+             mFieldPtr = native_get_extra_ptr(mPtr);
+-            sRegistry.registerNativeAllocation(this, mPtr);
+         }
+ 
+         @Override
+@@ -1256,67 +1003,34 @@
+             native_set_id(mPtr, id);
+         }
+ 
+-        @CriticalNative
+-        private static native long native_init();
+-        @CriticalNative
+-        private static native long native_delete();
+-        @CriticalNative
+-        private static native long native_get_extra_ptr(long ptr);
+-        @CriticalNative
+-        private static native void native_add_field(long ptr, long extraPtr);
+-        @CriticalNative
+-        private static native void native_set_id(long ptr, long id);
++        @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++        private static long native_init() {
++            return 0;
++        }
++        @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++        private static long native_get_extra_ptr(long ptr) {
++            return 0;
++        }
++        @Adapted(reason = "does nothing", premise = Premise.NO_TRACING)
++        private static void native_add_field(long ptr, long extraPtr) {
++        }
++        @Adapted(reason = "does nothing", premise = Premise.NO_TRACING)
++        private static void native_set_id(long ptr, long id) {
++        }
+     }
+ 
+-    @CriticalNative
+     @android.ravenwood.annotation.RavenwoodReplace
+-    private static native long native_init();
+-    @CriticalNative
+-    @android.ravenwood.annotation.RavenwoodReplace
+-    private static native long native_delete();
+-    @CriticalNative
+-    private static native void native_add_arg(long ptr, long extraPtr);
+-    @CriticalNative
+-    private static native void native_clear_args(long ptr);
+-    @FastNative
+-    private static native void native_emit(int type, long tag, String name, long ptr);
+-
+-    private static long native_init$ravenwood() {
+-        // Tracing currently completely disabled under Ravenwood
++    @Adapted(reason = "returns 0", premise = Premise.NO_TRACING)
++    private static long native_init() {
+         return 0;
+     }
+-
+-    private static long native_delete$ravenwood() {
+-        // Tracing currently completely disabled under Ravenwood
+-        return 0;
++    @Adapted(reason = "does nothing", premise = Premise.NO_TRACING)
++    private static void native_add_arg(long ptr, long extraPtr) {
+     }
+-
+-    private CounterInt64 getCounterInt64$ravenwood() {
+-        // Tracing currently completely disabled under Ravenwood
+-        return null;
++    @Adapted(reason = "does nothing", premise = Premise.NO_TRACING)
++    private static void native_clear_args(long ptr) {
+     }
+-
+-    private CounterDouble getCounterDouble$ravenwood() {
+-        // Tracing currently completely disabled under Ravenwood
+-        return null;
++    @Adapted(reason = "does nothing", premise = Premise.NO_TRACING)
++    private static void native_emit(int type, long tag, String name, long ptr) {
+     }
+-
+-    private Proto getProto$ravenwood() {
+-        // Tracing currently completely disabled under Ravenwood
+-        return null;
+-    }
+-
+-    private Flow getFlow$ravenwood() {
+-        // Tracing currently completely disabled under Ravenwood
+-        return null;
+-    }
+-
+-    private Flow getTerminatingFlow$ravenwood() {
+-        // Tracing currently completely disabled under Ravenwood
+-        return null;
+-    }
+-
+-    private void reset$ravenwood() {
+-        // Tracing currently completely disabled under Ravenwood
+-    }
+ }

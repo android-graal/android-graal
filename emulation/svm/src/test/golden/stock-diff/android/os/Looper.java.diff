@@ -1,0 +1,57 @@
+--- a/emulation/svm/src/main/java/android/os/Looper.java
++++ b/emulation/svm/src/main/java/android/os/Looper.java
+@@ -24,6 +24,10 @@
+ import android.util.Slog;
+ import android.util.proto.ProtoOutputStream;
+ 
++import org.androidgraal.hosted.annotate.Adapted;
++import org.androidgraal.hosted.annotate.Emulated;
++import org.androidgraal.hosted.annotate.Premise;
++
+ import java.util.Objects;
+ 
+ /**
+@@ -57,6 +61,7 @@
+   *  }</pre>
+   */
+ @android.ravenwood.annotation.RavenwoodKeepWholeClass
++@Emulated
+ public final class Looper {
+     /*
+      * API Implementation Note:
+@@ -366,15 +371,12 @@
+                 + ".slow", -1);
+     }
+ 
+-    private static int getThresholdOverride$ravenwood() {
+-        return -1;
+-    }
+-
++    @Adapted(reason = "the process group lookup throws", premise = Premise.NO_PROCESSGROUP)
+     private static int getThreadGroup() {
+         int threadGroup = Process.THREAD_GROUP_DEFAULT;
+ 
+         if (!Process.isIsolated()) {
+-            threadGroup = Process.getProcessGroup(Process.myTid());
++            throw new UnsupportedOperationException();
+         }
+         return threadGroup;
+     }
+@@ -557,17 +559,6 @@
+         mQueue.dump(pw, prefix + "  ", handler);
+     }
+ 
+-    /** @hide */
+-    public void dumpDebug(ProtoOutputStream proto, long fieldId) {
+-        final long looperToken = proto.start(fieldId);
+-        proto.write(LooperProto.THREAD_NAME, mThread.getName());
+-        proto.write(LooperProto.THREAD_ID, mThread.getId());
+-        if (mQueue != null) {
+-            mQueue.dumpDebug(proto, LooperProto.QUEUE);
+-        }
+-        proto.end(looperToken);
+-    }
+-
+     @Override
+     public String toString() {
+         return "Looper (" + mThread.getName() + ", tid " + mThread.getId()

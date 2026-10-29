@@ -19,4 +19,7 @@ public interface ApplicationHost {
 
     /** {@code ApplicationInfo.targetSdkVersion} of the application. */
     int targetSdkVersion();
+
+    /** {@code Application.getProcessName()} of the application's process. */
+    String processName();
 }

@@ -56,6 +56,8 @@ import dalvik.annotation.optimization.FastNative;
 import org.androidgraal.android.ParcelData;
 import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
+import org.androidgraal.hosted.annotate.Premise;
+import org.androidgraal.hosted.annotate.Transcribed;
 
 import java.nio.BufferOverflowException;
 import java.nio.ReadOnlyBufferException;
@@ -252,7 +254,7 @@ public final class Parcel {
 
     @UnsupportedAppUsage
     @SuppressWarnings({"UnusedDeclaration"})
-    @Adapted(reason = "a ParcelData instead of a native pointer")
+    @Transcribed
     private ParcelData mNativePtr; // used by native code
 
     /**
@@ -396,230 +398,187 @@ public final class Parcel {
     // Assume the least possible size for complex objects
     private static final int SIZE_COMPLEX_TYPE = 1;
 
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L93-L99",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L93-L99")
     private static void nativeMarkSensitive(ParcelData nativePtr) {
         nativePtr.markSensitive();
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L124-L128",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L124-L128")
     private static int nativeDataSize(ParcelData nativePtr) {
         return nativePtr.dataSize();
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L130-L134",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L130-L134")
     private static int nativeDataAvail(ParcelData nativePtr) {
         return nativePtr.dataAvail();
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L136-L140",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L136-L140")
     private static int nativeDataPosition(ParcelData nativePtr) {
         return nativePtr.dataPosition();
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L142-L146",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L142-L146")
     private static int nativeDataCapacity(ParcelData nativePtr) {
         return nativePtr.dataCapacity();
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L148-L157",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L148-L157")
     private static void nativeSetDataSize(ParcelData nativePtr, int size) {
         nativePtr.setDataSize(size);
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L159-L165",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L159-L165")
     private static void nativeSetDataPosition(ParcelData nativePtr, int pos) {
         nativePtr.setDataPosition(pos);
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L167-L176",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L167-L176")
     private static void nativeSetDataCapacity(ParcelData nativePtr, int size) {
         nativePtr.setDataCapacity(size);
     }
 
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L178-L187",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L178-L187")
     private static boolean nativePushAllowFds(ParcelData nativePtr, boolean allowFds) {
         return nativePtr.pushAllowFds(allowFds);
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L189-L196",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L189-L196")
     private static void nativeRestoreAllowFds(ParcelData nativePtr, boolean lastValue) {
         nativePtr.restoreAllowFds(lastValue);
     }
 
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L198-L223",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L198-L223")
     private static void nativeWriteByteArray(ParcelData nativePtr, byte[] b, int offset, int len) {
         nativePtr.writeByteArray(b, offset, len);
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L225-L262",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L225-L262")
     private static void nativeWriteBlob(ParcelData nativePtr, byte[] b, int offset, int len) {
         nativePtr.writeBlob(b, offset, len);
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L264-L267",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L264-L267")
     private static int nativeWriteInt(ParcelData nativePtr, int val) {
         return nativePtr.writeInt32(val);
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L269-L272",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L269-L272")
     private static int nativeWriteLong(ParcelData nativePtr, long val) {
         return nativePtr.writeInt64(val);
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L274-L277",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L274-L277")
     private static int nativeWriteFloat(ParcelData nativePtr, float val) {
         return nativePtr.writeFloat(val);
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L279-L282",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L279-L282")
     private static int nativeWriteDouble(ParcelData nativePtr, double val) {
         return nativePtr.writeDouble(val);
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L284-L286",
-            reason = "the native's body in Java over ParcelData")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L284-L286")
     private static void nativeSignalExceptionForError(int error) {
         ParcelData.signalExceptionForError(error);
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L288-L312",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L288-L312")
     private static void nativeWriteString8(ParcelData nativePtr, String val) {
         nativePtr.writeString8(val);
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L314-L338",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L314-L338")
     private static void nativeWriteString16(ParcelData nativePtr, String val) {
         nativePtr.writeString16(val);
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L363-L392",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L363-L392")
     private static byte[] nativeCreateByteArray(ParcelData nativePtr) {
         return nativePtr.createByteArray();
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L394-L419",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L394-L419")
     private static boolean nativeReadByteArray(ParcelData nativePtr, byte[] dest, int destLen) {
         return nativePtr.readByteArray(dest, destLen);
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L421-L449",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L421-L449")
     private static byte[] nativeReadBlob(ParcelData nativePtr) {
         return nativePtr.readBlob();
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L451-L458",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L451-L458")
     private static int nativeReadInt(ParcelData nativePtr) {
         return nativePtr.readInt32();
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L460-L467",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L460-L467")
     private static long nativeReadLong(ParcelData nativePtr) {
         return nativePtr.readInt64();
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L469-L476",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L469-L476")
     private static float nativeReadFloat(ParcelData nativePtr) {
         return nativePtr.readFloat();
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L478-L485",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L478-L485")
     private static double nativeReadDouble(ParcelData nativePtr) {
         return nativePtr.readDouble();
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L487-L499",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L487-L499")
     private static String nativeReadString8(ParcelData nativePtr) {
         return nativePtr.readString8();
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L501-L513",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L501-L513")
     private static String nativeReadString16(ParcelData nativePtr) {
         return nativePtr.readString16();
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L541-L545",
-            reason = "a new ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L541-L545")
     private static ParcelData nativeCreate() {
         return new ParcelData();
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L547-L553",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L547-L553")
     private static void nativeFreeBuffer(ParcelData nativePtr) {
         nativePtr.freeData();
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L555-L559",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L555-L559")
     private static void nativeDestroy(ParcelData nativePtr) {
         nativePtr.destroy();
     }
 
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L582-L602",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L582-L602")
     private static byte[] nativeMarshall(ParcelData nativePtr) {
         return nativePtr.marshall();
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L613-L633",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L613-L633")
     private static int nativeMarshallArray(
             ParcelData nativePtr, byte[] data, int offset, int length) {
         return nativePtr.marshall(data, offset, length);
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L635-L652",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L635-L652")
     private static int nativeMarshallBuffer(
             ParcelData nativePtr, ByteBuffer buffer, int offset, int length) {
         return nativePtr.marshall(buffer, offset, length);
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L654-L673",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L654-L673")
     private static void nativeUnmarshall(
             ParcelData nativePtr, byte[] data, int offset, int length) {
         nativePtr.unmarshall(data, offset, length);
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L675-L692",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L675-L692")
     private static void nativeUnmarshallBuffer(
             ParcelData nativePtr, ByteBuffer buffer, int offset, int length) {
         nativePtr.unmarshall(buffer, offset, length);
     }
 
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L694-L704",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L694-L704")
     private static int nativeCompareData(ParcelData thisNativePtr, ParcelData otherNativePtr) {
         return thisNativePtr.compareData(otherNativePtr);
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L706-L723",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L706-L723")
     private static boolean nativeCompareDataInRange(
             ParcelData ptrA, int offsetA, ParcelData ptrB, int offsetB, int length) {
         return ptrA.compareData(offsetA, ptrB, offsetB, length);
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L725-L742",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L725-L742")
     private static void nativeAppendFrom(
             ParcelData thisNativePtr, ParcelData otherNativePtr, int offset, int length) {
         thisNativePtr.appendFrom(otherNativePtr, offset, length);
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L773-L783",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L773-L783")
     private static boolean nativeHasFileDescriptors(ParcelData nativePtr) {
         return nativePtr.hasFileDescriptors();
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L785-L799",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L785-L799")
     private static boolean nativeHasFileDescriptorsInRange(
             ParcelData nativePtr, int offset, int length) {
         return nativePtr.hasFileDescriptors(offset, length);
     }
 
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L838-L847",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L838-L847")
     private static void nativeWriteInterfaceToken(ParcelData nativePtr, String interfaceName) {
         nativePtr.writeInterfaceToken(interfaceName, Build.VERSION.SDK_INT);
     }
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L849-L878",
-            reason = "the native over ParcelData instead of a native Parcel")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_Parcel.cpp#L849-L878")
     private static void nativeEnforceInterface(ParcelData nativePtr, String interfaceName) {
         nativePtr.enforceInterface(interfaceName, Build.VERSION.SDK_INT);
     }
@@ -683,7 +642,7 @@ public final class Parcel {
      * Retrieve a new Parcel object from the pool.
      */
     @NonNull
-    @Adapted(reason = "a null ParcelData instead of a zero pointer")
+    @Transcribed
     public static Parcel obtain() {
         Parcel res = null;
         synchronized (sPoolSync) {
@@ -718,7 +677,7 @@ public final class Parcel {
      * Put a Parcel object back into the pool.  You must not touch
      * the object after this call.
      */
-    @Adapted(reason = "a null ParcelData instead of a zero pointer")
+    @Transcribed
     public final void recycle() {
         if (mRecycled) {
             String error = "Recycle called on unowned Parcel. (recycle twice?) Here: "
@@ -2317,7 +2276,7 @@ public final class Parcel {
         writeFixedArrayInternal(val, parcelableFlags, /*index=*/0, dimensions);
     }
 
-    @Adapted(reason = "without binder and interface arrays")
+    @Adapted(reason = "without binder and interface arrays", premise = Premise.NO_BINDER)
     private <T> void writeFixedArrayInternal(T val, int parcelableFlags, int index,
             int[] dimensions) {
         if (index >= dimensions.length) {
@@ -2443,13 +2402,14 @@ public final class Parcel {
     }
 
     /** @hide */
-    @Adapted(value = {"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-6.0.0_r1/core/java/android/os/Parcel.java#L1320-L1322",
+    @Transcribed({"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-6.0.0_r1/core/java/android/os/Parcel.java#L1320-L1322",
             "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-6.0.0_r1/core/java/android/os/Parcel.java#L1385-L1395",
             "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-11.0.0_r1/core/java/android/os/Parcel.java#L1805-L1810",
             "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-11.0.0_r1/core/java/android/os/Parcel.java#L1867-L1869",
             "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-12.1.0_r1/core/java/android/os/Parcel.java#L1853-L1858",
-            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-12.1.0_r1/core/java/android/os/Parcel.java#L1921-L1931"},
-            reason = "the value types of the device's API level, without binders")
+            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-12.1.0_r1/core/java/android/os/Parcel.java#L1921-L1931"})
+    @Adapted(reason = "answers the device level's value types and never VAL_IBINDER",
+            premise = {Premise.NO_BINDER, Premise.DEVICE_LEVEL})
     public static int getValueType(@Nullable Object v) {
         if (v == null) {
             return VAL_NULL;
@@ -2545,7 +2505,7 @@ public final class Parcel {
      *
      * @hide
      */
-    @Adapted(reason = "without the binder value")
+    @Adapted(reason = "without the binder value", premise = Premise.NO_BINDER)
     public void writeValue(int type, @Nullable Object v) {
         switch (type) {
             case VAL_NULL:
@@ -2910,8 +2870,9 @@ public final class Parcel {
      * @see #writeNoException
      * @see #readException
      */
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-8.1.0_r1/core/java/android/os/Parcel.java#L1852-L1900",
-            reason = "without AppOps and StrictMode, the stack trace header from P on, and a parcelled stack trace throws")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-8.1.0_r1/core/java/android/os/Parcel.java#L1852-L1900")
+    @Adapted(reason = "without AppOps and StrictMode, the stack trace header from P on",
+            premise = {Premise.NO_FRAMEWORK_PROCESS, Premise.DEVICE_LEVEL})
     public final void writeException(@NonNull Exception e) {
         int code = getExceptionCode(e);
         writeInt(code);
@@ -2923,8 +2884,7 @@ public final class Parcel {
         }
         writeString(e.getMessage());
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
-            if (sParcelExceptionStackTrace) throw new UnsupportedOperationException();
-            final long timeNow = 0;
+            final long timeNow = sParcelExceptionStackTrace ? SystemClock.elapsedRealtime() : 0;
             if (sParcelExceptionStackTrace && (timeNow - sLastWriteExceptionStackTrace
                     > WRITE_EXCEPTION_STACK_TRACE_THRESHOLD_MS)) {
                 sLastWriteExceptionStackTrace = timeNow;
@@ -2951,9 +2911,10 @@ public final class Parcel {
     }
 
     /** @hide */
-    @Adapted(value = {"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-6.0.0_r1/core/java/android/os/Parcel.java#L1476-L1502",
-            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-7.1.0_r1/core/java/android/os/Parcel.java#L1556-L1587"},
-            reason = "EX_PARCELABLE from O on for android.* exceptions only and EX_SERVICE_SPECIFIC from N on")
+    @Transcribed({"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-6.0.0_r1/core/java/android/os/Parcel.java#L1476-L1502",
+            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-7.1.0_r1/core/java/android/os/Parcel.java#L1556-L1587"})
+    @Adapted(reason = "EX_PARCELABLE from O on for android.* exceptions only and EX_SERVICE_SPECIFIC from N on",
+            premise = {Premise.DEVICE_LEVEL, Premise.SINGLE_CLASS_LOADER})
     public static int getExceptionCode(@NonNull Throwable e) {
         int code = 0;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O && e instanceof Parcelable
@@ -3008,7 +2969,8 @@ public final class Parcel {
      * @see #writeException
      * @see #readException
      */
-    @Adapted(reason = "always the plain header, without AppOps and StrictMode")
+    @Adapted(reason = "always the plain header, without AppOps and StrictMode",
+            premise = Premise.NO_FRAMEWORK_PROCESS)
     public final void writeNoException() {
         writeInt(0);
     }
@@ -3045,7 +3007,8 @@ public final class Parcel {
      */
     @UnsupportedAppUsage
     @TestApi
-    @Adapted(reason = "the AppOps and StrictMode reply headers throw")
+    @Adapted(reason = "the AppOps and StrictMode reply headers throw",
+            premise = Premise.NO_FRAMEWORK_PROCESS)
     public final int readExceptionCode() {
         int code = readInt();
         if (code == EX_HAS_NOTED_APPOPS_REPLY_HEADER) {
@@ -3077,8 +3040,8 @@ public final class Parcel {
      * @param code Used to determine which exception class to throw.
      * @param msg The exception message.
      */
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-8.1.0_r1/core/java/android/os/Parcel.java#L1994-L2022",
-            reason = "reads the stack trace size from P on")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-8.1.0_r1/core/java/android/os/Parcel.java#L1994-L2022")
+    @Adapted(reason = "reads the stack trace size from P on", premise = Premise.DEVICE_LEVEL)
     public final void readException(int code, String msg) {
         String remoteStackTrace = null;
         final int remoteStackPayloadSize =
@@ -3965,7 +3928,7 @@ public final class Parcel {
      * @see #readInterfaceArray
      * @see #readTypedArray
      */
-    @Adapted(reason = "without binder arrays")
+    @Adapted(reason = "without binder arrays", premise = Premise.NO_BINDER)
     public <T> void readFixedArray(@NonNull T val) {
         Class<?> componentType = val.getClass().getComponentType();
         if (componentType == boolean.class) {
@@ -4061,7 +4024,7 @@ public final class Parcel {
      * @see #createTypedArray
      */
     @Nullable
-    @Adapted(reason = "without binder arrays")
+    @Adapted(reason = "without binder arrays", premise = Premise.NO_BINDER)
     public <T> T createFixedArray(@NonNull Class<T> cls, @NonNull int... dimensions) {
         // Check if type matches with dimensions
         // If type is one-dimensional array, delegate to other creators
@@ -4469,7 +4432,7 @@ public final class Parcel {
      */
     @SuppressWarnings("unchecked")
     @Nullable
-    @Adapted(reason = "a binder value throws BadParcelableException")
+    @Adapted(reason = "a binder value throws BadParcelableException", premise = Premise.NO_BINDER)
     private <T> T readValue(int type, @Nullable ClassLoader loader, @Nullable Class<T> clazz,
             @Nullable Class<?>... itemTypes) {
         final Object object;
@@ -4635,9 +4598,9 @@ public final class Parcel {
         return (T) object;
     }
 
-    @Adapted(value = {"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-12.1.0_r1/core/java/android/os/Parcel.java#L1834-L1936",
-            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-12.1.0_r1/core/java/android/os/Parcel.java#L3209-L3216"},
-            reason = "false below TIRAMISU")
+    @Transcribed({"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-12.1.0_r1/core/java/android/os/Parcel.java#L1834-L1936",
+            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-12.1.0_r1/core/java/android/os/Parcel.java#L3209-L3216"})
+    @Adapted(reason = "false below TIRAMISU", premise = Premise.DEVICE_LEVEL)
     private boolean isLengthPrefixed(int type) {
         // In general, we want custom types and containers of custom types to be length-prefixed,
         // this allows clients (eg. Bundle) to skip their content during deserialization. The
@@ -5081,7 +5044,7 @@ public final class Parcel {
         throw new UnsupportedOperationException();
     }
 
-    @Adapted(reason = "takes a ParcelData instead of a native pointer")
+    @Transcribed
     private Parcel(ParcelData nativePtr) {
         if (DEBUG_RECYCLE) {
             mStack = new RuntimeException();
@@ -5090,7 +5053,7 @@ public final class Parcel {
         init(nativePtr);
     }
 
-    @Adapted(reason = "takes a ParcelData instead of a native pointer")
+    @Transcribed
     private void init(ParcelData nativePtr) {
         if (nativePtr != null) {
             mNativePtr = nativePtr;
@@ -5110,7 +5073,7 @@ public final class Parcel {
         mReadWriteHelper = ReadWriteHelper.DEFAULT;
     }
 
-    @Adapted(reason = "a null ParcelData instead of a zero pointer")
+    @Transcribed
     private void destroy() {
         resetSqaushingState();
         if (mNativePtr != null) {
@@ -5122,7 +5085,7 @@ public final class Parcel {
     }
 
     @Override
-    @Adapted(reason = "empty, the image runs no finalizer")
+    @Adapted(reason = "empty", premise = Premise.NO_FINALIZER)
     protected void finalize() throws Throwable {
     }
 

@@ -35,6 +35,8 @@ import libcore.io.IoUtils;
 
 import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
+import org.androidgraal.hosted.annotate.Premise;
+import org.androidgraal.hosted.annotate.Transcribed;
 
 import java.io.FileDescriptor;
 import java.io.FileInputStream;
@@ -79,16 +81,51 @@ import java.util.concurrent.atomic.AtomicReferenceArray;
 @RavenwoodKeepWholeClass
 @RavenwoodClassLoadHook(RavenwoodClassLoadHook.LIBANDROID_LOADING_HOOK)
 @Emulated
-@Adapted(reason = "does not implement IBinder")
+@Adapted(reason = "does not implement IBinder", premise = Premise.ABSENT_TYPE)
 public class Binder {
     private static boolean sIsHandlingBinderTransaction = false;
 
     /**
      * @hide
      */
-    @Adapted(reason = "without isDirectlyHandlingTransactionNative")
+    @Adapted(reason = "without isDirectlyHandlingTransactionNative", premise = Premise.NO_BINDER)
     public static final boolean isDirectlyHandlingTransaction() {
         return sIsHandlingBinderTransaction;
+    }
+
+    /**
+     * Reset the identity of the incoming IPC on the current thread. This can
+     * be useful if, while handling an incoming call, you will be calling
+     * on interfaces of other objects that may be local to your process and
+     * need to do permission checks on the calls coming into them (so they
+     * will check the permission of your own local process, and not whatever
+     * process originally called you).
+     *
+     * @return Returns an opaque token that can be used to restore the
+     * original calling identity by passing it to
+     * {@link #restoreCallingIdentity(long)}.
+     *
+     * @see #getCallingPid()
+     * @see #getCallingUid()
+     * @see #restoreCallingIdentity(long)
+     */
+    @Transcribed({"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Binder.cpp#L1169-L1172",
+            "https://android.googlesource.com/platform/frameworks/native/+/refs/tags/android-16.0.0_r1/libs/binder/IPCThreadState.cpp#L467-L480"})
+    @Adapted(reason = "answers the process's own uid and pid", premise = Premise.NO_BINDER)
+    public static final long clearCallingIdentity() {
+        return ((long) Process.myUid() << 32) | Process.myPid();
+    }
+
+    /**
+     * Flush any Binder commands pending in the current thread to the kernel
+     * driver. This can be
+     * useful to call before performing an operation that may block for a long
+     * time, to ensure that any pending object references have been released
+     * in order to prevent the process from holding on to objects longer than
+     * it needs to.
+     */
+    @Adapted(reason = "flushes nothing", premise = Premise.NO_BINDER)
+    public static final void flushPendingCommands() {
     }
 
     /**
@@ -97,7 +134,7 @@ public class Binder {
      * <p>If you're creating a Binder token (a Binder object without an attached interface),
      * you should use {@link #Binder(String)} instead.
      */
-    @Adapted(reason = "empty instead of calling Binder(String)")
+    @Adapted(reason = "empty instead of calling Binder(String)", premise = Premise.NO_BINDER)
     public Binder() {
     }
 }

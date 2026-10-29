@@ -1,6 +1,6 @@
 --- a/emulation/svm/src/main/java/android/text/TextUtils.java
 +++ b/emulation/svm/src/main/java/android/text/TextUtils.java
-@@ -25,59 +25,22 @@
+@@ -25,59 +25,24 @@
  import android.annotation.Nullable;
  import android.annotation.PluralsRes;
  import android.compat.annotation.UnsupportedAppUsage;
@@ -60,11 +60,13 @@
  
 +import org.androidgraal.hosted.annotate.Adapted;
 +import org.androidgraal.hosted.annotate.Emulated;
++import org.androidgraal.hosted.annotate.Premise;
++import org.androidgraal.hosted.annotate.Transcribed;
 +
  import java.lang.annotation.Retention;
  import java.lang.reflect.Array;
  import java.util.BitSet;
-@@ -87,6 +50,7 @@
+@@ -87,6 +52,7 @@
  import java.util.regex.Pattern;
  
  @RavenwoodKeepWholeClass
@@ -72,7 +74,7 @@
  public class TextUtils {
      private static final String TAG = "TextUtils";
  
-@@ -165,199 +129,8 @@
+@@ -165,199 +131,8 @@
          }
      }
  
@@ -272,7 +274,7 @@
       * Returns the longest prefix of a string for which the UTF-8 encoding fits into the given
       * number of bytes, with the additional guarantee that the string is not truncated in the middle
       * of a valid surrogate pair.
-@@ -576,17 +349,6 @@
+@@ -576,17 +351,6 @@
          }
      }
  
@@ -290,7 +292,7 @@
      /**
       * Returns true if the string is null or 0-length.
       * @param str the string to be examined
-@@ -669,67 +431,6 @@
+@@ -669,67 +433,6 @@
          return false;
      }
  
@@ -358,13 +360,14 @@
      /** @hide */
      public static final int ALIGNMENT_SPAN = 1;
      /** @hide */
-@@ -801,11 +502,18 @@
+@@ -801,11 +504,19 @@
       * Flatten a CharSequence and whatever styles can be copied across processes
       * into the parcel.
       */
-+    @Adapted(value = {"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-10.0.0_r1/core/java/android/text/TextUtils.java#L747-L748",
-+            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-10.0.0_r1/core/java/android/text/TextUtils.java#L783-L785"},
-+            reason = "writeString below R, and a span throws")
++    @Transcribed({"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-10.0.0_r1/core/java/android/text/TextUtils.java#L747-L748",
++            "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-10.0.0_r1/core/java/android/text/TextUtils.java#L783-L785"})
++    @Adapted(reason = "writeString below R, and a span throws",
++            premise = {Premise.ABSENT_TYPE, Premise.DEVICE_LEVEL})
      public static void writeToParcel(@Nullable CharSequence cs, @NonNull Parcel p,
              int parcelableFlags) {
          if (cs instanceof Spanned) {
@@ -378,7 +381,7 @@
  
              Spanned sp = (Spanned) cs;
              Object[] os = sp.getSpans(0, cs.length(), Object.class);
-@@ -816,33 +524,18 @@
+@@ -816,33 +527,18 @@
              // so one object can be several.
  
              for (int i = 0; i < os.length; i++) {
@@ -418,16 +421,17 @@
              } else {
                  p.writeString8(null);
              }
-@@ -855,6 +548,8 @@
+@@ -855,6 +551,9 @@
          p.writeInt(sp.getSpanFlags(o));
      }
  
-+    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-10.0.0_r1/core/java/android/text/TextUtils.java#L805-L807",
-+            reason = "readString below R, and a span throws")
++    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-10.0.0_r1/core/java/android/text/TextUtils.java#L805-L807")
++    @Adapted(reason = "readString below R, and a span throws",
++            premise = {Premise.ABSENT_TYPE, Premise.DEVICE_LEVEL})
      public static final Parcelable.Creator<CharSequence> CHAR_SEQUENCE_CREATOR
              = new Parcelable.Creator<CharSequence>() {
          /**
-@@ -864,7 +559,8 @@
+@@ -864,7 +563,8 @@
          public CharSequence createFromParcel(Parcel p) {
              int kind = p.readInt();
  
@@ -437,7 +441,7 @@
              if (string == null) {
                  return null;
              }
-@@ -881,136 +577,7 @@
+@@ -881,136 +581,7 @@
                  if (kind == 0)
                      break;
  
@@ -575,7 +579,7 @@
              }
  
              return sp;
-@@ -1022,301 +589,6 @@
+@@ -1022,301 +593,6 @@
          }
      };
  
@@ -877,7 +881,7 @@
      public enum TruncateAt {
          START,
          MIDDLE,
-@@ -1337,325 +609,6 @@
+@@ -1337,325 +613,6 @@
          public void ellipsized(int start, int end);
      }
  
@@ -1203,7 +1207,7 @@
      // Returns true if the character's presence could affect RTL layout.
      //
      // In order to be fast, the code is intentionally rough and quite conservative in its
-@@ -1688,20 +641,6 @@
+@@ -1688,20 +645,6 @@
          return true;
      }
  
@@ -1224,7 +1228,7 @@
      /* package */ static void recycle(char[] temp) {
          if (temp.length > 1000)
              return;
-@@ -1749,57 +688,6 @@
+@@ -1749,57 +692,6 @@
      }
  
      /**
@@ -1282,7 +1286,7 @@
       * Returns whether the given CharSequence contains any printable characters.
       */
      public static boolean isGraphic(CharSequence str) {
-@@ -2036,56 +924,6 @@
+@@ -2036,56 +928,6 @@
      }
  
      /**
@@ -1339,7 +1343,7 @@
       * Pack 2 int values into a long, useful as a return value for a range
       * @see #unpackRangeStartFromLong(long)
       * @see #unpackRangeEndFromLong(long)
-@@ -2119,25 +957,6 @@
+@@ -2119,25 +961,6 @@
      }
  
      /**
@@ -1365,7 +1369,7 @@
       * Simple alternative to {@link String#format} which purposefully supports
       * only a small handful of substitutions to improve execution speed.
       * Benchmarking reveals this optimized alternative performs 6.5x faster for
-@@ -2251,38 +1070,6 @@
+@@ -2251,38 +1074,6 @@
      }
  
      /**
@@ -1404,7 +1408,7 @@
       * Prepends {@code start} and appends {@code end} to a given {@link StringBuilder}
       *
       * @hide
-@@ -2387,150 +1174,6 @@
+@@ -2387,150 +1178,6 @@
      }
  
      /**

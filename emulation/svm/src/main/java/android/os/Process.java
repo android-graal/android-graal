@@ -50,12 +50,15 @@ import libcore.io.IoUtils;
 import org.androidgraal.android.ScopedUtfChars;
 import org.androidgraal.bionic.Errno;
 import org.androidgraal.bionic.Fcntl;
+import org.androidgraal.bionic.Resource;
 import org.androidgraal.bionic.Signal;
 import org.androidgraal.bionic.Stdlib;
 import org.androidgraal.bionic.Strings;
 import org.androidgraal.bionic.Unistd;
 import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
+import org.androidgraal.hosted.annotate.Premise;
+import org.androidgraal.hosted.annotate.Transcribed;
 import org.graalvm.nativeimage.StackValue;
 import org.graalvm.nativeimage.UnmanagedMemory;
 import org.graalvm.nativeimage.c.type.CCharPointer;
@@ -665,6 +668,11 @@ public class Process {
     public static final int ZYGOTE_POLICY_FLAG_SYSTEM_PROCESS = 1 << 2;
 
     /**
+     * The process name set via {@link #setArgV0(String)}.
+     */
+    private static String sArgV0;
+
+    /**
      * Returns true if the current process is a 64-bit runtime.
      */
     @RavenwoodKeep
@@ -711,6 +719,96 @@ public class Process {
     }
 
     /**
+     * Returns this process's user handle.  This is the
+     * user the process is running under.  It is distinct from
+     * {@link #myUid()} in that a particular user will have multiple
+     * distinct apps running under it each with their own uid.
+     */
+    @RavenwoodKeep
+    public static UserHandle myUserHandle() {
+        return UserHandle.of(UserHandle.getUserId(myUid()));
+    }
+
+    /**
+     * Returns whether the given uid belongs to a system core component or not.
+     * @hide
+     */
+    @RavenwoodKeep
+    public static boolean isCoreUid(int uid) {
+        return UserHandle.isCore(uid);
+    }
+
+    /**
+     * Returns whether the given uid belongs to an application.
+     * @param uid A kernel uid.
+     * @return Whether the uid corresponds to an application sandbox running in
+     *     a specific user.
+     */
+    @RavenwoodKeep
+    public static boolean isApplicationUid(int uid) {
+        return UserHandle.isApp(uid);
+    }
+
+    /**
+     * Returns whether the current process is in an isolated sandbox.
+     */
+    @RavenwoodKeep
+    public static final boolean isIsolated() {
+        return isIsolated(myUid());
+    }
+
+    /**
+     * @deprecated Use {@link #isIsolatedUid(int)} instead.
+     * {@hide}
+     */
+    @Deprecated
+    @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.TIRAMISU,
+            publicAlternatives = "Use {@link #isIsolatedUid(int)} instead.")
+    @RavenwoodKeep
+    public static final boolean isIsolated(int uid) {
+        return isIsolatedUid(uid);
+    }
+
+    /**
+     * Returns whether the process with the given {@code uid} is an isolated sandbox.
+     */
+    @RavenwoodKeep
+    public static final boolean isIsolatedUid(int uid) {
+        uid = UserHandle.getAppId(uid);
+        return (uid >= FIRST_ISOLATED_UID && uid <= LAST_ISOLATED_UID)
+                || (uid >= FIRST_APP_ZYGOTE_ISOLATED_UID && uid <= LAST_APP_ZYGOTE_ISOLATED_UID);
+    }
+
+    /**
+     * Returns whether the provided UID belongs to an  sdk sandbox process
+     * @see android.app.sdksandbox.SdkSandboxManager
+     */
+    @SuppressLint("UnflaggedApi") // promoting from @SystemApi.
+    @RavenwoodKeep
+    public static final boolean isSdkSandboxUid(int uid) {
+        uid = UserHandle.getAppId(uid);
+        return (uid >= FIRST_SDK_SANDBOX_UID && uid <= LAST_SDK_SANDBOX_UID);
+    }
+
+    /**
+     * Returns the app uid corresponding to an sdk sandbox uid.
+     * @see android.app.sdksandbox.SdkSandboxManager
+     *
+     * @param uid the sdk sandbox uid
+     * @return the app uid for the given sdk sandbox uid
+     *
+     * @throws IllegalArgumentException if input is not an sdk sandbox uid
+     */
+    @SuppressLint("UnflaggedApi") // promoting from @SystemApi.
+    @RavenwoodKeep
+    public static final int getAppUidForSdkSandboxUid(int uid) {
+        if (!isSdkSandboxUid(uid)) {
+            throw new IllegalArgumentException("Input UID is not an SDK sandbox UID");
+        }
+        return uid - (FIRST_SDK_SANDBOX_UID - FIRST_APPLICATION_UID);
+    }
+
+    /**
      *
      * Returns the sdk sandbox process corresponding to an app process.
      *
@@ -722,6 +820,32 @@ public class Process {
     // TODO(b/318651609): Deprecate once Process#getSdkSandboxUidForAppUid is rolled out to 100%
     public static final int toSdkSandboxUid(int uid) {
         return uid + (FIRST_SDK_SANDBOX_UID - FIRST_APPLICATION_UID);
+    }
+
+    /**
+     * Returns the sdk sandbox uid corresponding to an app uid.
+     * @see android.app.sdksandbox.SdkSandboxManager
+     *
+     * @param uid the app uid
+     * @return the sdk sandbox uid for the given app uid
+     *
+     * @throws IllegalArgumentException if input is not an app uid
+     */
+    @FlaggedApi(Flags.FLAG_SDK_SANDBOX_UID_TO_APP_UID_API)
+    @RavenwoodKeep
+    public static final int getSdkSandboxUidForAppUid(int uid) {
+        if (!isApplicationUid(uid)) {
+            throw new IllegalArgumentException("Input UID is not an app UID");
+        }
+        return uid + (FIRST_SDK_SANDBOX_UID - FIRST_APPLICATION_UID);
+    }
+
+    /**
+     * Returns whether the current process is a sdk sandbox process.
+     */
+    @RavenwoodKeep
+    public static final boolean isSdkSandbox() {
+        return isSdkSandboxUid(myUid());
     }
 
     /**
@@ -770,6 +894,81 @@ public class Process {
     }
 
     /**
+     * Set the priority of a thread, based on Linux priorities.
+     *
+     * @param tid The identifier of the thread/process to change.
+     * @param priority A Linux priority level, from -20 for highest scheduling
+     * priority to 19 for lowest scheduling priority.
+     *
+     * @throws IllegalArgumentException Throws IllegalArgumentException if
+     * <var>tid</var> does not exist.
+     * @throws SecurityException Throws SecurityException if your process does
+     * not have permission to modify the given thread, or to use the given
+     * priority.
+     */
+    @RavenwoodRedirect
+    @Transcribed({"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Process.cpp#L565-L594",
+            "https://android.googlesource.com/platform/system/core/+/refs/tags/android-16.0.0_r1/libutils/Threads.cpp#L313-L324"})
+    public static final void setThreadPriority(int tid,
+            @IntRange(from = -20, to = THREAD_PRIORITY_LOWEST) int priority)
+            throws IllegalArgumentException, SecurityException {
+        if (Resource.setpriority(Resource.PRIO_PROCESS(), tid, priority) < 0) {
+            signalExceptionForPriorityError(Errno.errno().read(), tid);
+        }
+    }
+
+    /**
+     * Set the priority of the calling thread, based on Linux priorities.  See
+     * {@link #setThreadPriority(int, int)} for more information.
+     *
+     * @param priority A Linux priority level, from -20 for highest scheduling
+     * priority to 19 for lowest scheduling priority.
+     *
+     * @throws IllegalArgumentException Throws IllegalArgumentException if
+     * <var>tid</var> does not exist.
+     * @throws SecurityException Throws SecurityException if your process does
+     * not have permission to modify the given thread, or to use the given
+     * priority.
+     *
+     * @see #setThreadPriority(int, int)
+     */
+    @RavenwoodReplace
+    @Transcribed({"https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Process.cpp#L596-L600",
+            "https://android.googlesource.com/platform/system/core/+/refs/tags/android-16.0.0_r1/libutils/Threads.cpp#L313-L324"})
+    public static final void setThreadPriority(
+            @IntRange(from = -20, to = THREAD_PRIORITY_LOWEST) int priority)
+            throws IllegalArgumentException, SecurityException {
+        setThreadPriority(Unistd.gettid(), priority);
+    }
+
+    /**
+     * Return the current priority of a thread, based on Linux priorities.
+     *
+     * @param tid The identifier of the thread/process. If tid equals zero, the priority of the
+     * calling process/thread will be returned.
+     *
+     * @return Returns the current priority, as a Linux priority level,
+     * from -20 for highest scheduling priority to 19 for lowest scheduling
+     * priority.
+     *
+     * @throws IllegalArgumentException Throws IllegalArgumentException if
+     * <var>tid</var> does not exist.
+     */
+    @RavenwoodRedirect
+    @IntRange(from = -20, to = THREAD_PRIORITY_LOWEST)
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Process.cpp#L602-L612")
+    public static final int getThreadPriority(int tid)
+            throws IllegalArgumentException {
+        Errno.errno().write(0);
+        int pri = Resource.getpriority(Resource.PRIO_PROCESS(), tid);
+        int errno = Errno.errno().read();
+        if (errno != 0) {
+            signalExceptionForPriorityError(errno, tid);
+        }
+        return pri;
+    }
+
+    /**
      * Determine whether the current environment supports multiple processes.
      *
      * @return Returns true if the system can run in multiple processes, else
@@ -780,6 +979,36 @@ public class Process {
     @Deprecated
     public static final boolean supportsProcesses() {
         return true;
+    }
+
+    /**
+     * Change this process's argv[0] parameter.  This can be useful to show
+     * more descriptive information in things like the 'ps' command.
+     *
+     * @param text The new name of this process.
+     *
+     * {@hide}
+     */
+    @UnsupportedAppUsage(maxTargetSdk = VERSION_CODES.S, publicAlternatives = "Do not try to "
+            + "change the process name. (If you must, you could use {@code pthread_setname_np(3)}, "
+            + "but this could confuse the system)")
+    @Adapted(reason = "without the setArgV0Native and VMDebug.setCurrentProcessName calls",
+            premise = Premise.NO_ART_RUNTIME)
+    public static void setArgV0(@NonNull String text) {
+        sArgV0 = text;
+    }
+
+    /**
+     * Return the name of this process. By default, the process name is the same as the app's
+     * package name, but this can be changed using {@code android:process}.
+     */
+    @RavenwoodReplace
+    @NonNull
+    public static String myProcessName() {
+        // Note this could be different from the actual process name if someone changes the
+        // process name using native code (using pthread_setname_np()). But sArgV0
+        // is the name that the system thinks this process has.
+        return sArgV0;
     }
 
     /**
@@ -819,8 +1048,7 @@ public class Process {
     }
 
     /** @hide */
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Process.cpp#L634-L642",
-            reason = "the native's body in Java over bionic")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Process.cpp#L634-L642")
     public static final int setUid(int uid) {
         if (uid < 0) {
             throw new IllegalArgumentException("uid is negative: " + uid);
@@ -830,8 +1058,7 @@ public class Process {
     }
 
     /** @hide */
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Process.cpp#L644-L651",
-            reason = "the native's body in Java over bionic")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Process.cpp#L644-L651")
     public static final int setGid(int uid) {
         if (uid < 0) {
             throw new IllegalArgumentException("gid is negative: " + uid);
@@ -846,8 +1073,7 @@ public class Process {
      * @param pid The pid of the target process.
      * @param signal The signal to send.
      */
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Process.cpp#L1131-L1137",
-            reason = "the native's body in Java over bionic")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Process.cpp#L1131-L1137")
     public static final void sendSignal(int pid, int signal) {
         if (pid > 0) {
             Log.i(LOG_TAG, "Sending signal. PID: " + pid + " SIG: " + signal);
@@ -855,8 +1081,7 @@ public class Process {
         }
     }
 
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Process.cpp#L1146-L1161",
-            reason = "the native's body in Java over bionic")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Process.cpp#L1146-L1161")
     private static void sendSignalThrows(int pid, int signal)
             throws IllegalArgumentException, SecurityException, NoSuchElementException {
         if (pid <= 0) {
@@ -890,8 +1115,7 @@ public class Process {
      * beat you up.
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.P)
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Process.cpp#L1139-L1144",
-            reason = "the native's body in Java over bionic")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Process.cpp#L1139-L1144")
     public static final void sendSignalQuiet(int pid, int signal) {
         if (pid > 0) {
             Signal.kill(pid, signal);
@@ -900,8 +1124,7 @@ public class Process {
 
     /** @hide */
     @UnsupportedAppUsage
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Process.cpp#L696-L805",
-            reason = "the native's body in Java over bionic")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Process.cpp#L696-L805")
     public static final void readProcLines(String path,
             String[] reqFields, long[] outSizes) {
         if (path == null || reqFields == null || outSizes == null) {
@@ -1054,8 +1277,7 @@ public class Process {
         public boolean usingWrapper;
     }
 
-    @Adapted(value = "https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Process.cpp#L91-L109",
-            reason = "the native's signalExceptionForError in Java")
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Process.cpp#L91-L109")
     private static void signalExceptionForError(int err, int tid) {
         if (err == OsConstants.EINVAL) {
             throw new IllegalArgumentException("Invalid argument: " + tid);
@@ -1065,6 +1287,15 @@ public class Process {
             throw new SecurityException("No permission to modify given thread " + tid);
         } else {
             throw new RuntimeException("Unknown error");
+        }
+    }
+
+    @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_util_Process.cpp#L111-L121")
+    private static void signalExceptionForPriorityError(int err, int tid) {
+        if (err == OsConstants.EACCES) {
+            throw new SecurityException("No permission to set the priority of " + tid);
+        } else {
+            signalExceptionForError(err, tid);
         }
     }
 }

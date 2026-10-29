@@ -21,7 +21,6 @@ import android.annotation.LongDef;
 import android.annotation.NonNull;
 import android.annotation.Nullable;
 
-import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
 
 import java.lang.annotation.Retention;
@@ -66,7 +65,6 @@ public class ProtoStream {
      * Encoding</a>
      */
     @Retention(RetentionPolicy.SOURCE)
-    @Adapted(reason = "without @LongDef")
     public @interface FieldType {}
 
 

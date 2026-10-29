@@ -35,6 +35,7 @@ import com.android.internal.annotations.VisibleForTesting;
 
 import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
+import org.androidgraal.hosted.annotate.Premise;
 
 import java.io.Serializable;
 import java.lang.annotation.Retention;
@@ -455,7 +456,7 @@ public final class Bundle extends BaseBundle implements Cloneable, Parcelable {
 
     /** {@hide} */
     @Override
-    @Adapted(reason = "a Binder value throws")
+    @Adapted(reason = "a Binder value throws", premise = Premise.ABSENT_TYPE)
     public void putObject(@Nullable String key, @Nullable Object value) {
         if (value instanceof Byte) {
             putByte(key, (Byte) value);
