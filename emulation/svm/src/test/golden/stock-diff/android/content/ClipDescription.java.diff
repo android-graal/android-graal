@@ -1,0 +1,60 @@
+--- a/emulation/svm/src/main/java/android/content/ClipDescription.java
++++ b/emulation/svm/src/main/java/android/content/ClipDescription.java
+@@ -27,9 +27,9 @@
+ import android.util.ArrayMap;
+ import android.util.TimeUtils;
+ import android.util.proto.ProtoOutputStream;
+-import android.view.textclassifier.TextClassifier;
+-import android.view.textclassifier.TextLinks;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.lang.annotation.Retention;
+ import java.lang.annotation.RetentionPolicy;
+ import java.util.ArrayList;
+@@ -49,6 +49,7 @@
+  * </div>
+  */
+ @android.ravenwood.annotation.RavenwoodKeepWholeClass
++@Emulated
+ public class ClipDescription implements Parcelable {
+     /**
+      * The MIME type for a clip holding plain text.
+@@ -455,7 +456,7 @@
+      * {@link #CLASSIFICATION_COMPLETE}
+      */
+     @FloatRange(from = 0.0, to = 1.0)
+-    public float getConfidenceScore(@NonNull @TextClassifier.EntityType String entity) {
++    public float getConfidenceScore(@NonNull String entity) {
+         if (mClassificationStatus != CLASSIFICATION_COMPLETE) {
+             throw new IllegalStateException("Classification not complete");
+         }
+@@ -554,28 +555,6 @@
+         return !first;
+     }
+ 
+-    /** @hide */
+-    public void dumpDebug(ProtoOutputStream proto, long fieldId) {
+-        final long token = proto.start(fieldId);
+-
+-        final int size = mMimeTypes.size();
+-        for (int i = 0; i < size; i++) {
+-            proto.write(ClipDescriptionProto.MIME_TYPES, mMimeTypes.get(i));
+-        }
+-
+-        if (mLabel != null) {
+-            proto.write(ClipDescriptionProto.LABEL, mLabel.toString());
+-        }
+-        if (mExtras != null) {
+-            mExtras.dumpDebug(proto, ClipDescriptionProto.EXTRAS);
+-        }
+-        if (mTimeStamp > 0) {
+-            proto.write(ClipDescriptionProto.TIMESTAMP_MS, mTimeStamp);
+-        }
+-
+-        proto.end(token);
+-    }
+-
+     @Override
+     public int describeContents() {
+         return 0;

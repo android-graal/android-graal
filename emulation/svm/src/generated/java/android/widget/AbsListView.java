@@ -16,7 +16,7 @@ package android.widget;
  * @attr ref android.R.styleable#AbsListView_smoothScrollbar
  * @attr ref android.R.styleable#AbsListView_choiceMode
  */
-public final class AbsListView {
+public final class AbsListView implements Filter.FilterListener {
     /**
      * The list allows multiple choices
      */
@@ -60,6 +60,11 @@ public final class AbsListView {
      * @see #setTranscriptMode(int)
      */
     public static final int TRANSCRIPT_MODE_NORMAL = 1;
+
+    @Override
+    public void onFilterComplete(int count) {
+        throw new UnsupportedOperationException();
+    }
 
     private AbsListView() {
     }

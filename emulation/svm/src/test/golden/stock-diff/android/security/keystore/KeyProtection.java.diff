@@ -1,0 +1,25 @@
+--- a/emulation/svm/src/main/java/android/security/keystore/KeyProtection.java
++++ b/emulation/svm/src/main/java/android/security/keystore/KeyProtection.java
+@@ -21,12 +21,11 @@
+ import android.annotation.NonNull;
+ import android.annotation.Nullable;
+ import android.annotation.TestApi;
+-import android.app.KeyguardManager;
+-import android.hardware.biometrics.BiometricManager;
+-import android.hardware.biometrics.BiometricPrompt;
+ import android.security.GateKeeper;
+ import android.security.keystore2.KeymasterUtils;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.security.Key;
+ import java.security.KeyStore.ProtectionParameter;
+ import java.security.Signature;
+@@ -219,6 +218,7 @@
+  * ...
+  * }</pre>
+  */
++@Emulated
+ public final class KeyProtection implements ProtectionParameter, UserAuthArgs {
+     private final Date mKeyValidityStart;
+     private final Date mKeyValidityForOriginationEnd;

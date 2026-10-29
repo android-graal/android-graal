@@ -1,0 +1,40 @@
+--- a/emulation/svm/src/main/java/android/os/TokenWatcher.java
++++ b/emulation/svm/src/main/java/android/os/TokenWatcher.java
+@@ -18,6 +18,10 @@
+ 
+ import android.util.Log;
+ 
++import org.androidgraal.hosted.annotate.Adapted;
++import org.androidgraal.hosted.annotate.Emulated;
++import org.androidgraal.hosted.annotate.Premise;
++
+ import java.io.PrintWriter;
+ import java.util.ArrayList;
+ import java.util.Set;
+@@ -34,6 +38,7 @@
+  * #released} method is invoked on the specified handler whenever the size of
+  * the watched collection becomes zero.
+  */
++@Emulated
+ public abstract class TokenWatcher
+ {
+     /**
+@@ -207,17 +212,9 @@
+             cleanup(token, false);
+         }
+ 
++        @Adapted(reason = "empty", premise = Premise.NO_FINALIZER)
+         protected void finalize() throws Throwable
+         {
+-            try {
+-                if (token != null) {
+-                    Log.w(mTag, "cleaning up leaked reference: " + tag);
+-                    release(token);
+-                }
+-            }
+-            finally {
+-                super.finalize();
+-            }
+         }
+     }
+ 

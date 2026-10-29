@@ -9,7 +9,7 @@ package android.widget;
  * not work if the merged Cursors have overlapping values in their "_id"
  * columns.
  */
-public final class CursorAdapter {
+public final class CursorAdapter implements Filterable {
     /**
      * If set the adapter will call requery() on the cursor whenever a content change
      * notification is delivered. Implies {@link #FLAG_REGISTER_CONTENT_OBSERVER}.
@@ -31,6 +31,11 @@ public final class CursorAdapter {
      * {@link android.content.CursorLoader}.
      */
     public static final int FLAG_REGISTER_CONTENT_OBSERVER = 2;
+
+    @Override
+    public Filter getFilter() {
+        throw new UnsupportedOperationException();
+    }
 
     private CursorAdapter() {
     }

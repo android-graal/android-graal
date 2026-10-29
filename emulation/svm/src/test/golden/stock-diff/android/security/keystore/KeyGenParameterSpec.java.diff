@@ -1,0 +1,27 @@
+--- a/emulation/svm/src/main/java/android/security/keystore/KeyGenParameterSpec.java
++++ b/emulation/svm/src/main/java/android/security/keystore/KeyGenParameterSpec.java
+@@ -22,14 +22,13 @@
+ import android.annotation.Nullable;
+ import android.annotation.SystemApi;
+ import android.annotation.TestApi;
+-import android.app.KeyguardManager;
+ import android.compat.annotation.UnsupportedAppUsage;
+-import android.hardware.biometrics.BiometricManager;
+-import android.hardware.biometrics.BiometricPrompt;
+ import android.os.Build;
+ import android.security.GateKeeper;
+ import android.text.TextUtils;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.math.BigInteger;
+ import java.security.KeyPairGenerator;
+ import java.security.Signature;
+@@ -284,6 +283,7 @@
+  * return key.decrypt(ciphertext, associatedData);
+  * }</pre>
+  */
++@Emulated
+ public final class KeyGenParameterSpec implements AlgorithmParameterSpec, UserAuthArgs {
+     private static final X500Principal DEFAULT_ATTESTATION_CERT_SUBJECT =
+             new X500Principal("CN=Android Keystore Key");

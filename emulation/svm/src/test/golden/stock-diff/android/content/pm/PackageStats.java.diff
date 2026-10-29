@@ -1,0 +1,27 @@
+--- a/emulation/svm/src/main/java/android/content/pm/PackageStats.java
++++ b/emulation/svm/src/main/java/android/content/pm/PackageStats.java
+@@ -17,7 +17,6 @@
+ package android.content.pm;
+ 
+ import android.annotation.Nullable;
+-import android.app.usage.StorageStatsManager;
+ import android.compat.annotation.UnsupportedAppUsage;
+ import android.os.Build;
+ import android.os.Parcel;
+@@ -25,6 +24,8 @@
+ import android.os.UserHandle;
+ import android.text.TextUtils;
+ 
++import org.androidgraal.hosted.annotate.Emulated;
++
+ import java.util.Objects;
+ 
+ /**
+@@ -35,6 +36,7 @@
+  *             {@link StorageStatsManager} APIs.
+  */
+ @Deprecated
++@Emulated
+ public class PackageStats implements Parcelable {
+     /** Name of the package to which this stats applies. */
+     public String packageName;
