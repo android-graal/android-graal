@@ -7,6 +7,7 @@ internal object JavaNames {
     private const val HELPER_PACKAGE = "org.androidgraal.android"
     private const val C_TYPE_PACKAGE = "org.graalvm.nativeimage.c.type"
     private const val C_FUNCTION_PACKAGE = "org.graalvm.nativeimage.c.function"
+    private const val ANNOTATE_PACKAGE = "org.androidgraal.hosted.annotate"
 
     val GLES20: ClassName = ClassName.get("android.opengl", "GLES20")
     val GLES30: ClassName = ClassName.get("android.opengl", "GLES30")
@@ -20,7 +21,9 @@ internal object JavaNames {
     val COUNTS: ClassName = ClassName.get(PACKAGE, "Counts")
     val C_STRING: ClassName = ClassName.get(HELPER_PACKAGE, "CString")
     val HANDWRITTEN: ClassName = ClassName.get(PACKAGE, "Handwritten")
-    val EMULATED: ClassName = ClassName.get("org.androidgraal.hosted.annotate", "Emulated")
+    val EMULATED: ClassName = ClassName.get(ANNOTATE_PACKAGE, "Emulated")
+    val ADAPTED: ClassName = ClassName.get(ANNOTATE_PACKAGE, "Adapted")
+    val PREMISE: ClassName = ClassName.get(ANNOTATE_PACKAGE, "Premise")
     val DEPRECATED: ClassName = ClassName.get("java.lang", "Deprecated")
     val PINNED_OBJECT: ClassName = ClassName.get("org.graalvm.nativeimage", "PinnedObject")
     val C_FUNCTION: ClassName = ClassName.get(C_FUNCTION_PACKAGE, "CFunction")

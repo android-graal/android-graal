@@ -589,7 +589,10 @@ class AndroidDeclarationsTest {
             "android/os/Parcelable", "android/os/Parcelable$ClassLoaderCreator", "android/os/Parcelable$Creator",
             "android/os/BaseBundle", "android/util/ArrayMap", "android/util/Size", "android/util/SizeF",
             "android/util/SparseBooleanArray", "android/util/SparseIntArray", "android/text/Spannable",
-            "android/text/Spannable$Factory", "android/text/SpanWatcher", "android/text/SpannableString");
+            "android/text/Spannable$Factory", "android/text/SpanWatcher", "android/text/SpannableString",
+            "org/json/JSONArray", "org/json/JSONException", "org/json/JSONObject", "org/json/JSONStringer",
+            "org/json/JSONTokener", "org/xmlpull/v1/XmlPullParser", "org/xmlpull/v1/XmlPullParserException",
+            "org/xmlpull/v1/XmlPullParserFactory", "org/xmlpull/v1/XmlSerializer", "org/xmlpull/v1/sax2/Driver");
 
     private static final Map<String, Set<String>> PARTIAL = Map.ofEntries(Map.entry("android/content/res/AssetManager",
             Set.of("method [PUBLIC] openNonAssetFd(ILjava/lang/String;)Landroid/content/res/AssetFileDescriptor;",
@@ -3587,8 +3590,10 @@ class AndroidDeclarationsTest {
             Map.entry("android/webkit/WebResourceError", Set.of("method [PUBLIC] <init>()V")),
             Map.entry("android/webkit/WebResourceResponse", Set.of(
                     "method [PUBLIC] <init>(ZLjava/lang/String;Ljava/lang/String;ILjava/lang/String;Ljava/util/Map;Ljava/io/InputStream;)V")),
-            Map.entry("android/widget/Filter", Set.of("method [PUBLIC] setDelayer(Landroid/widget/Filter$Delayer;)V",
-                    "nested android/widget/Filter$Delayer")));
+            Map.entry("android/widget/Filter",
+                    Set.of("method [PUBLIC] setDelayer(Landroid/widget/Filter$Delayer;)V",
+                            "nested android/widget/Filter$Delayer")),
+            Map.entry("org/json/JSONObject", Set.of("method [PUBLIC] keySet()Ljava/util/Set;")));
 
     private static final Set<String> HIDDEN_CLASSES = Set.of("android/util/Slog", "android/os/SystemProperties",
             "android/annotation/CallbackExecutor", "android/os/HandlerExecutor", "android/os/IMessenger",
@@ -3667,7 +3672,9 @@ class AndroidDeclarationsTest {
             "android/security/keystore/ArrayUtils", "android/security/keystore/UserAuthArgs",
             "android/security/keystore/Utils", "android/security/keystore2/KeymasterUtils",
             "android/system/keystore2/ResponseCode", "android/telephony/UiccAccessRule", "android/util/IntArray",
-            "android/util/PackageUtils", "android/view/textclassifier/SystemTextClassifierMetadata");
+            "android/util/PackageUtils", "android/view/textclassifier/SystemTextClassifierMetadata",
+            "com/android/org/kxml2/io/KXmlParser", "com/android/org/kxml2/io/KXmlSerializer",
+            "libcore/internal/StringPool", "org/json/JSON");
 
     private static final Map<String, Set<String>> MISSING_INTERFACES = Map.of("android/os/Binder",
             Set.of("android/os/IBinder"));
@@ -3714,7 +3721,8 @@ class AndroidDeclarationsTest {
     }
 
     private static boolean isSwept(Tree tree, String internalName) {
-        if (internalName.startsWith("android/")) {
+        if (internalName.startsWith("android/") || internalName.startsWith("org/json/")
+                || internalName.startsWith("org/xmlpull/")) {
             return true;
         }
         try {
@@ -3759,6 +3767,24 @@ class AndroidDeclarationsTest {
     }
 
     @Test
+    void everyCopyCarriesEmulated() throws IOException {
+        Path root = Tree.EMULATIONS.root();
+        Set<String> outermost = new TreeSet<>();
+        try (Stream<Path> files = Files.walk(root)) {
+            files.map(root::relativize).map(path -> path.toString().replace('\\', '/'))
+                    .filter(name -> name.endsWith(".class") && !name.startsWith("org/androidgraal/"))
+                    .forEach(name -> outermost.add(name.substring(0, name.length() - 6).split("\\$")[0]));
+        }
+        Set<String> unmarked = new TreeSet<>();
+        for (String name : outermost) {
+            if (!isEmulated(ClassFile.of().parse(Tree.EMULATIONS.classFile(name)))) {
+                unmarked.add(name);
+            }
+        }
+        assertTrue(unmarked.isEmpty(), "copies without @Emulated: " + unmarked);
+    }
+
+    @Test
     void everyJdkOverrideOverridesFileInputStream() throws ReflectiveOperationException {
         for (Set<String> overrides : JDK_OVERRIDES.values()) {
             for (String override : overrides) {
@@ -3783,9 +3809,6 @@ class AndroidDeclarationsTest {
             ZipEntry entry = jar.getEntry(internalName + ".class");
             if (HIDDEN_CLASSES.contains(internalName.split("\\$")[0])) {
                 assertEquals(Tree.EMULATIONS, tree, internalName + " is hidden and declared");
-                if (internalName.startsWith("android/")) {
-                    assertTrue(emulated, internalName + " is hidden and carries no @Emulated");
-                }
                 assertFalse(entry != null && isPublic(jar, entry),
                         internalName + " is listed as hidden, public in android.jar");
                 return;
@@ -3823,9 +3846,6 @@ class AndroidDeclarationsTest {
             missing.removeAll(members(ours, true));
             assertTrue(missing.isEmpty(), "missing constants: " + missing);
             return;
-        }
-        if (internalName.startsWith("android/")) {
-            assertTrue(emulated, internalName + " is written by hand and carries no @Emulated");
         }
         Set<String> declaredByUs = declarations(ours, true);
         if (!visibleSuperclass.equals(superclass)) {

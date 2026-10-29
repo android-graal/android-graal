@@ -36,6 +36,24 @@
       "serializable": true
     },
     {
+      "type": "com.android.org.kxml2.io.KXmlParser",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
+      "type": "com.android.org.kxml2.io.KXmlSerializer",
+      "methods": [
+        {
+          "name": "<init>",
+          "parameterTypes": []
+        }
+      ]
+    },
+    {
       "type": "double[]",
       "serializable": true
     },

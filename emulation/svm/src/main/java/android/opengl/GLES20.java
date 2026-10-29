@@ -9,7 +9,9 @@ import org.androidgraal.android.Pointer;
 import org.androidgraal.gles.Counts;
 import org.androidgraal.gles.GLESv2;
 import org.androidgraal.gles.Handwritten;
+import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Emulated;
+import org.androidgraal.hosted.annotate.Premise;
 import org.graalvm.nativeimage.PinnedObject;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
 import org.graalvm.word.WordFactory;
@@ -1132,6 +1134,7 @@ public class GLES20 {
         }
     }
 
+    @Adapted(reason = "decodes the driver's bytes as standard UTF-8", premise = Premise.STANDARD_UTF8)
     public static String glGetString(int name) {
         return CString.toJava(GLESv2.glGetString(name));
     }

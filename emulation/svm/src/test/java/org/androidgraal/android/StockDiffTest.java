@@ -33,7 +33,8 @@ class StockDiffTest {
 
     private static final int CONTEXT = 3;
 
-    private static final List<String> TOP_LEVEL = List.of("android/", "libcore/", "com/", "dalvik/");
+    private static final List<String> TOP_LEVEL = List.of("android/", "libcore/", "com/", "dalvik/", "org/json/",
+            "org/xmlpull/");
 
     private static final List<String> EMULATED = List.of("", "@Emulated",
             "import org.androidgraal.hosted.annotate.Emulated;");

@@ -20,6 +20,11 @@ import javax.lang.model.element.Modifier.STATIC
 private const val EGL_GET_PROC_ADDRESS = "eglGetProcAddress"
 private const val UNAVAILABLE = " is not available on this device"
 
+private val DECODES_STANDARD_UTF8: AnnotationSpec = AnnotationSpec.builder(JavaNames.ADAPTED)
+    .addMember("reason", "\$S", "decodes the driver's bytes as standard UTF-8")
+    .addMember("premise", "\$T.STANDARD_UTF8", JavaNames.PREMISE)
+    .build()
+
 internal object Sources {
     fun bindingsOf(library: Library, functions: List<CFunction>): JavaFile {
         val methods = functions.map { function ->
@@ -149,6 +154,7 @@ internal object Sources {
             .addModifiers(PUBLIC, STATIC)
             .returns(member.returns)
             .addParameters(member.parameters)
+        if (member.result == Result.TEXT) method.addAnnotation(DECODES_STANDARD_UTF8)
         if (member.resources.isEmpty()) return method.addStatement(member.statement).build()
         return method.beginControlFlow("try (\$>\$>\$L\$<\$<)", CodeBlock.join(member.resources, ";\n"))
             .addStatement(member.statement)

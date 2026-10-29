@@ -9,6 +9,8 @@ internal sealed interface Member {
 
     val returns: TypeName
 
+    val result: Result
+
     val parameters: List<ParameterSpec>
 
     val resources: List<CodeBlock>
@@ -34,7 +36,7 @@ internal class Wrapper(
     override val returns: TypeName,
     function: CFunction,
     args: List<Arg>,
-    result: Result,
+    override val result: Result,
 ) : Member {
     private val binding = function.library.binding
 
@@ -57,7 +59,7 @@ internal class ByHand(
     override val returns: TypeName,
     override val parameters: List<ParameterSpec>,
 ) : Member {
-    private val result: Result = if (returns == TypeName.VOID) Result.VOID else Result.VALUE
+    override val result: Result = if (returns == TypeName.VOID) Result.VOID else Result.VALUE
 
     override val resources: List<CodeBlock> = emptyList()
 

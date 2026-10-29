@@ -22,6 +22,14 @@
     <init>(boolean);
 }
 
+# reachability-metadata.json names the types and the constructors XmlPullParserFactory instantiates by name.
+-keep class com.android.org.kxml2.io.KXmlParser {
+    <init>();
+}
+-keep class com.android.org.kxml2.io.KXmlSerializer {
+    <init>();
+}
+
 # reachability-metadata.json names the types whose annotated fields HealthKeys reads.
 -keepnames class android.os.health.*HealthStats
 -keepclassmembers,allowobfuscation class android.os.health.*HealthStats {
