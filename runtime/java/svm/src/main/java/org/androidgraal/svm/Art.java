@@ -156,6 +156,7 @@ public final class Art {
     public static void installUncaughtExceptionHandler() {
         if (Thread.getDefaultUncaughtExceptionHandler() == null) {
             Thread.setDefaultUncaughtExceptionHandler((_, t) -> handleUncaughtException(thread().env, t));
+            Thread.currentThread().setUncaughtExceptionHandler((_, t) -> handleUncaughtException(thread().env, t));
         }
     }
 
