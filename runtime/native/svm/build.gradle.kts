@@ -4,6 +4,7 @@ import org.androidgraal.buildlogic.Script
 import org.androidgraal.buildlogic.nativeInput
 import org.androidgraal.buildlogic.nativeOutput
 import org.androidgraal.common.Target
+import org.androidgraal.common.Toolchain
 
 plugins {
     id("androidgraal.native")
@@ -57,8 +58,11 @@ for (target in Target.entries) {
         val jvmPosixDir = source("jvmPosix", substratevm.resolve("src/com.oracle.svm.native.jvm.posix"))
         val containerDir = source("libcontainer", substratevm.resolve("src/com.oracle.svm.native.libcontainer"))
         val androidgraalDir = source("androidgraal", file("src/androidgraal"))
+        val isolatePreamble =
+            source("isolatePreamble", substratevm.resolve("src/com.oracle.svm.core/headers/graal_isolate.preamble"))
         source("ndk", nativeHost.ndk.root)
         val obj = root("obj", dir("obj"))
+        val include = root("include", dir("include"))
         val lib = output(Native.Svm.staticLibs.getValue(target), dir("lib"))
 
         val toolchain = rel(nativeHost.ndk.toolchain)
@@ -94,15 +98,18 @@ for (target in Target.entries) {
             listOf(targetFlag) + containerCFlags,
             containerCxxFlags,
         )
+        delete(include)
+        copyFile(isolatePreamble, "$include/graal_isolate.h")
         staticLib(
             "$lib/libandroidgraal.a",
             "$obj/androidgraal",
             listOf(androidgraalDir),
             clang,
-            emptyList(),
+            listOf(include),
             listOf(targetFlag) + commonCFlags,
             emptyList(),
         )
+        copy("$androidgraalDir/${Toolchain.ANDROIDGRAAL_SYMBOLS}", lib)
     }
     nativeOutput(Native.Svm.staticLibs.getValue(target), task)
     tasks.assemble { dependsOn(task) }

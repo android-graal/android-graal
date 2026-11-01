@@ -3,9 +3,11 @@ package org.androidgraal.art;
 import android.content.Context;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.ServiceConfigurationError;
+import java.util.TimeZone;
 import org.androidgraal.shared.Blocks;
 import org.androidgraal.shared.Handles;
 import org.androidgraal.shared.MarshalledException;
@@ -103,7 +105,7 @@ public final class Image {
         } catch (UnsatisfiedLinkError e) {
             throw new ImageStartException("loading " + library + " failed", e);
         }
-        long thread = createIsolate();
+        long thread = createIsolate(getIsolateOptions());
         if (thread == 0L) {
             throw new ImageStartException("creating the isolate of " + library + " failed");
         }
@@ -117,6 +119,16 @@ public final class Image {
         }
         detachThreadOnExit(thread);
         isolate = getIsolate(thread);
+    }
+
+    private static String[] getIsolateOptions() {
+        List<String> options = new ArrayList<>();
+        String tmpdir = System.getProperty("java.io.tmpdir");
+        if (tmpdir != null) {
+            options.add("-Djava.io.tmpdir=" + tmpdir);
+        }
+        options.add("-Duser.timezone=" + TimeZone.getDefault().getID());
+        return options.toArray(new String[0]);
     }
 
     private static void loadContracts() {
@@ -226,7 +238,7 @@ public final class Image {
         }
     }
 
-    private static native long createIsolate();
+    private static native long createIsolate(String[] options);
 
     private static native long getIsolate(long thread);
 

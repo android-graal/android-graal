@@ -1,6 +1,7 @@
 package org.androidgraal.substrate
 
 import org.androidgraal.common.Target
+import org.androidgraal.common.Toolchain
 import org.androidgraal.common.ToolchainLayout
 import org.apache.commons.io.FileUtils
 import java.io.File
@@ -35,6 +36,7 @@ class ImageLinkerTest {
                 "$objects/hello.o",
                 "$objects/llvm.o",
                 "-Wl,--version-script,$objects/exported_symbols.list",
+                "-Wl,--version-script,${targetLayout.linkScript}",
                 "-Wl,--no-undefined",
                 "-Wl,--start-group",
                 "${targetLayout.svmLibs}/liblibchelper.a",
@@ -69,6 +71,7 @@ class ImageLinkerTest {
                 "$tmp/jniLibs/arm64-v8a/libhello.so",
                 "$objects/hello.o",
                 "-Wl,--version-script,$objects/exported_symbols.list",
+                "-Wl,--version-script,${targetLayout.linkScript}",
                 "-Wl,--no-undefined",
                 "-Wl,--gc-sections",
                 "-Wl,--start-group",
@@ -105,6 +108,7 @@ class ImageLinkerTest {
                 "$objects/hello.o",
                 "$objects/llvm.o",
                 "-Wl,--version-script,$objects/exported_symbols.list",
+                "-Wl,--version-script,${targetLayout.linkScript}",
                 "-Wl,--no-undefined",
                 "-Wl,--start-group",
                 "${targetLayout.jdkLibs}/libjava.a",
@@ -177,15 +181,12 @@ class ImageLinkerTest {
     fun `link packages what the linker produced`() {
         val toolchain = fakeToolchain()
         val config = config(toolchain, tmp.resolve("objects"))
+        writeScript(config, "{", "local: *;", "};")
         val stale = config.outputDir.resolve(ABI).resolve("stale.so")
         stale.parentFile.mkdirs()
         stale.writeText("old")
-        val runner = ProcessRunner { command, _ ->
-            File(command[command.indexOf("-o") + 1]).writeText("ELF")
-            0
-        }
 
-        val image = ImageLinker(config, runner).link()
+        val image = ImageLinker(config, producingRunner).link()
 
         assertEquals(config.outputDir.resolve(ABI).resolve("libhello.so"), image)
         assertEquals("ELF", image.readText())
@@ -195,6 +196,7 @@ class ImageLinkerTest {
     @Test
     fun `link names the exit code when the linker fails`() {
         val config = config(fakeToolchain(), tmp.resolve("objects"))
+        writeScript(config, "{", "local: *;", "};")
         val runner = ProcessRunner { _, _ -> 1 }
 
         val failure = assertFailsWith<IllegalStateException> { ImageLinker(config, runner).link() }
@@ -228,6 +230,14 @@ class ImageLinkerTest {
         )
     }
 
+    private fun script(vararg lines: String): String = lines.joinToString("\n", postfix = "\n")
+
+    private fun writeScript(config: ImageLinker.Config, vararg lines: String) {
+        val file = config.compiled.exportedSymbols
+        file.parentFile.mkdirs()
+        file.writeText(script(*lines))
+    }
+
     private fun listOfObjects(objects: File, useLLVM: Boolean): List<File> {
         return if (useLLVM) {
             listOf(objects.resolve("hello.o"), objects.resolve("llvm.o"))
@@ -236,9 +246,22 @@ class ImageLinkerTest {
         }
     }
 
-    private fun fakeToolchain(): File = tmp.resolve("toolchain")
+    private fun fakeToolchain(): File {
+        val root = tmp.resolve("toolchain")
+        for (target in Target.entries) {
+            val svmLibs = ToolchainLayout(root).target(target).svmLibs
+            svmLibs.mkdirs()
+            svmLibs.resolve(Toolchain.ANDROIDGRAAL_SYMBOLS).writeText("first\n\n  second  \n")
+        }
+        return root
+    }
 
     private val noRunner = ProcessRunner { _, _ -> 0 }
+
+    private val producingRunner = ProcessRunner { command, _ ->
+        File(command[command.indexOf("-o") + 1]).writeText("ELF")
+        0
+    }
 }
 
 private val ABI = Target.AARCH64.abi.abiString

@@ -14,9 +14,6 @@ final class Entry {
     private Entry() {
     }
 
-    @CEntryPoint(name = "Java_org_androidgraal_art_Image_createIsolate", builtin = Builtin.CREATE_ISOLATE)
-    private static native long createIsolate(JNIEnv env, JClass clazz);
-
     @CEntryPoint(name = "Java_org_androidgraal_art_Image_getIsolate", builtin = Builtin.GET_ISOLATE)
     private static native long getIsolate(JNIEnv env, JClass clazz, @IsolateThreadContext long thread);
 

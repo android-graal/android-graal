@@ -17,6 +17,9 @@ object Toolchain {
 
     val SVM_LIBS: List<String> = listOf("liblibchelper.a", "libjvm.a", "libsvm_container.a", "libandroidgraal.a")
 
+    /** The symbols `libandroidgraal.a` exports to ART, one per line, beside the archive. */
+    const val ANDROIDGRAAL_SYMBOLS = "libandroidgraal.symbols"
+
     /** The static libraries `make static-libs` produces. */
     val JDK_LIBS: List<String> = listOf(
         "libattach.a", "libextnet.a", "libj2gss.a", "libj2pcsc.a", "libj2pkcs11.a", "libjaas.a", "libjava.a",

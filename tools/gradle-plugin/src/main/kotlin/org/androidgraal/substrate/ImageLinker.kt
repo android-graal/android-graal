@@ -27,6 +27,7 @@ class ImageLinker(private val config: Config, private val runner: ProcessRunner)
         image().absolutePath,
         *config.compiled.objects.map { it.absolutePath }.toTypedArray(),
         "-Wl,--version-script," + config.compiled.exportedSymbols.absolutePath,
+        "-Wl,--version-script," + config.toolchain.target(config.target).linkScript,
         "-Wl,--no-undefined",
         *argsIf(!config.useLLVM, "-Wl,--gc-sections"),
         "-Wl,--start-group",

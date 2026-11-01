@@ -132,6 +132,19 @@ data class CopyStep(val source: String, val target: String, val includes: List<S
     }
 }
 
+data class CopyFileStep(val source: String, val target: String) : Step {
+
+    override fun run(context: RunContext) {
+        val sourceFile = File(context.unwrap(source))
+        val targetFile = File(context.unwrap(target))
+        if (!sourceFile.isFile) {
+            throw GradleException("${context.script.name}: no file $sourceFile to copy")
+        }
+        sourceFile.copyTo(targetFile, overwrite = true)
+        context.log.line("=== copied $sourceFile -> $targetFile")
+    }
+}
+
 data class RsyncStep(val from: String, val into: String, val excludes: List<String>) : Step {
 
     override fun run(context: RunContext) {
@@ -140,6 +153,7 @@ data class RsyncStep(val from: String, val into: String, val excludes: List<Stri
         // GNU rsync creates only the last component of the destination.
         File(context.unwrap(into)).mkdirs()
         context.execute(command, capture = false)
+        context.log.line("=== rsync'ed $from -> $into")
     }
 }
 

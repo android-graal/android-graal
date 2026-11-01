@@ -1,0 +1,6 @@
+{
+  global:
+    Java_org_androidgraal_art_Image_createIsolate;
+  local:
+    *;
+};

@@ -170,6 +170,8 @@ abstract class Script :
 
     override fun copy(from: String, into: String, vararg include: String) = builder.copy(from, into, *include)
 
+    override fun copyFile(from: String, to: String) = builder.copyFile(from, to)
+
     override fun rsync(from: String, into: String, vararg exclude: String) = builder.rsync(from, into, *exclude)
 
     override fun staticLib(

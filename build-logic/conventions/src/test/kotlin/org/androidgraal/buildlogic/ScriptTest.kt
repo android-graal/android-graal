@@ -266,6 +266,19 @@ class ScriptTest {
     }
 
     @Test
+    fun `a file copy writes the file under its new name`() {
+        val header = File(tmp, "headers/graal_isolate.preamble")
+        header.parentFile.mkdirs()
+        header.writeText("struct")
+        val copy = File(tmp, "include/graal_isolate.h")
+
+        CopyFileStep(header.path, copy.path).run(RunContext(script(), ByteArrayOutputStream()))
+
+        assertEquals("struct", copy.readText())
+        assertEquals(listOf("graal_isolate.h"), copy.parentFile.list()?.toList())
+    }
+
+    @Test
     fun `a source directory declares its tree, minus git, and a root`() {
         val clone = File(tmp, "clone")
         File(clone, "src").mkdirs()
@@ -520,6 +533,31 @@ class ScriptTest {
             listOf("=== after the expectation", "=== script finished after <s> s"),
             script.timedLog().takeLast(2),
         )
+    }
+
+    @Test
+    fun `a capture binds the last non-blank line of the output`() {
+        val script = script()
+        val last = script.capture("last", "/usr/bin/printf", "a\\nb\\n\\n")
+        script.expect(last, "b", "last is $last, not b")
+        script.progress("after the expectation")
+
+        script.runScript()
+
+        assertEquals(
+            listOf("=== after the expectation", "=== script finished after <s> s"),
+            script.timedLog().takeLast(2),
+        )
+    }
+
+    @Test
+    fun `a capture of no output fails the script`() {
+        val script = script()
+        script.capture("empty", "/usr/bin/true")
+
+        val failure = assertFailsWith<GradleException> { script.runScript() }
+
+        assertEquals("${script.name}: /usr/bin/true printed nothing to capture as empty", failure.cause!!.message)
     }
 
     @Test

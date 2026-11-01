@@ -24,6 +24,9 @@ interface StepScope {
      */
     fun copy(from: String, into: String, vararg include: String)
 
+    /** Copies the file [from] to the path [to], not into a directory. */
+    fun copyFile(from: String, to: String)
+
     /** `rsync -a --delete --exclude=<x>... <from>/ <into>/`. */
     fun rsync(from: String, into: String, vararg exclude: String)
 
@@ -105,6 +108,12 @@ class StepBuilder(private val check: (String) -> Unit, private val reserve: (Str
         check(into)
         include.forEach(check)
         stepList += CopyStep(from, into, include.toList())
+    }
+
+    override fun copyFile(from: String, to: String) {
+        check(from)
+        check(to)
+        stepList += CopyFileStep(from, to)
     }
 
     override fun rsync(from: String, into: String, vararg exclude: String) {

@@ -24,6 +24,8 @@ class ToolchainLayout(val root: File) {
         val svmLibs: File = root.resolve("svm")
 
         val capCache: File = root.resolve("capcache")
+
+        val linkScript = svmLibs.resolve(Toolchain.ANDROIDGRAAL_SYMBOLS)
     }
 
     fun version(): ToolchainVersion = ToolchainVersion.read(versionFile)
@@ -57,6 +59,9 @@ class ToolchainLayout(val root: File) {
                 check(targetLayout.svmLibs.resolve(library).isFile) {
                     "no $library in ${targetLayout.svmLibs}"
                 }
+            }
+            check(targetLayout.svmLibs.resolve(Toolchain.ANDROIDGRAAL_SYMBOLS).isFile) {
+                "no ${Toolchain.ANDROIDGRAAL_SYMBOLS} in ${targetLayout.svmLibs}"
             }
             for (cap in Toolchain.CAP_CACHE) {
                 check(targetLayout.capCache.resolve(cap).isFile) {

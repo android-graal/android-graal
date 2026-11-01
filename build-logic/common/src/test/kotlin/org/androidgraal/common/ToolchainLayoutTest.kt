@@ -64,6 +64,17 @@ class ToolchainLayoutTest {
     }
 
     @Test
+    fun `validate names a missing libandroidgraal symbols file`() {
+        val layout = ToolchainLayout(fakeToolchain())
+        val targetLayout = layout.target(Target.ARM32)
+        targetLayout.svmLibs.resolve("libandroidgraal.symbols").delete()
+
+        val failure = assertFailsWith<IllegalStateException> { layout.validate() }
+
+        assertTrue("no libandroidgraal.symbols in ${targetLayout.svmLibs}" in failure.message!!, failure.message)
+    }
+
+    @Test
     fun `validate names a missing JNI_JNIHeaderDirectives cap`() {
         val layout = ToolchainLayout(fakeToolchain())
         val targetLayout = layout.target(Target.AARCH64)
@@ -118,6 +129,7 @@ class ToolchainLayoutTest {
                 .forEach { it.mkdirs() }
             Toolchain.JDK_LIBS.forEach { targetLayout.jdkLibs.resolve(it).writeText("") }
             Toolchain.SVM_LIBS.forEach { targetLayout.svmLibs.resolve(it).writeText("") }
+            targetLayout.svmLibs.resolve(Toolchain.ANDROIDGRAAL_SYMBOLS).writeText("")
             Toolchain.CAP_CACHE.forEach { targetLayout.capCache.resolve(it).writeText("") }
         }
         return root

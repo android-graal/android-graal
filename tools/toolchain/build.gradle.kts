@@ -78,6 +78,7 @@ val assembleToolchain = tasks.register<Sync>("assembleToolchain") {
         from(svmStaticLibsInputs.getValue(target)) {
             into("targets/${target.triple}/svm")
             include(Toolchain.SVM_LIBS)
+            include(Toolchain.ANDROIDGRAAL_SYMBOLS)
         }
         from(capCacheInputs.getValue(target)) {
             into("targets/${target.triple}/capcache")
