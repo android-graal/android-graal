@@ -20,6 +20,7 @@ import android.annotation.IntDef;
 import dalvik.system.CloseGuard;
 
 import org.androidgraal.hosted.annotate.Adapted;
+import org.androidgraal.hosted.annotate.Added;
 import org.androidgraal.hosted.annotate.Emulated;
 import org.androidgraal.hosted.annotate.Premise;
 
@@ -194,12 +195,14 @@ public final class SensorDirectChannel implements Channel {
     }
 
     /** @hide */
+    @Adapted(reason = "calls releaseWhenUnreachable", premise = Premise.NO_FINALIZER)
     SensorDirectChannel(SensorManager manager, int id, int type, long size) {
         mManager = manager;
         mNativeHandle = id;
         mType = type;
         mSize = size;
         mCloseGuard.open("SensorDirectChannel");
+        releaseWhenUnreachable(this);
     }
 
     /** @hide */
@@ -208,8 +211,20 @@ public final class SensorDirectChannel implements Channel {
     }
 
     @Override
-    @Adapted(reason = "empty", premise = Premise.NO_FINALIZER)
     protected void finalize() throws Throwable {
+        try {
+            if (mCloseGuard != null) {
+                mCloseGuard.warnIfOpen();
+            }
+
+            close();
+        } finally {
+            super.finalize();
+        }
+    }
+
+    @Added(reason = "has no sensor service channel to destroy")
+    public static void releaseWhenUnreachable(SensorDirectChannel channel) {
     }
 
     private final AtomicBoolean mClosed = new AtomicBoolean();

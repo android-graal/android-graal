@@ -9,13 +9,15 @@
  import android.compat.annotation.UnsupportedAppUsage;
  import android.ravenwood.annotation.RavenwoodKeepWholeClass;
  import android.ravenwood.annotation.RavenwoodRedirect;
-@@ -36,6 +34,13 @@
+@@ -36,11 +34,21 @@
  
  import dalvik.annotation.optimization.NeverCompile;
  
 +import org.androidgraal.android.FileDescriptors;
++import org.androidgraal.android.ImageCleaner;
 +import org.androidgraal.android.NativeMessageQueue;
 +import org.androidgraal.hosted.annotate.Adapted;
++import org.androidgraal.hosted.annotate.Added;
 +import org.androidgraal.hosted.annotate.Emulated;
 +import org.androidgraal.hosted.annotate.Premise;
 +import org.androidgraal.hosted.annotate.Transcribed;
@@ -23,7 +25,13 @@
  import java.io.FileDescriptor;
  import java.lang.annotation.Retention;
  import java.lang.annotation.RetentionPolicy;
-@@ -60,7 +65,9 @@
+ import java.lang.invoke.MethodHandles;
+ import java.lang.invoke.VarHandle;
++import java.lang.ref.Cleaner;
+ import java.util.ArrayList;
+ import java.util.Iterator;
+ import java.util.NoSuchElementException;
+@@ -60,7 +68,9 @@
   */
  @RavenwoodKeepWholeClass
  @RavenwoodRedirectionClass("MessageQueue_ravenwood")
@@ -34,7 +42,17 @@
      private static final String TAG_L = "LegacyMessageQueue";
      private static final String TAG_C = "ConcurrentMessageQueue";
      private static final boolean DEBUG = false;
-@@ -115,24 +122,48 @@
+@@ -74,6 +84,9 @@
+     @SuppressWarnings("unused")
+     private long mPtr; // used by native code
+ 
++    @Added(reason = "the native queue's release, run once by dispose or by the cleaner")
++    private final Cleaner.Cleanable mCleanable;
++
+     @UnsupportedAppUsage(
+             maxTargetSdk = Build.VERSION_CODES.BAKLAVA,
+             publicAlternatives =
+@@ -115,24 +128,48 @@
      private static Boolean sIsProcessAllowedToUseConcurrent = null;
  
      @RavenwoodRedirect
@@ -79,17 +97,17 @@
 +        NativeMessageQueue.nativeSetFileDescriptorEvents(ptr, fd, events);
 +    }
  
-+    @Adapted(reason = "registers its native queue's release with a cleaner", premise = Premise.NO_FINALIZER)
++    @Adapted(reason = "calls releaseWhenUnreachable", premise = Premise.NO_FINALIZER)
      MessageQueue(boolean quitAllowed) {
          initIsProcessAllowedToUseConcurrent();
          mUseConcurrent = sIsProcessAllowedToUseConcurrent;
          mQuitAllowed = quitAllowed;
          mPtr = nativeInit();
-+        NativeMessageQueue.destroyWhenUnreachable(this, mPtr);
++        mCleanable = releaseWhenUnreachable(this, mPtr);
          mThreadName = Thread.currentThread().getName();
          mTid = Process.myTid();
      }
-@@ -195,35 +226,9 @@
+@@ -195,28 +232,6 @@
          // authors to test Looper and MessageQueue without resorting to reflection.
      }
  
@@ -116,17 +134,34 @@
 -    }
 -
      @Override
-+    @Adapted(reason = "empty", premise = Premise.NO_FINALIZER)
      protected void finalize() throws Throwable {
--        try {
--            dispose();
--        } finally {
--            super.finalize();
--        }
+         try {
+@@ -226,6 +241,11 @@
+         }
      }
  
++    @Added(reason = "registers the native queue's destruction with the image's cleaner")
++    public static Cleaner.Cleanable releaseWhenUnreachable(MessageQueue queue, long ptr) {
++        return ImageCleaner.register(queue, () -> nativeDestroy(ptr));
++    }
++
      private void decAndTraceMessageCount() {
-@@ -517,9 +522,10 @@
+         mMessageCount.decrementAndGet();
+         traceMessageCount();
+@@ -258,9 +278,11 @@
+ 
+     // Disposes of the underlying message queue.
+     // Must only be called on the looper thread or the finalizer.
++    @Adapted(reason = "destroys the native queue through its cleaner",
++            premise = Premise.NO_FINALIZER)
+     private void dispose() {
+         if (mPtr != 0) {
+-            nativeDestroy(mPtr);
++            mCleanable.clean();
+             mPtr = 0;
+         }
+     }
+@@ -517,9 +539,10 @@
      }
  
      @RavenwoodThrow(blockedBy = android.os.ParcelFileDescriptor.class)
@@ -138,7 +173,7 @@
  
          int index = -1;
          FileDescriptorRecord record = null;
-@@ -1448,64 +1454,6 @@
+@@ -1448,64 +1471,6 @@
          return null;
      }
  
@@ -203,7 +238,7 @@
      private static final class MatchHandlerWhatAndObject extends MessageCompare {
          @Override
          public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
-@@ -2229,51 +2177,6 @@
+@@ -2229,51 +2194,6 @@
          }
      }
  

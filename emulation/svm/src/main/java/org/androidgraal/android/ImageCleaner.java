@@ -2,7 +2,7 @@ package org.androidgraal.android;
 
 import java.lang.ref.Cleaner;
 
-final class ImageCleaner {
+public final class ImageCleaner {
 
     private static final Cleaner CLEANER = Cleaner.create();
 
@@ -13,8 +13,8 @@ final class ImageCleaner {
      * Runs {@code action} on the cleaner's thread once {@code object} is dead. An action that retains {@code object}
      * keeps it reachable forever. An exception thrown by an action is printed and swallowed.
      */
-    public static void register(Object object, Runnable action) {
-        CLEANER.register(object, () -> {
+    public static Cleaner.Cleanable register(Object object, Runnable action) {
+        return CLEANER.register(object, () -> {
             try {
                 action.run();
             } catch (Throwable t) {

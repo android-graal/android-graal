@@ -35,8 +35,10 @@ import android.util.proto.ProtoOutputStream;
 import dalvik.annotation.optimization.NeverCompile;
 
 import org.androidgraal.android.FileDescriptors;
+import org.androidgraal.android.ImageCleaner;
 import org.androidgraal.android.NativeMessageQueue;
 import org.androidgraal.hosted.annotate.Adapted;
+import org.androidgraal.hosted.annotate.Added;
 import org.androidgraal.hosted.annotate.Emulated;
 import org.androidgraal.hosted.annotate.Premise;
 import org.androidgraal.hosted.annotate.Transcribed;
@@ -46,6 +48,7 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.invoke.MethodHandles;
 import java.lang.invoke.VarHandle;
+import java.lang.ref.Cleaner;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
@@ -80,6 +83,9 @@ public sealed class MessageQueue permits ProxyMessageQueue {
     @UnsupportedAppUsage
     @SuppressWarnings("unused")
     private long mPtr; // used by native code
+
+    @Added(reason = "the native queue's release, run once by dispose or by the cleaner")
+    private final Cleaner.Cleanable mCleanable;
 
     @UnsupportedAppUsage(
             maxTargetSdk = Build.VERSION_CODES.BAKLAVA,
@@ -157,13 +163,13 @@ public sealed class MessageQueue permits ProxyMessageQueue {
         NativeMessageQueue.nativeSetFileDescriptorEvents(ptr, fd, events);
     }
 
-    @Adapted(reason = "registers its native queue's release with a cleaner", premise = Premise.NO_FINALIZER)
+    @Adapted(reason = "calls releaseWhenUnreachable", premise = Premise.NO_FINALIZER)
     MessageQueue(boolean quitAllowed) {
         initIsProcessAllowedToUseConcurrent();
         mUseConcurrent = sIsProcessAllowedToUseConcurrent;
         mQuitAllowed = quitAllowed;
         mPtr = nativeInit();
-        NativeMessageQueue.destroyWhenUnreachable(this, mPtr);
+        mCleanable = releaseWhenUnreachable(this, mPtr);
         mThreadName = Thread.currentThread().getName();
         mTid = Process.myTid();
     }
@@ -227,8 +233,17 @@ public sealed class MessageQueue permits ProxyMessageQueue {
     }
 
     @Override
-    @Adapted(reason = "empty", premise = Premise.NO_FINALIZER)
     protected void finalize() throws Throwable {
+        try {
+            dispose();
+        } finally {
+            super.finalize();
+        }
+    }
+
+    @Added(reason = "registers the native queue's destruction with the image's cleaner")
+    public static Cleaner.Cleanable releaseWhenUnreachable(MessageQueue queue, long ptr) {
+        return ImageCleaner.register(queue, () -> nativeDestroy(ptr));
     }
 
     private void decAndTraceMessageCount() {
@@ -263,9 +278,11 @@ public sealed class MessageQueue permits ProxyMessageQueue {
 
     // Disposes of the underlying message queue.
     // Must only be called on the looper thread or the finalizer.
+    @Adapted(reason = "destroys the native queue through its cleaner",
+            premise = Premise.NO_FINALIZER)
     private void dispose() {
         if (mPtr != 0) {
-            nativeDestroy(mPtr);
+            mCleanable.clean();
             mPtr = 0;
         }
     }

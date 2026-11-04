@@ -51,7 +51,9 @@ import libcore.io.IoUtils;
 import libcore.io.Memory;
 
 import org.androidgraal.android.FileDescriptors;
+import org.androidgraal.android.ImageCleaner;
 import org.androidgraal.hosted.annotate.Adapted;
+import org.androidgraal.hosted.annotate.Added;
 import org.androidgraal.hosted.annotate.Emulated;
 import org.androidgraal.hosted.annotate.Premise;
 import org.androidgraal.hosted.annotate.Transcribed;
@@ -65,6 +67,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InterruptedIOException;
 import java.io.UncheckedIOException;
+import java.lang.ref.Cleaner;
 import java.net.DatagramSocket;
 import java.net.Socket;
 import java.nio.ByteOrder;
@@ -113,6 +116,9 @@ public class ParcelFileDescriptor implements Parcelable, Closeable {
     private volatile boolean mClosed;
 
     private final CloseGuard mGuard = CloseGuard.get();
+
+    @Added(reason = "the leak release, cleaned by an explicit close or detach")
+    private final Cleaner.Cleanable mCleanable;
 
     /**
      * For use with {@link #open}: if {@link #MODE_CREATE} has been supplied and
@@ -180,6 +186,7 @@ public class ParcelFileDescriptor implements Parcelable, Closeable {
      * Create a new ParcelFileDescriptor wrapped around another descriptor. By
      * default all method calls are delegated to the wrapped descriptor.
      */
+    @Adapted(reason = "calls releaseWhenUnreachable", premise = Premise.NO_FINALIZER)
     public ParcelFileDescriptor(ParcelFileDescriptor wrapped) {
         // We keep a strong reference to the wrapped PFD, and rely on its
         // finalizer to trigger CloseGuard. All calls are delegated to wrapper.
@@ -187,6 +194,7 @@ public class ParcelFileDescriptor implements Parcelable, Closeable {
         mFd = null;
         mCommFd = null;
         mClosed = true;
+        mCleanable = releaseWhenUnreachable(this, mFd, mCommFd);
     }
 
     /** {@hide} */
@@ -196,7 +204,8 @@ public class ParcelFileDescriptor implements Parcelable, Closeable {
     }
 
     /** {@hide} */
-    @Adapted(reason = "without IoUtils.setFdOwner", premise = Premise.NO_FDSAN)
+    @Adapted(reason = "without IoUtils.setFdOwner, calls releaseWhenUnreachable",
+            premise = {Premise.NO_FDSAN, Premise.NO_FINALIZER})
     public ParcelFileDescriptor(FileDescriptor fd, FileDescriptor commChannel) {
         if (fd == null) {
             throw new NullPointerException("FileDescriptor must not be null");
@@ -207,6 +216,7 @@ public class ParcelFileDescriptor implements Parcelable, Closeable {
         mCommFd = commChannel;
 
         mGuard.open("close");
+        mCleanable = releaseWhenUnreachable(this, mFd, mCommFd);
     }
 
     /**
@@ -594,6 +604,8 @@ public class ParcelFileDescriptor implements Parcelable, Closeable {
      *
      * @see #canDetectErrors()
      */
+    @Adapted(reason = "cleans its registration with the cleaner after the detach",
+            premise = Premise.NO_FINALIZER)
     public int detachFd() {
         if (mWrapped != null) {
             return mWrapped.detachFd();
@@ -603,6 +615,7 @@ public class ParcelFileDescriptor implements Parcelable, Closeable {
             }
             int fd = IoUtils.acquireRawFd(mFd);
             writeCommStatusAndClose(Status.DETACHED, null);
+            mCleanable.clean();
             mClosed = true;
             mGuard.close();
             releaseResources();
@@ -652,6 +665,8 @@ public class ParcelFileDescriptor implements Parcelable, Closeable {
         }
     }
 
+    @Adapted(reason = "cleans its registration with the cleaner after the close",
+            premise = Premise.NO_FINALIZER)
     private void closeWithStatus(int status, String msg) {
         if (mClosed) return;
         mClosed = true;
@@ -661,6 +676,7 @@ public class ParcelFileDescriptor implements Parcelable, Closeable {
         // Status MUST be sent before closing actual descriptor
         writeCommStatusAndClose(status, msg);
         closeInternal(mFd);
+        mCleanable.clean();
         releaseResources();
     }
 
@@ -899,8 +915,72 @@ public class ParcelFileDescriptor implements Parcelable, Closeable {
     }
 
     @Override
-    @Adapted(reason = "empty", premise = Premise.NO_FINALIZER)
     protected void finalize() throws Throwable {
+        if (mWrapped != null) {
+            releaseResources();
+        }
+        if (mGuard != null) {
+            mGuard.warnIfOpen();
+        }
+        try {
+            if (!mClosed) {
+                // mWrapped was and is null.
+                closeWithStatus(Status.LEAKED, null);
+            }
+        } finally {
+            super.finalize();
+        }
+    }
+
+    @Added(reason = "registers a leaked descriptor's LEAKED status and close with the cleaner")
+    public static Cleaner.Cleanable releaseWhenUnreachable(ParcelFileDescriptor pfd,
+            FileDescriptor fd, FileDescriptor commFd) {
+        if (fd == null) {
+            return null;
+        }
+        return ImageCleaner.register(pfd, () -> {
+            if (fd.valid() || (commFd != null && commFd.valid())) {
+                // Status MUST be sent before closing actual descriptor
+                writeLeakedStatusAndClose(commFd);
+                closeInternal(fd);
+            }
+        });
+    }
+
+    @Added(reason = "writeCommStatusAndClose(Status.LEAKED, null) over a local buffer")
+    private static void writeLeakedStatusAndClose(FileDescriptor commFd) {
+        if (commFd == null) {
+            return;
+        }
+
+        try {
+            final byte[] buf = new byte[MAX_STATUS];
+
+            // Since we're about to close, read off any remote status.
+            final Status status = readCommStatus(commFd, buf);
+
+            // Skip writing status when other end has already gone away.
+            if (status != null) return;
+
+            try {
+                int writePtr = 0;
+
+                Memory.pokeInt(buf, writePtr, Status.LEAKED, ByteOrder.BIG_ENDIAN);
+                writePtr += 4;
+
+                // Must write the entire status as a single operation.
+                Os.write(commFd, buf, 0, writePtr);
+            } catch (ErrnoException e) {
+                // Reporting status is best-effort
+                Log.w(TAG, "Failed to report status: " + e);
+            } catch (InterruptedIOException e) {
+                // Reporting status is best-effort
+                Log.w(TAG, "Failed to report status: " + e);
+            }
+
+        } finally {
+            closeInternal(commFd);
+        }
     }
 
     @Override

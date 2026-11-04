@@ -14,11 +14,15 @@ import java.lang.classfile.AttributedElement;
 import java.lang.classfile.Attributes;
 import java.lang.classfile.ClassFile;
 import java.lang.classfile.ClassModel;
+import java.lang.classfile.CodeElement;
 import java.lang.classfile.FieldModel;
 import java.lang.classfile.MethodModel;
+import java.lang.classfile.Opcode;
 import java.lang.classfile.attribute.InnerClassInfo;
 import java.lang.classfile.attribute.PermittedSubclassesAttribute;
 import java.lang.classfile.constantpool.ClassEntry;
+import java.lang.classfile.instruction.InvokeInstruction;
+import java.lang.classfile.instruction.NewObjectInstruction;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.AccessFlag;
 import java.lang.reflect.Method;
@@ -3790,6 +3794,56 @@ class AndroidDeclarationsTest {
             }
         }
         assertTrue(unmarked.isEmpty(), "copies without @Emulated: " + unmarked);
+    }
+
+    @Test
+    void everyFinalizerIsReleasedByACleaner() throws IOException {
+        Path root = Tree.EMULATIONS.root();
+        List<Path> classFiles;
+        try (Stream<Path> files = Files.walk(root)) {
+            classFiles = files.filter(path -> path.toString().endsWith(".class")).sorted().toList();
+        }
+        List<String> violations = new ArrayList<>();
+        for (Path file : classFiles) {
+            ClassModel model = ClassFile.of().parse(file);
+            String name = model.thisClass().asInternalName();
+            if (model.methods().stream().noneMatch(method -> method.methodName().equalsString("finalize")
+                    && method.methodType().equalsString("()V"))) {
+                continue;
+            }
+            if (model.methods().stream().noneMatch(method -> method.methodName().equalsString("releaseWhenUnreachable")
+                    && method.flags().has(AccessFlag.PUBLIC) && method.flags().has(AccessFlag.STATIC))) {
+                violations.add(name + " declares no public static releaseWhenUnreachable");
+            }
+            for (MethodModel constructor : model.methods()) {
+                if (!constructor.methodName().equalsString("<init>")) {
+                    continue;
+                }
+                int allocations = 0;
+                int initializations = 0;
+                boolean registers = false;
+                for (CodeElement element : constructor.code().orElseThrow()) {
+                    if (element instanceof NewObjectInstruction allocation
+                            && allocation.className().asInternalName().equals(name)) {
+                        allocations++;
+                    } else if (element instanceof InvokeInstruction invoke
+                            && invoke.owner().asInternalName().equals(name)) {
+                        if (invoke.opcode() == Opcode.INVOKESPECIAL && invoke.name().equalsString("<init>")) {
+                            initializations++;
+                        } else if (invoke.opcode() == Opcode.INVOKESTATIC
+                                && invoke.name().equalsString("releaseWhenUnreachable")) {
+                            registers = true;
+                        }
+                    }
+                }
+                boolean delegates = initializations > allocations;
+                if (!delegates && !registers) {
+                    violations.add(name + " <init>" + constructor.methodType().stringValue()
+                            + " calls no releaseWhenUnreachable");
+                }
+            }
+        }
+        assertTrue(violations.isEmpty(), "finalizers without a cleaner: " + violations);
     }
 
     @Test

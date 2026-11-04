@@ -8,12 +8,14 @@
  import android.compat.annotation.UnsupportedAppUsage;
  import android.os.Flags;
  import android.ravenwood.annotation.RavenwoodClassLoadHook;
-@@ -54,6 +53,12 @@
+@@ -54,6 +53,14 @@
  import dalvik.annotation.optimization.CriticalNative;
  import dalvik.annotation.optimization.FastNative;
  
++import org.androidgraal.android.ImageCleaner;
 +import org.androidgraal.android.ParcelData;
 +import org.androidgraal.hosted.annotate.Adapted;
++import org.androidgraal.hosted.annotate.Added;
 +import org.androidgraal.hosted.annotate.Emulated;
 +import org.androidgraal.hosted.annotate.Premise;
 +import org.androidgraal.hosted.annotate.Transcribed;
@@ -21,7 +23,7 @@
  import java.nio.BufferOverflowException;
  import java.nio.ReadOnlyBufferException;
  import libcore.util.SneakyThrow;
-@@ -240,6 +245,7 @@
+@@ -240,6 +247,7 @@
   */
  @RavenwoodKeepWholeClass
  @RavenwoodClassLoadHook(RavenwoodClassLoadHook.LIBANDROID_LOADING_HOOK)
@@ -29,7 +31,7 @@
  public final class Parcel {
  
      private static final boolean DEBUG_RECYCLE = false;
-@@ -248,7 +254,8 @@
+@@ -248,7 +256,8 @@
  
      @UnsupportedAppUsage
      @SuppressWarnings({"UnusedDeclaration"})
@@ -39,7 +41,7 @@
  
      /**
       * Flag indicating if {@link #mNativePtr} was allocated by this object,
-@@ -391,116 +398,196 @@
+@@ -391,116 +400,196 @@
      // Assume the least possible size for complex objects
      private static final int SIZE_COMPLEX_TYPE = 1;
  
@@ -335,7 +337,7 @@
      public final static Parcelable.Creator<String> STRING_CREATOR
               = new Parcelable.Creator<String>() {
          public String createFromParcel(Parcel source) {
-@@ -555,6 +642,7 @@
+@@ -555,6 +644,7 @@
       * Retrieve a new Parcel object from the pool.
       */
      @NonNull
@@ -343,7 +345,7 @@
      public static Parcel obtain() {
          Parcel res = null;
          synchronized (sPoolSync) {
-@@ -569,7 +657,7 @@
+@@ -569,7 +659,7 @@
          // When no cache found above, create from scratch; otherwise prepare the
          // cached object to be used
          if (res == null) {
@@ -352,7 +354,7 @@
          } else {
              res.mRecycled = false;
              if (DEBUG_RECYCLE) {
-@@ -578,7 +666,7 @@
+@@ -578,7 +668,7 @@
              res.mReadWriteHelper = ReadWriteHelper.DEFAULT;
          }
  
@@ -361,7 +363,7 @@
              Log.e(TAG, "Obtained Parcel object has null native pointer. Invalid state.");
          }
  
-@@ -586,24 +674,10 @@
+@@ -586,24 +676,10 @@
      }
  
      /**
@@ -387,7 +389,7 @@
      public final void recycle() {
          if (mRecycled) {
              String error = "Recycle called on unowned Parcel. (recycle twice?) Here: "
-@@ -630,7 +704,7 @@
+@@ -630,7 +706,7 @@
                  }
              }
          } else {
@@ -396,7 +398,7 @@
              synchronized (sPoolSync) {
                  if (sHolderPoolSize < POOL_SIZE) {
                      mPoolNext = sHolderPool;
-@@ -660,14 +734,6 @@
+@@ -660,14 +736,6 @@
          return (mReadWriteHelper != null) && (mReadWriteHelper != ReadWriteHelper.DEFAULT);
      }
  
@@ -411,7 +413,7 @@
      /**
       * Parcel data should be zero'd before realloc'd or deleted.
       *
-@@ -686,22 +752,6 @@
+@@ -686,22 +754,6 @@
          nativeMarkSensitive(mNativePtr);
      }
  
@@ -434,7 +436,7 @@
      /** @hide */
      @ParcelFlags
      @TestApi
-@@ -1083,47 +1133,6 @@
+@@ -1083,47 +1135,6 @@
      }
  
      /**
@@ -482,7 +484,7 @@
       * Store or read an IBinder interface token in the parcel at the current
       * {@link #dataPosition}. This is used to validate that the marshalled
       * transaction is intended for the target interface. This is typically written
-@@ -1157,35 +1166,6 @@
+@@ -1157,35 +1168,6 @@
      }
  
      /**
@@ -518,7 +520,7 @@
       * Write a byte array into the parcel at the current {@link #dataPosition},
       * growing {@link #dataCapacity} if needed.
       * @param b Bytes to place into the parcel.
-@@ -1360,62 +1340,6 @@
+@@ -1360,62 +1342,6 @@
      }
  
      /**
@@ -581,7 +583,7 @@
       * Write a byte value into the parcel at the current dataPosition(),
       * growing dataCapacity() if needed.
       *
-@@ -2113,43 +2037,7 @@
+@@ -2113,43 +2039,7 @@
          }
      }
  
@@ -625,7 +627,7 @@
       * @hide
       */
      public final void writeCharSequenceArray(@Nullable CharSequence[] val) {
-@@ -2179,78 +2067,7 @@
+@@ -2179,78 +2069,7 @@
          }
      }
  
@@ -704,7 +706,7 @@
       * Flatten a List containing a particular object type into the parcel, at
       * the current dataPosition() and growing dataCapacity() if needed.  The
       * type of the objects in the list must be one that implements Parcelable.
-@@ -2352,53 +2169,6 @@
+@@ -2352,53 +2171,6 @@
      }
  
      /**
@@ -758,7 +760,7 @@
       * Flatten a {@code List} containing arbitrary {@code Parcelable} objects into this parcel
       * at the current position. They can later be retrieved using
       * {@link #readParcelableList(List, ClassLoader)} if required.
-@@ -2506,6 +2276,7 @@
+@@ -2506,6 +2278,7 @@
          writeFixedArrayInternal(val, parcelableFlags, /*index=*/0, dimensions);
      }
  
@@ -766,7 +768,7 @@
      private <T> void writeFixedArrayInternal(T val, int parcelableFlags, int index,
              int[] dimensions) {
          if (index >= dimensions.length) {
-@@ -2549,10 +2320,6 @@
+@@ -2549,10 +2322,6 @@
              writeFloatArray((float[]) val);
          } else if (componentType == double.class) {
              writeDoubleArray((double[]) val);
@@ -777,7 +779,7 @@
          } else if (Parcelable.class.isAssignableFrom(componentType)) {
              writeTypedArray((Parcelable[]) val, parcelableFlags);
          } else if (componentType.isArray()) {
-@@ -2635,6 +2402,14 @@
+@@ -2635,6 +2404,14 @@
      }
  
      /** @hide */
@@ -792,7 +794,7 @@
      public static int getValueType(@Nullable Object v) {
          if (v == null) {
              return VAL_NULL;
-@@ -2647,10 +2422,12 @@
+@@ -2647,10 +2424,12 @@
          } else if (v instanceof Bundle) {
              // Must be before Parcelable
              return VAL_BUNDLE;
@@ -807,7 +809,7 @@
              // Must be before Parcelable
              return VAL_SIZEF;
          } else if (v instanceof Parcelable) {
-@@ -2684,8 +2461,6 @@
+@@ -2684,8 +2463,6 @@
          } else if (v instanceof CharSequence[]) {
              // Must be after String[] and before Object[]
              return VAL_CHARSEQUENCEARRAY;
@@ -816,7 +818,7 @@
          } else if (v instanceof Parcelable[]) {
              return VAL_PARCELABLEARRAY;
          } else if (v instanceof int[]) {
-@@ -2696,15 +2471,19 @@
+@@ -2696,15 +2473,19 @@
              return VAL_BYTE;
          } else if (v instanceof Size) {
              return VAL_SIZE;
@@ -841,7 +843,7 @@
              return VAL_FLOATARRAY;
          } else {
              Class<?> clazz = v.getClass();
-@@ -2726,6 +2505,7 @@
+@@ -2726,6 +2507,7 @@
       *
       * @hide
       */
@@ -849,7 +851,7 @@
      public void writeValue(int type, @Nullable Object v) {
          switch (type) {
              case VAL_NULL:
-@@ -2784,9 +2564,6 @@
+@@ -2784,9 +2566,6 @@
              case VAL_CHARSEQUENCEARRAY:
                  writeCharSequenceArray((CharSequence[]) v);
                  break;
@@ -859,7 +861,7 @@
              case VAL_PARCELABLEARRAY:
                  writeParcelableArray((Parcelable[]) v, 0);
                  break;
-@@ -3093,13 +2870,12 @@
+@@ -3093,13 +2872,12 @@
       * @see #writeNoException
       * @see #readException
       */
@@ -876,7 +878,7 @@
          if (code == 0) {
              if (e instanceof RuntimeException) {
                  throw (RuntimeException) e;
-@@ -3107,13 +2883,15 @@
+@@ -3107,13 +2885,15 @@
              throw new RuntimeException(e);
          }
          writeString(e.getMessage());
@@ -899,7 +901,7 @@
          }
          switch (code) {
              case EX_SERVICE_SPECIFIC:
-@@ -3132,24 +2910,16 @@
+@@ -3132,24 +2912,16 @@
          }
      }
  
@@ -931,7 +933,7 @@
              // We only send Parcelable exceptions that are in the
              // BootClassLoader to ensure that the receiver can unpack them
              code = EX_PARCELABLE;
-@@ -3167,7 +2937,8 @@
+@@ -3167,7 +2939,8 @@
              code = EX_NETWORK_MAIN_THREAD;
          } else if (e instanceof UnsupportedOperationException) {
              code = EX_UNSUPPORTED_OPERATION;
@@ -941,7 +943,7 @@
              code = EX_SERVICE_SPECIFIC;
          }
          return code;
-@@ -3198,38 +2969,9 @@
+@@ -3198,38 +2971,9 @@
       * @see #writeException
       * @see #readException
       */
@@ -982,7 +984,7 @@
          writeInt(0);
      }
  
-@@ -3265,12 +3007,12 @@
+@@ -3265,12 +3009,12 @@
       */
      @UnsupportedAppUsage
      @TestApi
@@ -998,7 +1000,7 @@
          }
  
          if (code == EX_HAS_STRICTMODE_REPLY_HEADER) {
-@@ -3282,7 +3024,7 @@
+@@ -3282,7 +3026,7 @@
                  // but discussions around event/RPC tracing suggest we might
                  // put that here too.  If so, switch on sub-header tags here.
                  // But for now, just parse out the StrictMode stuff.
@@ -1007,7 +1009,7 @@
              }
              // And fat response headers are currently only used when
              // there are no exceptions, so return no error:
-@@ -3298,9 +3040,12 @@
+@@ -3298,9 +3042,12 @@
       * @param code Used to determine which exception class to throw.
       * @param msg The exception message.
       */
@@ -1021,7 +1023,7 @@
          if (remoteStackPayloadSize > 0) {
              remoteStackTrace = readString();
          }
-@@ -3444,71 +3189,6 @@
+@@ -3444,71 +3191,6 @@
      }
  
      /**
@@ -1093,7 +1095,7 @@
       * Read a byte value from the parcel at the current dataPosition().
       */
      public final byte readByte() {
-@@ -4073,59 +3753,6 @@
+@@ -4073,59 +3755,6 @@
      }
  
      /**
@@ -1153,7 +1155,7 @@
       * Read into the given List items String objects that were written with
       * {@link #writeStringList} at the current dataPosition().
       *
-@@ -4148,51 +3775,6 @@
+@@ -4148,51 +3777,6 @@
      }
  
      /**
@@ -1205,7 +1207,7 @@
       * Read the list of {@code Parcelable} objects at the current data position into the
       * given {@code list}. The contents of the {@code list} are replaced. If the serialized
       * list was {@code null}, {@code list} is cleared.
-@@ -4346,6 +3928,7 @@
+@@ -4346,6 +3930,7 @@
       * @see #readInterfaceArray
       * @see #readTypedArray
       */
@@ -1213,7 +1215,7 @@
      public <T> void readFixedArray(@NonNull T val) {
          Class<?> componentType = val.getClass().getComponentType();
          if (componentType == boolean.class) {
-@@ -4362,8 +3945,6 @@
+@@ -4362,8 +3947,6 @@
              readFloatArray((float[]) val);
          } else if (componentType == double.class) {
              readDoubleArray((double[]) val);
@@ -1222,7 +1224,7 @@
          } else if (componentType.isArray()) {
              int length = readInt();
              if (length != Array.getLength(val)) {
-@@ -4379,32 +3960,6 @@
+@@ -4379,32 +3962,6 @@
      }
  
      /**
@@ -1255,7 +1257,7 @@
       * Read a new multi-dimensional array of typed parcelables from a parcel.
       * If you want to read IInterface values, use
       * {@link #readFixedArray(Object, Function)}. For values of other types, use
-@@ -4469,6 +4024,7 @@
+@@ -4469,6 +4026,7 @@
       * @see #createTypedArray
       */
      @Nullable
@@ -1263,7 +1265,7 @@
      public <T> T createFixedArray(@NonNull Class<T> cls, @NonNull int... dimensions) {
          // Check if type matches with dimensions
          // If type is one-dimensional array, delegate to other creators
-@@ -4492,8 +4048,6 @@
+@@ -4492,8 +4050,6 @@
              val = (T) createFloatArray();
          } else if (componentType == double.class) {
              val = (T) createDoubleArray();
@@ -1272,7 +1274,7 @@
          } else if (componentType.isArray()) {
              int length = readInt();
              if (length < 0) {
-@@ -4533,66 +4087,6 @@
+@@ -4533,66 +4089,6 @@
      }
  
      /**
@@ -1339,7 +1341,7 @@
       * Read and return a new multi-dimensional array of typed parcelables from a parcel.
       * Returns null if the previously written array object is null.  If you want to read
       * IInterface values, use {@link #createFixedArray(Class, Function, int[])}.
-@@ -4938,6 +4432,7 @@
+@@ -4938,6 +4434,7 @@
       */
      @SuppressWarnings("unchecked")
      @Nullable
@@ -1347,7 +1349,7 @@
      private <T> T readValue(int type, @Nullable ClassLoader loader, @Nullable Class<T> clazz,
              @Nullable Class<?>... itemTypes) {
          final Object object;
-@@ -5013,8 +4508,7 @@
+@@ -5013,8 +4510,7 @@
                  break;
  
              case VAL_IBINDER:
@@ -1357,7 +1359,7 @@
  
              case VAL_OBJECTARRAY: {
                  Class<?> itemType = ArrayUtils.getOrNull(itemTypes, 0);
-@@ -5104,11 +4598,17 @@
+@@ -5104,11 +4600,17 @@
          return (T) object;
      }
  
@@ -1375,7 +1377,7 @@
          switch (type) {
              case VAL_MAP:
              case VAL_PARCELABLE:
-@@ -5544,33 +5044,8 @@
+@@ -5544,42 +5046,20 @@
          throw new UnsupportedOperationException();
      }
  
@@ -1407,12 +1409,14 @@
 -
 -    private Parcel(long nativePtr) {
 +    @Transcribed
++    @Adapted(reason = "calls releaseWhenUnreachable", premise = Premise.NO_FINALIZER)
 +    private Parcel(ParcelData nativePtr) {
          if (DEBUG_RECYCLE) {
              mStack = new RuntimeException();
          }
-@@ -5578,8 +5053,9 @@
+         //Log.i(TAG, "Initializing obj=0x" + Integer.toHexString(obj), mStack);
          init(nativePtr);
++        releaseWhenUnreachable(this, mNativePtr, mOwnsNativeParcelObject);
      }
  
 -    private void init(long nativePtr) {
@@ -1423,7 +1427,7 @@
              mNativePtr = nativePtr;
              mOwnsNativeParcelObject = false;
          } else {
-@@ -5597,25 +5073,20 @@
+@@ -5597,13 +5077,14 @@
          mReadWriteHelper = ReadWriteHelper.DEFAULT;
      }
  
@@ -1440,20 +1444,21 @@
          }
      }
  
-     @Override
-+    @Adapted(reason = "empty", premise = Premise.NO_FINALIZER)
-     protected void finalize() throws Throwable {
--        if (DEBUG_RECYCLE) {
--            // we could always have this log on, but it's spammy
--            if (!mRecycled) {
--                Log.w(TAG, "Client did not call Parcel.recycle()", mStack);
--            }
--        }
--        destroy();
+@@ -5618,6 +5099,13 @@
+         destroy();
      }
  
++    @Added(reason = "registers an owned native parcel's destruction with the image's cleaner")
++    public static void releaseWhenUnreachable(Parcel parcel, ParcelData data, boolean owned) {
++        if (owned) {
++            ImageCleaner.register(parcel, data::destroy);
++        }
++    }
++
      /**
-@@ -5860,13 +5331,6 @@
+      * To be replaced by {@link #readMapInternal(Map, int, ClassLoader, Class, Class)}, but keep
+      * the old API for compatibility usages.
+@@ -5860,13 +5348,6 @@
          }
      }
  

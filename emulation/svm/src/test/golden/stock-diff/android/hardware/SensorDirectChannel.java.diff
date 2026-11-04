@@ -1,6 +1,6 @@
 --- a/emulation/svm/src/main/java/android/hardware/SensorDirectChannel.java
 +++ b/emulation/svm/src/main/java/android/hardware/SensorDirectChannel.java
-@@ -16,10 +16,13 @@
+@@ -16,10 +16,14 @@
  package android.hardware;
  
  import android.annotation.IntDef;
@@ -9,13 +9,14 @@
  import dalvik.system.CloseGuard;
  
 +import org.androidgraal.hosted.annotate.Adapted;
++import org.androidgraal.hosted.annotate.Added;
 +import org.androidgraal.hosted.annotate.Emulated;
 +import org.androidgraal.hosted.annotate.Premise;
 +
  import java.io.IOException;
  import java.lang.annotation.Retention;
  import java.lang.annotation.RetentionPolicy;
-@@ -34,6 +37,7 @@
+@@ -34,6 +38,7 @@
   * (see {@link #configure(Sensor, int)})
   * to start delivery of sensor events into shared memory buffer.
   */
@@ -23,7 +24,22 @@
  public final class SensorDirectChannel implements Channel {
  
      // shared memory types
-@@ -203,32 +207,9 @@
+@@ -190,12 +195,14 @@
+     }
+ 
+     /** @hide */
++    @Adapted(reason = "calls releaseWhenUnreachable", premise = Premise.NO_FINALIZER)
+     SensorDirectChannel(SensorManager manager, int id, int type, long size) {
+         mManager = manager;
+         mNativeHandle = id;
+         mType = type;
+         mSize = size;
+         mCloseGuard.open("SensorDirectChannel");
++        releaseWhenUnreachable(this);
+     }
+ 
+     /** @hide */
+@@ -203,21 +210,6 @@
          return mNativeHandle;
      }
  
@@ -43,17 +59,16 @@
 -    }
 -
      @Override
-+    @Adapted(reason = "empty", premise = Premise.NO_FINALIZER)
      protected void finalize() throws Throwable {
--        try {
--            if (mCloseGuard != null) {
--                mCloseGuard.warnIfOpen();
--            }
--
--            close();
--        } finally {
--            super.finalize();
--        }
+         try {
+@@ -231,6 +223,10 @@
+         }
      }
  
++    @Added(reason = "has no sensor service channel to destroy")
++    public static void releaseWhenUnreachable(SensorDirectChannel channel) {
++    }
++
      private final AtomicBoolean mClosed = new AtomicBoolean();
+     private final CloseGuard mCloseGuard = CloseGuard.get();
+     private final SensorManager mManager;

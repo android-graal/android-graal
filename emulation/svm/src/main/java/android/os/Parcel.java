@@ -53,8 +53,10 @@ import com.android.internal.util.ArrayUtils;
 import dalvik.annotation.optimization.CriticalNative;
 import dalvik.annotation.optimization.FastNative;
 
+import org.androidgraal.android.ImageCleaner;
 import org.androidgraal.android.ParcelData;
 import org.androidgraal.hosted.annotate.Adapted;
+import org.androidgraal.hosted.annotate.Added;
 import org.androidgraal.hosted.annotate.Emulated;
 import org.androidgraal.hosted.annotate.Premise;
 import org.androidgraal.hosted.annotate.Transcribed;
@@ -5045,12 +5047,14 @@ public final class Parcel {
     }
 
     @Transcribed
+    @Adapted(reason = "calls releaseWhenUnreachable", premise = Premise.NO_FINALIZER)
     private Parcel(ParcelData nativePtr) {
         if (DEBUG_RECYCLE) {
             mStack = new RuntimeException();
         }
         //Log.i(TAG, "Initializing obj=0x" + Integer.toHexString(obj), mStack);
         init(nativePtr);
+        releaseWhenUnreachable(this, mNativePtr, mOwnsNativeParcelObject);
     }
 
     @Transcribed
@@ -5085,8 +5089,21 @@ public final class Parcel {
     }
 
     @Override
-    @Adapted(reason = "empty", premise = Premise.NO_FINALIZER)
     protected void finalize() throws Throwable {
+        if (DEBUG_RECYCLE) {
+            // we could always have this log on, but it's spammy
+            if (!mRecycled) {
+                Log.w(TAG, "Client did not call Parcel.recycle()", mStack);
+            }
+        }
+        destroy();
+    }
+
+    @Added(reason = "registers an owned native parcel's destruction with the image's cleaner")
+    public static void releaseWhenUnreachable(Parcel parcel, ParcelData data, boolean owned) {
+        if (owned) {
+            ImageCleaner.register(parcel, data::destroy);
+        }
     }
 
     /**

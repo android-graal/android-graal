@@ -19,6 +19,7 @@ package android.os;
 import android.util.Log;
 
 import org.androidgraal.hosted.annotate.Adapted;
+import org.androidgraal.hosted.annotate.Added;
 import org.androidgraal.hosted.annotate.Emulated;
 import org.androidgraal.hosted.annotate.Premise;
 
@@ -201,10 +202,12 @@ public abstract class TokenWatcher
         IBinder token;
         String tag;
 
+        @Adapted(reason = "calls releaseWhenUnreachable", premise = Premise.NO_FINALIZER)
         Death(IBinder token, String tag)
         {
             this.token = token;
             this.tag = tag;
+            releaseWhenUnreachable(this);
         }
 
         public void binderDied()
@@ -212,8 +215,21 @@ public abstract class TokenWatcher
             cleanup(token, false);
         }
 
-        @Adapted(reason = "empty", premise = Premise.NO_FINALIZER)
         protected void finalize() throws Throwable
+        {
+            try {
+                if (token != null) {
+                    Log.w(mTag, "cleaning up leaked reference: " + tag);
+                    release(token);
+                }
+            }
+            finally {
+                super.finalize();
+            }
+        }
+
+        @Added(reason = "has nothing to release but its dead watcher's state")
+        public static void releaseWhenUnreachable(Death death)
         {
         }
     }

@@ -40,6 +40,7 @@ import com.android.internal.annotations.VisibleForTesting;
 
 import org.androidgraal.android.EmulationRoot;
 import org.androidgraal.android.FileDescriptors;
+import org.androidgraal.android.ImageCleaner;
 import org.androidgraal.android.ScopedBytes;
 import org.androidgraal.android.ScopedUtfChars;
 import org.androidgraal.bionic.Unistd;
@@ -63,6 +64,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.lang.ref.Cleaner;
 import java.lang.ref.Reference;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -147,12 +149,14 @@ public final class AssetManager implements AutoCloseable {
      * Used for the creation of system assets.
      */
     @SuppressWarnings("unused")
+    @Adapted(reason = "calls releaseWhenUnreachable", premise = Premise.NO_FINALIZER)
     private AssetManager(boolean sentinel) {
         mObject = nativeCreate();
         if (DEBUG_REFS) {
             mNumRefs.set(0);
             incRefsLocked(hashCode());
         }
+        releaseWhenUnreachable(this);
     }
 
     /**
@@ -295,8 +299,26 @@ public final class AssetManager implements AutoCloseable {
     }
 
     @Override
-    @Adapted(reason = "empty", premise = Premise.NO_FINALIZER)
     protected void finalize() throws Throwable {
+        if (DEBUG_REFS && mNumRefs.get() != 0) {
+            Log.w(TAG, "AssetManager " + this + " finalized with non-zero refs: " + mNumRefs.get());
+            if (mRefStacks != null) {
+                for (RuntimeException e : mRefStacks.values()) {
+                    Log.w(TAG, "Reference from here", e);
+                }
+            }
+        }
+
+        synchronized (this) {
+            if (mObject != 0) {
+                nativeDestroy(mObject);
+                mObject = 0;
+            }
+        }
+    }
+
+    @Added(reason = "has no native manager of its own to destroy")
+    public static void releaseWhenUnreachable(AssetManager manager) {
     }
 
     /* No Locking is needed for AssetInputStream because an AssetInputStream is not-thread
@@ -306,6 +328,9 @@ public final class AssetManager implements AutoCloseable {
         private long mAssetNativePtr;
         private long mLength;
         private long mMarkPos;
+
+        @Added(reason = "the asset's release, run once by close or by the cleaner")
+        private final Cleaner.Cleanable mCleanable;
 
         /**
          * @hide
@@ -323,9 +348,12 @@ public final class AssetManager implements AutoCloseable {
             return mAssetNativePtr;
         }
 
+        @Adapted(reason = "calls releaseWhenUnreachable", premise = Premise.NO_FINALIZER)
         private AssetInputStream(long assetNativePtr) {
             mAssetNativePtr = assetNativePtr;
             mLength = nativeAssetGetLength(assetNativePtr);
+            mCleanable = releaseWhenUnreachable(this, AssetManager.this, assetNativePtr,
+                    hashCode());
         }
 
         @Override
@@ -386,18 +414,27 @@ public final class AssetManager implements AutoCloseable {
         }
 
         @Override
+        @Adapted(reason = "destroys the asset and drops its reference through its cleaner",
+                premise = Premise.NO_FINALIZER)
         public final void close() throws IOException {
             if (mAssetNativePtr != 0) {
-                nativeAssetDestroy(mAssetNativePtr);
+                mCleanable.clean();
                 mAssetNativePtr = 0;
-
-                decRefs(hashCode());
             }
         }
 
         @Override
-        @Adapted(reason = "empty", premise = Premise.NO_FINALIZER)
         protected void finalize() throws Throwable {
+            close();
+        }
+
+        @Added(reason = "registers the asset's release with the image's cleaner")
+        public static Cleaner.Cleanable releaseWhenUnreachable(AssetInputStream stream,
+                AssetManager manager, long asset, long id) {
+            return ImageCleaner.register(stream, () -> {
+                nativeAssetDestroy(asset);
+                manager.decRefs(id);
+            });
         }
 
         private void ensureOpen() {
