@@ -7,7 +7,8 @@ import java.lang.annotation.Target;
 
 /**
  * A declaration in a class copied from the SDK sources that the SDK source does not have. Usually a binding, a helper,
- * an entry point, or similar.
+ * an entry point, or similar. A whole new class placed in a package of Android's class library carries it at type
+ * level instead of {@link Emulated}.
  */
 @Retention(RetentionPolicy.CLASS)
 @Target({ElementType.TYPE, ElementType.METHOD, ElementType.CONSTRUCTOR, ElementType.FIELD})

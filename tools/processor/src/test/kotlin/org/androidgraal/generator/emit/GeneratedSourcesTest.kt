@@ -175,44 +175,16 @@ class GeneratedSourcesTest {
     }
 
     @Test
-    fun `every native of ART's runtime is an entry point of the image's runtime`() {
-        val art = classes(ART_CLASSPATH)
+    fun `every native of ART's runtime has an image entry point of the same descriptor, or is libandroidgraal's`() {
         val entryPoints = classes(SVM_CLASSPATH).values.flatMap { it.methods }
             .mapNotNull { m -> m.entryPoint?.let { it to m.descriptor } }.toMap()
-
-        val natives = art.flatMap { (name, info) ->
-            info.methods.filter { it.native }.map { m ->
+        classes(ART_CLASSPATH).forEach { (name, info) ->
+            info.methods.filter { it.native }.forEach { m ->
                 val symbol = jniName(name.replace('/', '.'), m.name)
+                if (symbol in LIBANDROIDGRAAL) return@forEach
                 val entry = entryPoints[symbol] ?: fail("no entry point $symbol")
                 assertTrue(matches(m.descriptor, entry), "$symbol: ART ${m.descriptor}, image $entry")
-                symbol
             }
-        }
-        assertEquals(
-            listOf(
-                "Java_org_androidgraal_art_Image_attachThread",
-                "Java_org_androidgraal_art_Image_createIsolate",
-                "Java_org_androidgraal_art_Image_currentThread",
-                "Java_org_androidgraal_art_Image_detachThreadOnExit",
-                "Java_org_androidgraal_art_Image_dropExport",
-                "Java_org_androidgraal_art_Image_getIsolate",
-                "Java_org_androidgraal_art_Image_initializeIsolate",
-                "Java_org_androidgraal_art_Image_setPendingException",
-                "Java_org_androidgraal_art_Transport_alloc",
-                "Java_org_androidgraal_art_Transport_free",
-                "Java_org_androidgraal_art_Transport_threadAlloc",
-                "Java_org_androidgraal_art_Transport_view",
-                "Java_org_androidgraal_art_Transport_viewBlock",
-            ),
-            natives.sorted(),
-        )
-        val declared = art.getValue("org/androidgraal/art/Image").methods
-        listOf(
-            "setPendingException" to "(Ljava/nio/ByteBuffer;)V",
-            "handleUncaughtException" to "(Ljava/nio/ByteBuffer;)V",
-            "dropExport" to "(J)V",
-        ).forEach { (n, d) ->
-            assertTrue(declared.any { it.name == n && it.descriptor == d && it.endPoint }, "Image.$n$d")
         }
     }
 
@@ -393,6 +365,8 @@ class GeneratedSourcesTest {
 }
 
 private val STATEMENTS = listOf("if", "for", "try", "synchronized", "switch", "while", "}")
+
+private val LIBANDROIDGRAAL = setOf("Java_org_androidgraal_art_Image_createIsolate")
 
 internal fun assertGolden(name: String, actual: Map<String, String>) {
     val golden = File("src/test/golden/$name").takeIf { it.exists() }

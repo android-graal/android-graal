@@ -31,6 +31,14 @@ class CheckImageClasspathTaskTest {
     }
 
     @Test
+    fun `an Android class of ours marked @Added passes`() {
+        val classes = tmp.resolve("added")
+        classes.resolve("android/x/A.class").apply { parentFile.mkdirs() }.writeBytes(classFile("android/x/A", ADDED))
+
+        assertEquals(listOf("image classpath:", "  added"), check(classes).readLines())
+    }
+
+    @Test
     fun `an unmarked Android class is one error naming it and its file`() {
         val widgets = fixture("widgets.jar", "android/x/A" to false)
 
@@ -124,23 +132,29 @@ class CheckImageClasspathTaskTest {
             JarOutputStream(file.outputStream()).use { out ->
                 classes.forEach { (internal, emulated) ->
                     out.putNextEntry(JarEntry("$internal.class"))
-                    out.write(classFile(internal, emulated))
+                    out.write(classFile(internal, if (emulated) EMULATED else null))
                     out.closeEntry()
                 }
             }
         } else {
             classes.forEach { (internal, emulated) ->
-                file.resolve("$internal.class").apply { parentFile.mkdirs() }.writeBytes(classFile(internal, emulated))
+                file.resolve("$internal.class").apply { parentFile.mkdirs() }
+                    .writeBytes(classFile(internal, if (emulated) EMULATED else null))
             }
         }
         return file
     }
 
-    private fun classFile(internal: String, emulated: Boolean): ByteArray {
+    private fun classFile(internal: String, annotation: String?): ByteArray {
         val writer = ClassWriter(0)
         writer.visit(Opcodes.V17, Opcodes.ACC_PUBLIC or Opcodes.ACC_SUPER, internal, null, "java/lang/Object", null)
-        if (emulated) writer.visitAnnotation("Lorg/androidgraal/hosted/annotate/Emulated;", false).visitEnd()
+        if (annotation != null) writer.visitAnnotation(annotation, false).visitEnd()
         writer.visitEnd()
         return writer.toByteArray()
+    }
+
+    private companion object {
+        const val EMULATED = "Lorg/androidgraal/hosted/annotate/Emulated;"
+        const val ADDED = "Lorg/androidgraal/hosted/annotate/Added;"
     }
 }

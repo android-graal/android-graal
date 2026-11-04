@@ -50,7 +50,7 @@ abstract class CheckImageClasspathTask : BaseTask("checkImageClasspath") {
 
     private fun problems(image: List<File>): List<String> {
         val library = mutableSetOf<String>()
-        val emulated = mutableSetOf<String>()
+        val marked = mutableSetOf<String>()
         scan(image) { bytes ->
             val visitor = object : ClassVisitor(Opcodes.ASM9) {
                 private lateinit var name: String
@@ -68,7 +68,7 @@ abstract class CheckImageClasspathTask : BaseTask("checkImageClasspath") {
                 }
 
                 override fun visitAnnotation(descriptor: String, visible: Boolean): AnnotationVisitor? {
-                    if (descriptor == EMULATED) emulated += name
+                    if (descriptor == EMULATED || descriptor == ADDED) marked += name
                     return null
                 }
             }
@@ -77,7 +77,7 @@ abstract class CheckImageClasspathTask : BaseTask("checkImageClasspath") {
                 ClassReader.SKIP_CODE or ClassReader.SKIP_DEBUG or ClassReader.SKIP_FRAMES,
             )
         }
-        return (library - emulated).sorted().map {
+        return (library - marked).sorted().map {
             "$it is a class of Android's class library on the image classpath without @Emulated -" +
                 " only emulated classes work in the image."
         }
@@ -85,6 +85,7 @@ abstract class CheckImageClasspathTask : BaseTask("checkImageClasspath") {
 
     companion object {
         private const val EMULATED = "Lorg/androidgraal/hosted/annotate/Emulated;"
+        private const val ADDED = "Lorg/androidgraal/hosted/annotate/Added;"
 
         private val LIBRARY = listOf("android/", "libcore/", "dalvik/", "com/android/internal/", "com/android/modules/")
     }
