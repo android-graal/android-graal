@@ -1,18 +1,18 @@
 --- a/emulation/svm/src/main/java/android/os/ParcelFileDescriptor.java
 +++ b/emulation/svm/src/main/java/android/os/ParcelFileDescriptor.java
-@@ -35,11 +35,6 @@
+@@ -35,11 +35,7 @@
  import android.annotation.SuppressLint;
  import android.annotation.TestApi;
  import android.compat.annotation.UnsupportedAppUsage;
 -import android.content.BroadcastReceiver;
 -import android.content.ContentProvider;
 -import android.content.ContentResolver;
--import android.net.Uri;
+ import android.net.Uri;
 -import android.os.MessageQueue.OnFileDescriptorEventListener;
  import android.ravenwood.annotation.RavenwoodKeepWholeClass;
  import android.ravenwood.annotation.RavenwoodThrow;
  import android.system.ErrnoException;
-@@ -55,6 +50,15 @@
+@@ -55,6 +51,15 @@
  import libcore.io.IoUtils;
  import libcore.io.Memory;
  
@@ -28,7 +28,7 @@
  import java.io.Closeable;
  import java.io.File;
  import java.io.FileDescriptor;
-@@ -64,6 +68,7 @@
+@@ -64,6 +69,7 @@
  import java.io.IOException;
  import java.io.InterruptedIOException;
  import java.io.UncheckedIOException;
@@ -36,7 +36,7 @@
  import java.net.DatagramSocket;
  import java.net.Socket;
  import java.nio.ByteOrder;
-@@ -73,6 +78,7 @@
+@@ -73,6 +79,7 @@
   * you to close it when done with it.
   */
  @RavenwoodKeepWholeClass
@@ -44,7 +44,7 @@
  public class ParcelFileDescriptor implements Parcelable, Closeable {
      private static final String TAG = "ParcelFileDescriptor";
  
-@@ -112,6 +118,9 @@
+@@ -112,6 +119,9 @@
  
      private final CloseGuard mGuard = CloseGuard.get();
  
@@ -54,7 +54,7 @@
      /**
       * For use with {@link #open}: if {@link #MODE_CREATE} has been supplied and
       * this file doesn't already exist, then create the file with permissions
-@@ -178,6 +187,7 @@
+@@ -178,6 +188,7 @@
       * Create a new ParcelFileDescriptor wrapped around another descriptor. By
       * default all method calls are delegated to the wrapped descriptor.
       */
@@ -62,7 +62,7 @@
      public ParcelFileDescriptor(ParcelFileDescriptor wrapped) {
          // We keep a strong reference to the wrapped PFD, and rely on its
          // finalizer to trigger CloseGuard. All calls are delegated to wrapper.
-@@ -185,6 +195,7 @@
+@@ -185,6 +196,7 @@
          mFd = null;
          mCommFd = null;
          mClosed = true;
@@ -70,7 +70,7 @@
      }
  
      /** {@hide} */
-@@ -194,20 +205,19 @@
+@@ -194,20 +206,19 @@
      }
  
      /** {@hide} */
@@ -94,7 +94,7 @@
      }
  
      /**
-@@ -236,104 +246,6 @@
+@@ -236,104 +247,6 @@
          return new ParcelFileDescriptor(fd);
      }
  
@@ -199,7 +199,7 @@
      private static FileDescriptor openInternal(File file, int mode) throws FileNotFoundException {
          if ((mode & MODE_WRITE_ONLY) != 0 && (mode & MODE_APPEND) == 0
                  && (mode & MODE_TRUNCATE) == 0 && ((mode & MODE_READ_ONLY) == 0)
-@@ -367,11 +279,12 @@
+@@ -367,11 +280,12 @@
       * new file descriptor shared state such as file position with the
       * original file descriptor.
       */
@@ -213,7 +213,7 @@
              return new ParcelFileDescriptor(fd);
          } catch (ErrnoException e) {
              throw e.rethrowAsIOException();
-@@ -402,14 +315,15 @@
+@@ -402,14 +316,15 @@
       * @return Returns a new ParcelFileDescriptor holding a FileDescriptor
       * for a dup of the given fd.
       */
@@ -231,7 +231,7 @@
              return new ParcelFileDescriptor(dup);
          } catch (ErrnoException e) {
              throw e.rethrowAsIOException();
-@@ -430,82 +344,15 @@
+@@ -430,82 +345,15 @@
       * @return Returns a new ParcelFileDescriptor holding a FileDescriptor
       * for the given fd.
       */
@@ -316,7 +316,7 @@
       * Create two ParcelFileDescriptors structured as a data pipe.  The first
       * ParcelFileDescriptor in the returned array is the read side; the second
       * is the write side.
-@@ -619,34 +466,6 @@
+@@ -619,34 +467,6 @@
      }
  
      /**
@@ -351,7 +351,7 @@
       * Converts a string representing a file mode, such as "rw", into a bitmask suitable for use
       * with {@link #open}.
       * <p>
-@@ -687,9 +506,10 @@
+@@ -687,9 +507,10 @@
       */
      @TestApi
      @RavenwoodThrow(reason = "Os.readlink() and Os.stat()")
@@ -363,7 +363,7 @@
              if (OsConstants.S_ISREG(Os.stat(path).st_mode)
                      || OsConstants.S_ISCHR(Os.stat(path).st_mode)) {
                  return new File(path);
-@@ -762,6 +582,7 @@
+@@ -762,6 +583,7 @@
       * <strong>WARNING:</strong> Do not call close on the return value of this
       * function or pass it to a function that assumes ownership of the fd.
       */
@@ -371,7 +371,7 @@
      public int getFd() {
          if (mWrapped != null) {
              return mWrapped.getFd();
-@@ -769,7 +590,7 @@
+@@ -769,7 +591,7 @@
              if (mClosed) {
                  throw new IllegalStateException("Already closed");
              }
@@ -380,7 +380,7 @@
          }
      }
  
-@@ -784,6 +605,8 @@
+@@ -784,6 +606,8 @@
       *
       * @see #canDetectErrors()
       */
@@ -389,7 +389,7 @@
      public int detachFd() {
          if (mWrapped != null) {
              return mWrapped.detachFd();
-@@ -793,6 +616,7 @@
+@@ -793,6 +617,7 @@
              }
              int fd = IoUtils.acquireRawFd(mFd);
              writeCommStatusAndClose(Status.DETACHED, null);
@@ -397,7 +397,7 @@
              mClosed = true;
              mGuard.close();
              releaseResources();
-@@ -842,6 +666,8 @@
+@@ -842,6 +667,8 @@
          }
      }
  
@@ -406,7 +406,7 @@
      private void closeWithStatus(int status, String msg) {
          if (mClosed) return;
          mClosed = true;
-@@ -851,6 +677,7 @@
+@@ -851,6 +678,7 @@
          // Status MUST be sent before closing actual descriptor
          writeCommStatusAndClose(status, msg);
          closeInternal(mFd);
@@ -414,7 +414,7 @@
          releaseResources();
      }
  
-@@ -1106,6 +933,59 @@
+@@ -1106,6 +934,62 @@
          }
      }
  
@@ -424,6 +424,9 @@
 +            FileDescriptor fd, FileDescriptor commFd, boolean closed) {
 +        if (!closed) {
 +            final int rawFd = FileDescriptors.getFd(fd);
++            // You might think we can put this in the image cleaner, but we cannot. An AutoClose*Stream holds the
++            // ParcelFileDescriptor and registers itself to the FileDescriptor. So the "fd" leaking into the ImageCleaner
++            // creates a strongly-held cycle in the cleaner action
 +            FileDescriptors.releaseWhenUnreachable(fd, () -> {
 +                // Status MUST be sent before closing actual descriptor
 +                if (commFd != null && commFd.valid()) {
@@ -474,7 +477,7 @@
      @Override
      public int describeContents() {
          if (mWrapped != null) {
-@@ -1121,6 +1001,7 @@
+@@ -1121,6 +1005,7 @@
       * the file descriptor will be closed after a copy is written to the Parcel.
       */
      @Override
@@ -482,7 +485,7 @@
      public void writeToParcel(Parcel out, int flags) {
          if (mWrapped != null) {
              try {
-@@ -1129,40 +1010,10 @@
+@@ -1129,40 +1014,10 @@
                  releaseResources();
              }
          } else {
