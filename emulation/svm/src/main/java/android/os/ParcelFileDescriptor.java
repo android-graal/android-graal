@@ -938,7 +938,7 @@ public class ParcelFileDescriptor implements Parcelable, Closeable {
             + "and the LEAKED status alone with the cleaner against the object")
     public static Cleaner.Cleanable releaseWhenUnreachable(ParcelFileDescriptor pfd,
             FileDescriptor fd, FileDescriptor commFd, boolean closed) {
-        if (!closed) {
+        if (!closed && fd.valid()) {
             final int rawFd = FileDescriptors.getFd(fd);
             // You might think we can put this in the image cleaner, but we cannot. An AutoClose*Stream holds the
             // ParcelFileDescriptor and registers itself to the FileDescriptor. So the "fd" leaking into the ImageCleaner
