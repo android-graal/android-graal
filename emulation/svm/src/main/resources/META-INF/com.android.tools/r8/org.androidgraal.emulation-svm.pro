@@ -54,6 +54,12 @@
 -keepclassmembers class android.os.MessageQueue {
     int dispatchEvents(int, int);
 }
+-keep,allowobfuscation class android.os.Looper {
+    boolean loopOnce(android.os.Looper, long, int);
+}
+-keepclassmembers class android.os.Looper {
+    boolean loopOnce(android.os.Looper, long, int);
+}
 
 # MessageQueue's static initializers find these fields with MethodHandles.Lookup.findVarHandle by name.
 -keepclassmembers class android.os.MessageQueue {

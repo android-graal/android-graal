@@ -66,4 +66,14 @@ public final class ArtHost implements ApplicationHost {
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public boolean post(long looper, long uptimeMillis) {
+        return ArtLoopers.post(looper, uptimeMillis);
+    }
+
+    @Override
+    public void quit(long looper, boolean safe) {
+        ArtLoopers.quit(looper, safe);
+    }
 }

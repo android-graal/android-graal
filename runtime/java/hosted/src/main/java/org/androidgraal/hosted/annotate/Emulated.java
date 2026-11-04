@@ -6,8 +6,8 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 /**
- * A class the image provides under an Android framework name, {@code android.*}. Can be used to reimplement/redirect
- * android classes.
+ * A class the image provides under a name of Android's class library, the framework ({@code android.*}), libcore,
+ * dalvik and the internal packages alike. It goes on the outermost class and covers its nested classes.
  */
 @Retention(RetentionPolicy.CLASS)
 @Target(ElementType.TYPE)

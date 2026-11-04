@@ -66,7 +66,8 @@ import java.util.concurrent.locks.ReentrantLock;
 @RavenwoodKeepWholeClass
 @RavenwoodRedirectionClass("MessageQueue_ravenwood")
 @Emulated
-public final class MessageQueue {
+@Adapted(reason = "is sealed and permits ProxyMessageQueue instead of final", premise = Premise.PROXY_LOOPER)
+public sealed class MessageQueue permits ProxyMessageQueue {
     private static final String TAG_L = "LegacyMessageQueue";
     private static final String TAG_C = "ConcurrentMessageQueue";
     private static final boolean DEBUG = false;
@@ -156,11 +157,13 @@ public final class MessageQueue {
         NativeMessageQueue.nativeSetFileDescriptorEvents(ptr, fd, events);
     }
 
+    @Adapted(reason = "registers its native queue's release with a cleaner", premise = Premise.NO_FINALIZER)
     MessageQueue(boolean quitAllowed) {
         initIsProcessAllowedToUseConcurrent();
         mUseConcurrent = sIsProcessAllowedToUseConcurrent;
         mQuitAllowed = quitAllowed;
         mPtr = nativeInit();
+        NativeMessageQueue.destroyWhenUnreachable(this, mPtr);
         mThreadName = Thread.currentThread().getName();
         mTid = Process.myTid();
     }

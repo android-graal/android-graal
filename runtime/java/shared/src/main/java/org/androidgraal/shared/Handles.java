@@ -65,14 +65,13 @@ public final class Handles {
     }
 
     /**
-     * This side's object exported under {@code id}. An id whose proxy was released throws an
-     * {@link IllegalStateException}
+     * This side's object exported under {@code id}. An id whose export ended throws an {@link IllegalStateException}.
      */
     @SuppressWarnings("unchecked")
     public <T> T object(long id) {
         Object object = exports.object(id);
         if (object == null) {
-            throw new IllegalStateException("no object exported as " + id + ": its proxy was released");
+            throw new IllegalStateException("no object exported as " + id);
         }
         return (T) object;
     }
@@ -90,10 +89,7 @@ public final class Handles {
         onProxyReleased.release(imports.release(foreign));
     }
 
-    /**
-     * Ends this side's export of {@code id}. Called by the other side's {@link Release}, never from this side. An
-     * invalid id throws an {@link IllegalStateException}.
-     */
+    /** Ends this side's export of {@code id}. An invalid id throws an {@code IllegalStateException}. */
     public void drop(long id) {
         if (exports.remove(id) == null) {
             throw new IllegalStateException("no object exported as " + id);

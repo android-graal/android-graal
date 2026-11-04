@@ -11,7 +11,7 @@ public enum Premise {
     NO_BINDER,
 
     /**
-     * SubstrateVM runs cleaners, and the emulation registers no finalizer and no cleaner. Holds by design.
+     * SubstrateVM runs no finalizer. Holds by design.
      */
     NO_FINALIZER,
 
@@ -21,10 +21,10 @@ public enum Premise {
     NO_TRACING,
 
     /**
-     * The main thread's {@code Looper} is ART's and out of the image's reach. Stops holding when the image gets a
-     * {@code Handler} bound to the main thread through a proxy.
+     * A proxy Looper's messages stay in the image and run on its ART Looper's thread from dispatches posted there.
+     * Holds by design.
      */
-    NO_MAIN_LOOPER,
+    PROXY_LOOPER,
 
     /**
      * The facility is ART's and the image reaches it over the boundary, such as the application's assets or the process

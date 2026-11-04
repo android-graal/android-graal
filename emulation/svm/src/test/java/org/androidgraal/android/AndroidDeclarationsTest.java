@@ -17,6 +17,7 @@ import java.lang.classfile.ClassModel;
 import java.lang.classfile.FieldModel;
 import java.lang.classfile.MethodModel;
 import java.lang.classfile.attribute.InnerClassInfo;
+import java.lang.classfile.attribute.PermittedSubclassesAttribute;
 import java.lang.classfile.constantpool.ClassEntry;
 import java.lang.invoke.MethodType;
 import java.lang.reflect.AccessFlag;
@@ -27,6 +28,7 @@ import java.util.ArrayList;
 import java.util.EnumSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.stream.Stream;
@@ -3687,6 +3689,8 @@ class AndroidDeclarationsTest {
 
     private static final String EMULATED = "Lorg/androidgraal/hosted/annotate/Emulated;";
 
+    private static final String ADDED = "Lorg/androidgraal/hosted/annotate/Added;";
+
     private enum Tree {
         EMULATIONS("android.emulations"), DECLARATIONS("android.declarations");
 
@@ -3768,6 +3772,7 @@ class AndroidDeclarationsTest {
 
     @Test
     void everyCopyCarriesEmulated() throws IOException {
+        Path androidJar = Path.of(System.getProperty("android.androidJar"));
         Path root = Tree.EMULATIONS.root();
         Set<String> outermost = new TreeSet<>();
         try (Stream<Path> files = Files.walk(root)) {
@@ -3776,9 +3781,12 @@ class AndroidDeclarationsTest {
                     .forEach(name -> outermost.add(name.substring(0, name.length() - 6).split("\\$")[0]));
         }
         Set<String> unmarked = new TreeSet<>();
-        for (String name : outermost) {
-            if (!isEmulated(ClassFile.of().parse(Tree.EMULATIONS.classFile(name)))) {
-                unmarked.add(name);
+        try (ZipFile jar = new ZipFile(androidJar.toFile())) {
+            for (String name : outermost) {
+                ClassModel model = ClassFile.of().parse(Tree.EMULATIONS.classFile(name));
+                if (!isEmulated(model) && !(isAdded(model) && jar.getEntry(name + ".class") == null)) {
+                    unmarked.add(name);
+                }
             }
         }
         assertTrue(unmarked.isEmpty(), "copies without @Emulated: " + unmarked);
@@ -3803,10 +3811,14 @@ class AndroidDeclarationsTest {
     void theClassDeclaresWhatAndroidDeclares(Tree tree, String internalName) throws IOException {
         Path androidJar = Path.of(System.getProperty("android.androidJar"));
         assumeTrue(Files.isRegularFile(androidJar), "the compileSdk's platform is not installed");
-        boolean emulated = isEmulated(ClassFile.of().parse(tree.classFile(internalName.split("\\$")[0])));
+        ClassModel outermost = ClassFile.of().parse(tree.classFile(internalName.split("\\$")[0]));
+        boolean emulated = isEmulated(outermost);
         ClassModel android;
         try (ZipFile jar = new ZipFile(androidJar.toFile())) {
             ZipEntry entry = jar.getEntry(internalName + ".class");
+            if (entry == null && isAdded(outermost) && !emulated) {
+                return;
+            }
             if (HIDDEN_CLASSES.contains(internalName.split("\\$")[0])) {
                 assertEquals(Tree.EMULATIONS, tree, internalName + " is hidden and declared");
                 assertFalse(entry != null && isPublic(jar, entry),
@@ -3849,8 +3861,8 @@ class AndroidDeclarationsTest {
         }
         Set<String> declaredByUs = declarations(ours, true);
         if (!visibleSuperclass.equals(superclass)) {
-            declaredByUs.remove("class " + flags(ours.flags().flags()) + " extends " + superclass);
-            declaredByUs.add("class " + flags(ours.flags().flags()) + " extends " + visibleSuperclass);
+            declaredByUs.remove("class " + flags(classFlags(ours)) + " extends " + superclass);
+            declaredByUs.add("class " + flags(classFlags(ours)) + " extends " + visibleSuperclass);
             for (String hidden = superclass; !hidden.equals(visibleSuperclass);) {
                 ClassModel model = ClassFile.of().parse(tree.classFile(hidden));
                 members(model, ours, true).stream().filter(member -> !member.contains(" <init>("))
@@ -3871,6 +3883,7 @@ class AndroidDeclarationsTest {
         hiddenInAndroid.retainAll(declarations(android, false));
         assertTrue(hiddenInAndroid.isEmpty(), "listed as hidden, in android.jar: " + hiddenInAndroid);
         declaredByUs.removeAll(hidden);
+        declaredByUs.removeAll(added(ours));
         if (COMPLETE.contains(internalName)) {
             assertDeclares(declarations(android, false), declaredByUs);
         } else if (PARTIAL.containsKey(internalName)) {
@@ -3946,7 +3959,7 @@ class AndroidDeclarationsTest {
 
     private static Set<String> declarations(ClassModel model, boolean ours) {
         Set<String> declared = members(model, ours);
-        declared.add("class " + flags(model.flags().flags()) + " extends " + superclassOf(model));
+        declared.add("class " + flags(classFlags(model)) + " extends " + superclassOf(model));
         declared.addAll(nested(model, model.thisClass().asInternalName()));
         return declared;
     }
@@ -3977,17 +3990,53 @@ class AndroidDeclarationsTest {
         }
         for (MethodModel method : model.methods()) {
             if (isVisible(method.flags().flags()) && !method.flags().has(AccessFlag.SYNTHETIC)) {
-                declared.add("method " + methodFlags(owner, method) + " " + method.methodName().stringValue()
-                        + method.methodType().stringValue());
+                declared.add(declaration(owner, method));
             }
         }
         return declared;
     }
 
+    private static Set<String> added(ClassModel model) {
+        Set<String> added = new TreeSet<>();
+        for (FieldModel field : model.fields()) {
+            if (isAdded(field)) {
+                added.add(declaration(field, true));
+            }
+        }
+        for (MethodModel method : model.methods()) {
+            if (isAdded(method)) {
+                added.add(declaration(model, method));
+            }
+        }
+        return added;
+    }
+
+    private static String declaration(ClassModel owner, MethodModel method) {
+        return "method " + methodFlags(owner, method) + " " + method.methodName().stringValue()
+                + method.methodType().stringValue();
+    }
+
+    // android.jar declares final a class that a copy seals for classes of ours alone.
+    private static Set<AccessFlag> classFlags(ClassModel model) {
+        EnumSet<AccessFlag> flags = EnumSet.noneOf(AccessFlag.class);
+        flags.addAll(model.flags().flags());
+        Optional<PermittedSubclassesAttribute> permitted = model.findAttribute(Attributes.permittedSubclasses());
+        if (permitted.isPresent() && permitted.get().permittedSubclasses().stream().allMatch(subclass -> {
+            try {
+                return isAdded(ClassFile.of().parse(Tree.EMULATIONS.classFile(subclass.asInternalName())));
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+        })) {
+            flags.add(AccessFlag.FINAL);
+        }
+        return flags;
+    }
+
     // android.jar's stubs carry no final on a method of a final class.
     private static String methodFlags(ClassModel owner, MethodModel method) {
         EnumSet<AccessFlag> flags = EnumSet.copyOf(method.flags().flags());
-        if (owner.flags().has(AccessFlag.FINAL)) {
+        if (classFlags(owner).contains(AccessFlag.FINAL)) {
             flags.remove(AccessFlag.FINAL);
         }
         return flags(flags);
@@ -4032,6 +4081,12 @@ class AndroidDeclarationsTest {
     private static boolean isEmulated(ClassModel model) {
         return model.findAttribute(Attributes.runtimeInvisibleAnnotations()).map(attribute -> attribute.annotations()
                 .stream().anyMatch(a -> a.className().stringValue().equals(EMULATED))).orElse(false);
+    }
+
+    private static boolean isAdded(AttributedElement element) {
+        return element.findAttribute(Attributes.runtimeInvisibleAnnotations()).map(
+                attribute -> attribute.annotations().stream().anyMatch(a -> a.className().stringValue().equals(ADDED)))
+                .orElse(false);
     }
 
     private static boolean isVisible(Set<AccessFlag> flags) {

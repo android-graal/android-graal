@@ -65,7 +65,7 @@ spotless {
         targetExclude(
             "src/generated/java/**",
             fileTree("src/main/java") {
-                exclude("org/androidgraal/**", "android/opengl/GLES*.java")
+                exclude("org/androidgraal/**", "android/opengl/GLES*.java", "android/os/ProxyMessageQueue.java")
             },
         )
     }

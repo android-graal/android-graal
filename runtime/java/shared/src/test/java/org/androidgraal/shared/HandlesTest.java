@@ -87,7 +87,7 @@ class HandlesTest {
         IllegalStateException e = assertThrows(IllegalStateException.class,
                 () -> new Handles(1, NONE).object(Long.MAX_VALUE));
 
-        assertEquals("no object exported as " + Long.MAX_VALUE + ": its proxy was released", e.getMessage());
+        assertEquals("no object exported as " + Long.MAX_VALUE, e.getMessage());
     }
 
     @Test
@@ -99,7 +99,7 @@ class HandlesTest {
         art.drop(id);
 
         IllegalStateException e = assertThrows(IllegalStateException.class, () -> art.object(id));
-        assertEquals("no object exported as " + id + ": its proxy was released", e.getMessage());
+        assertEquals("no object exported as " + id, e.getMessage());
         assertThrows(IllegalStateException.class, () -> art.receive(id, null));
         IllegalStateException twice = assertThrows(IllegalStateException.class, () -> art.drop(id));
         assertEquals("no object exported as " + id, twice.getMessage());

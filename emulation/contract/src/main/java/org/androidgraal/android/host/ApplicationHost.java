@@ -22,4 +22,15 @@ public interface ApplicationHost {
 
     /** {@code Application.getProcessName()} of the application's process. */
     String processName();
+
+    /**
+     * Posts a synchronous message on a Handler of the ART Looper {@code looper}, at {@code uptimeMillis} of
+     * {@code SystemClock.uptimeMillis()}, zero meaning the front of its queue, whose dispatch runs
+     * {@link ProxyLoopers#dispatch(long)} with that uptime. Returns the Handler's own result, also false when that
+     * Looper is quitting or its thread ended.
+     */
+    boolean post(long looper, long uptimeMillis);
+
+    /** Quits the ART Looper {@code looper}, with {@code quitSafely} when {@code safe}. */
+    void quit(long looper, boolean safe);
 }

@@ -109,6 +109,14 @@ public final class NativeMessageQueue {
         }
     }
 
+    public static void destroyWhenUnreachable(MessageQueue queue, long ptr) {
+        ImageCleaner.register(queue, () -> {
+            if (getQueue(ptr) != null) {
+                nativeDestroy(ptr);
+            }
+        });
+    }
+
     @Transcribed("https://android.googlesource.com/platform/frameworks/base/+/refs/tags/android-16.0.0_r1/core/jni/android_os_MessageQueue.cpp#L141-L156")
     private void setFileDescriptorEvents(int fd, int events) {
         if (events != 0) {

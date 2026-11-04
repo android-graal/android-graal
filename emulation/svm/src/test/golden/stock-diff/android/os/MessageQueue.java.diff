@@ -23,15 +23,18 @@
  import java.io.FileDescriptor;
  import java.lang.annotation.Retention;
  import java.lang.annotation.RetentionPolicy;
-@@ -60,6 +65,7 @@
+@@ -60,7 +65,9 @@
   */
  @RavenwoodKeepWholeClass
  @RavenwoodRedirectionClass("MessageQueue_ravenwood")
+-public final class MessageQueue {
 +@Emulated
- public final class MessageQueue {
++@Adapted(reason = "is sealed and permits ProxyMessageQueue instead of final", premise = Premise.PROXY_LOOPER)
++public sealed class MessageQueue permits ProxyMessageQueue {
      private static final String TAG_L = "LegacyMessageQueue";
      private static final String TAG_C = "ConcurrentMessageQueue";
-@@ -115,18 +121,40 @@
+     private static final boolean DEBUG = false;
+@@ -115,24 +122,48 @@
      private static Boolean sIsProcessAllowedToUseConcurrent = null;
  
      @RavenwoodRedirect
@@ -76,9 +79,17 @@
 +        NativeMessageQueue.nativeSetFileDescriptorEvents(ptr, fd, events);
 +    }
  
++    @Adapted(reason = "registers its native queue's release with a cleaner", premise = Premise.NO_FINALIZER)
      MessageQueue(boolean quitAllowed) {
          initIsProcessAllowedToUseConcurrent();
-@@ -195,35 +223,9 @@
+         mUseConcurrent = sIsProcessAllowedToUseConcurrent;
+         mQuitAllowed = quitAllowed;
+         mPtr = nativeInit();
++        NativeMessageQueue.destroyWhenUnreachable(this, mPtr);
+         mThreadName = Thread.currentThread().getName();
+         mTid = Process.myTid();
+     }
+@@ -195,35 +226,9 @@
          // authors to test Looper and MessageQueue without resorting to reflection.
      }
  
@@ -115,7 +126,7 @@
      }
  
      private void decAndTraceMessageCount() {
-@@ -517,9 +519,10 @@
+@@ -517,9 +522,10 @@
      }
  
      @RavenwoodThrow(blockedBy = android.os.ParcelFileDescriptor.class)
@@ -127,7 +138,7 @@
  
          int index = -1;
          FileDescriptorRecord record = null;
-@@ -1448,64 +1451,6 @@
+@@ -1448,64 +1454,6 @@
          return null;
      }
  
@@ -192,7 +203,7 @@
      private static final class MatchHandlerWhatAndObject extends MessageCompare {
          @Override
          public boolean compareMessage(MessageNode n, Handler h, int what, Object object, Runnable r,
-@@ -2229,51 +2174,6 @@
+@@ -2229,51 +2177,6 @@
          }
      }
  

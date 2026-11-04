@@ -25,6 +25,7 @@ import android.util.Slog;
 import android.util.proto.ProtoOutputStream;
 
 import org.androidgraal.hosted.annotate.Adapted;
+import org.androidgraal.hosted.annotate.Added;
 import org.androidgraal.hosted.annotate.Emulated;
 import org.androidgraal.hosted.annotate.Premise;
 
@@ -141,6 +142,30 @@ public final class Looper {
     @Deprecated
     public static void prepareMainLooper() {
         prepare(false);
+        synchronized (Looper.class) {
+            if (sMainLooper != null) {
+                throw new IllegalStateException("The main Looper has already been prepared.");
+            }
+            sMainLooper = myLooper();
+        }
+    }
+
+    @Added(reason = "prepares a Looper over a ProxyMessageQueue for an ART Looper on the calling thread")
+    public static void prepareProxy(long looper) {
+        prepareProxy(looper, true);
+    }
+
+    @Added(reason = "prepares a Looper over a ProxyMessageQueue for an ART Looper on the calling thread")
+    private static void prepareProxy(long looper, boolean quitAllowed) {
+        if (sThreadLocal.get() != null) {
+            throw new RuntimeException("Only one Looper may be created per thread");
+        }
+        sThreadLocal.set(new Looper(new ProxyMessageQueue(looper, quitAllowed)));
+    }
+
+    @Added(reason = "prepares the main Looper over a ProxyMessageQueue")
+    public static void prepareMainProxyLooper(long looper) {
+        prepareProxy(looper, false);
         synchronized (Looper.class) {
             if (sMainLooper != null) {
                 throw new IllegalStateException("The main Looper has already been prepared.");
@@ -443,6 +468,12 @@ public final class Looper {
 
     private Looper(boolean quitAllowed) {
         mQueue = new MessageQueue(quitAllowed);
+        mThread = Thread.currentThread();
+    }
+
+    @Added(reason = "a Looper over the given queue on the calling thread")
+    private Looper(MessageQueue queue) {
+        mQueue = queue;
         mThread = Thread.currentThread();
     }
 
