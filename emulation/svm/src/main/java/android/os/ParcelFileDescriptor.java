@@ -35,6 +35,7 @@ import android.annotation.NonNull;
 import android.annotation.SuppressLint;
 import android.annotation.TestApi;
 import android.compat.annotation.UnsupportedAppUsage;
+import android.net.Uri;
 import android.ravenwood.annotation.RavenwoodKeepWholeClass;
 import android.ravenwood.annotation.RavenwoodThrow;
 import android.system.ErrnoException;
@@ -52,6 +53,7 @@ import libcore.io.Memory;
 
 import org.androidgraal.android.FileDescriptors;
 import org.androidgraal.android.ImageCleaner;
+import org.androidgraal.bionic.Unistd;
 import org.androidgraal.hosted.annotate.Adapted;
 import org.androidgraal.hosted.annotate.Added;
 import org.androidgraal.hosted.annotate.Emulated;
@@ -117,7 +119,7 @@ public class ParcelFileDescriptor implements Parcelable, Closeable {
 
     private final CloseGuard mGuard = CloseGuard.get();
 
-    @Added(reason = "the leak release, cleaned by an explicit close or detach")
+    @Added(reason = "the comm channel's leak release, cleaned by an explicit close or detach")
     private final Cleaner.Cleanable mCleanable;
 
     /**
@@ -194,7 +196,7 @@ public class ParcelFileDescriptor implements Parcelable, Closeable {
         mFd = null;
         mCommFd = null;
         mClosed = true;
-        mCleanable = releaseWhenUnreachable(this, mFd, mCommFd);
+        mCleanable = releaseWhenUnreachable(this, mFd, mCommFd, mClosed);
     }
 
     /** {@hide} */
@@ -216,7 +218,7 @@ public class ParcelFileDescriptor implements Parcelable, Closeable {
         mCommFd = commChannel;
 
         mGuard.open("close");
-        mCleanable = releaseWhenUnreachable(this, mFd, mCommFd);
+        mCleanable = releaseWhenUnreachable(this, mFd, mCommFd, mClosed);
     }
 
     /**
@@ -932,27 +934,32 @@ public class ParcelFileDescriptor implements Parcelable, Closeable {
         }
     }
 
-    @Added(reason = "registers a leaked descriptor's LEAKED status and close with the cleaner")
+    @Added(reason = "registers an open descriptor's LEAKED status and close in its cleanup slot, "
+            + "and the LEAKED status alone with the cleaner against the object")
     public static Cleaner.Cleanable releaseWhenUnreachable(ParcelFileDescriptor pfd,
-            FileDescriptor fd, FileDescriptor commFd) {
-        if (fd == null) {
-            return null;
+            FileDescriptor fd, FileDescriptor commFd, boolean closed) {
+        if (!closed) {
+            final int rawFd = FileDescriptors.getFd(fd);
+            // You might think we can put this in the image cleaner, but we cannot. An AutoClose*Stream holds the
+            // ParcelFileDescriptor and registers itself to the FileDescriptor. So the "fd" leaking into the ImageCleaner
+            // creates a strongly-held cycle in the cleaner action
+            FileDescriptors.releaseWhenUnreachable(fd, () -> {
+                // Status MUST be sent before closing actual descriptor
+                if (commFd != null && commFd.valid()) {
+                    writeLeakedStatusAndClose(commFd);
+                }
+                Unistd.close(rawFd);
+            });
         }
         return ImageCleaner.register(pfd, () -> {
-            if (fd.valid() || (commFd != null && commFd.valid())) {
-                // Status MUST be sent before closing actual descriptor
+            if (commFd != null && commFd.valid()) {
                 writeLeakedStatusAndClose(commFd);
-                closeInternal(fd);
             }
         });
     }
 
     @Added(reason = "writeCommStatusAndClose(Status.LEAKED, null) over a local buffer")
     private static void writeLeakedStatusAndClose(FileDescriptor commFd) {
-        if (commFd == null) {
-            return;
-        }
-
         try {
             final byte[] buf = new byte[MAX_STATUS];
 

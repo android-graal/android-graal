@@ -19,5 +19,8 @@ final class Target_java_io_FileDescriptor {
     public native void close() throws IOException;
 
     @Alias
+    public native void registerCleanup(Target_jdk_internal_ref_PhantomCleanable cleanable);
+
+    @Alias
     public native void unregisterCleanup();
 }

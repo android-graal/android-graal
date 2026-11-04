@@ -35,6 +35,11 @@ public final class FileDescriptors {
         target(descriptor).close();
     }
 
+    public static void releaseWhenUnreachable(FileDescriptor descriptor, Runnable action) {
+        target(descriptor).registerCleanup(
+                (Target_jdk_internal_ref_PhantomCleanable) (Object) ImageCleaner.register(descriptor, action));
+    }
+
     private static Target_java_io_FileDescriptor target(FileDescriptor descriptor) {
         return (Target_java_io_FileDescriptor) (Object) descriptor;
     }
