@@ -33,7 +33,7 @@ class BuildSettingsTest {
         val failure = assertFailsWith<GradleException> {
             settings(
                 gradleProperties = "androidgraal.group=org.androidgraal\nandroidgraal.version=0.1.0-SNAPSHOT\n" +
-                    "androidgraal.android.api=23\n",
+                    MIN_SDK + COMPILE_SDK,
             )
         }
 
@@ -49,37 +49,55 @@ class BuildSettingsTest {
     @Test
     fun `a missing group fails naming the key`() {
         val failure = assertFailsWith<GradleException> {
-            settings(gradleProperties = "androidgraal.version=0.1.0\nandroidgraal.android.api=23\n")
+            settings(gradleProperties = "androidgraal.version=0.1.0\n" + MIN_SDK + COMPILE_SDK)
         }
 
         assertEquals("no androidgraal.group in the root gradle.properties", failure.message)
     }
 
     @Test
-    fun `the android api is a global setting the gradle property overrides`() {
-        assertEquals(23, settings().androidApi)
+    fun `the min sdk is a global setting the gradle property overrides`() {
+        assertEquals(23, settings().minSdk)
         assertEquals(
             24,
-            settings(gradleProperty = { if (it == "androidgraal.android.api") "24" else null }).androidApi,
+            settings(gradleProperty = { if (it == "androidgraal.android.minSdk") "24" else null }).minSdk,
         )
     }
 
     @Test
-    fun `a missing android api fails naming the key`() {
+    fun `a missing min sdk fails naming the key`() {
         val failure = assertFailsWith<GradleException> {
-            settings(gradleProperties = "androidgraal.group=org.androidgraal\nandroidgraal.version=0.1.0\n")
+            settings(gradleProperties = GLOBAL + COMPILE_SDK)
         }
 
-        assertEquals("no androidgraal.android.api in the root gradle.properties", failure.message)
+        assertEquals("no androidgraal.android.minSdk in the root gradle.properties", failure.message)
     }
 
     @Test
-    fun `an android api that is not a number fails naming the key`() {
+    fun `a min sdk that is not a number fails naming the key`() {
         val failure = assertFailsWith<GradleException> {
-            settings(gradleProperties = GLOBAL + "androidgraal.android.api=api23\n")
+            settings(gradleProperties = GLOBAL + "androidgraal.android.minSdk=api23\n" + COMPILE_SDK)
         }
 
-        assertEquals("androidgraal.android.api: \"api23\" is not a number", failure.message)
+        assertEquals("androidgraal.android.minSdk: \"api23\" is not a number", failure.message)
+    }
+
+    @Test
+    fun `the compile sdk is a global setting the gradle property overrides`() {
+        assertEquals(36, settings().compileSdk)
+        assertEquals(
+            35,
+            settings(gradleProperty = { if (it == "androidgraal.android.compileSdk") "35" else null }).compileSdk,
+        )
+    }
+
+    @Test
+    fun `a missing compile sdk fails naming the key`() {
+        val failure = assertFailsWith<GradleException> {
+            settings(gradleProperties = GLOBAL + MIN_SDK)
+        }
+
+        assertEquals("no androidgraal.android.compileSdk in the root gradle.properties", failure.message)
     }
 
     @Test
@@ -183,7 +201,7 @@ class BuildSettingsTest {
     }
 
     private fun settings(
-        gradleProperties: String = GLOBAL + "androidgraal.android.api=23\n",
+        gradleProperties: String = GLOBAL + MIN_SDK + COMPILE_SDK,
         localProperties: String? = "sdk.dir=/file/sdk\n",
         gradleProperty: (String) -> String? = { null },
         environment: (String) -> String? = { null },
@@ -196,5 +214,9 @@ class BuildSettingsTest {
 
     private companion object {
         const val GLOBAL = "androidgraal.group=org.androidgraal\nandroidgraal.version=0.1.0\n"
+
+        const val MIN_SDK = "androidgraal.android.minSdk=23\n"
+
+        const val COMPILE_SDK = "androidgraal.android.compileSdk=36\n"
     }
 }

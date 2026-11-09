@@ -67,7 +67,7 @@ for (target in Target.entries) {
 
         val toolchain = rel(nativeHost.ndk.toolchain)
         val clang = Compiler("$toolchain/bin/clang", "$toolchain/bin/clang++", "$toolchain/bin/llvm-ar")
-        val targetFlag = "--target=${target.clangTarget}${nativeHost.androidApi}"
+        val targetFlag = "--target=${target.clangTarget}${nativeHost.minSdk}"
 
         progress("Compiling with NDK ${nativeHost.ndk.version()}")
         delete(obj)

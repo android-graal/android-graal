@@ -7,7 +7,6 @@ group = "${nativeHost.settings.group}.emulation"
 
 description = "Every android.* class the image provides, emulated or as a constants skeleton."
 
-val sdkVersion = 36
 val generator: SourceSet = sourceSets.create("generator")
 val declarations: SourceSet = sourceSets.create("declarations") {
     java.setSrcDirs(listOf("src/generated/java"))
@@ -50,7 +49,7 @@ tasks.register<JavaExec>("generateGlesBindings") {
     val include = nativeHost.ndk.toolchain.resolve("sysroot/usr/include")
     args(
         listOf(
-            nativeHost.sdk.androidJar(sdkVersion),
+            nativeHost.sdk.androidJar(nativeHost.compileSdk),
             include.resolve("GLES2/gl2.h"),
             include.resolve("GLES3/gl3.h"),
             include.resolve("GLES3/gl31.h"),
@@ -126,14 +125,14 @@ abstract class StockDiffInputs : CommandLineArgumentProvider {
 tasks.test {
     jvmArgumentProviders +=
         objects.newInstance<DeclarationsInputs>().apply {
-            androidJar.from(nativeHost.sdk.androidJar(sdkVersion))
+            androidJar.from(nativeHost.sdk.androidJar(nativeHost.compileSdk))
             emulationClasses.from(sourceSets.main.flatMap { it.java.classesDirectory })
             declarationClasses.from(declarations.java.classesDirectory)
         }
     jvmArgumentProviders +=
         objects.newInstance<StockDiffInputs>().apply {
             copies = layout.projectDirectory.dir("src/main/java")
-            sdkSources = nativeHost.sdk.androidSources(sdkVersion)
+            sdkSources = nativeHost.sdk.androidSources(nativeHost.compileSdk)
             goldens = layout.projectDirectory.dir("src/test/golden/stock-diff")
         }
 }

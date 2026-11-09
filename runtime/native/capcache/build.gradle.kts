@@ -89,7 +89,7 @@ for (target in Target.entries) {
         progress("compiling the query programs")
         forEach(query, "*.c") { each ->
             exec(
-                cc, "--target=${target.clangTarget}${nativeHost.androidApi}", "-O1", "-fPIE", "-pie",
+                cc, "--target=${target.clangTarget}${nativeHost.minSdk}", "-O1", "-fPIE", "-pie",
                 "-I$jdkSrc/java.base/unix/native/include",
                 "-I$jdkSrc/java.base/share/native/include",
                 "-I$svmSrc/com.oracle.svm.native.libchelper/include",

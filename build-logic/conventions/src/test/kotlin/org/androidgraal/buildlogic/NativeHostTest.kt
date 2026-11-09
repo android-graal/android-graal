@@ -30,7 +30,8 @@ class NativeHostTest {
         assertEquals(File(tmp, "vendor/graal"), host.vendor.graal)
 
         assertEquals(Semver.parse("30.0.16248370"), host.ndk.version())
-        assertEquals(23, host.androidApi)
+        assertEquals(23, host.minSdk)
+        assertEquals(36, host.compileSdk)
 
         val failure = assertFailsWith<GradleException> { host.cmake() }
         assertEquals(
@@ -82,7 +83,8 @@ class NativeHostTest {
     }
 
     private fun settings(local: String = ""): BuildSettings = BuildSettings(
-        "androidgraal.group=org.androidgraal\nandroidgraal.version=0.1.0\nandroidgraal.android.api=23\n",
+        "androidgraal.group=org.androidgraal\nandroidgraal.version=0.1.0\n" +
+            "androidgraal.android.minSdk=23\nandroidgraal.android.compileSdk=36\n",
         "sdk.dir=$sdkRoot\n$local",
         { null },
         { null },

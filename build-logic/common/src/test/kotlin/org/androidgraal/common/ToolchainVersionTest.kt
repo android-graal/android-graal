@@ -19,7 +19,7 @@ class ToolchainVersionTest {
         llvmCommit = "3f7d8cf270530adac0d0976cd9a866f6a236def2",
         jdkCommit = "484105df8dab6489c1030865cf194fa8a39663aa",
         ndkVersion = Semver.parse("30.0.16248370")!!,
-        androidApi = 23,
+        minSdk = 23,
     )
 
     @AfterTest
@@ -36,7 +36,7 @@ class ToolchainVersionTest {
             llvm.commit=3f7d8cf270530adac0d0976cd9a866f6a236def2
             jdk.commit=484105df8dab6489c1030865cf194fa8a39663aa
             ndk.version=30.0.16248370
-            android.api=23
+            android.minSdk=23
 
             """.trimIndent(),
         )

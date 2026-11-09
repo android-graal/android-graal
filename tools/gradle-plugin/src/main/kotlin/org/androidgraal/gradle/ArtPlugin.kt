@@ -262,7 +262,7 @@ class ArtPlugin : Plugin<Project> {
         return directory.map { root ->
             ToolchainLayout(root).also {
                 it.validate()
-                it.checkApi(minSdk)
+                it.checkMinSdk(minSdk)
             }
         }
     }

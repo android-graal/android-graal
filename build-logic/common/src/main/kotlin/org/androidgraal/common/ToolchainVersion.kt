@@ -11,7 +11,7 @@ data class ToolchainVersion(
     val llvmCommit: String,
     val jdkCommit: String,
     val ndkVersion: Semver,
-    val androidApi: Int,
+    val minSdk: Int,
 ) {
 
     fun toProperties(): Map<String, String> = linkedMapOf(
@@ -21,7 +21,7 @@ data class ToolchainVersion(
         "llvm.commit" to llvmCommit,
         "jdk.commit" to jdkCommit,
         "ndk.version" to ndkVersion.toString(),
-        "android.api" to androidApi.toString(),
+        "android.minSdk" to minSdk.toString(),
     )
 
     companion object {
@@ -38,7 +38,7 @@ data class ToolchainVersion(
                 llvmCommit = value("llvm.commit"),
                 jdkCommit = value("jdk.commit"),
                 ndkVersion = Semver.parse(value("ndk.version"))!!,
-                androidApi = value("android.api").toInt(),
+                minSdk = value("android.minSdk").toInt(),
             )
         }
     }

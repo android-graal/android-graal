@@ -10,12 +10,12 @@ plugins {
 
 description = "The JDK static libraries and headers, cross-compiled from vendor/labs-openjdk for every target."
 
-val androidApi: Int = nativeHost.androidApi
+val minSdk: Int = nativeHost.minSdk
 
 val bootJdkHome: FileCollection = nativeInput(Native.LabsJdk.home)
 
 for (target in Target.entries) {
-    val conf = "android-${target.arch}-api$androidApi"
+    val conf = "android-${target.arch}-api$minSdk"
     val task = tasks.register<Script>("buildJdkStaticLibs${target.title}") {
         group = "android-graal"
         description = "Configures and builds the `static-libs` images of vendor/labs-openjdk for $conf."
@@ -41,7 +41,7 @@ for (target in Target.entries) {
             "--with-toolchain-path=$toolchain/bin",
             "--with-sysroot=$toolchain/sysroot",
             "--with-jvm-variants=minimal",
-            "--openjdk-target=${target.clangTarget}$androidApi",
+            "--openjdk-target=${target.clangTarget}$minSdk",
             "--with-build-user=android-graal",
             "--with-version-opt=android-graal",
         )

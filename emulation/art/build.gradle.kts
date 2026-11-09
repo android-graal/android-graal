@@ -11,7 +11,7 @@ description = "The ART side of android-graal's Android emulation: what the image
 dependencies {
     api("${nativeHost.settings.group}:art:$version")
     api(project(":contract"))
-    compileOnly(files(nativeHost.sdk.androidJar(nativeHost.androidApi)))
+    compileOnly(files(nativeHost.sdk.androidJar(nativeHost.compileSdk)))
 }
 
 tasks.compileJava {

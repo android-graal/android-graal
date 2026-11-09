@@ -34,7 +34,9 @@ class BuildSettings(
 
     val version: String = version()
 
-    val androidApi: Int = int("androidgraal.android.api")
+    val minSdk: Int = int("androidgraal.android.minSdk")
+
+    val compileSdk: Int = int("androidgraal.android.compileSdk")
 
     val sdkDir: File = directory("sdk.dir", "ANDROID_HOME")
         ?: throw GradleException("no Android SDK: neither sdk.dir nor \$ANDROID_HOME is set")

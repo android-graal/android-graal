@@ -97,22 +97,22 @@ class ToolchainLayoutTest {
     }
 
     @Test
-    fun `checkApi refuses a minSdk below the toolchain's android api`() {
+    fun `checkMinSdk refuses a minSdk below the toolchain's android minSdk`() {
         val layout = ToolchainLayout(fakeToolchain())
 
-        val failure = assertFailsWith<IllegalStateException> { layout.checkApi(21) }
+        val failure = assertFailsWith<IllegalStateException> { layout.checkMinSdk(21) }
 
-        assertEquals("minSdk 21 is below the toolchain's android.api 23: ${layout.versionFile}", failure.message)
+        assertEquals("minSdk 21 is below the toolchain's android.minSdk 23: ${layout.versionFile}", failure.message)
     }
 
     @Test
-    fun `checkApi accepts a minSdk equal to the toolchain's android api`() {
-        ToolchainLayout(fakeToolchain()).checkApi(23)
+    fun `checkMinSdk accepts a minSdk equal to the toolchain's android minSdk`() {
+        ToolchainLayout(fakeToolchain()).checkMinSdk(23)
     }
 
     @Test
-    fun `checkApi accepts a minSdk above the toolchain's android api`() {
-        ToolchainLayout(fakeToolchain()).checkApi(30)
+    fun `checkMinSdk accepts a minSdk above the toolchain's android minSdk`() {
+        ToolchainLayout(fakeToolchain()).checkMinSdk(30)
     }
 
     private fun fakeToolchain(): File {
@@ -143,6 +143,6 @@ private val VERSION = """
     llvm.commit=0000000000000000000000000000000000000000
     jdk.commit=0000000000000000000000000000000000000000
     ndk.version=30.0.16248370
-    android.api=23
+    android.minSdk=23
 
 """.trimIndent()

@@ -30,9 +30,9 @@ class ToolchainLayout(val root: File) {
 
     fun version(): ToolchainVersion = ToolchainVersion.read(versionFile)
 
-    fun checkApi(minSdk: Int) {
-        val api = version().androidApi
-        check(minSdk >= api) { "minSdk $minSdk is below the toolchain's android.api $api: $versionFile" }
+    fun checkMinSdk(minSdk: Int) {
+        val floor = version().minSdk
+        check(minSdk >= floor) { "minSdk $minSdk is below the toolchain's android.minSdk $floor: $versionFile" }
     }
 
     fun validate() {

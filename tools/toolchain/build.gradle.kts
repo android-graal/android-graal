@@ -46,7 +46,7 @@ val writeVersion = tasks.register<WriteProperties>("writeVersion") {
             llvmCommit = cloneCommit(nativeHost.vendor.llvm),
             jdkCommit = cloneCommit(nativeHost.vendor.labsOpenjdk),
             ndkVersion = nativeHost.ndk.version(),
-            androidApi = nativeHost.androidApi,
+            minSdk = nativeHost.minSdk,
         ).toProperties(),
     )
 }

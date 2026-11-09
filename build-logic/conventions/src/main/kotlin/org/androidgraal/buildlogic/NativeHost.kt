@@ -8,7 +8,9 @@ class NativeHost(val root: File, val settings: BuildSettings, val sdk: AndroidSd
 
     val vendor: Vendor = Vendor(root.resolve("vendor"))
 
-    val androidApi: Int = settings.androidApi
+    val minSdk: Int = settings.minSdk
+
+    val compileSdk: Int = settings.compileSdk
 
     val ndk: Ndk = resolveNdk()
 
@@ -17,7 +19,7 @@ class NativeHost(val root: File, val settings: BuildSettings, val sdk: AndroidSd
     private fun resolveNdk(): Ndk {
         val dir = settings.ndkDir
         val resolved = if (dir == null) sdk.ndk(settings.ndkVersion) else ndkAt(dir)
-        resolved.validate(androidApi)
+        resolved.validate(minSdk)
         return resolved
     }
 
