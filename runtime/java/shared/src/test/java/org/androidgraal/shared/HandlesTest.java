@@ -113,7 +113,7 @@ class HandlesTest {
         Stub known = image.receive(-9, Stub::new);
 
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> image.release(new Object()));
-        assertEquals("java.lang.Object is not a Foreign, the one kind of proxy that is released", e.getMessage());
+        assertEquals("java.lang.Object is not a ReleasableProxy", e.getMessage());
         assertThrows(NullPointerException.class, () -> image.release(null));
         assertThrows(IllegalArgumentException.class, () -> image.release(new Stub(-10)));
         assertSame(known, image.receive(-9, Stub::new));
@@ -149,8 +149,7 @@ class HandlesTest {
         assertEquals(-3, image.send(handle));
         assertSame(handle, image.receive(-3, again));
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> image.release(handle));
-        assertEquals(Handle.class.getName() + " is not a Foreign, the one kind of proxy that is released",
-                e.getMessage());
+        assertEquals(Handle.class.getName() + " is not a ReleasableProxy", e.getMessage());
         assertEquals(1, image.proxies());
         assertSame(handle, image.receive(-3, again));
         assertEquals(List.of(), crossed);

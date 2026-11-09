@@ -83,8 +83,7 @@ public final class Handles {
     public void release(Object proxy) {
         Objects.requireNonNull(proxy);
         if (!(proxy instanceof ReleasableProxy releasableProxy)) {
-            throw new IllegalArgumentException(
-                    proxy.getClass().getName() + " is not a Foreign, the one kind of proxy that is released");
+            throw new IllegalArgumentException(proxy.getClass().getName() + " is not a ReleasableProxy");
         }
         onProxyReleased.release(imports.release(releasableProxy));
     }
