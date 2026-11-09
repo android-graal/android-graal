@@ -212,7 +212,7 @@ internal class Interfaces(
         elements.getTypeElement(name) ?: fail("$name is on neither the contract classpath nor the JDK")
 
     companion object {
-        val RESERVED_METHODS = setOf("foreignId", "foreignCheck", "markReleased", "isReleased")
+        val RESERVED_METHODS = setOf("foreignId", "checkNotReleased", "markReleased", "isReleased")
         val RESERVED_FIELDS = setOf("id")
     }
 }

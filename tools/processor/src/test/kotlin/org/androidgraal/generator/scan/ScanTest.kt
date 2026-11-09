@@ -8,7 +8,7 @@ import org.androidgraal.generator.NO_KIND
 import org.androidgraal.generator.SERVICE
 import org.androidgraal.generator.assertErrors
 import org.androidgraal.generator.scan.Annotations.PACKAGE
-import org.androidgraal.shared.Foreign
+import org.androidgraal.shared.ReleasableProxy
 import org.apache.commons.io.FileUtils
 import java.io.File
 import java.lang.reflect.Modifier
@@ -502,12 +502,12 @@ class ScanTest {
                 }
             """.trimIndent(),
             "fix/core/Base.java" to
-                "package fix.core;\n\npublic interface Base {\n    void foreignCheck();\n\n    void markReleased();\n}\n",
+                "package fix.core;\n\npublic interface Base {\n    void checkNotReleased();\n\n    void markReleased();\n}\n",
         )
 
         assertErrors(
             fixtures.compile("reserved-method", CORE + peer).process(),
-            "fix.core.Base.foreignCheck() uses a name reserved by the generated proxy, rename it",
+            "fix.core.Base.checkNotReleased() uses a name reserved by the generated proxy, rename it",
             "fix.core.Base.markReleased() uses a name reserved by the generated proxy, rename it",
             "fix.core.Peer.foreignId() uses a name reserved by the generated proxy, rename it",
             "fix.core.Peer.foreignId(int) uses a name reserved by the generated proxy, rename it",
@@ -517,11 +517,15 @@ class ScanTest {
     @Test
     fun `the reserved names are Foreign's members`() {
         assertEquals(
-            Foreign::class.java.declaredMethods.filterNot { Modifier.isPrivate(it.modifiers) }.map { it.name }.toSet(),
+            ReleasableProxy::class.java.declaredMethods.filterNot {
+                Modifier.isPrivate(it.modifiers)
+            }.map { it.name }.toSet(),
             Interfaces.RESERVED_METHODS,
         )
         assertEquals(
-            Foreign::class.java.declaredFields.filterNot { Modifier.isPrivate(it.modifiers) }.map { it.name }.toSet(),
+            ReleasableProxy::class.java.declaredFields.filterNot {
+                Modifier.isPrivate(it.modifiers)
+            }.map { it.name }.toSet(),
             Interfaces.RESERVED_FIELDS,
         )
     }

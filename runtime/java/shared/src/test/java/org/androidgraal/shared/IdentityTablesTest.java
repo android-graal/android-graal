@@ -44,7 +44,7 @@ class IdentityTablesTest {
     @Test
     void anIdHasOneProxyTheFirstToArrive() {
         Imports imports = new Imports();
-        Proxy first = new Proxy(7);
+        Stub first = new Stub(7);
 
         assertSame(first, imports.getOrAdd(7, id -> first));
         assertSame(first, imports.getOrAdd(7, id -> {
@@ -56,31 +56,31 @@ class IdentityTablesTest {
     @Test
     void aReleasedProxyLeavesTheTableAndFailsEveryLaterUse() {
         Imports imports = new Imports();
-        Foreign proxy = imports.getOrAdd(7, Proxy::new);
+        ReleasableProxy proxy = (ReleasableProxy) imports.getOrAdd(7, Stub::new);
 
         assertEquals(7, imports.release(proxy));
 
         assertEquals(0, imports.size());
         IllegalStateException e = assertThrows(IllegalStateException.class, proxy::foreignId);
-        assertEquals(Proxy.class.getName() + " proxy 7 was released", e.getMessage());
+        assertEquals(Stub.class.getName() + " proxy 7 was released", e.getMessage());
         assertThrows(IllegalStateException.class, () -> imports.release(proxy));
-        Proxy fresh = new Proxy(7);
+        Stub fresh = new Stub(7);
         assertSame(fresh, imports.getOrAdd(7, id -> fresh));
     }
 
     @Test
     void onlyTheProxyInTheTableIsReleased() {
         Imports imports = new Imports();
-        Foreign known = imports.getOrAdd(7, Proxy::new);
+        ReleasableProxy known = (ReleasableProxy) imports.getOrAdd(7, Stub::new);
 
-        assertThrows(IllegalArgumentException.class, () -> imports.release(new Proxy(8)));
-        assertSame(known, imports.getOrAdd(7, Proxy::new));
+        assertThrows(IllegalArgumentException.class, () -> imports.release(new Stub(8)));
+        assertSame(known, imports.getOrAdd(7, Stub::new));
         assertEquals(1, imports.size());
     }
 
-    private static final class Proxy extends Foreign {
+    private static final class Stub extends ReleasableProxy {
 
-        Proxy(long id) {
+        Stub(long id) {
             super(id);
         }
     }

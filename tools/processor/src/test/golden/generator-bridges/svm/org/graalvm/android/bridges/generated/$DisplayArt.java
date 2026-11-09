@@ -2,8 +2,8 @@
 package org.graalvm.android.bridges.generated;
 
 import org.androidgraal.shared.Blocks;
-import org.androidgraal.shared.Foreign;
 import org.androidgraal.shared.Handles;
+import org.androidgraal.shared.ReleasableProxy;
 import org.androidgraal.svm.Art;
 import org.androidgraal.svm.Transport;
 import org.androidgraal.svm.jni.JNI;
@@ -13,7 +13,7 @@ import org.graalvm.android.bridges.core.Placement;
 import org.graalvm.android.bridges.core.Size;
 import org.graalvm.nativeimage.StackValue;
 
-public final class $DisplayArt extends Foreign implements Display {
+public final class $DisplayArt extends ReleasableProxy implements Display {
     public static final Handles.Factory<$DisplayArt> PROXIES = $DisplayArt::new;
 
     private static JNI.JClass endPoints;
@@ -49,7 +49,7 @@ public final class $DisplayArt extends Foreign implements Display {
 
     @Override
     public char initial(String a0) {
-        foreignCheck();
+        checkNotReleased();
         Art.ThreadData thread = Art.thread();
         int n0 = a0 == null ? Blocks.NULL : a0.length();
         int bytes = Blocks.size(n0, 2);
@@ -74,7 +74,7 @@ public final class $DisplayArt extends Foreign implements Display {
 
     @Override
     public double mix(boolean a0, byte a1, char a2, short a3, long a4, float a5, double a6) {
-        foreignCheck();
+        checkNotReleased();
         Art.ThreadData thread = Art.thread();
         JNI.JValue args = StackValue.get(8, JNI.JValue.class);
         args.addressOf(0).setLong(id);
@@ -91,7 +91,7 @@ public final class $DisplayArt extends Foreign implements Display {
 
     @Override
     public void open() {
-        foreignCheck();
+        checkNotReleased();
         Art.ThreadData thread = Art.thread();
         JNI.JValue args = StackValue.get(1, JNI.JValue.class);
         args.addressOf(0).setLong(id);
@@ -100,7 +100,7 @@ public final class $DisplayArt extends Foreign implements Display {
 
     @Override
     public int ping(int a0) {
-        foreignCheck();
+        checkNotReleased();
         Art.ThreadData thread = Art.thread();
         JNI.JValue args = StackValue.get(2, JNI.JValue.class);
         args.addressOf(0).setLong(id);
@@ -111,7 +111,7 @@ public final class $DisplayArt extends Foreign implements Display {
 
     @Override
     public void place(Placement a0, int a1) {
-        foreignCheck();
+        checkNotReleased();
         Art.ThreadData thread = Art.thread();
         boolean p0 = a0 != null;
         int a0_x = p0 ? a0.x() : 0;
@@ -152,7 +152,7 @@ public final class $DisplayArt extends Foreign implements Display {
 
     @Override
     public void show(String a0) {
-        foreignCheck();
+        checkNotReleased();
         Art.ThreadData thread = Art.thread();
         int n0 = a0 == null ? Blocks.NULL : a0.length();
         int bytes = Blocks.size(n0, 2);
@@ -176,7 +176,7 @@ public final class $DisplayArt extends Foreign implements Display {
 
     @Override
     public void show(String a0, int a1) {
-        foreignCheck();
+        checkNotReleased();
         Art.ThreadData thread = Art.thread();
         int n0 = a0 == null ? Blocks.NULL : a0.length();
         int bytes = Blocks.size(n0, 2);

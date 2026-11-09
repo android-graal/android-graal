@@ -2,8 +2,8 @@
 package org.graalvm.android.bridges.generated;
 
 import org.androidgraal.shared.Blocks;
-import org.androidgraal.shared.Foreign;
 import org.androidgraal.shared.Handles;
+import org.androidgraal.shared.ReleasableProxy;
 import org.androidgraal.svm.Art;
 import org.androidgraal.svm.Transport;
 import org.androidgraal.svm.jni.JNI;
@@ -12,7 +12,7 @@ import org.graalvm.android.bridges.core.Mode;
 import org.graalvm.android.bridges.core.Probe;
 import org.graalvm.nativeimage.StackValue;
 
-public final class $ProbeArt extends Foreign implements Probe {
+public final class $ProbeArt extends ReleasableProxy implements Probe {
     private static final ThreadLocal<Long> corners4Result = ThreadLocal.withInitial(() -> Transport.threadAlloc(Blocks.size(4, 4)));
 
     private static final ThreadLocal<float[]> corners4ResultArray = ThreadLocal.withInitial(() -> new float[4]);
@@ -110,7 +110,7 @@ public final class $ProbeArt extends Foreign implements Probe {
 
     @Override
     public float[] corners4() {
-        foreignCheck();
+        checkNotReleased();
         Art.ThreadData thread = Art.thread();
         long rb = corners4Result.get();
         JNI.JValue args = StackValue.get(2, JNI.JValue.class);
@@ -125,7 +125,7 @@ public final class $ProbeArt extends Foreign implements Probe {
 
     @Override
     public int count16(String a0) {
-        foreignCheck();
+        checkNotReleased();
         if (a0 != null && a0.length() > 16) {
             throw new IllegalArgumentException("Probe.count16 parameter 0 has " + a0.length() + " chars, its static buffer 16");
         }
@@ -142,7 +142,7 @@ public final class $ProbeArt extends Foreign implements Probe {
 
     @Override
     public void fill(int[] a0) {
-        foreignCheck();
+        checkNotReleased();
         Art.ThreadData thread = Art.thread();
         int n0 = a0 == null ? Blocks.NULL : a0.length;
         int bytes = Blocks.size(n0, 4);
@@ -166,7 +166,7 @@ public final class $ProbeArt extends Foreign implements Probe {
 
     @Override
     public void fill16(int[] a0) {
-        foreignCheck();
+        checkNotReleased();
         if (a0 != null && a0.length != 16) {
             throw new IllegalArgumentException("Probe.fill16 parameter 0 has " + a0.length + " elements, its static buffer 16");
         }
@@ -181,7 +181,7 @@ public final class $ProbeArt extends Foreign implements Probe {
 
     @Override
     public void fill16Tls(int[] a0) {
-        foreignCheck();
+        checkNotReleased();
         if (a0 != null && a0.length != 16) {
             throw new IllegalArgumentException("Probe.fill16Tls parameter 0 has " + a0.length + " elements, its static buffer 16");
         }
@@ -196,7 +196,7 @@ public final class $ProbeArt extends Foreign implements Probe {
 
     @Override
     public int frame(Frame a0) {
-        foreignCheck();
+        checkNotReleased();
         Art.ThreadData thread = Art.thread();
         JNI.JValue args = StackValue.get(2, JNI.JValue.class);
         args.addressOf(0).setLong(id);
@@ -207,7 +207,7 @@ public final class $ProbeArt extends Foreign implements Probe {
 
     @Override
     public String join(int[] a0, String a1) {
-        foreignCheck();
+        checkNotReleased();
         Art.ThreadData thread = Art.thread();
         int n0 = a0 == null ? Blocks.NULL : a0.length;
         int n1 = a1 == null ? Blocks.NULL : a1.length();
@@ -240,7 +240,7 @@ public final class $ProbeArt extends Foreign implements Probe {
 
     @Override
     public Mode mode(Mode a0) {
-        foreignCheck();
+        checkNotReleased();
         Art.ThreadData thread = Art.thread();
         JNI.JValue args = StackValue.get(2, JNI.JValue.class);
         args.addressOf(0).setLong(id);
@@ -251,7 +251,7 @@ public final class $ProbeArt extends Foreign implements Probe {
 
     @Override
     public boolean pressed(int a0) {
-        foreignCheck();
+        checkNotReleased();
         Art.ThreadData thread = Art.thread();
         JNI.JValue args = StackValue.get(2, JNI.JValue.class);
         args.addressOf(0).setLong(id);
@@ -262,7 +262,7 @@ public final class $ProbeArt extends Foreign implements Probe {
 
     @Override
     public int[] range(int a0) {
-        foreignCheck();
+        checkNotReleased();
         Art.ThreadData thread = Art.thread();
         JNI.JValue args = StackValue.get(2, JNI.JValue.class);
         args.addressOf(0).setLong(id);
@@ -278,7 +278,7 @@ public final class $ProbeArt extends Foreign implements Probe {
 
     @Override
     public Probe self() {
-        foreignCheck();
+        checkNotReleased();
         Art.ThreadData thread = Art.thread();
         JNI.JValue args = StackValue.get(1, JNI.JValue.class);
         args.addressOf(0).setLong(id);
@@ -288,7 +288,7 @@ public final class $ProbeArt extends Foreign implements Probe {
 
     @Override
     public void squares(int[] a0, int a1) {
-        foreignCheck();
+        checkNotReleased();
         Art.ThreadData thread = Art.thread();
         int n0 = a0 == null ? Blocks.NULL : a0.length;
         int bytes = Blocks.size(n0, 4);
@@ -313,7 +313,7 @@ public final class $ProbeArt extends Foreign implements Probe {
 
     @Override
     public int step(int a0) {
-        foreignCheck();
+        checkNotReleased();
         Art.ThreadData thread = Art.thread();
         JNI.JValue args = StackValue.get(2, JNI.JValue.class);
         args.addressOf(0).setLong(id);
@@ -324,7 +324,7 @@ public final class $ProbeArt extends Foreign implements Probe {
 
     @Override
     public float sum(float[] a0) {
-        foreignCheck();
+        checkNotReleased();
         Art.ThreadData thread = Art.thread();
         int n0 = a0 == null ? Blocks.NULL : a0.length;
         int bytes = Blocks.size(n0, 4);
@@ -349,7 +349,7 @@ public final class $ProbeArt extends Foreign implements Probe {
 
     @Override
     public float sum16(float[] a0) {
-        foreignCheck();
+        checkNotReleased();
         if (a0 != null && a0.length != 16) {
             throw new IllegalArgumentException("Probe.sum16 parameter 0 has " + a0.length + " elements, its static buffer 16");
         }
@@ -365,7 +365,7 @@ public final class $ProbeArt extends Foreign implements Probe {
 
     @Override
     public String text(String a0) {
-        foreignCheck();
+        checkNotReleased();
         Art.ThreadData thread = Art.thread();
         int n0 = a0 == null ? Blocks.NULL : a0.length();
         int bytes = Blocks.size(n0, 2);
@@ -394,7 +394,7 @@ public final class $ProbeArt extends Foreign implements Probe {
 
     @Override
     public String text16(int a0) {
-        foreignCheck();
+        checkNotReleased();
         Art.ThreadData thread = Art.thread();
         long rb = text16Result.get();
         JNI.JValue args = StackValue.get(3, JNI.JValue.class);
@@ -407,7 +407,7 @@ public final class $ProbeArt extends Foreign implements Probe {
 
     @Override
     public String[] texts(String[] a0) {
-        foreignCheck();
+        checkNotReleased();
         Art.ThreadData thread = Art.thread();
         int n0 = a0 == null ? Blocks.NULL : Blocks.stringArrayLength(a0);
         int bytes = Blocks.size(n0, 1);
@@ -436,7 +436,7 @@ public final class $ProbeArt extends Foreign implements Probe {
 
     @Override
     public int total(int[] a0, int a1) {
-        foreignCheck();
+        checkNotReleased();
         Art.ThreadData thread = Art.thread();
         int n0 = a0 == null ? Blocks.NULL : a0.length;
         int bytes = Blocks.size(n0, 4);
@@ -462,7 +462,7 @@ public final class $ProbeArt extends Foreign implements Probe {
 
     @Override
     public float x() {
-        foreignCheck();
+        checkNotReleased();
         Art.ThreadData thread = Art.thread();
         JNI.JValue args = StackValue.get(1, JNI.JValue.class);
         args.addressOf(0).setLong(id);
@@ -472,7 +472,7 @@ public final class $ProbeArt extends Foreign implements Probe {
 
     @Override
     public float y() {
-        foreignCheck();
+        checkNotReleased();
         Art.ThreadData thread = Art.thread();
         JNI.JValue args = StackValue.get(1, JNI.JValue.class);
         args.addressOf(0).setLong(id);

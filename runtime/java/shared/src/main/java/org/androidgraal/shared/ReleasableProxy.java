@@ -1,24 +1,25 @@
 package org.androidgraal.shared;
 
 /**
- * The superclass of every generated proxy. Once released, every method of the proxy throws an
- * {@link IllegalStateException}.
+ * A {@link Proxy} that can be explicitly released over {@link Handles#release}. Once released, every method of the
+ * proxy throws an {@link IllegalStateException}.
  */
-public abstract class Foreign {
+public abstract class ReleasableProxy implements Proxy {
 
     protected final long id;
     private volatile boolean released;
 
-    protected Foreign(long id) {
+    protected ReleasableProxy(long id) {
         this.id = id;
     }
 
+    @Override
     public final long foreignId() {
-        foreignCheck();
+        checkNotReleased();
         return id;
     }
 
-    public final void foreignCheck() {
+    public final void checkNotReleased() {
         if (released) {
             throw new IllegalStateException(getClass().getName() + " proxy " + id + " was released");
         }

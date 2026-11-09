@@ -5,14 +5,14 @@ import java.nio.ByteBuffer;
 import org.androidgraal.art.Image;
 import org.androidgraal.art.Transport;
 import org.androidgraal.shared.Blocks;
-import org.androidgraal.shared.Foreign;
 import org.androidgraal.shared.Handles;
+import org.androidgraal.shared.ReleasableProxy;
 import org.graalvm.android.bridges.core.Display;
 import org.graalvm.android.bridges.core.Mode;
 import org.graalvm.android.bridges.core.Placement;
 import org.graalvm.android.bridges.core.Size;
 
-public final class $DisplaySvm extends Foreign implements Display {
+public final class $DisplaySvm extends ReleasableProxy implements Display {
     public static final Handles.Factory<$DisplaySvm> PROXIES = $DisplaySvm::new;
 
     private $DisplaySvm(long id) {
@@ -21,7 +21,7 @@ public final class $DisplaySvm extends Foreign implements Display {
 
     @Override
     public char initial(String a0) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int n0 = a0 == null ? Blocks.NULL : a0.length();
         int bytes = Blocks.size(n0, 2);
@@ -45,7 +45,7 @@ public final class $DisplaySvm extends Foreign implements Display {
 
     @Override
     public double mix(boolean a0, byte a1, char a2, short a3, long a4, float a5, double a6) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         double r = mix(thread.isolateThread, id, a0, a1, a2, a3, a4, a5, a6);
         thread.throwPendingException();
@@ -54,7 +54,7 @@ public final class $DisplaySvm extends Foreign implements Display {
 
     @Override
     public void open() {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         open(thread.isolateThread, id);
         thread.throwPendingException();
@@ -62,7 +62,7 @@ public final class $DisplaySvm extends Foreign implements Display {
 
     @Override
     public int ping(int a0) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int r = ping(thread.isolateThread, id, a0);
         thread.throwPendingException();
@@ -71,7 +71,7 @@ public final class $DisplaySvm extends Foreign implements Display {
 
     @Override
     public void place(Placement a0, int a1) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         boolean p0 = a0 != null;
         int a0_x = p0 ? a0.x() : 0;
@@ -103,7 +103,7 @@ public final class $DisplaySvm extends Foreign implements Display {
 
     @Override
     public void show(String a0) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int n0 = a0 == null ? Blocks.NULL : a0.length();
         int bytes = Blocks.size(n0, 2);
@@ -126,7 +126,7 @@ public final class $DisplaySvm extends Foreign implements Display {
 
     @Override
     public void show(String a0, int a1) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int n0 = a0 == null ? Blocks.NULL : a0.length();
         int bytes = Blocks.size(n0, 2);

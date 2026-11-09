@@ -11,8 +11,7 @@ import java.util.Objects;
 public final class Handles {
 
     /**
-     * Builds the proxy this side holds for the object the other side exports under {@code id}, must be a
-     * {@link Foreign}.
+     * Builds the proxy this side holds for the object the other side exports under {@code id}, must be a {@link Proxy}.
      */
     public interface Factory<T> {
         T create(long id);
@@ -40,8 +39,8 @@ public final class Handles {
         if (object == null) {
             return 0L;
         }
-        if (object instanceof Foreign foreign) {
-            return foreign.foreignId();
+        if (object instanceof Proxy proxy) {
+            return proxy.foreignId();
         }
         return exports.send(object);
     }
@@ -77,16 +76,17 @@ public final class Handles {
     }
 
     /**
-     * Releases {@code proxy} and ends the other side's export. The next crossing of the object brings a new proxy.
-     * Every later use of {@code proxy} throws an {@link IllegalStateException}. Anything that is not a proxy throws
-     * {@link IllegalArgumentException}.
+     * Releases {@code proxy} and ends the other side's export. The next crossing of the object creates a new proxy.
+     * Every later use of {@code proxy} throws an {@link IllegalStateException}. Only a {@link ReleasableProxy} can be
+     * released, everything else throws an {@link IllegalArgumentException}.
      */
     public void release(Object proxy) {
         Objects.requireNonNull(proxy);
-        if (!(proxy instanceof Foreign foreign)) {
-            throw new IllegalArgumentException(proxy.getClass().getName() + " is not a proxy");
+        if (!(proxy instanceof ReleasableProxy releasableProxy)) {
+            throw new IllegalArgumentException(
+                    proxy.getClass().getName() + " is not a Foreign, the one kind of proxy that is released");
         }
-        onProxyReleased.release(imports.release(foreign));
+        onProxyReleased.release(imports.release(releasableProxy));
     }
 
     /** Ends this side's export of {@code id}. An invalid id throws an {@code IllegalStateException}. */

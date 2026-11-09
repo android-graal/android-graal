@@ -16,7 +16,7 @@ class HandlesTest {
         throw new AssertionError("released " + id);
     };
 
-    private static final Handles.Factory<Proxy> PROXIES = Proxy::new;
+    private static final Handles.Factory<Stub> PROXIES = Stub::new;
 
     @Test
     void anOwnObjectCrossesUnderOneIdOfTheSidesSignAndComesBackAsItself() {
@@ -32,7 +32,7 @@ class HandlesTest {
         assertEquals(imageId, image.send(listener));
         assertSame(listener, image.object(imageId));
         assertSame(listener, image.receive(imageId, null));
-        assertSame(display, art.receive(artId, Proxy::new));
+        assertSame(display, art.receive(artId, Stub::new));
         assertEquals(1, image.ids());
     }
 
@@ -40,9 +40,9 @@ class HandlesTest {
     void aForeignIdBecomesOneProxyThatCrossesBackAsTheId() {
         Handles art = new Handles(-1, NONE);
 
-        Proxy first = art.receive(5, Proxy::new);
+        Stub first = art.receive(5, Stub::new);
 
-        assertSame(first, art.receive(5, Proxy::new));
+        assertSame(first, art.receive(5, Stub::new));
         assertEquals(5, art.send(first));
         assertEquals(1, art.proxies());
         assertEquals(0, art.ids());
@@ -79,7 +79,7 @@ class HandlesTest {
         Handles image = new Handles(1, NONE);
 
         assertEquals(0, image.send(null));
-        assertNull(image.receive(0, Proxy::new));
+        assertNull(image.receive(0, Stub::new));
     }
 
     @Test
@@ -110,13 +110,13 @@ class HandlesTest {
     void onlyALiveProxyThisSideReceivedIsReleasedAndOnlyItsReleaseCrosses() {
         List<Long> crossed = new ArrayList<>();
         Handles image = new Handles(1, crossed::add);
-        Proxy known = image.receive(-9, Proxy::new);
+        Stub known = image.receive(-9, Stub::new);
 
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> image.release(new Object()));
-        assertEquals("java.lang.Object is not a proxy", e.getMessage());
+        assertEquals("java.lang.Object is not a Foreign, the one kind of proxy that is released", e.getMessage());
         assertThrows(NullPointerException.class, () -> image.release(null));
-        assertThrows(IllegalArgumentException.class, () -> image.release(new Proxy(-10)));
-        assertSame(known, image.receive(-9, Proxy::new));
+        assertThrows(IllegalArgumentException.class, () -> image.release(new Stub(-10)));
+        assertSame(known, image.receive(-9, Stub::new));
         assertEquals(List.of(), crossed);
 
         image.release(known);
@@ -124,19 +124,49 @@ class HandlesTest {
         assertEquals(List.of(-9L), crossed);
         assertEquals(0, image.proxies());
         IllegalStateException released = assertThrows(IllegalStateException.class, () -> image.send(known));
-        assertEquals(Proxy.class.getName() + " proxy -9 was released", released.getMessage());
+        assertEquals(Stub.class.getName() + " proxy -9 was released", released.getMessage());
         assertThrows(IllegalStateException.class, () -> image.release(known));
         assertEquals(List.of(-9L), crossed);
+    }
+
+    @Test
+    void aProxyThatIsNoForeignCrossesAsItsIdAndIsNeverReleased() {
+        List<Long> crossed = new ArrayList<>();
+        Handles image = new Handles(1, crossed::add);
+        List<Handle> built = new ArrayList<>();
+        Handles.Factory<Handle> again = id -> {
+            throw new AssertionError("created a second proxy of " + id);
+        };
+
+        Handle handle = image.receive(-3, id -> {
+            Handle created = new Handle(id);
+            built.add(created);
+            return created;
+        });
+
+        assertEquals(1, built.size());
+        assertSame(built.get(0), handle);
+        assertEquals(-3, image.send(handle));
+        assertSame(handle, image.receive(-3, again));
+        IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> image.release(handle));
+        assertEquals(Handle.class.getName() + " is not a Foreign, the one kind of proxy that is released",
+                e.getMessage());
+        assertEquals(1, image.proxies());
+        assertSame(handle, image.receive(-3, again));
+        assertEquals(List.of(), crossed);
     }
 
     private interface Shape {}
 
     private static final class Square implements Shape {}
 
-    private static final class Proxy extends Foreign implements Shape {
+    private static final class Stub extends ReleasableProxy implements Shape {
 
-        Proxy(long id) {
+        Stub(long id) {
             super(id);
         }
+    }
+
+    private record Handle(long foreignId) implements Proxy {
     }
 }

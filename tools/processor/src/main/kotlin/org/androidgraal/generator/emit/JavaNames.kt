@@ -34,7 +34,7 @@ internal object JavaNames {
     val BLOCKS: ClassName = ClassName.get(SHARED_PACKAGE, "Blocks")
     val HEADER: CodeBlock = CodeBlock.of("\$T.HEADER", BLOCKS)
     val BLOCK_NULL: CodeBlock = CodeBlock.of("\$T.NULL", BLOCKS)
-    val FOREIGN: ClassName = ClassName.get(SHARED_PACKAGE, "Foreign")
+    val RELEASABLE_PROXY: ClassName = ClassName.get(SHARED_PACKAGE, "ReleasableProxy")
     val HANDLES: ClassName = ClassName.get(SHARED_PACKAGE, "Handles")
     val FACTORY: ClassName = HANDLES.nestedClass("Factory")
     val SERVICES: ClassName = ClassName.get(SHARED_PACKAGE, "Services")

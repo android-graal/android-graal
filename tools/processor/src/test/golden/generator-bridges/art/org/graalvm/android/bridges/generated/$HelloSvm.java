@@ -5,8 +5,8 @@ import java.nio.ByteBuffer;
 import org.androidgraal.art.Image;
 import org.androidgraal.art.Transport;
 import org.androidgraal.shared.Blocks;
-import org.androidgraal.shared.Foreign;
 import org.androidgraal.shared.Handles;
+import org.androidgraal.shared.ReleasableProxy;
 import org.graalvm.android.bridges.core.Allocations;
 import org.graalvm.android.bridges.core.Display;
 import org.graalvm.android.bridges.core.Frame;
@@ -14,7 +14,7 @@ import org.graalvm.android.bridges.core.Hello;
 import org.graalvm.android.bridges.core.Probe;
 import org.graalvm.android.bridges.core.Registry;
 
-public final class $HelloSvm extends Foreign implements Hello {
+public final class $HelloSvm extends ReleasableProxy implements Hello {
     private static final Handles HANDLES = Image.handles();
 
     public static final Handles.Factory<$HelloSvm> PROXIES = $HelloSvm::new;
@@ -25,7 +25,7 @@ public final class $HelloSvm extends Foreign implements Hello {
 
     @Override
     public long callbacks(Display a0, int a1, boolean a2) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         long r = callbacks(thread.isolateThread, id, HANDLES.send(a0), a1, a2);
         thread.throwPendingException();
@@ -34,7 +34,7 @@ public final class $HelloSvm extends Foreign implements Hello {
 
     @Override
     public void churn(Registry a0, int a1) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         churn(thread.isolateThread, id, HANDLES.send(a0), a1);
         thread.throwPendingException();
@@ -42,7 +42,7 @@ public final class $HelloSvm extends Foreign implements Hello {
 
     @Override
     public void coldThrow(Display a0) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         coldThrow(thread.isolateThread, id, HANDLES.send(a0));
         thread.throwPendingException();
@@ -50,7 +50,7 @@ public final class $HelloSvm extends Foreign implements Hello {
 
     @Override
     public int doubled(int a0) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int r = doubled(thread.isolateThread, id, a0);
         thread.throwPendingException();
@@ -59,7 +59,7 @@ public final class $HelloSvm extends Foreign implements Hello {
 
     @Override
     public String echo(String a0) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int n0 = a0 == null ? Blocks.NULL : a0.length();
         int bytes = Blocks.size(n0, 2);
@@ -89,7 +89,7 @@ public final class $HelloSvm extends Foreign implements Hello {
 
     @Override
     public void fail(String a0) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int n0 = a0 == null ? Blocks.NULL : a0.length();
         int bytes = Blocks.size(n0, 2);
@@ -112,7 +112,7 @@ public final class $HelloSvm extends Foreign implements Hello {
 
     @Override
     public void failTyped(String a0) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int n0 = a0 == null ? Blocks.NULL : a0.length();
         int bytes = Blocks.size(n0, 2);
@@ -135,7 +135,7 @@ public final class $HelloSvm extends Foreign implements Hello {
 
     @Override
     public Frame frame() {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         long r = frame(thread.isolateThread, id);
         thread.throwPendingException();
@@ -144,7 +144,7 @@ public final class $HelloSvm extends Foreign implements Hello {
 
     @Override
     public void gc() {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         gc(thread.isolateThread, id);
         thread.throwPendingException();
@@ -152,7 +152,7 @@ public final class $HelloSvm extends Foreign implements Hello {
 
     @Override
     public long liveIds() {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         long r = liveIds(thread.isolateThread, id);
         thread.throwPendingException();
@@ -161,7 +161,7 @@ public final class $HelloSvm extends Foreign implements Hello {
 
     @Override
     public long liveProxies() {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         long r = liveProxies(thread.isolateThread, id);
         thread.throwPendingException();
@@ -170,7 +170,7 @@ public final class $HelloSvm extends Foreign implements Hello {
 
     @Override
     public long loop(Probe a0, Display a1, Allocations a2, int a3, int a4, boolean a5) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         long r = loop(thread.isolateThread, id, HANDLES.send(a0), HANDLES.send(a1), HANDLES.send(a2), a3, a4, a5);
         thread.throwPendingException();
@@ -179,7 +179,7 @@ public final class $HelloSvm extends Foreign implements Hello {
 
     @Override
     public int ping(int a0) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int r = ping(thread.isolateThread, id, a0);
         thread.throwPendingException();
@@ -188,7 +188,7 @@ public final class $HelloSvm extends Foreign implements Hello {
 
     @Override
     public void refuse(String a0) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int n0 = a0 == null ? Blocks.NULL : a0.length();
         int bytes = Blocks.size(n0, 2);
@@ -211,7 +211,7 @@ public final class $HelloSvm extends Foreign implements Hello {
 
     @Override
     public boolean register(Registry a0) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         boolean r = register(thread.isolateThread, id, HANDLES.send(a0));
         thread.throwPendingException();
@@ -220,7 +220,7 @@ public final class $HelloSvm extends Foreign implements Hello {
 
     @Override
     public void run(Display a0) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         run(thread.isolateThread, id, HANDLES.send(a0));
         thread.throwPendingException();
@@ -228,7 +228,7 @@ public final class $HelloSvm extends Foreign implements Hello {
 
     @Override
     public Display same(Display a0) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         long r = same(thread.isolateThread, id, HANDLES.send(a0));
         thread.throwPendingException();
@@ -237,7 +237,7 @@ public final class $HelloSvm extends Foreign implements Hello {
 
     @Override
     public Hello self() {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         long r = self(thread.isolateThread, id);
         thread.throwPendingException();
@@ -246,7 +246,7 @@ public final class $HelloSvm extends Foreign implements Hello {
 
     @Override
     public void shows(Display a0, int a1, boolean a2) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         shows(thread.isolateThread, id, HANDLES.send(a0), a1, a2);
         thread.throwPendingException();
@@ -254,7 +254,7 @@ public final class $HelloSvm extends Foreign implements Hello {
 
     @Override
     public int threads() {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int r = threads(thread.isolateThread, id);
         thread.throwPendingException();
@@ -263,7 +263,7 @@ public final class $HelloSvm extends Foreign implements Hello {
 
     @Override
     public int values(Display a0, boolean a1) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int r = values(thread.isolateThread, id, HANDLES.send(a0), a1);
         thread.throwPendingException();

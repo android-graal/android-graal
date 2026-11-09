@@ -8,13 +8,13 @@ import java.nio.IntBuffer;
 import org.androidgraal.art.Image;
 import org.androidgraal.art.Transport;
 import org.androidgraal.shared.Blocks;
-import org.androidgraal.shared.Foreign;
 import org.androidgraal.shared.Handles;
+import org.androidgraal.shared.ReleasableProxy;
 import org.graalvm.android.bridges.core.Frame;
 import org.graalvm.android.bridges.core.Mode;
 import org.graalvm.android.bridges.core.Probe;
 
-public final class $FrameSvm extends Foreign implements Frame {
+public final class $FrameSvm extends ReleasableProxy implements Frame {
     private static final Mode[] MODE_VALUES = Mode.values();
 
     private static final Handles HANDLES = Image.handles();
@@ -27,7 +27,7 @@ public final class $FrameSvm extends Foreign implements Frame {
 
     @Override
     public float[] corners4() {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         Corners4Result rb = Corners4Result.current(thread);
         corners4(thread.isolateThread, id, rb.address);
@@ -43,7 +43,7 @@ public final class $FrameSvm extends Foreign implements Frame {
 
     @Override
     public int count16(String a0) {
-        foreignCheck();
+        checkNotReleased();
         if (a0 != null && a0.length() > 16) {
             throw new IllegalArgumentException("Frame.count16 parameter 0 has " + a0.length() + " chars, its static buffer 16");
         }
@@ -62,7 +62,7 @@ public final class $FrameSvm extends Foreign implements Frame {
 
     @Override
     public int events(int[] a0) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int n0 = a0 == null ? Blocks.NULL : a0.length;
         int bytes = Blocks.size(n0, 4);
@@ -87,7 +87,7 @@ public final class $FrameSvm extends Foreign implements Frame {
 
     @Override
     public void fill(int[] a0) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int n0 = a0 == null ? Blocks.NULL : a0.length;
         int bytes = Blocks.size(n0, 4);
@@ -111,7 +111,7 @@ public final class $FrameSvm extends Foreign implements Frame {
 
     @Override
     public void fill16(int[] a0) {
-        foreignCheck();
+        checkNotReleased();
         if (a0 != null && a0.length != 16) {
             throw new IllegalArgumentException("Frame.fill16 parameter 0 has " + a0.length + " elements, its static buffer 16");
         }
@@ -127,7 +127,7 @@ public final class $FrameSvm extends Foreign implements Frame {
 
     @Override
     public String join(int[] a0, String a1) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int n0 = a0 == null ? Blocks.NULL : a0.length;
         int n1 = a1 == null ? Blocks.NULL : a1.length();
@@ -164,7 +164,7 @@ public final class $FrameSvm extends Foreign implements Frame {
 
     @Override
     public Mode mode(Mode a0) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int r = mode(thread.isolateThread, id, a0 == null ? -1 : a0.ordinal());
         thread.throwPendingException();
@@ -173,7 +173,7 @@ public final class $FrameSvm extends Foreign implements Frame {
 
     @Override
     public void press(int a0, int a1, int a2) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         press(thread.isolateThread, id, a0, a1, a2);
         thread.throwPendingException();
@@ -181,7 +181,7 @@ public final class $FrameSvm extends Foreign implements Frame {
 
     @Override
     public int probe(Probe a0) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int r = probe(thread.isolateThread, id, HANDLES.send(a0));
         thread.throwPendingException();
@@ -190,7 +190,7 @@ public final class $FrameSvm extends Foreign implements Frame {
 
     @Override
     public int[] range(int a0) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         long r = range(thread.isolateThread, id, a0);
         thread.throwPendingException();
@@ -207,7 +207,7 @@ public final class $FrameSvm extends Foreign implements Frame {
 
     @Override
     public float render(Probe a0) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         float r = render(thread.isolateThread, id, HANDLES.send(a0));
         thread.throwPendingException();
@@ -216,7 +216,7 @@ public final class $FrameSvm extends Foreign implements Frame {
 
     @Override
     public Frame self() {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         long r = self(thread.isolateThread, id);
         thread.throwPendingException();
@@ -225,7 +225,7 @@ public final class $FrameSvm extends Foreign implements Frame {
 
     @Override
     public void squares(int[] a0, int a1) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int n0 = a0 == null ? Blocks.NULL : a0.length;
         int bytes = Blocks.size(n0, 4);
@@ -249,7 +249,7 @@ public final class $FrameSvm extends Foreign implements Frame {
 
     @Override
     public int step(int a0) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int r = step(thread.isolateThread, id, a0);
         thread.throwPendingException();
@@ -258,7 +258,7 @@ public final class $FrameSvm extends Foreign implements Frame {
 
     @Override
     public float sum(float[] a0) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int n0 = a0 == null ? Blocks.NULL : a0.length;
         int bytes = Blocks.size(n0, 4);
@@ -283,7 +283,7 @@ public final class $FrameSvm extends Foreign implements Frame {
 
     @Override
     public float sum16(float[] a0) {
-        foreignCheck();
+        checkNotReleased();
         if (a0 != null && a0.length != 16) {
             throw new IllegalArgumentException("Frame.sum16 parameter 0 has " + a0.length + " elements, its static buffer 16");
         }
@@ -300,7 +300,7 @@ public final class $FrameSvm extends Foreign implements Frame {
 
     @Override
     public float sum16Tls(float[] a0) {
-        foreignCheck();
+        checkNotReleased();
         if (a0 != null && a0.length != 16) {
             throw new IllegalArgumentException("Frame.sum16Tls parameter 0 has " + a0.length + " elements, its static buffer 16");
         }
@@ -317,7 +317,7 @@ public final class $FrameSvm extends Foreign implements Frame {
 
     @Override
     public String text(String a0) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int n0 = a0 == null ? Blocks.NULL : a0.length();
         int bytes = Blocks.size(n0, 2);
@@ -347,7 +347,7 @@ public final class $FrameSvm extends Foreign implements Frame {
 
     @Override
     public String text16(int a0) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         Text16Result rb = Text16Result.current(thread);
         text16(thread.isolateThread, id, rb.address, a0);
@@ -357,7 +357,7 @@ public final class $FrameSvm extends Foreign implements Frame {
 
     @Override
     public String[] texts(String[] a0) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int n0 = a0 == null ? Blocks.NULL : Blocks.stringArrayLength(a0);
         int bytes = Blocks.size(n0, 1);
@@ -387,7 +387,7 @@ public final class $FrameSvm extends Foreign implements Frame {
 
     @Override
     public int total(int[] a0, int a1) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int n0 = a0 == null ? Blocks.NULL : a0.length;
         int bytes = Blocks.size(n0, 4);

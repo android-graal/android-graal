@@ -94,7 +94,7 @@ internal abstract class Sources(internal val model: BridgeModel, private val sid
     private fun proxyClassOf(proxy: Proxy, name: ClassName): TypeSpec {
         val wires = codecs.wiresOf(proxy)
         return TypeSpec.classBuilder(name).addModifiers(PUBLIC, FINAL)
-            .superclass(JavaNames.FOREIGN)
+            .superclass(JavaNames.RELEASABLE_PROXY)
             .addSuperinterface(ClassName.get(proxy.type))
             .addFields(codecs.fieldsOf(wires))
             .addField(proxiesFieldOf(name))
@@ -124,7 +124,7 @@ internal abstract class Sources(internal val model: BridgeModel, private val sid
         val transport = wire.transport.send(body)
         wire.result.receiveResult(body, sendCall(body, wire, transport + block + parameters))
         return CodeBlock.builder()
-            .addStatement("foreignCheck()")
+            .addStatement("checkNotReleased()")
             .add(body.checks.build())
             .addStatement("\$T thread = \$T.thread()", threadData, threadData.enclosingClassName())
             .add(body.prepare.build())

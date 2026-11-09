@@ -2,11 +2,11 @@
 package org.graalvm.android.bridges.generated;
 
 import org.androidgraal.art.Image;
-import org.androidgraal.shared.Foreign;
 import org.androidgraal.shared.Handles;
+import org.androidgraal.shared.ReleasableProxy;
 import org.graalvm.android.bridges.core.Listener;
 
-public final class $ListenerSvm extends Foreign implements Listener {
+public final class $ListenerSvm extends ReleasableProxy implements Listener {
     public static final Handles.Factory<$ListenerSvm> PROXIES = $ListenerSvm::new;
 
     private $ListenerSvm(long id) {
@@ -15,7 +15,7 @@ public final class $ListenerSvm extends Foreign implements Listener {
 
     @Override
     public void on(int a0) {
-        foreignCheck();
+        checkNotReleased();
         Image.ThreadData thread = Image.thread();
         on(thread.isolateThread, id, a0);
         thread.throwPendingException();
