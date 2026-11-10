@@ -3,6 +3,7 @@ package org.androidgraal.android;
 import android.os.Process;
 import dalvik.system.CloseGuard;
 import dalvik.system.VMRuntime;
+import org.androidgraal.android.handles.HandleClasses;
 import org.androidgraal.android.host.ApplicationHost;
 import org.androidgraal.android.host.Emulation;
 import org.androidgraal.svm.Art;
@@ -22,10 +23,16 @@ public final class EmulationRoot implements Emulation {
 
     @Override
     public void attach(ApplicationHost applicationHost) {
+        long art = applicationHost.handleFingerprint();
+        if (art != HandleClasses.FINGERPRINT) {
+            throw new IllegalStateException("the image's handle classes come from the generator run "
+                    + Long.toHexString(HandleClasses.FINGERPRINT) + ", ART's from " + Long.toHexString(art));
+        }
         CloseGuard.setEnabled(false);
         host = applicationHost;
         VMRuntime.getRuntime().setTargetSdkVersion(applicationHost.targetSdkVersion());
         Process.setArgV0(applicationHost.processName());
+        HandleClasses.initialize(Art.thread().env);
     }
 
     public static boolean isAttached() {

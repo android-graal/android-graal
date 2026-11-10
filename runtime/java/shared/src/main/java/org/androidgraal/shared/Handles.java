@@ -104,4 +104,22 @@ public final class Handles {
     public int proxies() {
         return imports.size();
     }
+
+    /**
+     * A handle's tag identifying the class and proxy id: {@code id} in the high 48 bits, its class {@code ordinal} in
+     * the low 16.
+     */
+    public static long tagOf(long id, int ordinal) {
+        return id << 16 | ordinal;
+    }
+
+    /** The proxy id {@code tag} carries, its sign kept. */
+    public static long idOf(long tag) {
+        return tag >> 16;
+    }
+
+    /** The class ordinal {@code tag} carries. */
+    public static int ordinalOf(long tag) {
+        return (int) (tag & 0xFFFF);
+    }
 }

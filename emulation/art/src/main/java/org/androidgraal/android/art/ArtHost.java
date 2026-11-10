@@ -8,6 +8,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
+import org.androidgraal.android.art.handles.HandleClasses;
 import org.androidgraal.android.host.ApplicationHost;
 import org.androidgraal.art.Image;
 
@@ -65,6 +66,11 @@ public final class ArtHost implements ApplicationHost {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public long handleFingerprint() {
+        return HandleClasses.FINGERPRINT;
     }
 
     @Override

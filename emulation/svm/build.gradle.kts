@@ -15,7 +15,7 @@ val declarations: SourceSet = sourceSets.create("declarations") {
 
 dependencies {
     api(project(":contract"))
-    implementation("${nativeHost.settings.group}:svm:$version")
+    api("${nativeHost.settings.group}:svm:$version")
     implementation("${nativeHost.settings.group}:bionic:$version")
     compileOnly("${nativeHost.settings.group}:hosted:$version")
     compileOnly(libs.androidx.annotation)
@@ -27,6 +27,7 @@ dependencies {
     "declarationsCompileOnly"(project(path))
     // KGP adds kotlin-stdlib to a source set's api unless the source set declares one.
     "declarationsCompileOnly"(embeddedKotlin("stdlib"))
+    "generatorImplementation"(libs.clikt.core)
     "generatorImplementation"(libs.javapoet)
     "generatorImplementation"(embeddedKotlin("stdlib"))
 }
@@ -47,16 +48,33 @@ tasks.register<JavaExec>("generateGlesBindings") {
     classpath = generator.runtimeClasspath
     mainClass = "org.androidgraal.gles.generator.GlesGenerator"
     val include = nativeHost.ndk.toolchain.resolve("sysroot/usr/include")
-    args(
-        listOf(
-            nativeHost.sdk.androidJar(nativeHost.compileSdk),
-            include.resolve("GLES2/gl2.h"),
-            include.resolve("GLES3/gl3.h"),
-            include.resolve("GLES3/gl31.h"),
-            include.resolve("GLES3/gl32.h"),
-            layout.projectDirectory.dir("src/main/java").asFile,
-        ).map { it.absolutePath },
-    )
+    args("--android-jar", nativeHost.sdk.androidJar(nativeHost.compileSdk).absolutePath)
+    args("--gl2-header", include.resolve("GLES2/gl2.h").absolutePath)
+    args("--gl3-header", include.resolve("GLES3/gl3.h").absolutePath)
+    args("--gl31-header", include.resolve("GLES3/gl31.h").absolutePath)
+    args("--gl32-header", include.resolve("GLES3/gl32.h").absolutePath)
+    args("--image-out", layout.projectDirectory.dir("src/main/java").asFile.absolutePath)
+}
+
+tasks.register<JavaExec>("generateHandles") {
+    group = "android-graal"
+    description =
+        "Regenerates the handle classes and their ART end points from android.jar, its sources and the proxy boundary."
+    classpath = generator.runtimeClasspath
+    mainClass = "org.androidgraal.handles.generator.HandleGenerator"
+    dependsOn(tasks.compileJava)
+    val androidJar = nativeHost.sdk.androidJar(nativeHost.compileSdk)
+    val boundary = layout.projectDirectory
+        .file("src/generator/resources/org/androidgraal/handles/generator/proxy-boundary.txt")
+        .asFile
+    args("--android-jar", androidJar.absolutePath)
+    args("--api-versions", androidJar.resolveSibling("data/api-versions.xml").absolutePath)
+    args("--android-sources", nativeHost.sdk.androidSources(nativeHost.compileSdk).absolutePath)
+    args("--proxy-boundary", boundary.absolutePath)
+    args("--emulation-classes", sourceSets.main.get().java.destinationDirectory.get().asFile.absolutePath)
+    args("--image-out", layout.projectDirectory.dir("src/main/java").asFile.absolutePath)
+    args("--art-out", layout.settingsDirectory.dir("art/src/main/java").asFile.absolutePath)
+    args("--min-sdk", nativeHost.minSdk)
 }
 
 spotless {
@@ -122,6 +140,25 @@ abstract class StockDiffInputs : CommandLineArgumentProvider {
     )
 }
 
+abstract class HandleInputs : CommandLineArgumentProvider {
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val proxyBoundary: RegularFileProperty
+
+    @get:InputFile
+    @get:PathSensitive(PathSensitivity.RELATIVE)
+    abstract val apiVersions: RegularFileProperty
+
+    @get:Input
+    abstract val minApi: Property<Int>
+
+    override fun asArguments(): List<String> = listOf(
+        "-Dandroid.proxyBoundary=${proxyBoundary.get().asFile.absolutePath}",
+        "-Dandroid.apiVersions=${apiVersions.get().asFile.absolutePath}",
+        "-Dandroid.minApi=${minApi.get()}",
+    )
+}
+
 tasks.test {
     jvmArgumentProviders +=
         objects.newInstance<DeclarationsInputs>().apply {
@@ -134,6 +171,13 @@ tasks.test {
             copies = layout.projectDirectory.dir("src/main/java")
             sdkSources = nativeHost.sdk.androidSources(nativeHost.compileSdk)
             goldens = layout.projectDirectory.dir("src/test/golden/stock-diff")
+        }
+    jvmArgumentProviders +=
+        objects.newInstance<HandleInputs>().apply {
+            proxyBoundary = layout.projectDirectory
+                .file("src/generator/resources/org/androidgraal/handles/generator/proxy-boundary.txt")
+            apiVersions = nativeHost.sdk.androidJar(nativeHost.compileSdk).resolveSibling("data/api-versions.xml")
+            minApi = nativeHost.minSdk
         }
 }
 

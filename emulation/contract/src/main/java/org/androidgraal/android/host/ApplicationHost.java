@@ -23,6 +23,9 @@ public interface ApplicationHost {
     /** {@code Application.getProcessName()} of the application's process. */
     String processName();
 
+    /** The fingerprint of the generator run ART's handle classes come from. */
+    long handleFingerprint();
+
     /**
      * Posts a synchronous message on a Handler of the ART Looper {@code looper}, at {@code uptimeMillis} of
      * {@code SystemClock.uptimeMillis()}, zero meaning the front of its queue, whose dispatch runs

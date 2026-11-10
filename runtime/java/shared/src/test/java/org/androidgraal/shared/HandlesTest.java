@@ -113,7 +113,8 @@ class HandlesTest {
         Stub known = image.receive(-9, Stub::new);
 
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> image.release(new Object()));
-        assertEquals("java.lang.Object is not a ReleasableProxy", e.getMessage());
+        assertEquals("java.lang.Object is not a ReleasableProxy, the one kind of proxy that is released",
+                e.getMessage());
         assertThrows(NullPointerException.class, () -> image.release(null));
         assertThrows(IllegalArgumentException.class, () -> image.release(new Stub(-10)));
         assertSame(known, image.receive(-9, Stub::new));
@@ -149,10 +150,22 @@ class HandlesTest {
         assertEquals(-3, image.send(handle));
         assertSame(handle, image.receive(-3, again));
         IllegalArgumentException e = assertThrows(IllegalArgumentException.class, () -> image.release(handle));
-        assertEquals(Handle.class.getName() + " is not a ReleasableProxy", e.getMessage());
+        assertEquals(Handle.class.getName() + " is not a ReleasableProxy, the one kind of proxy that is released",
+                e.getMessage());
         assertEquals(1, image.proxies());
         assertSame(handle, image.receive(-3, again));
         assertEquals(List.of(), crossed);
+    }
+
+    @Test
+    void aTagGivesBackItsIdWithTheSignAndItsOrdinal() {
+        long art = Handles.tagOf(-7, 0xFFFF);
+        long image = Handles.tagOf(7, 1);
+
+        assertEquals(-7, Handles.idOf(art));
+        assertEquals(0xFFFF, Handles.ordinalOf(art));
+        assertEquals(7, Handles.idOf(image));
+        assertEquals(1, Handles.ordinalOf(image));
     }
 
     private interface Shape {}

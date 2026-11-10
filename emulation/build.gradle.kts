@@ -1,6 +1,7 @@
 import org.androidgraal.buildlogic.redirectToSubprojects
 
 plugins {
+    alias(libs.plugins.android.library) apply false
     id("org.androidgraal.contract") apply false
     id("androidgraal.base")
 }

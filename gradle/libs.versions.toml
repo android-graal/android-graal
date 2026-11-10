@@ -1,6 +1,7 @@
 [versions]
 agp = "9.1.1"
 asm = "9.10.1"
+clikt = "5.1.0"
 commons-io = "2.22.0"
 compile-testing = "0.23.0"
 errorprone-annotations = "2.50.0"
@@ -22,6 +23,7 @@ android-gradle-api = { module = "com.android.tools.build:gradle-api", version.re
 android-builder = { module = "com.android.tools.build:builder", version.ref = "agp" }
 asm = { module = "org.ow2.asm:asm", version.ref = "asm" }
 asm-commons = { module = "org.ow2.asm:asm-commons", version.ref = "asm" }
+clikt-core = { module = "com.github.ajalt.clikt:clikt-core", version.ref = "clikt" }
 commons-io = { module = "commons-io:commons-io", version.ref = "commons-io" }
 compile-testing = { module = "com.google.testing.compile:compile-testing", version.ref = "compile-testing" }
 errorprone-annotations = { module = "com.google.errorprone:error_prone_annotations", version.ref = "errorprone-annotations" }
@@ -35,5 +37,6 @@ semver4j = { module = "org.semver4j:semver4j", version.ref = "semver4j" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
+android-library = { id = "com.android.library", version.ref = "agp" }
 shadow = { id = "com.gradleup.shadow", version.ref = "shadow" }
 spotless = { id = "com.diffplug.spotless", version.ref = "spotless" }
