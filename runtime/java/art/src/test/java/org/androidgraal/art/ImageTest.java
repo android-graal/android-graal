@@ -150,14 +150,14 @@ class ImageTest {
     }
 
     @Test
-    void raiseExceptionBeforeStartHandsTheThrowableToTheThreadsHandler() {
+    void raiseImageExceptionBeforeStartHandsTheThrowableToTheThreadsHandler() {
         Thread thread = Thread.currentThread();
         Thread.UncaughtExceptionHandler previous = thread.getUncaughtExceptionHandler();
         AtomicReference<Throwable> received = new AtomicReference<>();
         thread.setUncaughtExceptionHandler((t, e) -> received.set(e));
         RuntimeException thrown = new RuntimeException("x");
         try {
-            Image.raiseException(thrown);
+            Image.raiseImageException(thrown);
         } finally {
             thread.setUncaughtExceptionHandler(previous);
         }
@@ -166,21 +166,21 @@ class ImageTest {
     }
 
     @Test
-    void throwPendingExceptionThrowsNothingWhenNothingIsPending() throws ReflectiveOperationException {
+    void afterCrossingThrowsNothingWhenNothingIsPending() throws ReflectiveOperationException {
         Constructor<Image.ThreadData> constructor = Image.ThreadData.class.getDeclaredConstructor(long.class);
         constructor.setAccessible(true);
 
-        assertDoesNotThrow(constructor.newInstance(1L)::throwPendingException);
+        assertDoesNotThrow(constructor.newInstance(1L)::afterCrossing);
     }
 
     @Test
-    void throwPendingExceptionClearsTheSlotThenReachesTheRawFree() throws ReflectiveOperationException {
+    void afterCrossingClearsTheSlotThenReachesTheRawFree() throws ReflectiveOperationException {
         Constructor<Image.ThreadData> constructor = Image.ThreadData.class.getDeclaredConstructor(long.class);
         constructor.setAccessible(true);
         Image.ThreadData thread = constructor.newInstance(1L);
         thread.pendingException = block(new IllegalStateException("lost"));
 
-        Throwable caught = assertThrows(Throwable.class, thread::throwPendingException);
+        Throwable caught = assertThrows(Throwable.class, thread::afterCrossing);
 
         assertNull(thread.pendingException);
         assertInstanceOf(UnsatisfiedLinkError.class, caught);

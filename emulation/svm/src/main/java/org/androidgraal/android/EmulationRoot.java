@@ -49,7 +49,7 @@ public final class EmulationRoot implements Emulation {
         try {
             return fromJava(env, assets).rawValue();
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }

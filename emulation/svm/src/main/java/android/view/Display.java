@@ -647,7 +647,7 @@ public final class Display implements Proxy {
      * </p>
      */
     public int getDisplayId() {
-        return DisplayBinding.getDisplayId(id);
+        return DisplayBinding.getDisplayId(this);
     }
 
     /**
@@ -678,7 +678,7 @@ public final class Display implements Proxy {
      * @return True if the display is still valid.
      */
     public boolean isValid() {
-        return DisplayBinding.isValid(id);
+        return DisplayBinding.isValid(this);
     }
 
     /**
@@ -705,7 +705,7 @@ public final class Display implements Proxy {
      * @see #FLAG_ROUND
      */
     public int getFlags() {
-        return DisplayBinding.getFlags(id);
+        return DisplayBinding.getFlags(this);
     }
 
     /**
@@ -763,7 +763,7 @@ public final class Display implements Proxy {
      * @return The display's name.
      */
     public String getName() {
-        return DisplayBinding.getName(id);
+        return DisplayBinding.getName(this);
     }
 
     /**
@@ -897,7 +897,7 @@ public final class Display implements Proxy {
      */
     @Deprecated
     public int getWidth() {
-        return DisplayBinding.getWidth(id);
+        return DisplayBinding.getWidth(this);
     }
 
     /**
@@ -905,7 +905,7 @@ public final class Display implements Proxy {
      */
     @Deprecated
     public int getHeight() {
-        return DisplayBinding.getHeight(id);
+        return DisplayBinding.getHeight(this);
     }
 
     /**
@@ -929,7 +929,7 @@ public final class Display implements Proxy {
      * rotation value will correspond to the activity if accessed through the activity.
      */
     public int getRotation() {
-        return DisplayBinding.getRotation(id);
+        return DisplayBinding.getRotation(this);
     }
 
     /**
@@ -946,7 +946,7 @@ public final class Display implements Proxy {
      */
     @Deprecated
     public int getOrientation() {
-        return DisplayBinding.getOrientation(id);
+        return DisplayBinding.getOrientation(this);
     }
 
     /**
@@ -974,14 +974,14 @@ public final class Display implements Proxy {
      */
     @Deprecated
     public int getPixelFormat() {
-        return DisplayBinding.getPixelFormat(id);
+        return DisplayBinding.getPixelFormat(this);
     }
 
     /**
      * Gets the refresh rate of this display in frames per second.
      */
     public float getRefreshRate() {
-        return DisplayBinding.getRefreshRate(id);
+        return DisplayBinding.getRefreshRate(this);
     }
 
     /**
@@ -997,7 +997,7 @@ public final class Display implements Proxy {
      */
     @FlaggedApi(FLAG_ENABLE_GET_SUPPORTED_REFRESH_RATES)
     public @NonNull float[] getSupportedRefreshRates() {
-        return DisplayBinding.getSupportedRefreshRates(id);
+        return DisplayBinding.getSupportedRefreshRates(this);
     }
 
     /**
@@ -1056,7 +1056,7 @@ public final class Display implements Proxy {
         if (Build.VERSION.SDK_INT < 36) {
             throw new NoSuchMethodError("hasArrSupport()Z");
         }
-        return DisplayBinding.hasArrSupport(id);
+        return DisplayBinding.hasArrSupport(this);
     }
 
     /**
@@ -1116,7 +1116,7 @@ public final class Display implements Proxy {
         if (Build.VERSION.SDK_INT < 36) {
             throw new NoSuchMethodError("getSuggestedFrameRate(I)F");
         }
-        return DisplayBinding.getSuggestedFrameRate(id, category);
+        return DisplayBinding.getSuggestedFrameRate(this, category);
     }
 
     /**
@@ -1141,7 +1141,7 @@ public final class Display implements Proxy {
         if (Build.VERSION.SDK_INT < 30) {
             throw new NoSuchMethodError("isMinimalPostProcessingSupported()Z");
         }
-        return DisplayBinding.isMinimalPostProcessingSupported(id);
+        return DisplayBinding.isMinimalPostProcessingSupported(this);
     }
 
     /**
@@ -1236,7 +1236,7 @@ public final class Display implements Proxy {
         if (Build.VERSION.SDK_INT < 26) {
             throw new NoSuchMethodError("isHdr()Z");
         }
-        return DisplayBinding.isHdr(id);
+        return DisplayBinding.isHdr(this);
     }
 
     /**
@@ -1247,7 +1247,7 @@ public final class Display implements Proxy {
         if (Build.VERSION.SDK_INT < 34) {
             throw new NoSuchMethodError("isHdrSdrRatioAvailable()Z");
         }
-        return DisplayBinding.isHdrSdrRatioAvailable(id);
+        return DisplayBinding.isHdrSdrRatioAvailable(this);
     }
 
     /**
@@ -1259,7 +1259,7 @@ public final class Display implements Proxy {
         if (Build.VERSION.SDK_INT < 34) {
             throw new NoSuchMethodError("getHdrSdrRatio()F");
         }
-        return DisplayBinding.getHdrSdrRatio(id);
+        return DisplayBinding.getHdrSdrRatio(this);
     }
 
     private int findHdrSdrRatioListenerLocked(Consumer<Display> listener) {
@@ -1312,7 +1312,7 @@ public final class Display implements Proxy {
         if (Build.VERSION.SDK_INT < 36) {
             throw new NoSuchMethodError("getHighestHdrSdrRatio()F");
         }
-        return DisplayBinding.getHighestHdrSdrRatio(id);
+        return DisplayBinding.getHighestHdrSdrRatio(this);
     }
 
     /**
@@ -1362,7 +1362,7 @@ public final class Display implements Proxy {
         if (Build.VERSION.SDK_INT < 26) {
             throw new NoSuchMethodError("isWideColorGamut()Z");
         }
-        return DisplayBinding.isWideColorGamut(id);
+        return DisplayBinding.isWideColorGamut(this);
     }
 
     /**
@@ -1383,7 +1383,7 @@ public final class Display implements Proxy {
      * A/V synchronization.
      */
     public long getAppVsyncOffsetNanos() {
-        return DisplayBinding.getAppVsyncOffsetNanos(id);
+        return DisplayBinding.getAppVsyncOffsetNanos(this);
     }
 
     /**
@@ -1398,7 +1398,7 @@ public final class Display implements Proxy {
      * ({@link System#nanoTime}).
      */
     public long getPresentationDeadlineNanos() {
-        return DisplayBinding.getPresentationDeadlineNanos(id);
+        return DisplayBinding.getPresentationDeadlineNanos(this);
     }
 
     /**
@@ -1473,7 +1473,7 @@ public final class Display implements Proxy {
      * {@link #STATE_UNKNOWN}.
      */
     public int getState() {
-        return DisplayBinding.getState(id);
+        return DisplayBinding.getState(this);
     }
 
     /**
@@ -1577,7 +1577,7 @@ public final class Display implements Proxy {
     // For debugging purposes
     @Override
     public String toString() {
-        return DisplayBinding.toString(id);
+        return DisplayBinding.toString(this);
     }
 
     /**

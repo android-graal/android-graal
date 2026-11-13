@@ -6,7 +6,11 @@ import org.androidgraal.shared.Handles;
 import org.androidgraal.svm.Art;
 import org.androidgraal.svm.Transport;
 import org.androidgraal.svm.jni.JNI;
+import org.graalvm.android.bridges.core.Allocations;
+import org.graalvm.android.bridges.core.Display;
 import org.graalvm.android.bridges.core.Hello;
+import org.graalvm.android.bridges.core.Probe;
+import org.graalvm.android.bridges.core.Registry;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 
 public final class $HelloSvm {
@@ -22,10 +26,11 @@ public final class $HelloSvm {
             @CEntryPoint.IsolateThreadContext long thread, long handle, long h0, int a1,
             boolean a2) {
         try {
+            Display v0 = HANDLES.receive(h0, $DisplayArt.PROXIES);
             Hello receiver = HANDLES.object(handle);
-            return receiver.callbacks(HANDLES.receive(h0, $DisplayArt.PROXIES), a1, a2);
+            return receiver.callbacks(v0, a1, a2);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }
@@ -36,10 +41,11 @@ public final class $HelloSvm {
     private static void churn(JNI.JNIEnv env, JNI.JClass clazz,
             @CEntryPoint.IsolateThreadContext long thread, long handle, long h0, int a1) {
         try {
+            Registry v0 = HANDLES.receive(h0, $RegistryArt.PROXIES);
             Hello receiver = HANDLES.object(handle);
-            receiver.churn(HANDLES.receive(h0, $RegistryArt.PROXIES), a1);
+            receiver.churn(v0, a1);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
         }
     }
 
@@ -49,10 +55,11 @@ public final class $HelloSvm {
     private static void coldThrow(JNI.JNIEnv env, JNI.JClass clazz,
             @CEntryPoint.IsolateThreadContext long thread, long handle, long h0) {
         try {
+            Display v0 = HANDLES.receive(h0, $DisplayArt.PROXIES);
             Hello receiver = HANDLES.object(handle);
-            receiver.coldThrow(HANDLES.receive(h0, $DisplayArt.PROXIES));
+            receiver.coldThrow(v0);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
         }
     }
 
@@ -65,7 +72,7 @@ public final class $HelloSvm {
             Hello receiver = HANDLES.object(handle);
             return receiver.doubled(a0);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }
@@ -76,16 +83,16 @@ public final class $HelloSvm {
     private static long echo(JNI.JNIEnv env, JNI.JClass clazz,
             @CEntryPoint.IsolateThreadContext long thread, long handle, JNI.JObject transport) {
         try {
-            Hello receiver = HANDLES.object(handle);
             long address = Art.address(env, transport);
             int n0 = address == 0 ? Blocks.NULL : Transport.getBlockLength(address);
             String v0 = address == 0 ? null : Transport.readStringBlock(address);
+            Hello receiver = HANDLES.object(handle);
             String result = receiver.echo(v0);
             long r = result == null ? 0 : Transport.allocBlock(result.length(), 2);
             Transport.write(result, r + Blocks.HEADER);
             return r;
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }
@@ -96,13 +103,13 @@ public final class $HelloSvm {
     private static void fail(JNI.JNIEnv env, JNI.JClass clazz,
             @CEntryPoint.IsolateThreadContext long thread, long handle, JNI.JObject transport) {
         try {
-            Hello receiver = HANDLES.object(handle);
             long address = Art.address(env, transport);
             int n0 = address == 0 ? Blocks.NULL : Transport.getBlockLength(address);
             String v0 = address == 0 ? null : Transport.readStringBlock(address);
+            Hello receiver = HANDLES.object(handle);
             receiver.fail(v0);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
         }
     }
 
@@ -112,13 +119,13 @@ public final class $HelloSvm {
     private static void failTyped(JNI.JNIEnv env, JNI.JClass clazz,
             @CEntryPoint.IsolateThreadContext long thread, long handle, JNI.JObject transport) {
         try {
-            Hello receiver = HANDLES.object(handle);
             long address = Art.address(env, transport);
             int n0 = address == 0 ? Blocks.NULL : Transport.getBlockLength(address);
             String v0 = address == 0 ? null : Transport.readStringBlock(address);
+            Hello receiver = HANDLES.object(handle);
             receiver.failTyped(v0);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
         }
     }
 
@@ -129,9 +136,9 @@ public final class $HelloSvm {
             @CEntryPoint.IsolateThreadContext long thread, long handle) {
         try {
             Hello receiver = HANDLES.object(handle);
-            return HANDLES.send(receiver.frame());
+            return Art.sendResult(receiver.frame());
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }
@@ -145,7 +152,7 @@ public final class $HelloSvm {
             Hello receiver = HANDLES.object(handle);
             receiver.gc();
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
         }
     }
 
@@ -158,7 +165,7 @@ public final class $HelloSvm {
             Hello receiver = HANDLES.object(handle);
             return receiver.liveIds();
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }
@@ -172,7 +179,7 @@ public final class $HelloSvm {
             Hello receiver = HANDLES.object(handle);
             return receiver.liveProxies();
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }
@@ -184,10 +191,13 @@ public final class $HelloSvm {
             @CEntryPoint.IsolateThreadContext long thread, long handle, long h0, long h1, long h2,
             int a3, int a4, boolean a5) {
         try {
+            Probe v0 = HANDLES.receive(h0, $ProbeArt.PROXIES);
+            Display v1 = HANDLES.receive(h1, $DisplayArt.PROXIES);
+            Allocations v2 = HANDLES.receive(h2, $AllocationsArt.PROXIES);
             Hello receiver = HANDLES.object(handle);
-            return receiver.loop(HANDLES.receive(h0, $ProbeArt.PROXIES), HANDLES.receive(h1, $DisplayArt.PROXIES), HANDLES.receive(h2, $AllocationsArt.PROXIES), a3, a4, a5);
+            return receiver.loop(v0, v1, v2, a3, a4, a5);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }
@@ -201,7 +211,7 @@ public final class $HelloSvm {
             Hello receiver = HANDLES.object(handle);
             return receiver.ping(a0);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }
@@ -212,13 +222,13 @@ public final class $HelloSvm {
     private static void refuse(JNI.JNIEnv env, JNI.JClass clazz,
             @CEntryPoint.IsolateThreadContext long thread, long handle, JNI.JObject transport) {
         try {
-            Hello receiver = HANDLES.object(handle);
             long address = Art.address(env, transport);
             int n0 = address == 0 ? Blocks.NULL : Transport.getBlockLength(address);
             String v0 = address == 0 ? null : Transport.readStringBlock(address);
+            Hello receiver = HANDLES.object(handle);
             receiver.refuse(v0);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
         }
     }
 
@@ -228,10 +238,11 @@ public final class $HelloSvm {
     private static boolean register(JNI.JNIEnv env, JNI.JClass clazz,
             @CEntryPoint.IsolateThreadContext long thread, long handle, long h0) {
         try {
+            Registry v0 = HANDLES.receive(h0, $RegistryArt.PROXIES);
             Hello receiver = HANDLES.object(handle);
-            return receiver.register(HANDLES.receive(h0, $RegistryArt.PROXIES));
+            return receiver.register(v0);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return false;
         }
     }
@@ -242,10 +253,11 @@ public final class $HelloSvm {
     private static void run(JNI.JNIEnv env, JNI.JClass clazz,
             @CEntryPoint.IsolateThreadContext long thread, long handle, long h0) {
         try {
+            Display v0 = HANDLES.receive(h0, $DisplayArt.PROXIES);
             Hello receiver = HANDLES.object(handle);
-            receiver.run(HANDLES.receive(h0, $DisplayArt.PROXIES));
+            receiver.run(v0);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
         }
     }
 
@@ -255,10 +267,11 @@ public final class $HelloSvm {
     private static long same(JNI.JNIEnv env, JNI.JClass clazz,
             @CEntryPoint.IsolateThreadContext long thread, long handle, long h0) {
         try {
+            Display v0 = HANDLES.receive(h0, $DisplayArt.PROXIES);
             Hello receiver = HANDLES.object(handle);
-            return HANDLES.send(receiver.same(HANDLES.receive(h0, $DisplayArt.PROXIES)));
+            return Art.sendResult(receiver.same(v0));
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }
@@ -270,9 +283,9 @@ public final class $HelloSvm {
             @CEntryPoint.IsolateThreadContext long thread, long handle) {
         try {
             Hello receiver = HANDLES.object(handle);
-            return HANDLES.send(receiver.self());
+            return Art.sendResult(receiver.self());
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }
@@ -284,10 +297,11 @@ public final class $HelloSvm {
             @CEntryPoint.IsolateThreadContext long thread, long handle, long h0, int a1,
             boolean a2) {
         try {
+            Display v0 = HANDLES.receive(h0, $DisplayArt.PROXIES);
             Hello receiver = HANDLES.object(handle);
-            receiver.shows(HANDLES.receive(h0, $DisplayArt.PROXIES), a1, a2);
+            receiver.shows(v0, a1, a2);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
         }
     }
 
@@ -300,7 +314,7 @@ public final class $HelloSvm {
             Hello receiver = HANDLES.object(handle);
             return receiver.threads();
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }
@@ -311,10 +325,11 @@ public final class $HelloSvm {
     private static int values(JNI.JNIEnv env, JNI.JClass clazz,
             @CEntryPoint.IsolateThreadContext long thread, long handle, long h0, boolean a1) {
         try {
+            Display v0 = HANDLES.receive(h0, $DisplayArt.PROXIES);
             Hello receiver = HANDLES.object(handle);
-            return receiver.values(HANDLES.receive(h0, $DisplayArt.PROXIES), a1);
+            return receiver.values(v0, a1);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }

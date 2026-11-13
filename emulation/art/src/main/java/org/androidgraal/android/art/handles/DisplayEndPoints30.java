@@ -20,7 +20,7 @@ final class DisplayEndPoints30 {
             Display receiver = HANDLES.object(handle);
             return receiver.isMinimalPostProcessingSupported();
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return false;
         }
     }

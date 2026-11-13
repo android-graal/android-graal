@@ -14,7 +14,7 @@ public final class Transport {
     /** Allocates image memory and returns a view over it. */
     public static ByteBuffer alloc(ThreadData thread, int bytes) {
         ByteBuffer view = alloc(thread.isolateThread, bytes);
-        thread.throwPendingException();
+        thread.afterCrossing();
         return view.order(ByteOrder.nativeOrder());
     }
 
@@ -23,7 +23,7 @@ public final class Transport {
      */
     public static void free(ThreadData thread, ByteBuffer view) {
         free(thread.isolateThread, view);
-        thread.throwPendingException();
+        thread.afterCrossing();
     }
 
     /**
@@ -37,21 +37,21 @@ public final class Transport {
     /** Image memory freed when the calling thread exits. */
     public static long threadAlloc(ThreadData thread, int bytes) {
         long address = threadAlloc(thread.isolateThread, bytes);
-        thread.throwPendingException();
+        thread.afterCrossing();
         return address;
     }
 
     /** A view over the {@code address} with the size {@code bytes}. */
     public static ByteBuffer view(ThreadData thread, long address, int bytes) {
         ByteBuffer view = view(thread.isolateThread, address, bytes);
-        thread.throwPendingException();
+        thread.afterCrossing();
         return view.order(ByteOrder.nativeOrder());
     }
 
     /** A view over the block at {@code address}. */
     public static ByteBuffer viewBlock(ThreadData thread, long address) {
         ByteBuffer view = viewBlock(thread.isolateThread, address);
-        thread.throwPendingException();
+        thread.afterCrossing();
         return view.order(ByteOrder.nativeOrder());
     }
 

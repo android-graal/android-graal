@@ -39,7 +39,7 @@ public final class ArtHost implements ApplicationHost {
     public long assetManager() {
         Image.ThreadData thread = Image.thread();
         long manager = nativeAssetManager(thread.isolateThread, Image.application().getAssets());
-        thread.throwPendingException();
+        thread.afterCrossing();
         return manager;
     }
 

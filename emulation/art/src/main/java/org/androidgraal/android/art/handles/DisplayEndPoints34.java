@@ -20,7 +20,7 @@ final class DisplayEndPoints34 {
             Display receiver = HANDLES.object(handle);
             return receiver.getHdrSdrRatio();
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return 0;
         }
     }
@@ -31,7 +31,7 @@ final class DisplayEndPoints34 {
             Display receiver = HANDLES.object(handle);
             return receiver.isHdrSdrRatioAvailable();
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return false;
         }
     }

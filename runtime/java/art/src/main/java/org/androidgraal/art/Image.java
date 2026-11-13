@@ -1,6 +1,9 @@
 package org.androidgraal.art;
 
 import android.content.Context;
+import android.os.Build;
+import androidx.annotation.RequiresApi;
+import java.lang.ref.Reference;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
 import java.util.ArrayList;
@@ -11,17 +14,20 @@ import java.util.TimeZone;
 import org.androidgraal.shared.Blocks;
 import org.androidgraal.shared.Handles;
 import org.androidgraal.shared.MarshalledException;
+import org.androidgraal.shared.Proxy;
+import org.androidgraal.shared.ReleasedReferences;
 import org.androidgraal.shared.Services;
 import org.androidgraal.shared.ThrowableMarshaller;
 
 public final class Image {
 
     private static final ThreadLocal<ThreadData> THREADS = new ThreadLocal<>();
-    private static final Handles HANDLES = new Handles(-1, Image::onProxyReleased);
+    private static final Handles HANDLES = new Handles(-1, Image::releaseImageExports);
     private static final HashMap<Class<?>, Contract> ROOTS = new HashMap<>();
     private static volatile long isolate;
     private static volatile boolean started;
     private static volatile Context application;
+    private static volatile Object fenceSink;
 
     private Image() {
     }
@@ -40,6 +46,7 @@ public final class Image {
         load(name);
         loadContracts();
         started = true;
+        startReleaseThread();
         startServices();
     }
 
@@ -74,6 +81,30 @@ public final class Image {
         return HANDLES;
     }
 
+    /**
+     * Associates the result object with an id for returning the object. A proxy is made reachable until the calling
+     * thread's next crossing into the image returns.
+     */
+    public static long sendResult(Object result) {
+        if (result instanceof Proxy) {
+            thread().handedBack = result;
+        }
+        return HANDLES.send(result);
+    }
+
+    /**
+     * Keeps {@code object} reachable up to this call. Below API 28, which lacks {@code Reference.reachabilityFence}, a
+     * store into a volatile field does it: ART's compilers keep every volatile store.
+     */
+    public static void reachabilityFence(Object object) {
+        if (Build.VERSION.SDK_INT >= 28) {
+            Fence28.reachabilityFence(object);
+        } else {
+            fenceSink = object;
+            fenceSink = null;
+        }
+    }
+
     /** The calling thread's data, attached on the first call and detached when the thread exits. */
     public static ThreadData thread() {
         ThreadData thread = THREADS.get();
@@ -84,15 +115,15 @@ public final class Image {
      * Raises {@code t} on the image side, once the ART side returns, or hands it to the calling thread's uncaught
      * exception handler when it cannot. Never throws.
      */
-    public static void raiseException(Throwable t) {
+    public static void raiseImageException(Throwable t) {
         try {
             byte[] bytes = ThrowableMarshaller.write(t);
             ThreadData thread = thread();
             ByteBuffer block = Transport.allocBlock(thread, bytes.length, 1);
             block.position(Blocks.HEADER);
             block.put(bytes);
-            setPendingException(thread.isolateThread, block);
-            thread.throwPendingException();
+            setImagePendingException(thread.isolateThread, block);
+            thread.afterCrossing();
         } catch (Throwable e) {
             handleUncaughtException(t);
         }
@@ -113,7 +144,7 @@ public final class Image {
         THREADS.set(data);
         try {
             initializeIsolate(thread);
-            data.throwPendingException();
+            data.afterCrossing();
         } catch (Throwable t) {
             throw new ImageStartException("initialising the isolate of " + library + " failed", t);
         }
@@ -152,6 +183,12 @@ public final class Image {
         } catch (ServiceConfigurationError e) {
             throw new ImageStartException("loading a contract failed", e);
         }
+    }
+
+    private static void startReleaseThread() {
+        Thread releases = new Thread(HANDLES::releaseForever, "androidgraal-art-releases");
+        releases.setDaemon(true);
+        releases.start();
     }
 
     private static void startServices() {
@@ -202,16 +239,22 @@ public final class Image {
     }
 
     @EndPoint
-    private static void dropExport(long id) {
+    private static void releaseArtExports(ByteBuffer block) {
         try {
-            HANDLES.drop(id);
+            block.order(ByteOrder.nativeOrder());
+            long count = block.getLong();
+            List<ReleasedReferences> batch = new ArrayList<>();
+            for (long i = 0; i < count; i++) {
+                batch.add(new ReleasedReferences(block.getLong(), block.getLong()));
+            }
+            HANDLES.releaseExports(batch);
         } catch (Throwable t) {
-            raiseException(t);
+            raiseImageException(t);
         }
     }
 
     @EndPoint
-    private static void setPendingException(ByteBuffer block) {
+    private static void setArtPendingException(ByteBuffer block) {
         thread().pendingException = block;
     }
 
@@ -250,29 +293,50 @@ public final class Image {
 
     private static native void detachThreadOnExit(long thread);
 
-    private static void onProxyReleased(long id) {
+    private static void releaseImageExports(List<ReleasedReferences> batch) {
+        ByteBuffer block = ByteBuffer.allocateDirect(8 + 16 * batch.size()).order(ByteOrder.nativeOrder());
+        block.putLong(batch.size());
+        for (ReleasedReferences released : batch) {
+            block.putLong(released.id());
+            block.putLong(released.referenceCount());
+        }
         ThreadData thread = thread();
-        dropExport(thread.isolateThread, id);
-        thread.throwPendingException();
+        releaseImageExports(thread.isolateThread, block);
+        thread.afterCrossing();
     }
 
-    private static native void dropExport(long thread, long id);
+    private static native void releaseImageExports(long thread, ByteBuffer block);
 
-    private static native void setPendingException(long thread, ByteBuffer block);
+    private static native void setImagePendingException(long thread, ByteBuffer block);
+
+    @RequiresApi(28)
+    private static final class Fence28 {
+
+        public static void reachabilityFence(Object object) {
+            Reference.reachabilityFence(object);
+        }
+    }
 
     public static final class ThreadData {
 
         public final long isolateThread;
 
-        /** The serialized exception the image threw on this thread, null when none is pendin. ART frees it. */
+        /** The serialized exception the image threw on this thread, null when none is pending. ART frees it. */
         public ByteBuffer pendingException;
+
+        /** Keeps the proxy this thread last returned to the image reachable. */
+        public Object handedBack;
 
         private ThreadData(long isolateThread) {
             this.isolateThread = isolateThread;
         }
 
-        /** Throws what the image threw during the last crossing of this thread, as a {@link MarshalledException}. */
-        public void throwPendingException() {
+        /**
+         * Runs right after every crossing this thread makes into the image: lets go of the proxy handed back and throws
+         * what the image threw, as a {@link MarshalledException}.
+         */
+        public void afterCrossing() {
+            handedBack = null;
             ByteBuffer block = pendingException;
             if (block == null) {
                 return;

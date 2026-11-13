@@ -164,7 +164,7 @@
       */
      public int getDisplayId() {
 -        return mDisplayId;
-+        return DisplayBinding.getDisplayId(id);
++        return DisplayBinding.getDisplayId(this);
      }
  
      /**
@@ -185,7 +185,7 @@
 -            updateDisplayInfoLocked();
 -            return mIsValid;
 -        }
-+        return DisplayBinding.isValid(id);
++        return DisplayBinding.isValid(this);
      }
  
      /**
@@ -225,7 +225,7 @@
       */
      public int getFlags() {
 -        return mFlags;
-+        return DisplayBinding.getFlags(id);
++        return DisplayBinding.getFlags(this);
      }
  
      /**
@@ -302,7 +302,7 @@
 -            updateDisplayInfoLocked();
 -            return mDisplayInfo.name;
 -        }
-+        return DisplayBinding.getName(id);
++        return DisplayBinding.getName(this);
      }
  
      /**
@@ -407,7 +407,7 @@
 -            updateCachedAppSizeIfNeededLocked();
 -            return mCachedAppWidthCompat;
 -        }
-+        return DisplayBinding.getWidth(id);
++        return DisplayBinding.getWidth(this);
      }
  
      /**
@@ -419,7 +419,7 @@
 -            updateCachedAppSizeIfNeededLocked();
 -            return mCachedAppHeightCompat;
 -        }
-+        return DisplayBinding.getHeight(id);
++        return DisplayBinding.getHeight(this);
      }
  
      /**
@@ -433,7 +433,7 @@
 -            updateDisplayInfoLocked();
 -            return getLocalRotation();
 -        }
-+        return DisplayBinding.getRotation(id);
++        return DisplayBinding.getRotation(this);
      }
  
      /**
@@ -457,7 +457,7 @@
 -    @Surface.Rotation
      public int getOrientation() {
 -        return getRotation();
-+        return DisplayBinding.getOrientation(id);
++        return DisplayBinding.getOrientation(this);
      }
  
 -
@@ -536,7 +536,7 @@
      @Deprecated
      public int getPixelFormat() {
 -        return PixelFormat.RGBA_8888;
-+        return DisplayBinding.getPixelFormat(id);
++        return DisplayBinding.getPixelFormat(this);
      }
  
      /**
@@ -551,7 +551,7 @@
 -            updateDisplayInfoLocked();
 -            return mDisplayInfo.getRefreshRate();
 -        }
-+        return DisplayBinding.getRefreshRate(id);
++        return DisplayBinding.getRefreshRate(this);
      }
  
      /**
@@ -565,7 +565,7 @@
 -            Objects.requireNonNull(refreshRates);
 -            return refreshRates;
 -        }
-+        return DisplayBinding.getSupportedRefreshRates(id);
++        return DisplayBinding.getSupportedRefreshRates(this);
      }
  
      /**
@@ -645,7 +645,7 @@
 +        if (Build.VERSION.SDK_INT < 36) {
 +            throw new NoSuchMethodError("hasArrSupport()Z");
          }
-+        return DisplayBinding.hasArrSupport(id);
++        return DisplayBinding.hasArrSupport(this);
      }
  
      /**
@@ -665,7 +665,7 @@
 +        if (Build.VERSION.SDK_INT < 36) {
 +            throw new NoSuchMethodError("getSuggestedFrameRate(I)F");
          }
-+        return DisplayBinding.getSuggestedFrameRate(id, category);
++        return DisplayBinding.getSuggestedFrameRate(this, category);
      }
  
      /**
@@ -679,7 +679,7 @@
 +        if (Build.VERSION.SDK_INT < 30) {
 +            throw new NoSuchMethodError("isMinimalPostProcessingSupported()Z");
          }
-+        return DisplayBinding.isMinimalPostProcessingSupported(id);
++        return DisplayBinding.isMinimalPostProcessingSupported(this);
      }
  
      /**
@@ -791,7 +791,7 @@
 +        if (Build.VERSION.SDK_INT < 26) {
 +            throw new NoSuchMethodError("isHdr()Z");
          }
-+        return DisplayBinding.isHdr(id);
++        return DisplayBinding.isHdr(this);
      }
  
      /**
@@ -805,7 +805,7 @@
 +        if (Build.VERSION.SDK_INT < 34) {
 +            throw new NoSuchMethodError("isHdrSdrRatioAvailable()Z");
          }
-+        return DisplayBinding.isHdrSdrRatioAvailable(id);
++        return DisplayBinding.isHdrSdrRatioAvailable(this);
      }
  
      /**
@@ -820,7 +820,7 @@
 +        if (Build.VERSION.SDK_INT < 34) {
 +            throw new NoSuchMethodError("getHdrSdrRatio()F");
          }
-+        return DisplayBinding.getHdrSdrRatio(id);
++        return DisplayBinding.getHdrSdrRatio(this);
      }
  
      private int findHdrSdrRatioListenerLocked(Consumer<Display> listener) {
@@ -898,7 +898,7 @@
 +        if (Build.VERSION.SDK_INT < 36) {
 +            throw new NoSuchMethodError("getHighestHdrSdrRatio()F");
 +        }
-+        return DisplayBinding.getHighestHdrSdrRatio(id);
++        return DisplayBinding.getHighestHdrSdrRatio(this);
      }
  
      /**
@@ -947,7 +947,7 @@
 +        if (Build.VERSION.SDK_INT < 26) {
 +            throw new NoSuchMethodError("isWideColorGamut()Z");
          }
-+        return DisplayBinding.isWideColorGamut(id);
++        return DisplayBinding.isWideColorGamut(this);
      }
  
      /**
@@ -1043,7 +1043,7 @@
 -            updateDisplayInfoLocked();
 -            return mDisplayInfo.appVsyncOffsetNanos;
 -        }
-+        return DisplayBinding.getAppVsyncOffsetNanos(id);
++        return DisplayBinding.getAppVsyncOffsetNanos(this);
      }
  
      /**
@@ -1055,7 +1055,7 @@
 -            updateDisplayInfoLocked();
 -            return mDisplayInfo.presentationDeadlineNanos;
 -        }
-+        return DisplayBinding.getPresentationDeadlineNanos(id);
++        return DisplayBinding.getPresentationDeadlineNanos(this);
      }
  
      /**
@@ -1249,7 +1249,7 @@
 -            updateDisplayInfoLocked();
 -            return mIsValid ? mDisplayInfo.state : STATE_UNKNOWN;
 -        }
-+        return DisplayBinding.getState(id);
++        return DisplayBinding.getState(this);
      }
  
      /**
@@ -1418,7 +1418,7 @@
 -            return "Display id " + mDisplayId + ": " + mDisplayInfo + ", "
 -                    + mTempMetrics + ", isValid=" + mIsValid;
 -        }
-+        return DisplayBinding.toString(id);
++        return DisplayBinding.toString(this);
      }
  
      /**

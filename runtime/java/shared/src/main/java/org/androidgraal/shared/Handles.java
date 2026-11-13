@@ -1,12 +1,16 @@
 package org.androidgraal.shared;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Objects;
 
 /**
  * A side's handle table: the objects it has exported to the other side and the one proxy it holds for each object
  * received from it. A reference crosses as a {@code long} id, 0 for null, the sign marks the owning side, never reused.
- * A proxy handed back to its owner resolves to the owner's object. An export lives until the side holding its proxy
- * calls {@link #release}.
+ * A proxy handed back to its owner resolves to the owner's object. A proxy is held weakly and keeps the reference count
+ * of its id, an export counts its sends. An export ends once the other side has released as many references as it was
+ * sent, which it does when its proxy is collected or {@link #release released}. A proxy's export may already have ended
+ * when a finalizer on the proxy's side runs, so a finalizer must not use a proxy.
  */
 public final class Handles {
 
@@ -17,21 +21,25 @@ public final class Handles {
         T create(long id);
     }
 
-    /** Tells the other side that this side released its proxy of {@code id}, so it ends that export. */
+    /**
+     * Hands the other side the references of proxies this side no longer holds, for the other side's
+     * {@link #releaseExports}.
+     */
     public interface Release {
-        void release(long id);
+        void release(List<ReleasedReferences> batch);
     }
 
     private final Exports exports;
     private final Imports imports;
-    private final Release onProxyReleased;
-    private final long step;
+    private final Release release;
+    private final long idStep;
 
-    public Handles(long step, Release onProxyReleased) {
-        this.exports = new Exports(step);
+    /** The table of the side whose ids have the sign of {@code step}. */
+    public Handles(long idStep, Release release) {
+        this.exports = new Exports(idStep);
         this.imports = new Imports();
-        this.onProxyReleased = onProxyReleased;
-        this.step = step;
+        this.release = release;
+        this.idStep = idStep;
     }
 
     /** The id {@code object} crosses as: 0 for null, a proxy's own foreign id, otherwise this side's export of it. */
@@ -53,7 +61,7 @@ public final class Handles {
         if (wire == 0L) {
             return null;
         }
-        if ((wire > 0) == (step > 0)) {
+        if ((wire > 0) == (idStep > 0)) {
             return object(wire);
         }
         if (factory == null) {
@@ -76,21 +84,53 @@ public final class Handles {
     }
 
     /**
-     * Releases {@code proxy} and ends the other side's export. The next crossing of the object creates a new proxy.
-     * Every later use of {@code proxy} throws an {@link IllegalStateException}. Only a {@link ReleasableProxy} can be
-     * released, everything else throws an {@link IllegalArgumentException}.
+     * Releases {@code proxy} and its references at once, without waiting for its collection. The next crossing of the
+     * object creates a new proxy. Every later use of {@code proxy} throws an {@link IllegalStateException}. Only a
+     * {@link ReleasableProxy} can be released, everything else throws an {@link IllegalArgumentException}.
      */
     public void release(Object proxy) {
         Objects.requireNonNull(proxy);
         if (!(proxy instanceof ReleasableProxy releasableProxy)) {
             throw new IllegalArgumentException(proxy.getClass().getName() + " is not a ReleasableProxy");
         }
-        onProxyReleased.release(imports.release(releasableProxy));
+        release.release(Collections.singletonList(imports.release(releasableProxy)));
     }
 
-    /** Ends this side's export of {@code id}. An invalid id throws an {@code IllegalStateException}. */
-    public void drop(long id) {
-        if (exports.remove(id) == null) {
+    /**
+     * Ends the exports whose sends a batch of the other side's {@link Release} releases. An element naming an id this
+     * side does not export, or more references than it sent, throws an {@link IllegalStateException} once every other
+     * element is applied.
+     */
+    public void releaseExports(List<ReleasedReferences> batch) {
+        for (ReleasedReferences released : batch) {
+            exports.release(released);
+        }
+    }
+
+    /**
+     * Blocks until a proxy of this side is collected, then releases its references and those of every other proxy
+     * collected by then in one batch.
+     */
+    public void releaseNext() throws InterruptedException {
+        release.release(imports.nextCollected());
+    }
+
+    /** Runs {@link #releaseNext} for as long as the process lives. Never returns. */
+    public void releaseForever() {
+        while (true) {
+            try {
+                releaseNext();
+            } catch (Throwable t) {
+                t.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Ends this side's export of {@code id} whatever its sends. An invalid id throws an {@code IllegalStateException}.
+     */
+    public void forceDropExport(long id) {
+        if (exports.forceRemove(id) == null) {
             throw new IllegalStateException("no object exported as " + id);
         }
     }
@@ -100,7 +140,7 @@ public final class Handles {
         return exports.size();
     }
 
-    /** The amount of currently registered foreign proxies. */
+    /** The amount of proxies this side holds that are not collected yet. */
     public int proxies() {
         return imports.size();
     }

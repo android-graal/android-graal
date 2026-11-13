@@ -85,7 +85,7 @@ public final class ArtLoopers implements Startup {
         for (Map.Entry<Long, Handler> entry : HANDLERS.entrySet()) {
             if (!entry.getValue().getLooper().getThread().isAlive()) {
                 if (HANDLERS.remove(entry.getKey(), entry.getValue())) {
-                    Image.handles().drop(entry.getKey());
+                    Image.handles().forceDropExport(entry.getKey());
                 }
             }
         }

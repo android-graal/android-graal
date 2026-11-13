@@ -2,6 +2,8 @@
 package org.androidgraal.android.handles;
 
 import android.os.Build;
+import android.view.Display;
+import java.lang.ref.Reference;
 import org.androidgraal.shared.Blocks;
 import org.androidgraal.svm.Art;
 import org.androidgraal.svm.Transport;
@@ -84,7 +86,7 @@ public final class DisplayBinding {
         }
     }
 
-    public static long getAppVsyncOffsetNanos(long id) {
+    public static long getAppVsyncOffsetNanos(Display handle) {
         Art.ThreadData thread = Art.thread();
         JNI.JMethodID method = getAppVsyncOffsetNanosMethod;
         if (method.isNull()) {
@@ -92,11 +94,13 @@ public final class DisplayBinding {
             getAppVsyncOffsetNanosMethod = method;
         }
         JNI.JValue args = StackValue.get(1, JNI.JValue.class);
-        args.addressOf(0).setLong(id);
-        return Art.callLong(thread, endPoints, method, args);
+        args.addressOf(0).setLong(handle.foreignId());
+        long r = Art.callLong(thread, endPoints, method, args);
+        Reference.reachabilityFence(handle);
+        return r;
     }
 
-    public static int getDisplayId(long id) {
+    public static int getDisplayId(Display handle) {
         Art.ThreadData thread = Art.thread();
         JNI.JMethodID method = getDisplayIdMethod;
         if (method.isNull()) {
@@ -104,11 +108,13 @@ public final class DisplayBinding {
             getDisplayIdMethod = method;
         }
         JNI.JValue args = StackValue.get(1, JNI.JValue.class);
-        args.addressOf(0).setLong(id);
-        return Art.callInt(thread, endPoints, method, args);
+        args.addressOf(0).setLong(handle.foreignId());
+        int r = Art.callInt(thread, endPoints, method, args);
+        Reference.reachabilityFence(handle);
+        return r;
     }
 
-    public static int getFlags(long id) {
+    public static int getFlags(Display handle) {
         Art.ThreadData thread = Art.thread();
         JNI.JMethodID method = getFlagsMethod;
         if (method.isNull()) {
@@ -116,11 +122,13 @@ public final class DisplayBinding {
             getFlagsMethod = method;
         }
         JNI.JValue args = StackValue.get(1, JNI.JValue.class);
-        args.addressOf(0).setLong(id);
-        return Art.callInt(thread, endPoints, method, args);
+        args.addressOf(0).setLong(handle.foreignId());
+        int r = Art.callInt(thread, endPoints, method, args);
+        Reference.reachabilityFence(handle);
+        return r;
     }
 
-    public static float getHdrSdrRatio(long id) {
+    public static float getHdrSdrRatio(Display handle) {
         Art.ThreadData thread = Art.thread();
         JNI.JMethodID method = getHdrSdrRatioMethod;
         if (method.isNull()) {
@@ -128,11 +136,13 @@ public final class DisplayBinding {
             getHdrSdrRatioMethod = method;
         }
         JNI.JValue args = StackValue.get(1, JNI.JValue.class);
-        args.addressOf(0).setLong(id);
-        return Art.callFloat(thread, endPoints34, method, args);
+        args.addressOf(0).setLong(handle.foreignId());
+        float r = Art.callFloat(thread, endPoints34, method, args);
+        Reference.reachabilityFence(handle);
+        return r;
     }
 
-    public static int getHeight(long id) {
+    public static int getHeight(Display handle) {
         Art.ThreadData thread = Art.thread();
         JNI.JMethodID method = getHeightMethod;
         if (method.isNull()) {
@@ -140,11 +150,13 @@ public final class DisplayBinding {
             getHeightMethod = method;
         }
         JNI.JValue args = StackValue.get(1, JNI.JValue.class);
-        args.addressOf(0).setLong(id);
-        return Art.callInt(thread, endPoints, method, args);
+        args.addressOf(0).setLong(handle.foreignId());
+        int r = Art.callInt(thread, endPoints, method, args);
+        Reference.reachabilityFence(handle);
+        return r;
     }
 
-    public static float getHighestHdrSdrRatio(long id) {
+    public static float getHighestHdrSdrRatio(Display handle) {
         Art.ThreadData thread = Art.thread();
         JNI.JMethodID method = getHighestHdrSdrRatioMethod;
         if (method.isNull()) {
@@ -152,11 +164,13 @@ public final class DisplayBinding {
             getHighestHdrSdrRatioMethod = method;
         }
         JNI.JValue args = StackValue.get(1, JNI.JValue.class);
-        args.addressOf(0).setLong(id);
-        return Art.callFloat(thread, endPoints36, method, args);
+        args.addressOf(0).setLong(handle.foreignId());
+        float r = Art.callFloat(thread, endPoints36, method, args);
+        Reference.reachabilityFence(handle);
+        return r;
     }
 
-    public static String getName(long id) {
+    public static String getName(Display handle) {
         Art.ThreadData thread = Art.thread();
         JNI.JMethodID method = getNameMethod;
         if (method.isNull()) {
@@ -164,16 +178,17 @@ public final class DisplayBinding {
             getNameMethod = method;
         }
         JNI.JValue args = StackValue.get(1, JNI.JValue.class);
-        args.addressOf(0).setLong(id);
+        args.addressOf(0).setLong(handle.foreignId());
         JNI.JObject view = Art.callObject(thread, endPoints, method, args);
         long r = Art.address(thread.env, view);
         Art.deleteLocal(thread.env, view);
+        Reference.reachabilityFence(handle);
         String result = Transport.readStringBlock(r);
         Transport.free(r);
         return result;
     }
 
-    public static int getOrientation(long id) {
+    public static int getOrientation(Display handle) {
         Art.ThreadData thread = Art.thread();
         JNI.JMethodID method = getOrientationMethod;
         if (method.isNull()) {
@@ -181,11 +196,13 @@ public final class DisplayBinding {
             getOrientationMethod = method;
         }
         JNI.JValue args = StackValue.get(1, JNI.JValue.class);
-        args.addressOf(0).setLong(id);
-        return Art.callInt(thread, endPoints, method, args);
+        args.addressOf(0).setLong(handle.foreignId());
+        int r = Art.callInt(thread, endPoints, method, args);
+        Reference.reachabilityFence(handle);
+        return r;
     }
 
-    public static int getPixelFormat(long id) {
+    public static int getPixelFormat(Display handle) {
         Art.ThreadData thread = Art.thread();
         JNI.JMethodID method = getPixelFormatMethod;
         if (method.isNull()) {
@@ -193,11 +210,13 @@ public final class DisplayBinding {
             getPixelFormatMethod = method;
         }
         JNI.JValue args = StackValue.get(1, JNI.JValue.class);
-        args.addressOf(0).setLong(id);
-        return Art.callInt(thread, endPoints, method, args);
+        args.addressOf(0).setLong(handle.foreignId());
+        int r = Art.callInt(thread, endPoints, method, args);
+        Reference.reachabilityFence(handle);
+        return r;
     }
 
-    public static long getPresentationDeadlineNanos(long id) {
+    public static long getPresentationDeadlineNanos(Display handle) {
         Art.ThreadData thread = Art.thread();
         JNI.JMethodID method = getPresentationDeadlineNanosMethod;
         if (method.isNull()) {
@@ -205,11 +224,13 @@ public final class DisplayBinding {
             getPresentationDeadlineNanosMethod = method;
         }
         JNI.JValue args = StackValue.get(1, JNI.JValue.class);
-        args.addressOf(0).setLong(id);
-        return Art.callLong(thread, endPoints, method, args);
+        args.addressOf(0).setLong(handle.foreignId());
+        long r = Art.callLong(thread, endPoints, method, args);
+        Reference.reachabilityFence(handle);
+        return r;
     }
 
-    public static float getRefreshRate(long id) {
+    public static float getRefreshRate(Display handle) {
         Art.ThreadData thread = Art.thread();
         JNI.JMethodID method = getRefreshRateMethod;
         if (method.isNull()) {
@@ -217,11 +238,13 @@ public final class DisplayBinding {
             getRefreshRateMethod = method;
         }
         JNI.JValue args = StackValue.get(1, JNI.JValue.class);
-        args.addressOf(0).setLong(id);
-        return Art.callFloat(thread, endPoints, method, args);
+        args.addressOf(0).setLong(handle.foreignId());
+        float r = Art.callFloat(thread, endPoints, method, args);
+        Reference.reachabilityFence(handle);
+        return r;
     }
 
-    public static int getRotation(long id) {
+    public static int getRotation(Display handle) {
         Art.ThreadData thread = Art.thread();
         JNI.JMethodID method = getRotationMethod;
         if (method.isNull()) {
@@ -229,11 +252,13 @@ public final class DisplayBinding {
             getRotationMethod = method;
         }
         JNI.JValue args = StackValue.get(1, JNI.JValue.class);
-        args.addressOf(0).setLong(id);
-        return Art.callInt(thread, endPoints, method, args);
+        args.addressOf(0).setLong(handle.foreignId());
+        int r = Art.callInt(thread, endPoints, method, args);
+        Reference.reachabilityFence(handle);
+        return r;
     }
 
-    public static int getState(long id) {
+    public static int getState(Display handle) {
         Art.ThreadData thread = Art.thread();
         JNI.JMethodID method = getStateMethod;
         if (method.isNull()) {
@@ -241,11 +266,13 @@ public final class DisplayBinding {
             getStateMethod = method;
         }
         JNI.JValue args = StackValue.get(1, JNI.JValue.class);
-        args.addressOf(0).setLong(id);
-        return Art.callInt(thread, endPoints, method, args);
+        args.addressOf(0).setLong(handle.foreignId());
+        int r = Art.callInt(thread, endPoints, method, args);
+        Reference.reachabilityFence(handle);
+        return r;
     }
 
-    public static float getSuggestedFrameRate(long id, int a0) {
+    public static float getSuggestedFrameRate(Display handle, int a0) {
         Art.ThreadData thread = Art.thread();
         JNI.JMethodID method = getSuggestedFrameRateMethod;
         if (method.isNull()) {
@@ -253,12 +280,14 @@ public final class DisplayBinding {
             getSuggestedFrameRateMethod = method;
         }
         JNI.JValue args = StackValue.get(2, JNI.JValue.class);
-        args.addressOf(0).setLong(id);
+        args.addressOf(0).setLong(handle.foreignId());
         args.addressOf(1).setInt(a0);
-        return Art.callFloat(thread, endPoints36, method, args);
+        float r = Art.callFloat(thread, endPoints36, method, args);
+        Reference.reachabilityFence(handle);
+        return r;
     }
 
-    public static float[] getSupportedRefreshRates(long id) {
+    public static float[] getSupportedRefreshRates(Display handle) {
         Art.ThreadData thread = Art.thread();
         JNI.JMethodID method = getSupportedRefreshRatesMethod;
         if (method.isNull()) {
@@ -266,17 +295,18 @@ public final class DisplayBinding {
             getSupportedRefreshRatesMethod = method;
         }
         JNI.JValue args = StackValue.get(1, JNI.JValue.class);
-        args.addressOf(0).setLong(id);
+        args.addressOf(0).setLong(handle.foreignId());
         JNI.JObject view = Art.callObject(thread, endPoints, method, args);
         long r = Art.address(thread.env, view);
         Art.deleteLocal(thread.env, view);
+        Reference.reachabilityFence(handle);
         float[] result = r == 0 ? null : new float[Transport.getBlockLength(r)];
         Transport.read(r + Blocks.HEADER, result);
         Transport.free(r);
         return result;
     }
 
-    public static int getWidth(long id) {
+    public static int getWidth(Display handle) {
         Art.ThreadData thread = Art.thread();
         JNI.JMethodID method = getWidthMethod;
         if (method.isNull()) {
@@ -284,11 +314,13 @@ public final class DisplayBinding {
             getWidthMethod = method;
         }
         JNI.JValue args = StackValue.get(1, JNI.JValue.class);
-        args.addressOf(0).setLong(id);
-        return Art.callInt(thread, endPoints, method, args);
+        args.addressOf(0).setLong(handle.foreignId());
+        int r = Art.callInt(thread, endPoints, method, args);
+        Reference.reachabilityFence(handle);
+        return r;
     }
 
-    public static boolean hasArrSupport(long id) {
+    public static boolean hasArrSupport(Display handle) {
         Art.ThreadData thread = Art.thread();
         JNI.JMethodID method = hasArrSupportMethod;
         if (method.isNull()) {
@@ -296,11 +328,13 @@ public final class DisplayBinding {
             hasArrSupportMethod = method;
         }
         JNI.JValue args = StackValue.get(1, JNI.JValue.class);
-        args.addressOf(0).setLong(id);
-        return Art.callBoolean(thread, endPoints36, method, args);
+        args.addressOf(0).setLong(handle.foreignId());
+        boolean r = Art.callBoolean(thread, endPoints36, method, args);
+        Reference.reachabilityFence(handle);
+        return r;
     }
 
-    public static boolean isHdr(long id) {
+    public static boolean isHdr(Display handle) {
         Art.ThreadData thread = Art.thread();
         JNI.JMethodID method = isHdrMethod;
         if (method.isNull()) {
@@ -308,11 +342,13 @@ public final class DisplayBinding {
             isHdrMethod = method;
         }
         JNI.JValue args = StackValue.get(1, JNI.JValue.class);
-        args.addressOf(0).setLong(id);
-        return Art.callBoolean(thread, endPoints26, method, args);
+        args.addressOf(0).setLong(handle.foreignId());
+        boolean r = Art.callBoolean(thread, endPoints26, method, args);
+        Reference.reachabilityFence(handle);
+        return r;
     }
 
-    public static boolean isHdrSdrRatioAvailable(long id) {
+    public static boolean isHdrSdrRatioAvailable(Display handle) {
         Art.ThreadData thread = Art.thread();
         JNI.JMethodID method = isHdrSdrRatioAvailableMethod;
         if (method.isNull()) {
@@ -320,11 +356,13 @@ public final class DisplayBinding {
             isHdrSdrRatioAvailableMethod = method;
         }
         JNI.JValue args = StackValue.get(1, JNI.JValue.class);
-        args.addressOf(0).setLong(id);
-        return Art.callBoolean(thread, endPoints34, method, args);
+        args.addressOf(0).setLong(handle.foreignId());
+        boolean r = Art.callBoolean(thread, endPoints34, method, args);
+        Reference.reachabilityFence(handle);
+        return r;
     }
 
-    public static boolean isMinimalPostProcessingSupported(long id) {
+    public static boolean isMinimalPostProcessingSupported(Display handle) {
         Art.ThreadData thread = Art.thread();
         JNI.JMethodID method = isMinimalPostProcessingSupportedMethod;
         if (method.isNull()) {
@@ -332,11 +370,13 @@ public final class DisplayBinding {
             isMinimalPostProcessingSupportedMethod = method;
         }
         JNI.JValue args = StackValue.get(1, JNI.JValue.class);
-        args.addressOf(0).setLong(id);
-        return Art.callBoolean(thread, endPoints30, method, args);
+        args.addressOf(0).setLong(handle.foreignId());
+        boolean r = Art.callBoolean(thread, endPoints30, method, args);
+        Reference.reachabilityFence(handle);
+        return r;
     }
 
-    public static boolean isValid(long id) {
+    public static boolean isValid(Display handle) {
         Art.ThreadData thread = Art.thread();
         JNI.JMethodID method = isValidMethod;
         if (method.isNull()) {
@@ -344,11 +384,13 @@ public final class DisplayBinding {
             isValidMethod = method;
         }
         JNI.JValue args = StackValue.get(1, JNI.JValue.class);
-        args.addressOf(0).setLong(id);
-        return Art.callBoolean(thread, endPoints, method, args);
+        args.addressOf(0).setLong(handle.foreignId());
+        boolean r = Art.callBoolean(thread, endPoints, method, args);
+        Reference.reachabilityFence(handle);
+        return r;
     }
 
-    public static boolean isWideColorGamut(long id) {
+    public static boolean isWideColorGamut(Display handle) {
         Art.ThreadData thread = Art.thread();
         JNI.JMethodID method = isWideColorGamutMethod;
         if (method.isNull()) {
@@ -356,11 +398,13 @@ public final class DisplayBinding {
             isWideColorGamutMethod = method;
         }
         JNI.JValue args = StackValue.get(1, JNI.JValue.class);
-        args.addressOf(0).setLong(id);
-        return Art.callBoolean(thread, endPoints26, method, args);
+        args.addressOf(0).setLong(handle.foreignId());
+        boolean r = Art.callBoolean(thread, endPoints26, method, args);
+        Reference.reachabilityFence(handle);
+        return r;
     }
 
-    public static String toString(long id) {
+    public static String toString(Display handle) {
         Art.ThreadData thread = Art.thread();
         JNI.JMethodID method = toStringMethod;
         if (method.isNull()) {
@@ -368,10 +412,11 @@ public final class DisplayBinding {
             toStringMethod = method;
         }
         JNI.JValue args = StackValue.get(1, JNI.JValue.class);
-        args.addressOf(0).setLong(id);
+        args.addressOf(0).setLong(handle.foreignId());
         JNI.JObject view = Art.callObject(thread, endPoints, method, args);
         long r = Art.address(thread.env, view);
         Art.deleteLocal(thread.env, view);
+        Reference.reachabilityFence(handle);
         String result = Transport.readStringBlock(r);
         Transport.free(r);
         return result;

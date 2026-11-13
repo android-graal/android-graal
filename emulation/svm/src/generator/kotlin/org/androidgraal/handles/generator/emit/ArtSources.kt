@@ -81,7 +81,7 @@ internal class ArtSources(model: HandleModel) : Sources(model) {
                 .addStatement("return r")
         }
         return spec.nextControlFlow("catch (\$T t)", Throwable::class.java)
-            .addStatement("\$T.raiseException(t)", JavaNames.IMAGE)
+            .addStatement("\$T.raiseImageException(t)", JavaNames.IMAGE)
             .addStatement("return \$L", zeroOf(wire.result))
             .endControlFlow()
             .build()
@@ -132,10 +132,8 @@ internal class ArtSources(model: HandleModel) : Sources(model) {
                     .beginControlFlow("if (object == null)")
                     .addStatement("return 0")
                     .endControlFlow()
-                    .addStatement(
-                        "return \$T.tagOf(HANDLES.send(object), ordinalOf(object.getClass()))",
-                        JavaNames.HANDLES,
-                    )
+                    .addStatement("int ordinal = ordinalOf(object.getClass())")
+                    .addStatement("return \$T.tagOf(HANDLES.send(object), ordinal)", JavaNames.HANDLES)
                     .build(),
             )
             .addMethod(

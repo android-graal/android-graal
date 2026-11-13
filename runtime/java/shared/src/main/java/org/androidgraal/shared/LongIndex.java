@@ -1,8 +1,11 @@
 package org.androidgraal.shared;
 
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
 /** The key 0 cannot be stored. Not thread-safe. */
 // Purely AI gened, I did not care to check. Will be replaced at a later time.
-final class LongIndex<V> {
+final class LongIndex<V> implements Iterable<V> {
 
     private long[] keys = new long[16];
     private Object[] values = new Object[16];
@@ -42,6 +45,11 @@ final class LongIndex<V> {
         size++;
     }
 
+    @Override
+    public Iterator<V> iterator() {
+        return new Values<>(keys, values);
+    }
+
     @SuppressWarnings("unchecked")
     public V remove(long key) {
         int mask = keys.length - 1;
@@ -79,5 +87,45 @@ final class LongIndex<V> {
     private static int slot(long key, int mask) {
         int h = (int) (key ^ (key >>> 32)) * 0x9E3779B9;
         return (h ^ (h >>> 16)) & mask;
+    }
+
+    private static final class Values<V> implements Iterator<V> {
+
+        private final long[] keys;
+        private final Object[] values;
+        private int next;
+
+        private Values(long[] keys, Object[] values) {
+            this.keys = keys;
+            this.values = values;
+            skipEmpty();
+        }
+
+        @Override
+        public boolean hasNext() {
+            return next < keys.length;
+        }
+
+        @Override
+        @SuppressWarnings("unchecked")
+        public V next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException();
+            }
+            V value = (V) values[next++];
+            skipEmpty();
+            return value;
+        }
+
+        @Override
+        public void remove() {
+            throw new UnsupportedOperationException();
+        }
+
+        private void skipEmpty() {
+            while (next < keys.length && keys[next] == 0) {
+                next++;
+            }
+        }
     }
 }

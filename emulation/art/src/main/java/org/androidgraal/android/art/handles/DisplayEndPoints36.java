@@ -20,7 +20,7 @@ final class DisplayEndPoints36 {
             Display receiver = HANDLES.object(handle);
             return receiver.getHighestHdrSdrRatio();
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return 0;
         }
     }
@@ -31,7 +31,7 @@ final class DisplayEndPoints36 {
             Display receiver = HANDLES.object(handle);
             return receiver.getSuggestedFrameRate(a0);
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return 0;
         }
     }
@@ -42,7 +42,7 @@ final class DisplayEndPoints36 {
             Display receiver = HANDLES.object(handle);
             return receiver.hasArrSupport();
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return false;
         }
     }

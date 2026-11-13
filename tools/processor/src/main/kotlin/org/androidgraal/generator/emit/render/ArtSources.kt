@@ -26,9 +26,15 @@ import javax.lang.model.element.Modifier.STATIC
 internal class ArtSources(model: BridgeModel) : Sources(model, Side.ART) {
     override val threadData: ClassName = JavaNames.IMAGE_THREAD_DATA
 
-    override val pending: CodeBlock = CodeBlock.builder().addStatement("thread.throwPendingException()").build()
+    override val afterCrossing: CodeBlock = CodeBlock.builder().addStatement("thread.afterCrossing()").build()
 
-    override val raise: CodeBlock = CodeBlock.of("\$T.raiseException(t)", JavaNames.IMAGE)
+    override val raise: CodeBlock = CodeBlock.of("\$T.raiseImageException(t)", JavaNames.IMAGE)
+
+    override fun fenceOf(proxies: List<String>): CodeBlock {
+        val fence = CodeBlock.builder()
+        proxies.forEach { fence.addStatement("\$T.reachabilityFence(\$L)", JavaNames.IMAGE, it) }
+        return fence.build()
+    }
 
     fun resources(): Map<String, String> = mapOf(
         "META-INF/services/${JavaNames.CONTRACT.reflectionName()}" to
@@ -59,7 +65,7 @@ internal class ArtSources(model: BridgeModel) : Sources(model, Side.ART) {
                 .endControlFlow()
                 .addStatement("\$T thread = \$T.thread()", JavaNames.IMAGE_THREAD_DATA, JavaNames.IMAGE)
                 .addStatement("int result = initialize(thread.isolateThread, FINGERPRINT)")
-                .addCode(pending)
+                .addCode(afterCrossing)
                 .beginControlFlow("if (result == -1)")
                 .addStatement(
                     "throw new \$T(\$S)",
@@ -124,7 +130,7 @@ internal class ArtSources(model: BridgeModel) : Sources(model, Side.ART) {
             method.beginControlFlow("if (root == \$T.class)", ClassName.get(root))
                 .addStatement("\$T thread = \$T.thread()", JavaNames.IMAGE_THREAD_DATA, JavaNames.IMAGE)
                 .addStatement("long r = \$N(thread.isolateThread)", model.instantiateMethod(root))
-                .addCode(pending)
+                .addCode(afterCrossing)
                 .addStatement("return root.cast(\$L)", objectOf(model, Side.ART, root, "r"))
                 .endControlFlow()
         }

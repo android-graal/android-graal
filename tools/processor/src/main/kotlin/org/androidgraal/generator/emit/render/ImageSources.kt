@@ -25,9 +25,15 @@ import javax.lang.model.element.TypeElement
 internal class ImageSources(model: BridgeModel) : Sources(model, Side.SVM) {
     override val threadData: ClassName = JavaNames.ART_THREAD_DATA
 
-    override val pending: CodeBlock = CodeBlock.of("")
+    override val afterCrossing: CodeBlock = CodeBlock.of("")
 
-    override val raise: CodeBlock = CodeBlock.of("\$T.raiseException(env, t)", JavaNames.ART)
+    override val raise: CodeBlock = CodeBlock.of("\$T.raiseArtException(env, t)", JavaNames.ART)
+
+    override fun fenceOf(proxies: List<String>): CodeBlock {
+        val fence = CodeBlock.builder()
+        proxies.forEach { fence.addStatement("\$T.reachabilityFence(\$L)", JavaNames.REFERENCE, it) }
+        return fence.build()
+    }
 
     override fun contractClass(): TypeSpec {
         val contract = model.contractClass

@@ -873,7 +873,7 @@ class HandleClassesTest {
             for (VariableTree parameter : method.getParameters()) {
                 arguments.add(parameter.getName().toString());
             }
-            arguments.addFirst(arguments.contains("id") ? "this.id" : "id");
+            arguments.addFirst("this");
             String binding = root.internalName.substring(root.internalName.lastIndexOf('/') + 1).replace("$", "")
                     + "Binding";
             String result = target.methodTypeSymbol().returnType().descriptorString().equals("V") ? "" : "return ";

@@ -24,7 +24,7 @@ public final class Bridge implements Contract {
         }
         Image.ThreadData thread = Image.thread();
         int result = initialize(thread.isolateThread, FINGERPRINT);
-        thread.throwPendingException();
+        thread.afterCrossing();
         if (result == -1) {
             throw new IllegalStateException("the image's bridge of org.graalvm.android.bridges.generated.Bridge differs from ART's");
         }
@@ -40,7 +40,7 @@ public final class Bridge implements Contract {
         if (root == Hello.class) {
             Image.ThreadData thread = Image.thread();
             long r = instantiateHello(thread.isolateThread);
-            thread.throwPendingException();
+            thread.afterCrossing();
             return root.cast(HANDLES.receive(r, $HelloSvm.PROXIES));
         }
         throw new IllegalArgumentException(root.getName() + " is no root of org.graalvm.android.bridges.generated.Bridge");

@@ -71,6 +71,11 @@
     public static ** valueOf(java.lang.String);
 }
 
+# R8 removes a field it sees no read of, and every write to it.
+-keepclassmembers,allowobfuscation class org.androidgraal.svm.Art$ThreadData {
+    java.lang.Object handedBack;
+}
+
 # Compile-only annotations, absent from the image classpath.
 -dontwarn org.androidgraal.hosted.annotate.**
 -dontwarn com.oracle.svm.shared.**

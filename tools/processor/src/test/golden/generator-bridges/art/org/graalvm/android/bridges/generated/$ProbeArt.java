@@ -10,6 +10,7 @@ import org.androidgraal.art.Image;
 import org.androidgraal.art.Transport;
 import org.androidgraal.shared.Blocks;
 import org.androidgraal.shared.Handles;
+import org.graalvm.android.bridges.core.Frame;
 import org.graalvm.android.bridges.core.Mode;
 import org.graalvm.android.bridges.core.Probe;
 
@@ -36,19 +37,19 @@ public final class $ProbeArt {
                 rb.view.put(result);
             }
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
         }
     }
 
     @EndPoint
     private static int count16(long handle, long a0) {
         try {
-            Probe receiver = HANDLES.object(handle);
             Count16Buffer0 b0 = Count16Buffer0.at(a0);
             String v0 = Transport.readStringBlock(b0.block, b0.view, b0.array);
+            Probe receiver = HANDLES.object(handle);
             return receiver.count16(v0);
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return 0;
         }
     }
@@ -56,60 +57,61 @@ public final class $ProbeArt {
     @EndPoint
     private static void fill(long handle, long transport, int bytes) {
         try {
-            Probe receiver = HANDLES.object(handle);
             Image.ThreadData thread = Image.thread();
             ByteBuffer view = transport == 0 ? null : Transport.view(thread, transport, bytes);
             int n0 = view == null ? Blocks.NULL : Transport.getBlockLength(view, 0);
             int[] v0 = n0 == Blocks.NULL ? null : new int[n0];
+            Probe receiver = HANDLES.object(handle);
             receiver.fill(v0);
             if (v0 != null) {
                 view.position(Blocks.HEADER);
                 view.asIntBuffer().put(v0);
             }
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
         }
     }
 
     @EndPoint
     private static void fill16(long handle, long a0) {
         try {
-            Probe receiver = HANDLES.object(handle);
             Fill16Buffer0 b0 = a0 == 0 ? null : Fill16Buffer0.at(a0);
             int[] v0 = b0 == null ? null : b0.array;
+            Probe receiver = HANDLES.object(handle);
             receiver.fill16(v0);
             if (b0 != null) {
                 b0.view.clear();
                 b0.view.put(v0);
             }
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
         }
     }
 
     @EndPoint
     private static void fill16Tls(long handle, long a0) {
         try {
-            Probe receiver = HANDLES.object(handle);
             Fill16TlsBuffer0 b0 = a0 == 0 ? null : Fill16TlsBuffer0.at(a0);
             int[] v0 = b0 == null ? null : b0.array;
+            Probe receiver = HANDLES.object(handle);
             receiver.fill16Tls(v0);
             if (b0 != null) {
                 b0.view.clear();
                 b0.view.put(v0);
             }
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
         }
     }
 
     @EndPoint
     private static int frame(long handle, long h0) {
         try {
+            Frame v0 = HANDLES.receive(h0, $FrameSvm.PROXIES);
             Probe receiver = HANDLES.object(handle);
-            return receiver.frame(HANDLES.receive(h0, $FrameSvm.PROXIES));
+            return receiver.frame(v0);
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return 0;
         }
     }
@@ -117,7 +119,6 @@ public final class $ProbeArt {
     @EndPoint
     private static ByteBuffer join(long handle, long transport, int bytes) {
         try {
-            Probe receiver = HANDLES.object(handle);
             Image.ThreadData thread = Image.thread();
             ByteBuffer view = transport == 0 ? null : Transport.view(thread, transport, bytes);
             int n0 = view == null ? Blocks.NULL : Transport.getBlockLength(view, 0);
@@ -129,6 +130,7 @@ public final class $ProbeArt {
             int o1 = Blocks.size(n0, 4);
             int n1 = view == null ? Blocks.NULL : Transport.getBlockLength(view, o1);
             String v1 = view == null ? null : Transport.readStringBlock(view, o1);
+            Probe receiver = HANDLES.object(handle);
             String result = receiver.join(v0, v1);
             if (result == null) {
                 return null;
@@ -137,7 +139,7 @@ public final class $ProbeArt {
             Transport.write(result, r, Blocks.HEADER);
             return r;
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return null;
         }
     }
@@ -149,7 +151,7 @@ public final class $ProbeArt {
             Mode result = receiver.mode(a0 < 0 ? null : MODE_VALUES[a0]);
             return result == null ? -1 : result.ordinal();
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return 0;
         }
     }
@@ -160,7 +162,7 @@ public final class $ProbeArt {
             Probe receiver = HANDLES.object(handle);
             return receiver.pressed(a0);
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return false;
         }
     }
@@ -168,8 +170,8 @@ public final class $ProbeArt {
     @EndPoint
     private static ByteBuffer range(long handle, int a0) {
         try {
-            Probe receiver = HANDLES.object(handle);
             Image.ThreadData thread = Image.thread();
+            Probe receiver = HANDLES.object(handle);
             int[] result = receiver.range(a0);
             if (result == null) {
                 return null;
@@ -179,7 +181,7 @@ public final class $ProbeArt {
             r.asIntBuffer().put(result);
             return r;
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return null;
         }
     }
@@ -188,9 +190,9 @@ public final class $ProbeArt {
     private static long self(long handle) {
         try {
             Probe receiver = HANDLES.object(handle);
-            return HANDLES.send(receiver.self());
+            return Image.sendResult(receiver.self());
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return 0;
         }
     }
@@ -198,18 +200,18 @@ public final class $ProbeArt {
     @EndPoint
     private static void squares(long handle, long transport, int bytes, int a1) {
         try {
-            Probe receiver = HANDLES.object(handle);
             Image.ThreadData thread = Image.thread();
             ByteBuffer view = transport == 0 ? null : Transport.view(thread, transport, bytes);
             int n0 = view == null ? Blocks.NULL : Transport.getBlockLength(view, 0);
             int[] v0 = n0 == Blocks.NULL ? null : new int[n0];
+            Probe receiver = HANDLES.object(handle);
             receiver.squares(v0, a1);
             if (v0 != null) {
                 view.position(Blocks.HEADER);
                 view.asIntBuffer().put(v0);
             }
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
         }
     }
 
@@ -219,7 +221,7 @@ public final class $ProbeArt {
             Probe receiver = HANDLES.object(handle);
             return receiver.step(a0);
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return 0;
         }
     }
@@ -227,7 +229,6 @@ public final class $ProbeArt {
     @EndPoint
     private static float sum(long handle, long transport, int bytes) {
         try {
-            Probe receiver = HANDLES.object(handle);
             Image.ThreadData thread = Image.thread();
             ByteBuffer view = transport == 0 ? null : Transport.view(thread, transport, bytes);
             int n0 = view == null ? Blocks.NULL : Transport.getBlockLength(view, 0);
@@ -236,9 +237,10 @@ public final class $ProbeArt {
                 view.position(Blocks.HEADER);
                 view.asFloatBuffer().get(v0);
             }
+            Probe receiver = HANDLES.object(handle);
             return receiver.sum(v0);
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return 0;
         }
     }
@@ -246,16 +248,16 @@ public final class $ProbeArt {
     @EndPoint
     private static float sum16(long handle, long a0) {
         try {
-            Probe receiver = HANDLES.object(handle);
             Sum16Buffer0 b0 = a0 == 0 ? null : Sum16Buffer0.at(a0);
             float[] v0 = b0 == null ? null : b0.array;
             if (b0 != null) {
                 b0.view.clear();
                 b0.view.get(v0);
             }
+            Probe receiver = HANDLES.object(handle);
             return receiver.sum16(v0);
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return 0;
         }
     }
@@ -263,11 +265,11 @@ public final class $ProbeArt {
     @EndPoint
     private static ByteBuffer text(long handle, long transport, int bytes) {
         try {
-            Probe receiver = HANDLES.object(handle);
             Image.ThreadData thread = Image.thread();
             ByteBuffer view = transport == 0 ? null : Transport.view(thread, transport, bytes);
             int n0 = view == null ? Blocks.NULL : Transport.getBlockLength(view, 0);
             String v0 = view == null ? null : Transport.readStringBlock(view, 0);
+            Probe receiver = HANDLES.object(handle);
             String result = receiver.text(v0);
             if (result == null) {
                 return null;
@@ -276,7 +278,7 @@ public final class $ProbeArt {
             Transport.write(result, r, Blocks.HEADER);
             return r;
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return null;
         }
     }
@@ -297,18 +299,18 @@ public final class $ProbeArt {
                 rb.view.put(rb.array, 0, result.length());
             }
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
         }
     }
 
     @EndPoint
     private static ByteBuffer texts(long handle, long transport, int bytes) {
         try {
-            Probe receiver = HANDLES.object(handle);
             Image.ThreadData thread = Image.thread();
             ByteBuffer view = transport == 0 ? null : Transport.view(thread, transport, bytes);
             int n0 = view == null ? Blocks.NULL : Transport.getBlockLength(view, 0);
             String[] v0 = view == null ? null : Transport.readStringArrayBlock(view, 0);
+            Probe receiver = HANDLES.object(handle);
             String[] result = receiver.texts(v0);
             if (result == null) {
                 return null;
@@ -317,7 +319,7 @@ public final class $ProbeArt {
             Transport.write(result, r, Blocks.HEADER);
             return r;
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return null;
         }
     }
@@ -325,7 +327,6 @@ public final class $ProbeArt {
     @EndPoint
     private static int total(long handle, long transport, int bytes, int a1) {
         try {
-            Probe receiver = HANDLES.object(handle);
             Image.ThreadData thread = Image.thread();
             ByteBuffer view = transport == 0 ? null : Transport.view(thread, transport, bytes);
             int n0 = view == null ? Blocks.NULL : Transport.getBlockLength(view, 0);
@@ -334,9 +335,10 @@ public final class $ProbeArt {
                 view.position(Blocks.HEADER);
                 view.asIntBuffer().get(v0);
             }
+            Probe receiver = HANDLES.object(handle);
             return receiver.total(v0, a1);
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return 0;
         }
     }
@@ -347,7 +349,7 @@ public final class $ProbeArt {
             Probe receiver = HANDLES.object(handle);
             return receiver.x();
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return 0;
         }
     }
@@ -358,7 +360,7 @@ public final class $ProbeArt {
             Probe receiver = HANDLES.object(handle);
             return receiver.y();
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return 0;
         }
     }

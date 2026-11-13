@@ -1,8 +1,11 @@
 package org.androidgraal.svm;
 
+import java.util.List;
 import org.androidgraal.shared.Blocks;
 import org.androidgraal.shared.Handles;
 import org.androidgraal.shared.MarshalledException;
+import org.androidgraal.shared.Proxy;
+import org.androidgraal.shared.ReleasedReferences;
 import org.androidgraal.shared.ThrowableMarshaller;
 import org.androidgraal.svm.jni.JNI.JClass;
 import org.androidgraal.svm.jni.JNI.JMethodID;
@@ -11,26 +14,27 @@ import org.androidgraal.svm.jni.JNI.JObject;
 import org.androidgraal.svm.jni.JNI.JValue;
 import org.graalvm.nativeimage.StackValue;
 import org.graalvm.nativeimage.c.type.CTypeConversion;
+import org.graalvm.word.Pointer;
 import org.graalvm.word.WordFactory;
 
 public final class Art {
 
     private static final ThreadLocal<ThreadData> THREADS = new ThreadLocal<>();
-    private static final Handles HANDLES = new Handles(1, Art::onProxyReleased);
+    private static final Handles HANDLES = new Handles(1, Art::releaseArtExports);
 
     private static JClass image;
-    private static JMethodID setPendingException;
+    private static JMethodID setArtPendingException;
     private static JMethodID handleUncaughtException;
-    private static JMethodID dropExport;
+    private static JMethodID releaseArtExports;
 
     private Art() {
     }
 
     public static void initialize(JNIEnv env) {
         image = findClass(env, "org/androidgraal/art/Image");
-        setPendingException = staticMethod(env, image, "setPendingException", "(Ljava/nio/ByteBuffer;)V");
+        setArtPendingException = staticMethod(env, image, "setArtPendingException", "(Ljava/nio/ByteBuffer;)V");
         handleUncaughtException = staticMethod(env, image, "handleUncaughtException", "(Ljava/nio/ByteBuffer;)V");
-        dropExport = staticMethod(env, image, "dropExport", "(J)V");
+        releaseArtExports = staticMethod(env, image, "releaseArtExports", "(Ljava/nio/ByteBuffer;)V");
     }
 
     /**
@@ -58,62 +62,73 @@ public final class Art {
         return HANDLES;
     }
 
+    /**
+     * Associates the result object with an id for returning the object. A proxy is made reachable until the calling
+     * thread's next crossing into ART returns.
+     */
+    public static long sendResult(Object result) {
+        if (result instanceof Proxy) {
+            thread().handedBack = result;
+        }
+        return HANDLES.send(result);
+    }
+
     public static void callVoid(ThreadData thread, JClass clazz, JMethodID method, JValue args) {
         thread.env.getFunctions().getCallStaticVoidMethodA().call(thread.env, clazz, method, args);
-        thread.throwPendingException();
+        thread.afterCrossing();
     }
 
     public static boolean callBoolean(ThreadData thread, JClass clazz, JMethodID method, JValue args) {
         boolean result = thread.env.getFunctions().getCallStaticBooleanMethodA().call(thread.env, clazz, method, args);
-        thread.throwPendingException();
+        thread.afterCrossing();
         return result;
     }
 
     public static byte callByte(ThreadData thread, JClass clazz, JMethodID method, JValue args) {
         byte result = thread.env.getFunctions().getCallStaticByteMethodA().call(thread.env, clazz, method, args);
-        thread.throwPendingException();
+        thread.afterCrossing();
         return result;
     }
 
     public static char callChar(ThreadData thread, JClass clazz, JMethodID method, JValue args) {
         char result = thread.env.getFunctions().getCallStaticCharMethodA().call(thread.env, clazz, method, args);
-        thread.throwPendingException();
+        thread.afterCrossing();
         return result;
     }
 
     public static short callShort(ThreadData thread, JClass clazz, JMethodID method, JValue args) {
         short result = thread.env.getFunctions().getCallStaticShortMethodA().call(thread.env, clazz, method, args);
-        thread.throwPendingException();
+        thread.afterCrossing();
         return result;
     }
 
     public static int callInt(ThreadData thread, JClass clazz, JMethodID method, JValue args) {
         int result = thread.env.getFunctions().getCallStaticIntMethodA().call(thread.env, clazz, method, args);
-        thread.throwPendingException();
+        thread.afterCrossing();
         return result;
     }
 
     public static long callLong(ThreadData thread, JClass clazz, JMethodID method, JValue args) {
         long result = thread.env.getFunctions().getCallStaticLongMethodA().call(thread.env, clazz, method, args);
-        thread.throwPendingException();
+        thread.afterCrossing();
         return result;
     }
 
     public static float callFloat(ThreadData thread, JClass clazz, JMethodID method, JValue args) {
         float result = thread.env.getFunctions().getCallStaticFloatMethodA().call(thread.env, clazz, method, args);
-        thread.throwPendingException();
+        thread.afterCrossing();
         return result;
     }
 
     public static double callDouble(ThreadData thread, JClass clazz, JMethodID method, JValue args) {
         double result = thread.env.getFunctions().getCallStaticDoubleMethodA().call(thread.env, clazz, method, args);
-        thread.throwPendingException();
+        thread.afterCrossing();
         return result;
     }
 
     public static JObject callObject(ThreadData thread, JClass clazz, JMethodID method, JValue args) {
         JObject result = thread.env.getFunctions().getCallStaticObjectMethodA().call(thread.env, clazz, method, args);
-        thread.throwPendingException();
+        thread.afterCrossing();
         return result;
     }
 
@@ -121,13 +136,13 @@ public final class Art {
      * Raises {@code t} on the ART side, once the image side returns, or tries to hand it to ART's uncaught exception
      * handler when it cannot. Never throws.
      */
-    public static void raiseException(JNIEnv env, Throwable t) {
+    public static void raiseArtException(JNIEnv env, Throwable t) {
         try {
             long address = writeBlock(marshalException(t));
             JObject view = view(env, address, Transport.getBlockSize(address));
             JValue args = StackValue.get(1, JValue.class);
             args.addressOf(0).setJObject(view);
-            env.getFunctions().getCallStaticVoidMethodA().call(env, image, setPendingException, args);
+            env.getFunctions().getCallStaticVoidMethodA().call(env, image, setArtPendingException, args);
             deleteLocal(env, view);
         } catch (Throwable e) {
             handleUncaughtException(env, t);
@@ -157,6 +172,12 @@ public final class Art {
         if (Thread.getDefaultUncaughtExceptionHandler() == null) {
             Thread.setDefaultUncaughtExceptionHandler((_, t) -> handleUncaughtException(thread().env, t));
         }
+    }
+
+    public static void startReleaseThread() {
+        Thread releases = new Thread(HANDLES::releaseForever, "androidgraal-image-releases");
+        releases.setDaemon(true);
+        releases.start();
     }
 
     /** A global reference to ART's class {@code name}. Only a native method of an app class finds app classes. */
@@ -216,10 +237,27 @@ public final class Art {
         return view;
     }
 
-    private static void onProxyReleased(long id) {
-        JValue args = StackValue.get(1, JValue.class);
-        args.addressOf(0).setLong(id);
-        callVoid(thread(), image, dropExport, args);
+    private static void releaseArtExports(List<ReleasedReferences> batch) {
+        ThreadData thread = thread();
+        int bytes = 8 + 16 * batch.size();
+        long block = Transport.alloc(bytes);
+        try {
+            Pointer pointer = WordFactory.pointer(block);
+            pointer.writeLong(0, batch.size());
+            for (int i = 0; i < batch.size(); i++) {
+                ReleasedReferences released = batch.get(i);
+                pointer.writeLong(8 + 16 * i, released.id());
+                pointer.writeLong(8 + 16 * i + 8, released.referenceCount());
+            }
+            JObject view = view(thread.env, block, bytes);
+            JValue args = StackValue.get(1, JValue.class);
+            args.addressOf(0).setJObject(view);
+            thread.env.getFunctions().getCallStaticVoidMethodA().call(thread.env, image, releaseArtExports, args);
+            deleteLocal(thread.env, view);
+            thread.afterCrossing();
+        } finally {
+            Transport.free(block);
+        }
     }
 
     private static void clearException(JNIEnv env) {
@@ -248,12 +286,19 @@ public final class Art {
         /** The serialized exception ART threw on this thread, 0 when none is pending. */
         public long pendingException;
 
+        /** Keeps the proxy this thread last returned to ART reachable. */
+        public Object handedBack;
+
         private ThreadData(JNIEnv env) {
             this.env = env;
         }
 
-        /** Throws what ART threw during the last crossing of this thread, as a {@link MarshalledException}. */
-        public void throwPendingException() {
+        /**
+         * Runs right after every crossing this thread makes into ART: lets go of the proxy handed back and throws what
+         * ART threw, as a {@link MarshalledException}.
+         */
+        public void afterCrossing() {
+            handedBack = null;
             long block = pendingException;
             if (block != 0) {
                 pendingException = 0;

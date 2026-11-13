@@ -21,7 +21,7 @@ final class DisplayEndPoints {
             Display receiver = HANDLES.object(handle);
             return receiver.getAppVsyncOffsetNanos();
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return 0;
         }
     }
@@ -32,7 +32,7 @@ final class DisplayEndPoints {
             Display receiver = HANDLES.object(handle);
             return receiver.getDisplayId();
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return 0;
         }
     }
@@ -43,7 +43,7 @@ final class DisplayEndPoints {
             Display receiver = HANDLES.object(handle);
             return receiver.getFlags();
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return 0;
         }
     }
@@ -54,7 +54,7 @@ final class DisplayEndPoints {
             Display receiver = HANDLES.object(handle);
             return receiver.getHeight();
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return 0;
         }
     }
@@ -72,7 +72,7 @@ final class DisplayEndPoints {
             Transport.write(result, r, Blocks.HEADER);
             return r;
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return null;
         }
     }
@@ -83,7 +83,7 @@ final class DisplayEndPoints {
             Display receiver = HANDLES.object(handle);
             return receiver.getOrientation();
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return 0;
         }
     }
@@ -94,7 +94,7 @@ final class DisplayEndPoints {
             Display receiver = HANDLES.object(handle);
             return receiver.getPixelFormat();
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return 0;
         }
     }
@@ -105,7 +105,7 @@ final class DisplayEndPoints {
             Display receiver = HANDLES.object(handle);
             return receiver.getPresentationDeadlineNanos();
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return 0;
         }
     }
@@ -116,7 +116,7 @@ final class DisplayEndPoints {
             Display receiver = HANDLES.object(handle);
             return receiver.getRefreshRate();
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return 0;
         }
     }
@@ -127,7 +127,7 @@ final class DisplayEndPoints {
             Display receiver = HANDLES.object(handle);
             return receiver.getRotation();
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return 0;
         }
     }
@@ -138,7 +138,7 @@ final class DisplayEndPoints {
             Display receiver = HANDLES.object(handle);
             return receiver.getState();
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return 0;
         }
     }
@@ -157,7 +157,7 @@ final class DisplayEndPoints {
             r.asFloatBuffer().put(result);
             return r;
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return null;
         }
     }
@@ -168,7 +168,7 @@ final class DisplayEndPoints {
             Display receiver = HANDLES.object(handle);
             return receiver.getWidth();
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return 0;
         }
     }
@@ -179,7 +179,7 @@ final class DisplayEndPoints {
             Display receiver = HANDLES.object(handle);
             return receiver.isValid();
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return false;
         }
     }
@@ -197,7 +197,7 @@ final class DisplayEndPoints {
             Transport.write(result, r, Blocks.HEADER);
             return r;
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return null;
         }
     }

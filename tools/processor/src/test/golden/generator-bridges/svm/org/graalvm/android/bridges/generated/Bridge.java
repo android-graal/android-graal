@@ -31,7 +31,7 @@ public final class Bridge {
             $RegistryArt.resolve(env);
             return 1;
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }
@@ -44,7 +44,7 @@ public final class Bridge {
         try {
             return HANDLES.send(Services.one(Hello.class));
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }

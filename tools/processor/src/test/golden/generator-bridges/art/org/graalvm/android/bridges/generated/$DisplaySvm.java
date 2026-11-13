@@ -34,7 +34,8 @@ public final class $DisplaySvm extends ReleasableProxy implements Display {
                 }
             }
             char r = initial(thread.isolateThread, id, transport);
-            thread.throwPendingException();
+            Image.reachabilityFence(this);
+            thread.afterCrossing();
             return r;
         } finally {
             if (transport != null) {
@@ -48,7 +49,8 @@ public final class $DisplaySvm extends ReleasableProxy implements Display {
         checkNotReleased();
         Image.ThreadData thread = Image.thread();
         double r = mix(thread.isolateThread, id, a0, a1, a2, a3, a4, a5, a6);
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        thread.afterCrossing();
         return r;
     }
 
@@ -57,7 +59,8 @@ public final class $DisplaySvm extends ReleasableProxy implements Display {
         checkNotReleased();
         Image.ThreadData thread = Image.thread();
         open(thread.isolateThread, id);
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        thread.afterCrossing();
     }
 
     @Override
@@ -65,7 +68,8 @@ public final class $DisplaySvm extends ReleasableProxy implements Display {
         checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int r = ping(thread.isolateThread, id, a0);
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        thread.afterCrossing();
         return r;
     }
 
@@ -93,7 +97,8 @@ public final class $DisplaySvm extends ReleasableProxy implements Display {
                 }
             }
             place(thread.isolateThread, id, transport, p0, a0_x, a0_y, a0_mode == null ? -1 : a0_mode.ordinal(), p0_size, a0_size_width, a0_size_height, a1);
-            thread.throwPendingException();
+            Image.reachabilityFence(this);
+            thread.afterCrossing();
         } finally {
             if (transport != null) {
                 Transport.free(thread, transport);
@@ -116,7 +121,8 @@ public final class $DisplaySvm extends ReleasableProxy implements Display {
                 }
             }
             show$0(thread.isolateThread, id, transport);
-            thread.throwPendingException();
+            Image.reachabilityFence(this);
+            thread.afterCrossing();
         } finally {
             if (transport != null) {
                 Transport.free(thread, transport);
@@ -139,7 +145,8 @@ public final class $DisplaySvm extends ReleasableProxy implements Display {
                 }
             }
             show$1(thread.isolateThread, id, transport, a1);
-            thread.throwPendingException();
+            Image.reachabilityFence(this);
+            thread.afterCrossing();
         } finally {
             if (transport != null) {
                 Transport.free(thread, transport);

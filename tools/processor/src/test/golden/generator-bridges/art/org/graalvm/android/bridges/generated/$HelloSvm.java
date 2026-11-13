@@ -28,7 +28,9 @@ public final class $HelloSvm extends ReleasableProxy implements Hello {
         checkNotReleased();
         Image.ThreadData thread = Image.thread();
         long r = callbacks(thread.isolateThread, id, HANDLES.send(a0), a1, a2);
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        Image.reachabilityFence(a0);
+        thread.afterCrossing();
         return r;
     }
 
@@ -37,7 +39,9 @@ public final class $HelloSvm extends ReleasableProxy implements Hello {
         checkNotReleased();
         Image.ThreadData thread = Image.thread();
         churn(thread.isolateThread, id, HANDLES.send(a0), a1);
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        Image.reachabilityFence(a0);
+        thread.afterCrossing();
     }
 
     @Override
@@ -45,7 +49,9 @@ public final class $HelloSvm extends ReleasableProxy implements Hello {
         checkNotReleased();
         Image.ThreadData thread = Image.thread();
         coldThrow(thread.isolateThread, id, HANDLES.send(a0));
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        Image.reachabilityFence(a0);
+        thread.afterCrossing();
     }
 
     @Override
@@ -53,7 +59,8 @@ public final class $HelloSvm extends ReleasableProxy implements Hello {
         checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int r = doubled(thread.isolateThread, id, a0);
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        thread.afterCrossing();
         return r;
     }
 
@@ -72,7 +79,8 @@ public final class $HelloSvm extends ReleasableProxy implements Hello {
                 }
             }
             long r = echo(thread.isolateThread, id, transport);
-            thread.throwPendingException();
+            Image.reachabilityFence(this);
+            thread.afterCrossing();
             if (r == 0) {
                 return null;
             }
@@ -102,7 +110,8 @@ public final class $HelloSvm extends ReleasableProxy implements Hello {
                 }
             }
             fail(thread.isolateThread, id, transport);
-            thread.throwPendingException();
+            Image.reachabilityFence(this);
+            thread.afterCrossing();
         } finally {
             if (transport != null) {
                 Transport.free(thread, transport);
@@ -125,7 +134,8 @@ public final class $HelloSvm extends ReleasableProxy implements Hello {
                 }
             }
             failTyped(thread.isolateThread, id, transport);
-            thread.throwPendingException();
+            Image.reachabilityFence(this);
+            thread.afterCrossing();
         } finally {
             if (transport != null) {
                 Transport.free(thread, transport);
@@ -138,7 +148,8 @@ public final class $HelloSvm extends ReleasableProxy implements Hello {
         checkNotReleased();
         Image.ThreadData thread = Image.thread();
         long r = frame(thread.isolateThread, id);
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        thread.afterCrossing();
         return HANDLES.receive(r, $FrameSvm.PROXIES);
     }
 
@@ -147,7 +158,8 @@ public final class $HelloSvm extends ReleasableProxy implements Hello {
         checkNotReleased();
         Image.ThreadData thread = Image.thread();
         gc(thread.isolateThread, id);
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        thread.afterCrossing();
     }
 
     @Override
@@ -155,7 +167,8 @@ public final class $HelloSvm extends ReleasableProxy implements Hello {
         checkNotReleased();
         Image.ThreadData thread = Image.thread();
         long r = liveIds(thread.isolateThread, id);
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        thread.afterCrossing();
         return r;
     }
 
@@ -164,7 +177,8 @@ public final class $HelloSvm extends ReleasableProxy implements Hello {
         checkNotReleased();
         Image.ThreadData thread = Image.thread();
         long r = liveProxies(thread.isolateThread, id);
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        thread.afterCrossing();
         return r;
     }
 
@@ -173,7 +187,11 @@ public final class $HelloSvm extends ReleasableProxy implements Hello {
         checkNotReleased();
         Image.ThreadData thread = Image.thread();
         long r = loop(thread.isolateThread, id, HANDLES.send(a0), HANDLES.send(a1), HANDLES.send(a2), a3, a4, a5);
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        Image.reachabilityFence(a0);
+        Image.reachabilityFence(a1);
+        Image.reachabilityFence(a2);
+        thread.afterCrossing();
         return r;
     }
 
@@ -182,7 +200,8 @@ public final class $HelloSvm extends ReleasableProxy implements Hello {
         checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int r = ping(thread.isolateThread, id, a0);
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        thread.afterCrossing();
         return r;
     }
 
@@ -201,7 +220,8 @@ public final class $HelloSvm extends ReleasableProxy implements Hello {
                 }
             }
             refuse(thread.isolateThread, id, transport);
-            thread.throwPendingException();
+            Image.reachabilityFence(this);
+            thread.afterCrossing();
         } finally {
             if (transport != null) {
                 Transport.free(thread, transport);
@@ -214,7 +234,9 @@ public final class $HelloSvm extends ReleasableProxy implements Hello {
         checkNotReleased();
         Image.ThreadData thread = Image.thread();
         boolean r = register(thread.isolateThread, id, HANDLES.send(a0));
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        Image.reachabilityFence(a0);
+        thread.afterCrossing();
         return r;
     }
 
@@ -223,7 +245,9 @@ public final class $HelloSvm extends ReleasableProxy implements Hello {
         checkNotReleased();
         Image.ThreadData thread = Image.thread();
         run(thread.isolateThread, id, HANDLES.send(a0));
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        Image.reachabilityFence(a0);
+        thread.afterCrossing();
     }
 
     @Override
@@ -231,7 +255,9 @@ public final class $HelloSvm extends ReleasableProxy implements Hello {
         checkNotReleased();
         Image.ThreadData thread = Image.thread();
         long r = same(thread.isolateThread, id, HANDLES.send(a0));
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        Image.reachabilityFence(a0);
+        thread.afterCrossing();
         return HANDLES.receive(r, $DisplaySvm.PROXIES);
     }
 
@@ -240,7 +266,8 @@ public final class $HelloSvm extends ReleasableProxy implements Hello {
         checkNotReleased();
         Image.ThreadData thread = Image.thread();
         long r = self(thread.isolateThread, id);
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        thread.afterCrossing();
         return HANDLES.receive(r, $HelloSvm.PROXIES);
     }
 
@@ -249,7 +276,9 @@ public final class $HelloSvm extends ReleasableProxy implements Hello {
         checkNotReleased();
         Image.ThreadData thread = Image.thread();
         shows(thread.isolateThread, id, HANDLES.send(a0), a1, a2);
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        Image.reachabilityFence(a0);
+        thread.afterCrossing();
     }
 
     @Override
@@ -257,7 +286,8 @@ public final class $HelloSvm extends ReleasableProxy implements Hello {
         checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int r = threads(thread.isolateThread, id);
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        thread.afterCrossing();
         return r;
     }
 
@@ -266,7 +296,9 @@ public final class $HelloSvm extends ReleasableProxy implements Hello {
         checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int r = values(thread.isolateThread, id, HANDLES.send(a0), a1);
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        Image.reachabilityFence(a0);
+        thread.afterCrossing();
         return r;
     }
 

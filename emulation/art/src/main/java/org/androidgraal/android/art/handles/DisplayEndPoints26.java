@@ -20,7 +20,7 @@ final class DisplayEndPoints26 {
             Display receiver = HANDLES.object(handle);
             return receiver.isHdr();
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return false;
         }
     }
@@ -31,7 +31,7 @@ final class DisplayEndPoints26 {
             Display receiver = HANDLES.object(handle);
             return receiver.isWideColorGamut();
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return false;
         }
     }

@@ -33,6 +33,7 @@ internal object JavaNames {
     val ART_TRANSPORT: ClassName = ClassName.get("org.androidgraal.art", "Transport")
     val BYTE_BUFFER: ClassName = ClassName.get("java.nio", "ByteBuffer")
     val IDENTITY_HASH_MAP: ClassName = ClassName.get("java.util", "IdentityHashMap")
+    val REFERENCE: ClassName = ClassName.get("java.lang.ref", "Reference")
     val REQUIRES_API: ClassName = ClassName.get("androidx.annotation", "RequiresApi")
 
     fun bindingOf(root: ClassName): ClassName = ClassName.get(IMAGE_PACKAGE, root.simpleName() + "Binding")

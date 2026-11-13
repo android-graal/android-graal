@@ -31,7 +31,8 @@ public final class $FrameSvm extends ReleasableProxy implements Frame {
         Image.ThreadData thread = Image.thread();
         Corners4Result rb = Corners4Result.current(thread);
         corners4(thread.isolateThread, id, rb.address);
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        thread.afterCrossing();
         int n = Transport.getBlockLength(rb.block, 0);
         if (n == Blocks.NULL) {
             return null;
@@ -56,7 +57,8 @@ public final class $FrameSvm extends ReleasableProxy implements Frame {
             b0.view.put(b0.array, 0, a0.length());
         }
         int r = count16(thread.isolateThread, id, b0.address);
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        thread.afterCrossing();
         return r;
     }
 
@@ -72,7 +74,8 @@ public final class $FrameSvm extends ReleasableProxy implements Frame {
                 Transport.setBlockHeader(transport, 0, n0, 4);
             }
             int r = events(thread.isolateThread, id, transport);
-            thread.throwPendingException();
+            Image.reachabilityFence(this);
+            thread.afterCrossing();
             if (a0 != null) {
                 transport.position(Blocks.HEADER);
                 transport.asIntBuffer().get(a0);
@@ -97,7 +100,8 @@ public final class $FrameSvm extends ReleasableProxy implements Frame {
                 Transport.setBlockHeader(transport, 0, n0, 4);
             }
             fill(thread.isolateThread, id, transport);
-            thread.throwPendingException();
+            Image.reachabilityFence(this);
+            thread.afterCrossing();
             if (a0 != null) {
                 transport.position(Blocks.HEADER);
                 transport.asIntBuffer().get(a0);
@@ -118,7 +122,8 @@ public final class $FrameSvm extends ReleasableProxy implements Frame {
         Image.ThreadData thread = Image.thread();
         Fill16Buffer0 b0 = a0 == null ? null : Fill16Buffer0.current(thread);
         fill16(thread.isolateThread, id, b0 == null ? 0 : b0.address);
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        thread.afterCrossing();
         if (b0 != null) {
             b0.view.clear();
             b0.view.get(a0);
@@ -147,7 +152,8 @@ public final class $FrameSvm extends ReleasableProxy implements Frame {
                 }
             }
             long r = join(thread.isolateThread, id, transport);
-            thread.throwPendingException();
+            Image.reachabilityFence(this);
+            thread.afterCrossing();
             if (r == 0) {
                 return null;
             }
@@ -167,7 +173,8 @@ public final class $FrameSvm extends ReleasableProxy implements Frame {
         checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int r = mode(thread.isolateThread, id, a0 == null ? -1 : a0.ordinal());
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        thread.afterCrossing();
         return r < 0 ? null : MODE_VALUES[r];
     }
 
@@ -176,7 +183,8 @@ public final class $FrameSvm extends ReleasableProxy implements Frame {
         checkNotReleased();
         Image.ThreadData thread = Image.thread();
         press(thread.isolateThread, id, a0, a1, a2);
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        thread.afterCrossing();
     }
 
     @Override
@@ -184,7 +192,9 @@ public final class $FrameSvm extends ReleasableProxy implements Frame {
         checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int r = probe(thread.isolateThread, id, HANDLES.send(a0));
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        Image.reachabilityFence(a0);
+        thread.afterCrossing();
         return r;
     }
 
@@ -193,7 +203,8 @@ public final class $FrameSvm extends ReleasableProxy implements Frame {
         checkNotReleased();
         Image.ThreadData thread = Image.thread();
         long r = range(thread.isolateThread, id, a0);
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        thread.afterCrossing();
         if (r == 0) {
             return null;
         }
@@ -210,7 +221,9 @@ public final class $FrameSvm extends ReleasableProxy implements Frame {
         checkNotReleased();
         Image.ThreadData thread = Image.thread();
         float r = render(thread.isolateThread, id, HANDLES.send(a0));
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        Image.reachabilityFence(a0);
+        thread.afterCrossing();
         return r;
     }
 
@@ -219,7 +232,8 @@ public final class $FrameSvm extends ReleasableProxy implements Frame {
         checkNotReleased();
         Image.ThreadData thread = Image.thread();
         long r = self(thread.isolateThread, id);
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        thread.afterCrossing();
         return HANDLES.receive(r, $FrameSvm.PROXIES);
     }
 
@@ -235,7 +249,8 @@ public final class $FrameSvm extends ReleasableProxy implements Frame {
                 Transport.setBlockHeader(transport, 0, n0, 4);
             }
             squares(thread.isolateThread, id, transport, a1);
-            thread.throwPendingException();
+            Image.reachabilityFence(this);
+            thread.afterCrossing();
             if (a0 != null) {
                 transport.position(Blocks.HEADER);
                 transport.asIntBuffer().get(a0);
@@ -252,7 +267,8 @@ public final class $FrameSvm extends ReleasableProxy implements Frame {
         checkNotReleased();
         Image.ThreadData thread = Image.thread();
         int r = step(thread.isolateThread, id, a0);
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        thread.afterCrossing();
         return r;
     }
 
@@ -272,7 +288,8 @@ public final class $FrameSvm extends ReleasableProxy implements Frame {
                 }
             }
             float r = sum(thread.isolateThread, id, transport);
-            thread.throwPendingException();
+            Image.reachabilityFence(this);
+            thread.afterCrossing();
             return r;
         } finally {
             if (transport != null) {
@@ -294,7 +311,8 @@ public final class $FrameSvm extends ReleasableProxy implements Frame {
             b0.view.put(a0);
         }
         float r = sum16(thread.isolateThread, id, b0 == null ? 0 : b0.address);
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        thread.afterCrossing();
         return r;
     }
 
@@ -311,7 +329,8 @@ public final class $FrameSvm extends ReleasableProxy implements Frame {
             b0.view.put(a0);
         }
         float r = sum16Tls(thread.isolateThread, id, b0 == null ? 0 : b0.address);
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        thread.afterCrossing();
         return r;
     }
 
@@ -330,7 +349,8 @@ public final class $FrameSvm extends ReleasableProxy implements Frame {
                 }
             }
             long r = text(thread.isolateThread, id, transport);
-            thread.throwPendingException();
+            Image.reachabilityFence(this);
+            thread.afterCrossing();
             if (r == 0) {
                 return null;
             }
@@ -351,7 +371,8 @@ public final class $FrameSvm extends ReleasableProxy implements Frame {
         Image.ThreadData thread = Image.thread();
         Text16Result rb = Text16Result.current(thread);
         text16(thread.isolateThread, id, rb.address, a0);
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        thread.afterCrossing();
         return Transport.readStringBlock(rb.block, rb.view, rb.array);
     }
 
@@ -370,7 +391,8 @@ public final class $FrameSvm extends ReleasableProxy implements Frame {
                 }
             }
             long r = texts(thread.isolateThread, id, transport);
-            thread.throwPendingException();
+            Image.reachabilityFence(this);
+            thread.afterCrossing();
             if (r == 0) {
                 return null;
             }
@@ -401,7 +423,8 @@ public final class $FrameSvm extends ReleasableProxy implements Frame {
                 }
             }
             int r = total(thread.isolateThread, id, transport, a1);
-            thread.throwPendingException();
+            Image.reachabilityFence(this);
+            thread.afterCrossing();
             return r;
         } finally {
             if (transport != null) {

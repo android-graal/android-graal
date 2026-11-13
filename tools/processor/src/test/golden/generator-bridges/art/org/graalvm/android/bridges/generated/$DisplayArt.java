@@ -23,14 +23,14 @@ public final class $DisplayArt {
     @EndPoint
     private static char initial(long handle, long transport, int bytes) {
         try {
-            Display receiver = HANDLES.object(handle);
             Image.ThreadData thread = Image.thread();
             ByteBuffer view = transport == 0 ? null : Transport.view(thread, transport, bytes);
             int n0 = view == null ? Blocks.NULL : Transport.getBlockLength(view, 0);
             String v0 = view == null ? null : Transport.readStringBlock(view, 0);
+            Display receiver = HANDLES.object(handle);
             return receiver.initial(v0);
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return 0;
         }
     }
@@ -42,7 +42,7 @@ public final class $DisplayArt {
             Display receiver = HANDLES.object(handle);
             return receiver.mix(a0, a1, a2, a3, a4, a5, a6);
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return 0;
         }
     }
@@ -53,7 +53,7 @@ public final class $DisplayArt {
             Display receiver = HANDLES.object(handle);
             receiver.open();
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
         }
     }
 
@@ -63,7 +63,7 @@ public final class $DisplayArt {
             Display receiver = HANDLES.object(handle);
             return receiver.ping(a0);
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return 0;
         }
     }
@@ -73,7 +73,6 @@ public final class $DisplayArt {
             int a0_y, int a0_mode, boolean p0_size, float a0_size_width, double a0_size_height,
             int a1) {
         try {
-            Display receiver = HANDLES.object(handle);
             Image.ThreadData thread = Image.thread();
             ByteBuffer view = transport == 0 ? null : Transport.view(thread, transport, bytes);
             int n0_label = view == null ? Blocks.NULL : Transport.getBlockLength(view, 0);
@@ -81,37 +80,38 @@ public final class $DisplayArt {
             Size v0_size = p0_size ? new Size(a0_size_width, a0_size_height) : null;
             Placement v0 = p0 ? new Placement(a0_x, a0_y, a0_mode < 0 ? null : MODE_VALUES[a0_mode],
                     v0_label, v0_size) : null;
+            Display receiver = HANDLES.object(handle);
             receiver.place(v0, a1);
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
         }
     }
 
     @EndPoint
     private static void show$0(long handle, long transport, int bytes) {
         try {
-            Display receiver = HANDLES.object(handle);
             Image.ThreadData thread = Image.thread();
             ByteBuffer view = transport == 0 ? null : Transport.view(thread, transport, bytes);
             int n0 = view == null ? Blocks.NULL : Transport.getBlockLength(view, 0);
             String v0 = view == null ? null : Transport.readStringBlock(view, 0);
+            Display receiver = HANDLES.object(handle);
             receiver.show(v0);
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
         }
     }
 
     @EndPoint
     private static void show$1(long handle, long transport, int bytes, int a1) {
         try {
-            Display receiver = HANDLES.object(handle);
             Image.ThreadData thread = Image.thread();
             ByteBuffer view = transport == 0 ? null : Transport.view(thread, transport, bytes);
             int n0 = view == null ? Blocks.NULL : Transport.getBlockLength(view, 0);
             String v0 = view == null ? null : Transport.readStringBlock(view, 0);
+            Display receiver = HANDLES.object(handle);
             receiver.show(v0, a1);
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
         }
     }
 }

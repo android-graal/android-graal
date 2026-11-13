@@ -22,7 +22,7 @@ import javax.lang.model.element.Modifier.PRIVATE
 import javax.lang.model.element.Modifier.PUBLIC
 import javax.lang.model.element.Modifier.STATIC
 
-private const val ID = "id"
+private const val HANDLE = "handle"
 
 internal class ImageSources(model: HandleModel) : Sources(model) {
     override fun render(): List<JavaFile> = model.roots.map(::bindingOf) + table()
@@ -40,7 +40,7 @@ internal class ImageSources(model: HandleModel) : Sources(model) {
             )
             .addMethod(privateConstructor)
             .addMethod(initializeOf(root))
-            .addMethods(root.forwarded.map(::bindingMethodOf))
+            .addMethods(root.forwarded.map { bindingMethodOf(root, it) })
         return javaFileOf(binding, type.build())
     }
 
@@ -57,13 +57,13 @@ internal class ImageSources(model: HandleModel) : Sources(model) {
         return initialize.build()
     }
 
-    private fun bindingMethodOf(forwarded: Forwarded): MethodSpec {
+    private fun bindingMethodOf(root: Root, forwarded: Forwarded): MethodSpec {
         val wire = forwarded.wire
         val endPoints = classFieldOf(forwarded.level)
         val spec = MethodSpec.methodBuilder(wire.endPoint)
             .addModifiers(PUBLIC, STATIC)
             .returns(typeOf(wire.result))
-            .addParameter(TypeName.LONG, ID)
+            .addParameter(root.name, HANDLE)
             .addParameters(
                 wire.parameters.mapIndexed { index, kind ->
                     ParameterSpec.builder(kind.type, "a$index").build()
@@ -88,7 +88,7 @@ internal class ImageSources(model: HandleModel) : Sources(model) {
                 1 + wire.parameters.size,
                 JavaNames.J_VALUE,
             )
-            .addStatement("args.addressOf(0).setLong(\$N)", ID)
+            .addStatement("args.addressOf(0).setLong(\$N.foreignId())", HANDLE)
         wire.parameters.forEachIndexed { index, kind ->
             spec.addStatement("args.addressOf(${index + 1}).set\$L(a$index)", capitalized(kind.type))
         }
@@ -99,11 +99,14 @@ internal class ImageSources(model: HandleModel) : Sources(model) {
     private fun returnOf(spec: MethodSpec.Builder, kind: Kind, endPoints: String) {
         when (kind) {
             is PrimitiveKind -> spec.addStatement(
-                "return \$T.call\$L(thread, \$N, method, args)",
+                "\$T r = \$T.call\$L(thread, \$N, method, args)",
+                kind.type,
                 JavaNames.ART,
                 capitalized(kind.type),
                 endPoints,
             )
+                .addStatement("\$T.reachabilityFence(\$N)", JavaNames.REFERENCE, HANDLE)
+                .addStatement("return r")
 
             TextKind -> blockOf(spec, endPoints)
                 .addStatement("String result = \$T.readStringBlock(r)", JavaNames.IMAGE_TRANSPORT)
@@ -132,6 +135,7 @@ internal class ImageSources(model: HandleModel) : Sources(model) {
         )
             .addStatement("long r = \$T.address(thread.env, view)", JavaNames.ART)
             .addStatement("\$T.deleteLocal(thread.env, view)", JavaNames.ART)
+            .addStatement("\$T.reachabilityFence(\$N)", JavaNames.REFERENCE, HANDLE)
     }
 
     private fun table(): JavaFile {

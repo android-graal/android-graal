@@ -8,6 +8,7 @@ import org.androidgraal.svm.Transport;
 import org.androidgraal.svm.jni.JNI;
 import org.graalvm.android.bridges.core.Frame;
 import org.graalvm.android.bridges.core.Mode;
+import org.graalvm.android.bridges.core.Probe;
 import org.graalvm.nativeimage.c.function.CEntryPoint;
 
 public final class $FrameSvm {
@@ -40,7 +41,7 @@ public final class $FrameSvm {
             Transport.setBlockHeader(block, result == null ? Blocks.NULL : result.length, 4);
             Transport.write(result, block + Blocks.HEADER);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
         }
     }
 
@@ -50,11 +51,11 @@ public final class $FrameSvm {
     private static int count16(JNI.JNIEnv env, JNI.JClass clazz,
             @CEntryPoint.IsolateThreadContext long thread, long handle, long a0) {
         try {
-            Frame receiver = HANDLES.object(handle);
             String v0 = Transport.readStringBlock(a0, count16Buffer0.get());
+            Frame receiver = HANDLES.object(handle);
             return receiver.count16(v0);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }
@@ -65,15 +66,15 @@ public final class $FrameSvm {
     private static int events(JNI.JNIEnv env, JNI.JClass clazz,
             @CEntryPoint.IsolateThreadContext long thread, long handle, JNI.JObject transport) {
         try {
-            Frame receiver = HANDLES.object(handle);
             long address = Art.address(env, transport);
             int n0 = address == 0 ? Blocks.NULL : Transport.getBlockLength(address);
             int[] v0 = n0 == Blocks.NULL ? null : new int[n0];
+            Frame receiver = HANDLES.object(handle);
             int result = receiver.events(v0);
             Transport.write(v0, address + Blocks.HEADER);
             return result;
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }
@@ -84,14 +85,14 @@ public final class $FrameSvm {
     private static void fill(JNI.JNIEnv env, JNI.JClass clazz,
             @CEntryPoint.IsolateThreadContext long thread, long handle, JNI.JObject transport) {
         try {
-            Frame receiver = HANDLES.object(handle);
             long address = Art.address(env, transport);
             int n0 = address == 0 ? Blocks.NULL : Transport.getBlockLength(address);
             int[] v0 = n0 == Blocks.NULL ? null : new int[n0];
+            Frame receiver = HANDLES.object(handle);
             receiver.fill(v0);
             Transport.write(v0, address + Blocks.HEADER);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
         }
     }
 
@@ -101,12 +102,12 @@ public final class $FrameSvm {
     private static void fill16(JNI.JNIEnv env, JNI.JClass clazz,
             @CEntryPoint.IsolateThreadContext long thread, long handle, long a0) {
         try {
-            Frame receiver = HANDLES.object(handle);
             int[] v0 = a0 == 0 ? null : fill16Buffer0.get();
+            Frame receiver = HANDLES.object(handle);
             receiver.fill16(v0);
             Transport.write(v0, a0);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
         }
     }
 
@@ -116,7 +117,6 @@ public final class $FrameSvm {
     private static long join(JNI.JNIEnv env, JNI.JClass clazz,
             @CEntryPoint.IsolateThreadContext long thread, long handle, JNI.JObject transport) {
         try {
-            Frame receiver = HANDLES.object(handle);
             long address = Art.address(env, transport);
             int n0 = address == 0 ? Blocks.NULL : Transport.getBlockLength(address);
             int[] v0 = n0 == Blocks.NULL ? null : new int[n0];
@@ -124,12 +124,13 @@ public final class $FrameSvm {
             int o1 = Blocks.size(n0, 4);
             int n1 = address == 0 ? Blocks.NULL : Transport.getBlockLength(address + o1);
             String v1 = address == 0 ? null : Transport.readStringBlock(address + o1);
+            Frame receiver = HANDLES.object(handle);
             String result = receiver.join(v0, v1);
             long r = result == null ? 0 : Transport.allocBlock(result.length(), 2);
             Transport.write(result, r + Blocks.HEADER);
             return r;
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }
@@ -144,7 +145,7 @@ public final class $FrameSvm {
             Mode result = receiver.mode(a0 < 0 ? null : MODE_VALUES[a0]);
             return result == null ? -1 : result.ordinal();
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }
@@ -158,7 +159,7 @@ public final class $FrameSvm {
             Frame receiver = HANDLES.object(handle);
             receiver.press(a0, a1, a2);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
         }
     }
 
@@ -168,10 +169,11 @@ public final class $FrameSvm {
     private static int probe(JNI.JNIEnv env, JNI.JClass clazz,
             @CEntryPoint.IsolateThreadContext long thread, long handle, long h0) {
         try {
+            Probe v0 = HANDLES.receive(h0, $ProbeArt.PROXIES);
             Frame receiver = HANDLES.object(handle);
-            return receiver.probe(HANDLES.receive(h0, $ProbeArt.PROXIES));
+            return receiver.probe(v0);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }
@@ -188,7 +190,7 @@ public final class $FrameSvm {
             Transport.write(result, r + Blocks.HEADER);
             return r;
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }
@@ -199,10 +201,11 @@ public final class $FrameSvm {
     private static float render(JNI.JNIEnv env, JNI.JClass clazz,
             @CEntryPoint.IsolateThreadContext long thread, long handle, long h0) {
         try {
+            Probe v0 = HANDLES.receive(h0, $ProbeArt.PROXIES);
             Frame receiver = HANDLES.object(handle);
-            return receiver.render(HANDLES.receive(h0, $ProbeArt.PROXIES));
+            return receiver.render(v0);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }
@@ -214,9 +217,9 @@ public final class $FrameSvm {
             @CEntryPoint.IsolateThreadContext long thread, long handle) {
         try {
             Frame receiver = HANDLES.object(handle);
-            return HANDLES.send(receiver.self());
+            return Art.sendResult(receiver.self());
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }
@@ -228,14 +231,14 @@ public final class $FrameSvm {
             @CEntryPoint.IsolateThreadContext long thread, long handle, JNI.JObject transport,
             int a1) {
         try {
-            Frame receiver = HANDLES.object(handle);
             long address = Art.address(env, transport);
             int n0 = address == 0 ? Blocks.NULL : Transport.getBlockLength(address);
             int[] v0 = n0 == Blocks.NULL ? null : new int[n0];
+            Frame receiver = HANDLES.object(handle);
             receiver.squares(v0, a1);
             Transport.write(v0, address + Blocks.HEADER);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
         }
     }
 
@@ -248,7 +251,7 @@ public final class $FrameSvm {
             Frame receiver = HANDLES.object(handle);
             return receiver.step(a0);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }
@@ -259,14 +262,14 @@ public final class $FrameSvm {
     private static float sum(JNI.JNIEnv env, JNI.JClass clazz,
             @CEntryPoint.IsolateThreadContext long thread, long handle, JNI.JObject transport) {
         try {
-            Frame receiver = HANDLES.object(handle);
             long address = Art.address(env, transport);
             int n0 = address == 0 ? Blocks.NULL : Transport.getBlockLength(address);
             float[] v0 = n0 == Blocks.NULL ? null : new float[n0];
             Transport.read(address + Blocks.HEADER, v0);
+            Frame receiver = HANDLES.object(handle);
             return receiver.sum(v0);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }
@@ -277,12 +280,12 @@ public final class $FrameSvm {
     private static float sum16(JNI.JNIEnv env, JNI.JClass clazz,
             @CEntryPoint.IsolateThreadContext long thread, long handle, long a0) {
         try {
-            Frame receiver = HANDLES.object(handle);
             float[] v0 = a0 == 0 ? null : sum16Buffer0.get();
             Transport.read(a0, v0);
+            Frame receiver = HANDLES.object(handle);
             return receiver.sum16(v0);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }
@@ -293,12 +296,12 @@ public final class $FrameSvm {
     private static float sum16Tls(JNI.JNIEnv env, JNI.JClass clazz,
             @CEntryPoint.IsolateThreadContext long thread, long handle, long a0) {
         try {
-            Frame receiver = HANDLES.object(handle);
             float[] v0 = a0 == 0 ? null : sum16TlsBuffer0.get();
             Transport.read(a0, v0);
+            Frame receiver = HANDLES.object(handle);
             return receiver.sum16Tls(v0);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }
@@ -309,16 +312,16 @@ public final class $FrameSvm {
     private static long text(JNI.JNIEnv env, JNI.JClass clazz,
             @CEntryPoint.IsolateThreadContext long thread, long handle, JNI.JObject transport) {
         try {
-            Frame receiver = HANDLES.object(handle);
             long address = Art.address(env, transport);
             int n0 = address == 0 ? Blocks.NULL : Transport.getBlockLength(address);
             String v0 = address == 0 ? null : Transport.readStringBlock(address);
+            Frame receiver = HANDLES.object(handle);
             String result = receiver.text(v0);
             long r = result == null ? 0 : Transport.allocBlock(result.length(), 2);
             Transport.write(result, r + Blocks.HEADER);
             return r;
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }
@@ -337,7 +340,7 @@ public final class $FrameSvm {
             Transport.setBlockHeader(block, result == null ? Blocks.NULL : result.length(), 2);
             Transport.write(result, block + Blocks.HEADER);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
         }
     }
 
@@ -347,16 +350,16 @@ public final class $FrameSvm {
     private static long texts(JNI.JNIEnv env, JNI.JClass clazz,
             @CEntryPoint.IsolateThreadContext long thread, long handle, JNI.JObject transport) {
         try {
-            Frame receiver = HANDLES.object(handle);
             long address = Art.address(env, transport);
             int n0 = address == 0 ? Blocks.NULL : Transport.getBlockLength(address);
             String[] v0 = address == 0 ? null : Transport.readStringArrayBlock(address);
+            Frame receiver = HANDLES.object(handle);
             String[] result = receiver.texts(v0);
             long r = result == null ? 0 : Transport.allocBlock(Blocks.stringArrayLength(result), 1);
             Transport.write(result, r + Blocks.HEADER);
             return r;
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }
@@ -368,14 +371,14 @@ public final class $FrameSvm {
             @CEntryPoint.IsolateThreadContext long thread, long handle, JNI.JObject transport,
             int a1) {
         try {
-            Frame receiver = HANDLES.object(handle);
             long address = Art.address(env, transport);
             int n0 = address == 0 ? Blocks.NULL : Transport.getBlockLength(address);
             int[] v0 = n0 == Blocks.NULL ? null : new int[n0];
             Transport.read(address + Blocks.HEADER, v0);
+            Frame receiver = HANDLES.object(handle);
             return receiver.total(v0, a1);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }

@@ -27,6 +27,8 @@ internal interface ParameterCodec : Codec {
 
     val blocks: List<TransportBlock> get() = emptyList()
 
+    val proxies: List<String> get() = emptyList()
+
     fun send(body: SenderBody): List<CodeBlock>
 
     fun receive(body: ReceiverBody): CodeBlock
@@ -62,7 +64,7 @@ internal interface ResultCodec : Codec {
     fun sendResult(body: ReceiverBody, call: CodeBlock)
 }
 
-internal class SenderBody(private val pending: CodeBlock) {
+internal class SenderBody(private val afterCrossing: CodeBlock, private val fence: CodeBlock) {
     val checks: CodeBlock.Builder = CodeBlock.builder()
 
     val prepare: CodeBlock.Builder = CodeBlock.builder()
@@ -73,7 +75,7 @@ internal class SenderBody(private val pending: CodeBlock) {
 
     fun called(call: CodeBlock.Builder.() -> Unit): CodeBlock.Builder {
         inside.call()
-        return inside.add(pending).add(after.build())
+        return inside.add(fence).add(afterCrossing).add(after.build())
     }
 }
 

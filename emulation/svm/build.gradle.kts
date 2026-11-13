@@ -160,6 +160,8 @@ abstract class HandleInputs : CommandLineArgumentProvider {
 }
 
 tasks.test {
+    // To exclude the org.graalvm module shading our classpath
+    jvmArgs("--limit-modules", "java.se,jdk.compiler,jdk.unsupported,jdk.zipfs,jdk.charsets,jdk.localedata")
     jvmArgumentProviders +=
         objects.newInstance<DeclarationsInputs>().apply {
             androidJar.from(nativeHost.sdk.androidJar(nativeHost.compileSdk))

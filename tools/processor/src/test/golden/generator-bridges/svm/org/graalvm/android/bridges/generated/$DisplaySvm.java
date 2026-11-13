@@ -26,13 +26,13 @@ public final class $DisplaySvm {
     private static char initial(JNI.JNIEnv env, JNI.JClass clazz,
             @CEntryPoint.IsolateThreadContext long thread, long handle, JNI.JObject transport) {
         try {
-            Display receiver = HANDLES.object(handle);
             long address = Art.address(env, transport);
             int n0 = address == 0 ? Blocks.NULL : Transport.getBlockLength(address);
             String v0 = address == 0 ? null : Transport.readStringBlock(address);
+            Display receiver = HANDLES.object(handle);
             return receiver.initial(v0);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }
@@ -47,7 +47,7 @@ public final class $DisplaySvm {
             Display receiver = HANDLES.object(handle);
             return receiver.mix(a0, a1, a2, a3, a4, a5, a6);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }
@@ -61,7 +61,7 @@ public final class $DisplaySvm {
             Display receiver = HANDLES.object(handle);
             receiver.open();
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
         }
     }
 
@@ -74,7 +74,7 @@ public final class $DisplaySvm {
             Display receiver = HANDLES.object(handle);
             return receiver.ping(a0);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }
@@ -87,16 +87,16 @@ public final class $DisplaySvm {
             boolean p0, int a0_x, int a0_y, int a0_mode, boolean p0_size, float a0_size_width,
             double a0_size_height, int a1) {
         try {
-            Display receiver = HANDLES.object(handle);
             long address = Art.address(env, transport);
             int n0_label = address == 0 ? Blocks.NULL : Transport.getBlockLength(address);
             String v0_label = address == 0 ? null : Transport.readStringBlock(address);
             Size v0_size = p0_size ? new Size(a0_size_width, a0_size_height) : null;
             Placement v0 = p0 ? new Placement(a0_x, a0_y, a0_mode < 0 ? null : MODE_VALUES[a0_mode],
                     v0_label, v0_size) : null;
+            Display receiver = HANDLES.object(handle);
             receiver.place(v0, a1);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
         }
     }
 
@@ -106,13 +106,13 @@ public final class $DisplaySvm {
     private static void show$0(JNI.JNIEnv env, JNI.JClass clazz,
             @CEntryPoint.IsolateThreadContext long thread, long handle, JNI.JObject transport) {
         try {
-            Display receiver = HANDLES.object(handle);
             long address = Art.address(env, transport);
             int n0 = address == 0 ? Blocks.NULL : Transport.getBlockLength(address);
             String v0 = address == 0 ? null : Transport.readStringBlock(address);
+            Display receiver = HANDLES.object(handle);
             receiver.show(v0);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
         }
     }
 
@@ -123,13 +123,13 @@ public final class $DisplaySvm {
             @CEntryPoint.IsolateThreadContext long thread, long handle, JNI.JObject transport,
             int a1) {
         try {
-            Display receiver = HANDLES.object(handle);
             long address = Art.address(env, transport);
             int n0 = address == 0 ? Blocks.NULL : Transport.getBlockLength(address);
             String v0 = address == 0 ? null : Transport.readStringBlock(address);
+            Display receiver = HANDLES.object(handle);
             receiver.show(v0, a1);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
         }
     }
 }

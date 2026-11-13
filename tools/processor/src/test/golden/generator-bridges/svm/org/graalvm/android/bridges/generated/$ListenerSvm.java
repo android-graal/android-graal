@@ -22,7 +22,7 @@ public final class $ListenerSvm {
             Listener receiver = HANDLES.object(handle);
             receiver.on(a0);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
         }
     }
 }

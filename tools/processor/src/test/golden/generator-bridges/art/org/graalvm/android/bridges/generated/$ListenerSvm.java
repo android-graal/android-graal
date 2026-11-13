@@ -18,7 +18,8 @@ public final class $ListenerSvm extends ReleasableProxy implements Listener {
         checkNotReleased();
         Image.ThreadData thread = Image.thread();
         on(thread.isolateThread, id, a0);
-        thread.throwPendingException();
+        Image.reachabilityFence(this);
+        thread.afterCrossing();
     }
 
     private static native void on(long thread, long handle, int a0);

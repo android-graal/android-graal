@@ -108,9 +108,8 @@ internal class HandleSource(private val plan: SourcePlan) {
 
             is Forwarded -> {
                 val parameters = method.parameters.map { it.name.toString() }
-                val receiver = if ("id" in parameters) "this.id" else "id"
                 val binding = JavaNames.bindingOf(plan.root.name).simpleName()
-                val arguments = (listOf(receiver) + parameters).joinToString(", ")
+                val arguments = (listOf("this") + parameters).joinToString(", ")
                 callOf(indent = inner, call = "return $binding.${fate.wire.endPoint}", arguments = arguments)
             }
         }

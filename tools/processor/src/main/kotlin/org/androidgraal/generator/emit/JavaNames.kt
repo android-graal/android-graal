@@ -44,4 +44,5 @@ internal object JavaNames {
     val THREAD_LOCAL: ClassName = ClassName.get("java.lang", "ThreadLocal")
     val ATOMIC_BOOLEAN: ClassName = ClassName.get("java.util.concurrent.atomic", "AtomicBoolean")
     val BYTE_BUFFER: ClassName = ClassName.get("java.nio", "ByteBuffer")
+    val REFERENCE: ClassName = ClassName.get("java.lang.ref", "Reference")
 }

@@ -4,6 +4,7 @@ package org.graalvm.android.bridges.generated;
 import org.androidgraal.art.EndPoint;
 import org.androidgraal.art.Image;
 import org.androidgraal.shared.Handles;
+import org.graalvm.android.bridges.core.Listener;
 import org.graalvm.android.bridges.core.Registry;
 
 public final class $RegistryArt {
@@ -15,20 +16,22 @@ public final class $RegistryArt {
     @EndPoint
     private static void add(long handle, long h0) {
         try {
+            Listener v0 = HANDLES.receive(h0, $ListenerSvm.PROXIES);
             Registry receiver = HANDLES.object(handle);
-            receiver.add(HANDLES.receive(h0, $ListenerSvm.PROXIES));
+            receiver.add(v0);
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
         }
     }
 
     @EndPoint
     private static boolean remove(long handle, long h0) {
         try {
+            Listener v0 = HANDLES.receive(h0, $ListenerSvm.PROXIES);
             Registry receiver = HANDLES.object(handle);
-            return receiver.remove(HANDLES.receive(h0, $ListenerSvm.PROXIES));
+            return receiver.remove(v0);
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return false;
         }
     }
@@ -39,7 +42,7 @@ public final class $RegistryArt {
             Registry receiver = HANDLES.object(handle);
             return receiver.size();
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return 0;
         }
     }

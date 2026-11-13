@@ -28,9 +28,15 @@ internal class ReferenceParameter(
 
     override val fields: List<FieldSpec> = listOf(handlesFieldOf(side))
 
+    override val proxies: List<String> = listOf(place.argument)
+
     override fun send(body: SenderBody): List<CodeBlock> = listOf(CodeBlock.of("HANDLES.send(${place.argument})"))
 
-    override fun receive(body: ReceiverBody): CodeBlock = objectOf(model, side, type, handle)
+    override fun receive(body: ReceiverBody): CodeBlock {
+        val received = objectOf(model, side, type, handle)
+        body.statements.addStatement("\$T \$N = \$L", ClassName.get(type), place.value, received)
+        return CodeBlock.of(place.value)
+    }
 }
 
 internal class ReferenceResult(private val model: BridgeModel, private val side: Side, operand: Operand) :
@@ -48,20 +54,21 @@ internal class ReferenceResult(private val model: BridgeModel, private val side:
 
     override fun sendResult(body: ReceiverBody, call: CodeBlock) {
         if (body.after.isEmpty()) {
-            body.statements.addStatement("return HANDLES.send(\$L)", call)
+            body.statements.addStatement("return \$T.sendResult(\$L)", runtimeOf(side), call)
         } else {
             body.called { addStatement("\$T result = \$L", ClassName.get(type), call) }
-                .addStatement("return HANDLES.send(result)")
+                .addStatement("return \$T.sendResult(result)", runtimeOf(side))
         }
     }
 }
 
 internal fun handlesFieldOf(side: Side): FieldSpec {
-    val owner = if (side == Side.ART) JavaNames.IMAGE else JavaNames.ART
     return FieldSpec.builder(JavaNames.HANDLES, "HANDLES", PRIVATE, STATIC, FINAL)
-        .initializer("\$T.handles()", owner)
+        .initializer("\$T.handles()", runtimeOf(side))
         .build()
 }
+
+private fun runtimeOf(side: Side): ClassName = if (side == Side.ART) JavaNames.IMAGE else JavaNames.ART
 
 internal fun objectOf(model: BridgeModel, receiver: Side, type: TypeElement, handle: String): CodeBlock {
     val proxy = model.proxyClass(type, receiver)

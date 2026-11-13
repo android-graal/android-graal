@@ -40,10 +40,9 @@ class RegistrationTest {
             ),
             generated.model.lines().filter { it.startsWith("root") || " implemented on " in it },
         )
-        assertTrue(
-            "receiver.attach(HANDLES.receive(h0, \$HelloSvm.PROXIES));" in
-                art(generated, "\$DisplayArt"),
-        )
+        val endPoints = art(generated, "\$DisplayArt")
+        assertTrue("Hello v0 = HANDLES.receive(h0, \$HelloSvm.PROXIES);" in endPoints, endPoints)
+        assertTrue("receiver.attach(v0);" in endPoints, endPoints)
     }
 
     @Test
@@ -52,10 +51,9 @@ class RegistrationTest {
 
         assertTrue("$GENERATED/\$GadgetSvm.java" in generated.art && "$GENERATED/\$GadgetSvm.java" in generated.svm)
         assertFalse(generated.art.keys.any { "GadgetArt" in it } || generated.svm.keys.any { "GadgetArt" in it })
-        assertTrue(
-            "receiver.gadget(HANDLES.receive(h0, \$GadgetSvm.PROXIES));" in
-                art(generated, "\$DisplayArt"),
-        )
+        val endPoints = art(generated, "\$DisplayArt")
+        assertTrue("Gadget v0 = HANDLES.receive(h0, \$GadgetSvm.PROXIES);" in endPoints, endPoints)
+        assertTrue("receiver.gadget(v0);" in endPoints, endPoints)
     }
 
     @Test
@@ -63,10 +61,9 @@ class RegistrationTest {
         val generated = compile().generate()
 
         assertFalse(generated.art.keys.any { "DisplaySvm" in it } || generated.svm.keys.any { "DisplaySvm" in it })
-        assertTrue(
-            "receiver.same(HANDLES.<Display>receive(h0, null))" in
-                art(generated, "\$DisplayArt"),
-        )
+        val endPoints = art(generated, "\$DisplayArt")
+        assertTrue("Display v0 = HANDLES.<Display>receive(h0, null);" in endPoints, endPoints)
+        assertTrue("receiver.same(v0)" in endPoints, endPoints)
         val proxy = generated.svm.getValue("fix/core/generated/\$DisplayArt.java")
         assertTrue("r, \$DisplayArt.PROXIES);" in proxy, proxy)
     }
@@ -80,6 +77,71 @@ class RegistrationTest {
         }
         assertTrue("r, \$BothSvm.PROXIES);" in art(generated, "\$HelloSvm"))
         assertTrue("HANDLES.receive(h0, \$BothArt.PROXIES)" in generated.svm.getValue("$GENERATED/\$HelloSvm.java"))
+    }
+
+    @Test
+    fun `a proxy method fences its receiver and every reference argument`() {
+        val generated = compile().generate()
+
+        val image = generated.svm.getValue("$GENERATED/\$DisplayArt.java")
+        assertEquals(3, Regex("Reference\\.reachabilityFence\\(this\\);").findAll(image).count(), image)
+        assertEquals(3, Regex("Reference\\.reachabilityFence\\(a0\\);").findAll(image).count(), image)
+        val art = art(generated, "\$HelloSvm")
+        assertEquals(2, Regex("Image\\.reachabilityFence\\(this\\);").findAll(art).count(), art)
+        assertEquals(2, Regex("Image\\.reachabilityFence\\(a0\\);").findAll(art).count(), art)
+    }
+
+    @Test
+    fun `an argument is fenced when only a subtype of its type has a proxy class on its side`() {
+        val compiled = fixtures.compile(
+            "subtype",
+            mapOf(
+                "fix/core/Hello.java" to """
+                    package fix.core;
+
+                    @$PACKAGE.Root
+                    @$PACKAGE.Svm
+                    public interface Hello {
+                        Derived derived();
+
+                        boolean take(Base base);
+                    }
+                """.trimIndent(),
+                "fix/core/Base.java" to
+                    "package fix.core;\n\n@$PACKAGE.Art\npublic interface Base {\n    void put(Top top);\n}\n",
+                "fix/core/Derived.java" to
+                    "package fix.core;\n\n@$PACKAGE.Svm\npublic interface Derived extends Base {}\n",
+                "fix/core/Top.java" to
+                    "package fix.core;\n\n@$PACKAGE.Svm\npublic interface Top {\n    int value();\n}\n",
+                "fix/core/Bottom.java" to
+                    "package fix.core;\n\n@$PACKAGE.Art\npublic interface Bottom extends Top {}\n",
+            ),
+        )
+        val generated = compiled.generate()
+
+        val art = art(generated, "\$HelloSvm")
+        assertTrue("Image.reachabilityFence(a0);" in art, art)
+        val image = generated.svm.getValue("$GENERATED/\$BaseArt.java")
+        assertTrue("Reference.reachabilityFence(a0);" in image, image)
+        fixtures.compileBridges(compiled, generated, "subtype")
+    }
+
+    @Test
+    fun `a contract method named reachabilityFence crosses and its proxy fences through Image`() {
+        val compiled = fixtures.compile(
+            "fence",
+            mapOf(
+                "fix/core/Hello.java" to
+                    "package fix.core;\n\n@$PACKAGE.Root\n@$PACKAGE.Svm\npublic interface Hello {\n" +
+                    "    void reachabilityFence(Hello other);\n}\n",
+            ),
+        )
+        val generated = compiled.generate()
+
+        val art = art(generated, "\$HelloSvm")
+        assertTrue("Image.reachabilityFence(this);" in art && "Image.reachabilityFence(a0);" in art, art)
+        assertFalse(Regex("[^.]reachabilityFence\\((this|a0)\\)").containsMatchIn(art), art)
+        fixtures.compileBridges(compiled, generated, "fence")
     }
 
     @Test

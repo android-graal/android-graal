@@ -42,9 +42,11 @@ internal abstract class Sources(internal val model: BridgeModel, private val sid
 
     internal abstract val threadData: ClassName
 
-    internal abstract val pending: CodeBlock
+    internal abstract val afterCrossing: CodeBlock
 
     internal abstract val raise: CodeBlock
+
+    internal abstract fun fenceOf(proxies: List<String>): CodeBlock
 
     internal abstract fun contractClass(): TypeSpec
 
@@ -118,7 +120,7 @@ internal abstract class Sources(internal val model: BridgeModel, private val sid
     }
 
     private fun senderBodyOf(wire: Wire): CodeBlock {
-        val body = SenderBody(pending)
+        val body = SenderBody(afterCrossing, fenceOf(listOf("this") + wire.parameters.flatMap { it.proxies }))
         val block = wire.result.sendResultSlots(body)
         val parameters = wire.parameters.flatMap { it.send(body) }
         val transport = wire.transport.send(body)
@@ -134,9 +136,9 @@ internal abstract class Sources(internal val model: BridgeModel, private val sid
 
     private fun receiverBodyOf(wire: Wire): CodeBlock {
         val body = ReceiverBody()
-        body.statements.addStatement("\$T receiver = HANDLES.object(handle)", ClassName.get(wire.proxy.type))
         wire.transport.receive(body)
         val arguments = wire.parameters.map { it.receive(body) }
+        body.statements.addStatement("\$T receiver = HANDLES.object(handle)", ClassName.get(wire.proxy.type))
         val call = CodeBlock.of("receiver.\$N(\$L)", wire.crossing.method.simpleName, CodeBlock.join(arguments, ", "))
         wire.result.sendResult(body, call)
         val code = CodeBlock.builder()

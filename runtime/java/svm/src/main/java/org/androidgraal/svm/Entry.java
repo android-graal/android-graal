@@ -1,5 +1,8 @@
 package org.androidgraal.svm;
 
+import java.util.ArrayList;
+import java.util.List;
+import org.androidgraal.shared.ReleasedReferences;
 import org.androidgraal.svm.jni.JNI.JClass;
 import org.androidgraal.svm.jni.JNI.JNIEnv;
 import org.androidgraal.svm.jni.JNI.JObject;
@@ -7,6 +10,7 @@ import org.graalvm.nativeimage.c.function.CEntryPoint;
 import org.graalvm.nativeimage.c.function.CEntryPoint.Builtin;
 import org.graalvm.nativeimage.c.function.CEntryPoint.IsolateContext;
 import org.graalvm.nativeimage.c.function.CEntryPoint.IsolateThreadContext;
+import org.graalvm.word.Pointer;
 import org.graalvm.word.WordFactory;
 
 final class Entry {
@@ -29,8 +33,9 @@ final class Entry {
                 throw new IllegalStateException("pthread_key_create failed with " + code);
             }
             Art.installUncaughtExceptionHandler();
+            Art.startReleaseThread();
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
         }
     }
 
@@ -42,16 +47,23 @@ final class Entry {
         try {
             Threads.detachThreadOnExit(WordFactory.pointer(thread));
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
         }
     }
 
-    @CEntryPoint(name = "Java_org_androidgraal_art_Image_dropExport")
-    private static void dropExport(JNIEnv env, JClass clazz, @IsolateThreadContext long thread, long id) {
+    @CEntryPoint(name = "Java_org_androidgraal_art_Image_releaseImageExports")
+    private static void releaseImageExports(JNIEnv env, JClass clazz, @IsolateThreadContext long thread,
+            JObject block) {
         try {
-            Art.handles().drop(id);
+            Pointer pointer = WordFactory.pointer(Art.address(env, block));
+            long count = pointer.readLong(0);
+            List<ReleasedReferences> batch = new ArrayList<>();
+            for (int i = 0; i < count; i++) {
+                batch.add(new ReleasedReferences(pointer.readLong(8 + 16 * i), pointer.readLong(8 + 16 * i + 8)));
+            }
+            Art.handles().releaseExports(batch);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
         }
     }
 
@@ -60,7 +72,7 @@ final class Entry {
         try {
             return Art.view(env, Transport.alloc(bytes), bytes);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return WordFactory.nullPointer();
         }
     }
@@ -70,7 +82,7 @@ final class Entry {
         try {
             Transport.free(Art.address(env, view));
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
         }
     }
 
@@ -79,7 +91,7 @@ final class Entry {
         try {
             return Transport.threadAlloc(bytes);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return 0;
         }
     }
@@ -89,7 +101,7 @@ final class Entry {
         try {
             return Art.view(env, address, bytes);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return WordFactory.nullPointer();
         }
     }
@@ -99,18 +111,18 @@ final class Entry {
         try {
             return Art.view(env, address, Transport.getBlockSize(address));
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
             return WordFactory.nullPointer();
         }
     }
 
-    @CEntryPoint(name = "Java_org_androidgraal_art_Image_setPendingException")
-    private static void setPendingException(JNIEnv env, JClass clazz, @IsolateThreadContext long thread,
+    @CEntryPoint(name = "Java_org_androidgraal_art_Image_setImagePendingException")
+    private static void setImagePendingException(JNIEnv env, JClass clazz, @IsolateThreadContext long thread,
             JObject block) {
         try {
             Art.thread().pendingException = Art.address(env, block);
         } catch (Throwable t) {
-            Art.raiseException(env, t);
+            Art.raiseArtException(env, t);
         }
     }
 }

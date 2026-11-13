@@ -18,7 +18,7 @@ public final class $AllocationsArt {
             Allocations receiver = HANDLES.object(handle);
             receiver.allocate(a0);
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
         }
     }
 
@@ -28,7 +28,7 @@ public final class $AllocationsArt {
             Allocations receiver = HANDLES.object(handle);
             receiver.start();
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
         }
     }
 
@@ -38,7 +38,7 @@ public final class $AllocationsArt {
             Allocations receiver = HANDLES.object(handle);
             return receiver.stop();
         } catch (Throwable t) {
-            Image.raiseException(t);
+            Image.raiseImageException(t);
             return 0;
         }
     }
