@@ -12,9 +12,14 @@ import org.androidgraal.handles.generator.model.Stubbed
 import org.androidgraal.handles.generator.model.UNWRITTEN
 import org.androidgraal.handles.generator.model.Unsupported
 import org.androidgraal.handles.generator.model.Verbatim
+import org.androidgraal.handles.generator.model.VoidKind
 import org.androidgraal.handles.generator.model.fail
+import java.lang.constant.ClassDesc
+import java.lang.constant.MethodTypeDesc
 
 private const val COLUMNS = 100
+
+private val PARCEL = ClassDesc.of("android.os.Parcel")
 
 private const val STUB = "throw new UnsupportedOperationException(\"hidden on ART\");"
 
@@ -36,11 +41,13 @@ internal class HandleSource(private val plan: SourcePlan) {
         val edits = listOf(Edit(0, 0, "// $COMMENT\n")) +
             annotations.filterKeys { it !in emptied }.values.flatten() +
             plan.fates.methods.mapNotNull { (method, fate) -> bodyOf(method, fate) } +
+            listOfNotNull(plan.createFromParcel?.let(::createFromParcelOf)) +
             proxy(deleted) +
             emulated() +
             imports() +
             deleted.map { Edit(source.lineStart(it), source.lineStart(it + 1), "") }
-        return applied(edits)
+        val text = applied(edits)
+        return if (source.endsWithLineBreak) text else text.removeSuffix("\n")
     }
 
     private fun removalOf(annotation: AnnotationTree): Edit {
@@ -94,6 +101,14 @@ internal class HandleSource(private val plan: SourcePlan) {
         return Edit(source.start(method.body), source.end(method.body), text)
     }
 
+    private fun createFromParcelOf(method: MethodTree): Edit {
+        val indent = source.indentOf(source.lineOf(source.start(method)))
+        val descriptor = MethodTypeDesc.of(ClassDesc.ofInternalName(name), PARCEL).descriptorString()
+        val key = "\"${method.name}$descriptor\""
+        val statement = callOf("$indent    ", "throw new UnsupportedOperationException", key)
+        return Edit(source.start(method.body), source.end(method.body), "{\n$statement\n$indent}")
+    }
+
     private fun forwardOf(method: MethodTree, fate: Declared, inner: String): List<String> {
         val key = "\"${fate.method.key}\""
         val guard = fate.level?.let {
@@ -110,7 +125,9 @@ internal class HandleSource(private val plan: SourcePlan) {
                 val parameters = method.parameters.map { it.name.toString() }
                 val binding = JavaNames.bindingOf(plan.root.name).simpleName()
                 val arguments = (listOf("this") + parameters).joinToString(", ")
-                callOf(indent = inner, call = "return $binding.${fate.wire.endPoint}", arguments = arguments)
+                val call = "$binding.${fate.wire.endPoint}"
+                val statement = if (fate.wire.result == VoidKind) call else "return $call"
+                callOf(indent = inner, call = statement, arguments = arguments)
             }
         }
     }
@@ -144,7 +161,7 @@ internal class HandleSource(private val plan: SourcePlan) {
             |
         """.trimMargin()
         return listOf(
-            Edit(at, at, " implements Proxy"),
+            Edit(at, at, if (type.implementsClause.isEmpty()) " implements Proxy" else ", Proxy"),
             Edit(source.lineStart(close), source.lineStart(close), members),
         )
     }
@@ -155,11 +172,22 @@ internal class HandleSource(private val plan: SourcePlan) {
     }
 
     private fun imports(): Edit {
-        val names = listOf(JavaNames.ADDED, JavaNames.EMULATED, JavaNames.PROXY, JavaNames.bindingOf(plan.root.name))
-            .map { it.canonicalName() }
-            .sorted()
-        val at = source.lineStart(source.lineOf(source.start(plan.javaImport)))
-        return Edit(at, at, names.joinToString("") { "import $it;\n" } + "\n")
+        val build = JavaNames.BUILD_VERSION.enclosingClassName().takeIf { plan.addsBuild }
+        val names = listOfNotNull(
+            JavaNames.ADDED,
+            JavaNames.EMULATED,
+            JavaNames.PROXY,
+            JavaNames.bindingOf(plan.root.name),
+            build,
+        ).map { it.canonicalName() }.sorted()
+        val block = names.joinToString("") { "import $it;\n" }
+        val java = plan.javaImport
+        if (java != null) {
+            val at = source.lineStart(source.lineOf(source.start(java)))
+            return Edit(at, at, "$block\n")
+        }
+        val at = source.lineStart(source.lineOf(source.end(plan.lastImport) - 1) + 1)
+        return Edit(at, at, "\n$block")
     }
 
     private fun applied(edits: List<Edit>): String {

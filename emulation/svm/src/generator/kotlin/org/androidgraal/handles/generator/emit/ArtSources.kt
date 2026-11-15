@@ -13,11 +13,13 @@ import com.palantir.javapoet.TypeSpec
 import com.palantir.javapoet.WildcardTypeName
 import org.androidgraal.handles.generator.model.ArrayKind
 import org.androidgraal.handles.generator.model.Forwarded
+import org.androidgraal.handles.generator.model.HandleKind
 import org.androidgraal.handles.generator.model.HandleModel
 import org.androidgraal.handles.generator.model.Kind
 import org.androidgraal.handles.generator.model.PrimitiveKind
 import org.androidgraal.handles.generator.model.Root
 import org.androidgraal.handles.generator.model.TextKind
+import org.androidgraal.handles.generator.model.VoidKind
 import javax.lang.model.element.Modifier.FINAL
 import javax.lang.model.element.Modifier.PRIVATE
 import javax.lang.model.element.Modifier.PUBLIC
@@ -48,17 +50,41 @@ internal class ArtSources(model: HandleModel) : Sources(model) {
 
     private fun endPointOf(root: Root, forwarded: Forwarded): MethodSpec {
         val wire = forwarded.wire
-        val arguments = wire.parameters.indices.joinToString(", ") { "a$it" }
+        val arguments = wire.parameters.withIndex()
+            .joinToString(", ") { (index, kind) -> if (kind == TextKind) "v$index" else "a$index" }
         val call = CodeBlock.of("receiver.\$N($arguments)", forwarded.method.name)
         val spec = MethodSpec.methodBuilder(wire.endPoint)
             .addAnnotation(JavaNames.END_POINT)
             .addModifiers(PRIVATE, STATIC)
             .returns(wireTypeOf(wire.result))
             .addParameter(TypeName.LONG, "handle")
-        wire.parameters.forEachIndexed { index, kind -> spec.addParameter(kind.type, "a$index") }
-        spec.beginControlFlow("try").addStatement("\$T receiver = HANDLES.object(handle)", root.name)
+        wire.parameters.forEachIndexed { index, kind ->
+            when (kind) {
+                is PrimitiveKind -> spec.addParameter(kind.type, "a$index")
+                TextKind -> spec.addParameter(TypeName.LONG, "transport").addParameter(TypeName.INT, "bytes")
+            }
+        }
+        spec.beginControlFlow("try")
+        val text = wire.parameters.indexOf(TextKind)
+        if (text >= 0) {
+            spec.addStatement("\$T thread = \$T.thread()", JavaNames.IMAGE_THREAD, JavaNames.IMAGE)
+                .addStatement(
+                    "\$T view = transport == 0 ? null : \$T.view(thread, transport, bytes)",
+                    JavaNames.BYTE_BUFFER,
+                    JavaNames.ART_TRANSPORT,
+                )
+                .addStatement(
+                    "String v$text = view == null ? null : \$T.readStringBlock(view, 0)",
+                    JavaNames.ART_TRANSPORT,
+                )
+        }
+        spec.addStatement("\$T receiver = HANDLES.object(handle)", root.name)
         when (val result = wire.result) {
             is PrimitiveKind -> spec.addStatement("return \$L", call)
+
+            VoidKind -> spec.addStatement("\$L", call)
+
+            is HandleKind -> spec.addStatement("return \$T.tagOf(\$L)", JavaNames.ART_TABLE, call)
 
             TextKind -> blockOf(spec, TypeName.get(String::class.java), call)
                 .addStatement(
@@ -80,11 +106,10 @@ internal class ArtSources(model: HandleModel) : Sources(model) {
                 .addStatement("r.as\$LBuffer().put(result)", capitalized(result.component))
                 .addStatement("return r")
         }
-        return spec.nextControlFlow("catch (\$T t)", Throwable::class.java)
+        spec.nextControlFlow("catch (\$T t)", Throwable::class.java)
             .addStatement("\$T.raiseImageException(t)", JavaNames.IMAGE)
-            .addStatement("return \$L", zeroOf(wire.result))
-            .endControlFlow()
-            .build()
+        zeroOf(wire.result)?.let { spec.addStatement("return \$L", it) }
+        return spec.endControlFlow().build()
     }
 
     private fun blockOf(spec: MethodSpec.Builder, type: TypeName, call: CodeBlock): MethodSpec.Builder {
@@ -160,10 +185,14 @@ internal class ArtSources(model: HandleModel) : Sources(model) {
 
 private fun wireTypeOf(kind: Kind): TypeName = when (kind) {
     is PrimitiveKind -> kind.type
+    VoidKind -> TypeName.VOID
+    is HandleKind -> TypeName.LONG
     TextKind, is ArrayKind -> JavaNames.BYTE_BUFFER
 }
 
-private fun zeroOf(kind: Kind): String = when (kind) {
+private fun zeroOf(kind: Kind): String? = when (kind) {
     is PrimitiveKind -> if (kind.type == TypeName.BOOLEAN) "false" else "0"
+    VoidKind -> null
+    is HandleKind -> "0"
     TextKind, is ArrayKind -> "null"
 }

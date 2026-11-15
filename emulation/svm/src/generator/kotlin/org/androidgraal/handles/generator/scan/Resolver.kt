@@ -66,10 +66,15 @@ internal class Resolver(
 
     fun isResolvedBody(method: MethodTree, gone: Set<Tree>): Boolean {
         val references = referencesOf(method)
-        return !constructsTop(references) &&
-            references.used.filter { it !in references.declared }.all { isResolvedName(it, gone) } &&
-            references.selected.filter { (qualifier, _) -> qualifier !in references.declared }
-                .all { (qualifier, name) -> isResolvedMember(qualifier, name) }
+        return !constructsTop(references) && unresolvedOf(references, gone) == null
+    }
+
+    fun unresolvedOf(references: References, gone: Set<Tree>): String? {
+        val name = references.used.filter { it !in references.declared }.firstOrNull { !isResolvedName(it, gone) }
+        if (name != null) return name
+        val member = references.selected.filter { (qualifier, _) -> qualifier !in references.declared }
+            .firstOrNull { (qualifier, selected) -> !isResolvedMember(qualifier, selected) }
+        return member?.let { (qualifier, selected) -> "$qualifier.$selected" }
     }
 
     fun constructsTop(references: References): Boolean =
@@ -121,7 +126,7 @@ internal class Resolver(
 
     private fun isResolvedMember(qualifier: String, name: String): Boolean {
         val owner = typeOf(listOf(qualifier), top) ?: return true
-        return classpath.hasMember(owner, name)
+        return classpath.hasMember(owner, name) || classpath.has("$owner$$name")
     }
 
     private fun isStaticImportOf(import: ImportTree, name: String): Boolean =

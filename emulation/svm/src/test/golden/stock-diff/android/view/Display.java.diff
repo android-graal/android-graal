@@ -23,7 +23,7 @@
  import android.annotation.FlaggedApi;
  import android.annotation.IntDef;
  import android.annotation.NonNull;
-@@ -34,33 +31,23 @@
+@@ -34,33 +31,24 @@
  import android.annotation.RequiresPermission;
  import android.annotation.SuppressLint;
  import android.annotation.TestApi;
@@ -38,7 +38,7 @@
  import android.graphics.PixelFormat;
  import android.graphics.Point;
  import android.graphics.Rect;
--import android.hardware.OverlayProperties;
+ import android.hardware.OverlayProperties;
 -import android.hardware.display.BrightnessInfo;
 -import android.hardware.display.DeviceProductInfo;
 -import android.hardware.display.DisplayManager;
@@ -62,7 +62,7 @@
  import java.lang.annotation.Retention;
  import java.lang.annotation.RetentionPolicy;
  import java.util.ArrayList;
-@@ -95,39 +82,8 @@
+@@ -95,39 +83,8 @@
   * </p>
   */
  @android.ravenwood.annotation.RavenwoodKeepPartialClass
@@ -104,7 +104,7 @@
      /**
       * The default Display id, which is the id of the primary display assuming there is one.
       */
-@@ -684,54 +640,6 @@
+@@ -684,54 +641,6 @@
      public static final int DISPLAY_MODE_ID_FOR_FRAME_RATE_OVERRIDE = 0xFF;
  
      /**
@@ -159,7 +159,7 @@
       * Gets the display id.
       * <p>
       * Each logical display has a unique id.
-@@ -739,7 +647,7 @@
+@@ -739,7 +648,7 @@
       * </p>
       */
      public int getDisplayId() {
@@ -168,7 +168,7 @@
      }
  
      /**
-@@ -753,7 +661,7 @@
+@@ -753,7 +662,7 @@
       */
      @TestApi
      public @Nullable String getUniqueId() {
@@ -177,7 +177,7 @@
      }
  
      /**
-@@ -770,29 +678,10 @@
+@@ -770,29 +679,10 @@
       * @return True if the display is still valid.
       */
      public boolean isValid() {
@@ -208,7 +208,7 @@
       * Gets the display's layer stack.
       *
       * Each display has its own independent layer stack upon which surfaces
-@@ -802,10 +691,7 @@
+@@ -802,10 +692,7 @@
       * @hide
       */
      public int getLayerStack() {
@@ -220,7 +220,7 @@
      }
  
      /**
-@@ -819,7 +705,7 @@
+@@ -819,7 +706,7 @@
       * @see #FLAG_ROUND
       */
      public int getFlags() {
@@ -229,7 +229,7 @@
      }
  
      /**
-@@ -838,24 +724,10 @@
+@@ -838,24 +725,10 @@
      @UnsupportedAppUsage
      @TestApi
      public int getType() {
@@ -255,7 +255,7 @@
       * Gets the UID of the application that owns this display, or zero if it is
       * owned by the system.
       * <p>
-@@ -865,7 +737,7 @@
+@@ -865,7 +738,7 @@
       * @hide
       */
      public int getOwnerUid() {
@@ -264,7 +264,7 @@
      }
  
      /**
-@@ -879,28 +751,10 @@
+@@ -879,28 +752,10 @@
       */
      @UnsupportedAppUsage
      public String getOwnerPackageName() {
@@ -294,7 +294,7 @@
       * Gets the name of the display.
       * <p>
       * Note that some displays may be renamed by the user.
-@@ -909,10 +763,7 @@
+@@ -909,10 +764,7 @@
       * @return The display's name.
       */
      public String getName() {
@@ -306,7 +306,7 @@
      }
  
      /**
-@@ -922,22 +773,10 @@
+@@ -922,22 +774,10 @@
       * @hide
       */
      public float getBrightnessDefault() {
@@ -330,7 +330,7 @@
       * Gets the size of the display in pixels.
       *
       * <p>The return value does not necessarily represent the actual size (native resolution) of the
-@@ -984,12 +823,7 @@
+@@ -984,12 +824,7 @@
       */
      @Deprecated
      public void getSize(Point outSize) {
@@ -344,7 +344,7 @@
      }
  
      /**
-@@ -1002,11 +836,7 @@
+@@ -1002,11 +837,7 @@
       */
      @Deprecated
      public void getRectSize(Rect outSize) {
@@ -357,7 +357,7 @@
      }
  
      /**
-@@ -1040,13 +870,8 @@
+@@ -1040,13 +871,8 @@
       * for example, screen decorations like the status bar are being hidden.
       */
      public void getCurrentSizeRange(Point outSmallestSize, Point outLargestSize) {
@@ -373,7 +373,7 @@
      }
  
      /**
-@@ -1056,10 +881,7 @@
+@@ -1056,10 +882,7 @@
       */
      @UnsupportedAppUsage
      public int getMaximumSizeDimension() {
@@ -385,7 +385,7 @@
      }
  
      /**
-@@ -1067,12 +889,7 @@
+@@ -1067,12 +890,7 @@
       * @hide
       */
      public float getMinSizeDimensionDp() {
@@ -399,7 +399,7 @@
      }
  
      /**
-@@ -1080,10 +897,7 @@
+@@ -1080,10 +898,7 @@
       */
      @Deprecated
      public int getWidth() {
@@ -411,7 +411,7 @@
      }
  
      /**
-@@ -1091,10 +905,7 @@
+@@ -1091,10 +906,7 @@
       */
      @Deprecated
      public int getHeight() {
@@ -423,7 +423,7 @@
      }
  
      /**
-@@ -1117,24 +928,16 @@
+@@ -1117,24 +929,16 @@
       * This rotation value will match the results of {@link #getMetrics}: this means that the
       * rotation value will correspond to the activity if accessed through the activity.
       */
@@ -450,7 +450,7 @@
      }
  
      /**
-@@ -1142,34 +945,11 @@
+@@ -1142,34 +946,11 @@
       * @return orientation of this display.
       */
      @Deprecated
@@ -486,7 +486,7 @@
       * Returns the {@link RoundedCorner} of the given position if there is one.
       *
       * @param position the position of the rounded corner on the display.
-@@ -1179,41 +959,13 @@
+@@ -1179,41 +960,13 @@
      @SuppressLint("VisiblySynchronized")
      @Nullable
      public RoundedCorner getRoundedCorner(@RoundedCorner.Position int position) {
@@ -531,7 +531,7 @@
       * Gets the pixel format of the display.
       * @return One of the constants defined in {@link android.graphics.PixelFormat}.
       *
-@@ -1222,21 +974,14 @@
+@@ -1222,21 +975,14 @@
       */
      @Deprecated
      public int getPixelFormat() {
@@ -555,7 +555,7 @@
      }
  
      /**
-@@ -1252,12 +997,7 @@
+@@ -1252,12 +998,7 @@
       */
      @FlaggedApi(FLAG_ENABLE_GET_SUPPORTED_REFRESH_RATES)
      public @NonNull float[] getSupportedRefreshRates() {
@@ -569,7 +569,7 @@
      }
  
      /**
-@@ -1266,22 +1006,17 @@
+@@ -1266,22 +1007,17 @@
      @TestApi
      @SuppressLint({"UnflaggedApi"}) // Usage in the CTS to test backward compatibility.
      public @NonNull float[] getSupportedRefreshRatesLegacy() {
@@ -596,7 +596,7 @@
      }
  
      /**
-@@ -1290,21 +1025,17 @@
+@@ -1290,21 +1026,17 @@
       */
      @TestApi
      public @NonNull Mode getDefaultMode() {
@@ -622,7 +622,7 @@
      }
  
      /**
-@@ -1313,11 +1044,7 @@
+@@ -1313,11 +1045,7 @@
       */
      @SuppressLint("ArrayReturn")
      public @NonNull Mode[] getSystemSupportedModes() {
@@ -635,7 +635,7 @@
      }
  
      /**
-@@ -1326,10 +1053,10 @@
+@@ -1326,10 +1054,10 @@
      // TODO(b/372526856) Add a link to the documentation for ARR.
      @FlaggedApi(FLAG_ENABLE_HAS_ARR_SUPPORT)
      public boolean hasArrSupport() {
@@ -649,7 +649,7 @@
      }
  
      /**
-@@ -1386,16 +1113,10 @@
+@@ -1386,16 +1114,10 @@
       */
      @FlaggedApi(FLAG_ENABLE_GET_SUGGESTED_FRAME_RATE)
      public float getSuggestedFrameRate(@FrameRateCategory int category) {
@@ -669,7 +669,7 @@
      }
  
      /**
-@@ -1417,19 +1138,18 @@
+@@ -1417,19 +1139,18 @@
       */
      @SuppressLint("VisiblySynchronized")
      public boolean isMinimalPostProcessingSupported() {
@@ -693,7 +693,7 @@
      }
  
      /**
-@@ -1437,10 +1157,7 @@
+@@ -1437,10 +1158,7 @@
       * @hide
       */
      public int getColorMode() {
@@ -705,7 +705,7 @@
      }
  
      /**
-@@ -1457,7 +1174,7 @@
+@@ -1457,7 +1175,7 @@
      @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
      @TestApi
      public int getRemoveMode() {
@@ -714,7 +714,7 @@
      }
  
      /**
-@@ -1470,7 +1187,7 @@
+@@ -1470,7 +1188,7 @@
      @TestApi
      @Nullable
      public Display.Mode getSystemPreferredDisplayMode() {
@@ -723,7 +723,7 @@
      }
  
      /**
-@@ -1479,36 +1196,12 @@
+@@ -1479,36 +1197,12 @@
       * @see #isHdr()
       */
      public HdrCapabilities getHdrCapabilities() {
@@ -765,7 +765,7 @@
      }
  
      private boolean contains(int[] disabledHdrTypes, int hdrType) {
-@@ -1530,10 +1223,7 @@
+@@ -1530,10 +1224,7 @@
      @TestApi
      @NonNull
      public int[] getReportedHdrTypes() {
@@ -777,7 +777,7 @@
      }
  
      /**
-@@ -1543,14 +1233,10 @@
+@@ -1543,14 +1234,10 @@
       * @see HdrCapabilities#getSupportedHdrTypes()
       */
      public boolean isHdr() {
@@ -795,7 +795,7 @@
      }
  
      /**
-@@ -1558,10 +1244,10 @@
+@@ -1558,10 +1245,10 @@
       *         {@link #getHdrSdrRatio()} will always be 1.0f
       */
      public boolean isHdrSdrRatioAvailable() {
@@ -809,7 +809,7 @@
      }
  
      /**
-@@ -1570,21 +1256,14 @@
+@@ -1570,21 +1257,14 @@
       *         always returns 1.0f.
       */
      public float getHdrSdrRatio() {
@@ -835,7 +835,7 @@
      }
  
      /**
-@@ -1600,27 +1279,12 @@
+@@ -1600,27 +1280,12 @@
       */
      public void registerHdrSdrRatioChangedListener(@NonNull Executor executor,
              @NonNull Consumer<Display> listener) {
@@ -868,7 +868,7 @@
      }
  
      /**
-@@ -1631,16 +1295,12 @@
+@@ -1631,16 +1296,12 @@
       * @see #registerHdrSdrRatioChangedListener(Executor, Consumer)
       */
      public void unregisterHdrSdrRatioChangedListener(@NonNull Consumer<Display> listener) {
@@ -890,7 +890,7 @@
      }
  
      /**
-@@ -1649,7 +1309,10 @@
+@@ -1649,7 +1310,10 @@
       */
      @FlaggedApi(FLAG_HIGHEST_HDR_SDR_RATIO_API)
      public float getHighestHdrSdrRatio() {
@@ -902,7 +902,7 @@
      }
  
      /**
-@@ -1663,13 +1326,8 @@
+@@ -1663,13 +1327,8 @@
       * @hide
       */
      @TestApi
@@ -917,7 +917,7 @@
      }
  
      /**
-@@ -1678,9 +1336,8 @@
+@@ -1678,9 +1337,8 @@
       * @hide
       */
      @TestApi
@@ -928,7 +928,7 @@
      }
  
      /**
-@@ -1691,7 +1348,7 @@
+@@ -1691,7 +1349,7 @@
      @TestApi
      @Nullable
      public Display.Mode getUserPreferredDisplayMode() {
@@ -937,7 +937,7 @@
      }
  
  
-@@ -1702,93 +1359,21 @@
+@@ -1702,44 +1360,22 @@
       * {@link Configuration#isScreenWideColorGamut()}.
       */
      public boolean isWideColorGamut() {
@@ -969,11 +969,11 @@
 -    }
 -
 -    /**
--     * Returns the {@link OverlayProperties} of the display.
--     */
--    @FlaggedApi(FLAG_OVERLAYPROPERTIES_CLASS_API)
--    @NonNull
--    public OverlayProperties getOverlaySupport() {
+      * Returns the {@link OverlayProperties} of the display.
+      */
+     @FlaggedApi(FLAG_OVERLAYPROPERTIES_CLASS_API)
+     @NonNull
+     public OverlayProperties getOverlaySupport() {
 -        synchronized (mLock) {
 -            updateDisplayInfoLocked();
 -            if (mDisplayInfo.type == TYPE_INTERNAL
@@ -981,11 +981,14 @@
 -                return mGlobal.getOverlaySupport();
 -            }
 -            return OverlayProperties.getDefault();
--        }
--    }
--
--    /**
-      * Gets the supported color modes of this device.
++        if (Build.VERSION.SDK_INT < 35) {
++            throw new NoSuchMethodError("getOverlaySupport()Landroid/hardware/OverlayProperties;");
+         }
++        return DisplayBinding.getOverlaySupport(this);
+     }
+ 
+     /**
+@@ -1747,48 +1383,10 @@
       * @hide
       */
      public int[] getSupportedColorModes() {
@@ -1035,7 +1038,7 @@
       * Gets the app VSYNC offset, in nanoseconds.  This is a positive value indicating
       * the phase offset of the VSYNC events provided by Choreographer relative to the
       * display refresh.  For example, if Choreographer reports that the refresh occurred
-@@ -1798,10 +1383,7 @@
+@@ -1798,10 +1396,7 @@
       * A/V synchronization.
       */
      public long getAppVsyncOffsetNanos() {
@@ -1047,7 +1050,7 @@
      }
  
      /**
-@@ -1816,77 +1398,10 @@
+@@ -1816,77 +1411,10 @@
       * ({@link System#nanoTime}).
       */
      public long getPresentationDeadlineNanos() {
@@ -1126,7 +1129,7 @@
       * Gets the size of the largest region of the display accessible to an app in the current system
       * state, without subtracting any window decor or applying scaling factors.
       * <p>
-@@ -1933,100 +1448,10 @@
+@@ -1933,100 +1461,10 @@
       */
      @Deprecated
      public void getRealSize(Point outSize) {
@@ -1228,7 +1231,7 @@
       * Determines if {@link WindowConfiguration#getMaxBounds()} should be reported as the
       * display dimensions. The max bounds field may be smaller than the logical dimensions
       * when apps need to be sandboxed.
-@@ -2037,11 +1462,7 @@
+@@ -2037,11 +1475,7 @@
       * @return {@code true} when max bounds should be applied.
       */
      private boolean shouldReportMaxBounds() {
@@ -1241,7 +1244,7 @@
      }
  
      /**
-@@ -2052,10 +1473,7 @@
+@@ -2052,10 +1486,7 @@
       * {@link #STATE_UNKNOWN}.
       */
      public int getState() {
@@ -1253,7 +1256,7 @@
      }
  
      /**
-@@ -2067,10 +1485,7 @@
+@@ -2067,10 +1498,7 @@
       * @hide
       */
      public int getCommittedState() {
@@ -1265,7 +1268,7 @@
      }
  
      /**
-@@ -2083,10 +1498,7 @@
+@@ -2083,10 +1511,7 @@
       * @hide
       */
      public boolean canHostTasks() {
@@ -1277,7 +1280,7 @@
      }
  
      /**
-@@ -2095,17 +1507,12 @@
+@@ -2095,17 +1520,12 @@
       */
      @TestApi
      public boolean hasAccess(int uid) {
@@ -1297,7 +1300,7 @@
      }
  
      /**
-@@ -2113,8 +1520,7 @@
+@@ -2113,8 +1533,7 @@
       * @hide
       */
      public boolean isPublicPresentation() {
@@ -1307,7 +1310,7 @@
      }
  
      /**
-@@ -2124,7 +1530,7 @@
+@@ -2124,7 +1543,7 @@
       * @hide
       */
      public boolean isTrusted() {
@@ -1316,7 +1319,7 @@
      }
  
      /**
-@@ -2134,46 +1540,20 @@
+@@ -2134,46 +1553,20 @@
       * @hide
       */
      public boolean canStealTopFocus() {
@@ -1368,7 +1371,7 @@
          // Check if the delta is rotated by 90 degrees.
          return (realRotation - localRotation + 4) % 2 == 0;
      }
-@@ -2182,48 +1562,22 @@
+@@ -2182,48 +1575,22 @@
       * Adjusts the given size by a rotation offset if necessary.
       * @hide
       */
@@ -1422,7 +1425,7 @@
      }
  
      /**
-@@ -2372,19 +1726,6 @@
+@@ -2372,19 +1739,6 @@
      }
  
      /**
@@ -1442,7 +1445,7 @@
       * A mode supported by a given display.
       *
       * @see Display#getSupportedModes()
-@@ -3002,33 +2343,17 @@
+@@ -3002,33 +2356,17 @@
          }
      }
  

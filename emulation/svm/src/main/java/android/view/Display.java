@@ -35,6 +35,7 @@ import android.compat.annotation.UnsupportedAppUsage;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.graphics.Rect;
+import android.hardware.OverlayProperties;
 import android.os.Build;
 import android.os.Parcel;
 import android.os.Parcelable;
@@ -1363,6 +1364,18 @@ public final class Display implements Proxy {
             throw new NoSuchMethodError("isWideColorGamut()Z");
         }
         return DisplayBinding.isWideColorGamut(this);
+    }
+
+    /**
+     * Returns the {@link OverlayProperties} of the display.
+     */
+    @FlaggedApi(FLAG_OVERLAYPROPERTIES_CLASS_API)
+    @NonNull
+    public OverlayProperties getOverlaySupport() {
+        if (Build.VERSION.SDK_INT < 35) {
+            throw new NoSuchMethodError("getOverlaySupport()Landroid/hardware/OverlayProperties;");
+        }
+        return DisplayBinding.getOverlaySupport(this);
     }
 
     /**

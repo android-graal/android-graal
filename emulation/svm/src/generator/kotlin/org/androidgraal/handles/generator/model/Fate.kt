@@ -17,6 +17,8 @@ internal sealed interface Declared : MethodFate {
 
 internal object Kept : FieldFate, TypeFate
 
+internal object KeptCreator : FieldFate
+
 internal class Forwarded(override val method: Method, override val level: Int?, val wire: Wire) : Declared {
     override val note: String? = null
 }
@@ -40,4 +42,5 @@ internal enum class Removed(override val note: String?) :
     NOT_KEPT(null),
     LACKING_TYPE("names a type the emulation lacks"),
     HIDDEN_LACKING_TYPE("is hidden and names a type the emulation lacks"),
+    NATIVE("is hidden and native"),
 }

@@ -10,11 +10,14 @@ import com.sun.source.tree.Tree
 import com.sun.source.tree.VariableTree
 import com.sun.source.util.TreeScanner
 
-internal class References : TreeScanner<Void?, Void?>() {
+internal class References(private val skipped: Tree?) : TreeScanner<Void?, Void?>() {
     val used = LinkedHashSet<String>()
     val declared = HashSet<String>()
     val selected = LinkedHashSet<Pair<String, String>>()
     val constructed = LinkedHashSet<String>()
+
+    override fun scan(tree: Tree?, unused: Void?): Void? =
+        if (tree != null && tree === skipped) null else super.scan(tree, unused)
 
     override fun visitVariable(tree: VariableTree, unused: Void?): Void? {
         declared += tree.name.toString()
@@ -50,8 +53,8 @@ internal class References : TreeScanner<Void?, Void?>() {
     override fun visitAnnotation(tree: AnnotationTree, unused: Void?): Void? = null
 }
 
-internal fun referencesOf(tree: Tree): References {
-    val references = References()
+internal fun referencesOf(tree: Tree, skipped: Tree? = null): References {
+    val references = References(skipped)
     if (tree is MethodTree) {
         references.scan(tree.parameters, null)
         references.scan(tree.body, null)

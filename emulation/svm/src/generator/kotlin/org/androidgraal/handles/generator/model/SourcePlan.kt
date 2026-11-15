@@ -18,6 +18,8 @@ internal class Fates(
 
     val constants: List<VariableTree> = fields.filterValues { it == Kept }.keys.toList()
 
+    val creator: VariableTree? = fields.filterValues { it == KeptCreator }.keys.singleOrNull()
+
     val nested: List<ClassTree> = types.filterValues { it == Kept }.keys.toList()
 
     val verbatim: List<MethodTree> = methods.filterValues { it == Verbatim }.keys.toList()
@@ -28,8 +30,11 @@ internal class SourcePlan(
     val source: SourceFile,
     val type: ClassTree,
     val fates: Fates,
+    val createFromParcel: MethodTree?,
     val removedImports: Set<ImportTree>,
-    val javaImport: ImportTree,
+    val addsBuild: Boolean,
+    val javaImport: ImportTree?,
+    val lastImport: ImportTree,
     val removedAnnotations: List<AnnotationTree>,
     val notes: List<String>,
 )

@@ -1,6 +1,7 @@
 // Generated from android.jar, its api-versions.xml, its sources and the proxy boundary.
 package org.androidgraal.android.handles;
 
+import android.hardware.OverlayProperties;
 import android.os.Build;
 import android.view.Display;
 import java.lang.ref.Reference;
@@ -19,6 +20,8 @@ public final class DisplayBinding {
 
     private static JNI.JClass endPoints34;
 
+    private static JNI.JClass endPoints35;
+
     private static JNI.JClass endPoints36;
 
     private static JNI.JMethodID getAppVsyncOffsetNanosMethod;
@@ -36,6 +39,8 @@ public final class DisplayBinding {
     private static JNI.JMethodID getNameMethod;
 
     private static JNI.JMethodID getOrientationMethod;
+
+    private static JNI.JMethodID getOverlaySupportMethod;
 
     private static JNI.JMethodID getPixelFormatMethod;
 
@@ -80,6 +85,9 @@ public final class DisplayBinding {
         }
         if (Build.VERSION.SDK_INT >= 34) {
             endPoints34 = Art.findClass(env, "org/androidgraal/android/art/handles/DisplayEndPoints34");
+        }
+        if (Build.VERSION.SDK_INT >= 35) {
+            endPoints35 = Art.findClass(env, "org/androidgraal/android/art/handles/DisplayEndPoints35");
         }
         if (Build.VERSION.SDK_INT >= 36) {
             endPoints36 = Art.findClass(env, "org/androidgraal/android/art/handles/DisplayEndPoints36");
@@ -200,6 +208,20 @@ public final class DisplayBinding {
         int r = Art.callInt(thread, endPoints, method, args);
         Reference.reachabilityFence(handle);
         return r;
+    }
+
+    public static OverlayProperties getOverlaySupport(Display handle) {
+        Art.ThreadData thread = Art.thread();
+        JNI.JMethodID method = getOverlaySupportMethod;
+        if (method.isNull()) {
+            method = Art.staticMethod(thread.env, endPoints35, "getOverlaySupport", "(J)J");
+            getOverlaySupportMethod = method;
+        }
+        JNI.JValue args = StackValue.get(1, JNI.JValue.class);
+        args.addressOf(0).setLong(handle.foreignId());
+        long r = Art.callLong(thread, endPoints35, method, args);
+        Reference.reachabilityFence(handle);
+        return (OverlayProperties) HandleClasses.receive(r);
     }
 
     public static int getPixelFormat(Display handle) {

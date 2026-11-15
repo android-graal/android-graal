@@ -7,10 +7,12 @@ internal class Root(
     val name: ClassName,
     val internalName: String,
     val modifiers: Set<Modifier>,
+    val interfaces: List<String>,
     val level: Int?,
     val declared: List<Declared>,
     val lacking: List<Method>,
     val constants: Set<String>,
+    val creator: Boolean,
     val values: Set<String>,
 ) {
     val forwarded: List<Forwarded> = declared.filterIsInstance<Forwarded>()

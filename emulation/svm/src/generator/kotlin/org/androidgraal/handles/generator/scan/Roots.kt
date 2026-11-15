@@ -21,6 +21,14 @@ import javax.lang.model.element.Modifier
 
 private val CLASS_MODIFIERS = mapOf(AccessFlag.PUBLIC to Modifier.PUBLIC, AccessFlag.FINAL to Modifier.FINAL)
 
+internal const val CREATOR = "CREATOR"
+
+private val CREATOR_FLAGS = setOf(AccessFlag.PUBLIC, AccessFlag.STATIC, AccessFlag.FINAL)
+
+private val PARCELABLE = ClassDesc.of("android.os.Parcelable")
+
+private val CREATOR_TYPE = PARCELABLE.nested("Creator")
+
 internal class Roots(
     private val androidJar: ZipFile,
     private val levels: Levels,
@@ -33,17 +41,21 @@ internal class Roots(
         val name = ClassName.get(type.packageName(), type.displayName())
         val model = classOf(androidJar, internalName)
         checkClass(name, model)
-        val fields = visibleFieldsOf(model).onEach { checkField(name, it) }
+        val interfaces = interfacesOf(name, model)
+        val (creators, fields) = visibleFieldsOf(model).partition { isCreator(it, interfaces) }
+        fields.forEach { checkField(name, it) }
         val methods = visibleMethodsOf(model).onEach { checkMethod(name, it) }.map { methodOf(internalName, it) }
         val (present, lacking) = methods.sortedBy { it.name }.partition { method -> method.types.all(classpath::has) }
         val root = Root(
             name = name,
             internalName = internalName,
             modifiers = CLASS_MODIFIERS.filterKeys { it in model.flags().flags() }.values.toSet(),
+            interfaces = interfaces.map { it.thisClass().asInternalName() },
             level = levels.sinceOf(internalName).takeIf { it > minSdk },
-            declared = present.map { declaredOf(internalName, it) },
+            declared = endPointsNamed(present.map { declaredOf(internalName, it, interfaces) }),
             lacking = lacking,
             constants = fields.map { it.fieldName().stringValue() }.toSet(),
+            creator = creators.isNotEmpty(),
             values = valuesOf(name, model),
         )
         checkCrossing(root)
@@ -55,8 +67,21 @@ internal class Roots(
         if (!model.superclass().map { it.asSymbol() == ConstantDescs.CD_Object }.orElse(false)) {
             fail("$name extends a class other than Object, $UNWRITTEN")
         }
-        if (model.interfaces().isNotEmpty()) fail("$name implements an interface, $UNWRITTEN")
         if (model.findAttribute(Attributes.signature()).isPresent) fail("$name is generic, $UNWRITTEN")
+    }
+
+    private fun interfacesOf(name: ClassName, model: ClassModel): List<ClassModel> {
+        return model.interfaces().map { it.asInternalName() }.map { type ->
+            if (!classpath.has(type)) fail("$name implements $type, which the emulation lacks, $UNWRITTEN")
+            classOf(androidJar, type)
+        }
+    }
+
+    private fun isCreator(field: FieldModel, interfaces: List<ClassModel>): Boolean {
+        return field.fieldName().equalsString(CREATOR) &&
+            field.flags().flags().containsAll(CREATOR_FLAGS) &&
+            field.fieldTypeSymbol() == CREATOR_TYPE &&
+            interfaces.any { it.thisClass().asSymbol() == PARCELABLE }
     }
 
     private fun checkField(name: ClassName, field: FieldModel) {
@@ -83,9 +108,15 @@ internal class Roots(
 
     private fun checkCrossing(root: Root) {
         if (root.forwarded.isEmpty()) fail("${root.name} has no method that crosses, $UNWRITTEN")
-        val overloads = root.forwarded.groupBy { it.wire.endPoint }.values.firstOrNull { it.size > 1 }.orEmpty()
-        val keys = overloads.joinToString(" and ") { it.method.key }
-        if (overloads.isNotEmpty()) fail("${root.name} has the crossing overloads $keys, $UNWRITTEN")
+    }
+
+    private fun endPointsNamed(declared: List<Declared>): List<Declared> {
+        val crossing = declared.filterIsInstance<Forwarded>().map { it.method }
+        return declared.map { fate ->
+            val overloads = crossing.filter { it.name == fate.method.name }.sortedBy { it.type.descriptorString() }
+            if (fate !is Forwarded || overloads.size == 1) return@map fate
+            Forwarded(fate.method, fate.level, fate.wire.named("${fate.method.name}$${overloads.indexOf(fate.method)}"))
+        }
     }
 
     private fun valuesOf(name: ClassName, model: ClassModel): Set<String> {
@@ -102,9 +133,29 @@ internal class Roots(
         return nested.values.toSet()
     }
 
-    private fun declaredOf(owner: String, method: Method): Declared {
-        val level = levels.sinceOf(owner, method.key).takeIf { it > minSdk }
-        val wire = wireOf(method) ?: return Unsupported(method, level)
+    private fun declaredOf(owner: String, method: Method, interfaces: List<ClassModel>): Declared {
+        val declaring = interfaces.filter { declares(it, method) }
+        if (declaring.size > 1) fail("$owner ${method.key} is declared by more than one interface, $UNWRITTEN")
+        if (declaring.isEmpty() && !levels.lists(owner, method.key)) {
+            val inheriting = interfaces.firstOrNull { type -> superInterfacesOf(type).any { declares(it, method) } }
+            if (inheriting != null) {
+                fail(
+                    "$owner ${method.key} is declared by a super-interface of " +
+                        "${inheriting.thisClass().asInternalName()}, $UNWRITTEN",
+                )
+            }
+        }
+        val since = levels.sinceOf(owner, method.key, declaring.singleOrNull()?.thisClass()?.asInternalName())
+        val level = since.takeIf { it > minSdk }
+        val wire = wireOf(owner, method, boundary.handles) ?: return Unsupported(method, level)
         return Forwarded(method, level, wire)
+    }
+
+    private fun declares(type: ClassModel, method: Method): Boolean =
+        type.methods().any { it.methodName().equalsString(method.name) && it.methodTypeSymbol() == method.type }
+
+    private fun superInterfacesOf(type: ClassModel): List<ClassModel> {
+        return type.interfaces().map { classOf(androidJar, it.asInternalName()) }
+            .flatMap { listOf(it) + superInterfacesOf(it) }
     }
 }

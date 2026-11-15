@@ -22,6 +22,7 @@ import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
+import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
@@ -46,7 +47,10 @@ import java.lang.classfile.MethodModel;
 import java.lang.classfile.MethodSignature;
 import java.lang.classfile.Signature;
 import java.lang.classfile.attribute.InnerClassInfo;
+import java.lang.classfile.constantpool.ClassEntry;
 import java.lang.constant.ClassDesc;
+import java.lang.constant.ConstantDescs;
+import java.lang.constant.MethodTypeDesc;
 import java.lang.reflect.AccessFlag;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
@@ -93,7 +97,14 @@ class HandleClassesTest {
 
     private static final String VALUE = "value";
 
+    private static final String CREATOR = "CREATOR";
+
+    private static final String PARCELABLE = "android/os/Parcelable";
+
     private static final String STUB = "throw new UnsupportedOperationException(\"hidden on ART\");";
+
+    private static final Set<ClassDesc> ARRAY_ELEMENTS = Set.of(ConstantDescs.CD_char, ConstantDescs.CD_short,
+            ConstantDescs.CD_int, ConstantDescs.CD_float, ConstantDescs.CD_long, ConstantDescs.CD_double);
 
     private static final Pattern ADDED_IMPORT = Pattern.compile("android\\.os\\.Build"
             + "|org\\.androidgraal\\.hosted\\.annotate\\.(Added|Emulated)|org\\.androidgraal\\.shared\\.Proxy"
@@ -136,10 +147,18 @@ class HandleClassesTest {
         return verdicts;
     }
 
-    private record Levels(int since, Map<String, Integer> members) {
+    private record Levels(int since, Map<String, Integer> members, Map<String, Integer> implemented) {
 
-        private int sinceOf(String key) {
-            return members.getOrDefault(key, since);
+        private int sinceOf(String key, String declaring) {
+            Integer own = members.get(key);
+            if (own != null || declaring == null) {
+                return own == null ? since : own;
+            }
+            Integer level = implemented.get(declaring);
+            if (level == null) {
+                throw new IllegalStateException(API_VERSIONS + " does not list " + declaring + " as implemented");
+            }
+            return level;
         }
     }
 
@@ -150,6 +169,7 @@ class HandleClassesTest {
             String owner = "";
             int since = 1;
             Map<String, Integer> members = new HashMap<>();
+            Map<String, Integer> implemented = new HashMap<>();
             while (reader.hasNext()) {
                 int event = reader.next();
                 if (event == XMLStreamConstants.START_ELEMENT && reader.getLocalName().equals("class")) {
@@ -157,14 +177,15 @@ class HandleClassesTest {
                     String level = reader.getAttributeValue(null, "since");
                     since = level == null ? 1 : Integer.parseInt(level);
                     members = new HashMap<>();
-                } else if (event == XMLStreamConstants.START_ELEMENT && reader.getLocalName().equals("method")) {
+                    implemented = new HashMap<>();
+                } else if (event == XMLStreamConstants.START_ELEMENT
+                        && (reader.getLocalName().equals("method") || reader.getLocalName().equals("implements"))) {
                     String level = reader.getAttributeValue(null, "since");
-                    if (level != null) {
-                        members.put(reader.getAttributeValue(null, "name"), Integer.parseInt(level));
-                    }
+                    (reader.getLocalName().equals("method") ? members : implemented).put(
+                            reader.getAttributeValue(null, "name"), level == null ? since : Integer.parseInt(level));
                 } else if (event == XMLStreamConstants.END_ELEMENT && reader.getLocalName().equals("class")
                         && HANDLE.equals(VERDICTS.get(owner))) {
-                    levels.put(owner, new Levels(since, members));
+                    levels.put(owner, new Levels(since, members, implemented));
                 }
             }
         } catch (IOException e) {
@@ -429,6 +450,8 @@ class HandleClassesTest {
 
         private final List<Tree> constants = new ArrayList<>();
 
+        private final List<Tree> creators = new ArrayList<>();
+
         private RootClass(String internalName, ClassTree stock, RootClass outer, ClassModel android) {
             this.internalName = internalName;
             this.stock = stock;
@@ -634,14 +657,18 @@ class HandleClassesTest {
                 proxy(stock, ours, internalName);
             }
             List<Tree> unmatched = new ArrayList<>(ours.getMembers());
+            List<Tree> candidates = mode == Mode.ROOT
+                    ? new ArrayList<>(unmatched.subList(0, Math.max(0, unmatched.size() - 3)))
+                    : unmatched;
             Set<Tree> gone = Collections.newSetFromMap(new IdentityHashMap<>());
             for (Tree member : stock.getMembers()) {
-                Tree counterpart = counterpartOf(member, unmatched);
+                Tree counterpart = counterpartOf(member, candidates);
                 if (counterpart == null) {
                     removed(member, internalName, mode, root);
                     gone.add(member);
                 } else {
                     unmatched.remove(counterpart);
+                    candidates.remove(counterpart);
                     kept(member, counterpart, internalName, mode, root);
                 }
             }
@@ -789,6 +816,9 @@ class HandleClassesTest {
                     root.constants.add(field);
                 } else if (visible.isEmpty()) {
                     root.hide(name, field);
+                } else if (isCreator(visible.get(), root.android)) {
+                    keptCreator(field, ours, internalName, root);
+                    return;
                 } else if (!field.getModifiers().getFlags().contains(Modifier.STATIC)
                         || visible.get().findAttribute(Attributes.constantValue()).isEmpty()) {
                     violations.add(internalName + " keeps the field " + name + ", which android.jar declares as no "
@@ -809,6 +839,53 @@ class HandleClassesTest {
             violations.add(internalName + " replaces the initializer of " + name + " with " + handle.textOf(replacement)
                     + ", where the generator writes the stock one");
             sourceEdits.add(new Edit(source.start(initializer), source.end(initializer), handle.textOf(replacement)));
+        }
+
+        private static boolean isCreator(FieldModel field, ClassModel android) {
+            return field.fieldName().equalsString(CREATOR)
+                    && field.flags().flags().containsAll(Set.of(AccessFlag.PUBLIC, AccessFlag.STATIC, AccessFlag.FINAL))
+                    && field.fieldType().equalsString("Landroid/os/Parcelable$Creator;")
+                    && android.interfaces().stream().anyMatch(type -> type.asInternalName().equals(PARCELABLE));
+        }
+
+        private void keptCreator(VariableTree field, VariableTree ours, String internalName, RootClass root) {
+            MethodTree stock = createFromParcelOf(field);
+            MethodTree replaced = createFromParcelOf(ours);
+            if (stock == null || replaced == null) {
+                violations.add(internalName + " keeps a " + CREATOR + " whose createFromParcel the transform cannot "
+                        + "find");
+                return;
+            }
+            String expected = "throw new UnsupportedOperationException(\"createFromParcel(Landroid/os/Parcel;)L"
+                    + internalName + ";\");";
+            List<String> actual = replaced.getBody().getStatements().stream().map(Check::collapsed).toList();
+            if (!actual.equals(List.of(expected))) {
+                violations.add(internalName + " " + CREATOR + " has the createFromParcel body " + actual
+                        + ", where the generator writes " + expected);
+            }
+            for (Tree member : ((NewClassTree) field.getInitializer()).getClassBody().getMembers()) {
+                if (member == stock) {
+                    removeAbsentAnnotations(stock.getModifiers(), internalName);
+                    removeAbsentAnnotations(stock.getReturnType(), internalName);
+                    removeAbsentAnnotations(stock.getParameters(), internalName);
+                } else {
+                    removeAbsentAnnotations(member, internalName);
+                }
+            }
+            sourceEdits.add(new Edit(source.start(stock.getBody()), source.end(stock.getBody()), "{}"));
+            handleEdits.add(new Edit(handle.start(replaced.getBody()), handle.end(replaced.getBody()), "{}"));
+            root.creators.add(ours);
+        }
+
+        private static MethodTree createFromParcelOf(VariableTree field) {
+            if (!(field.getInitializer() instanceof NewClassTree created) || created.getClassBody() == null) {
+                return null;
+            }
+            return created.getClassBody().getMembers().stream()
+                    .filter(member -> member instanceof MethodTree method
+                            && method.getName().contentEquals("createFromParcel") && method.getParameters().size() == 1
+                            && method.getBody() != null)
+                    .map(MethodTree.class::cast).findFirst().orElse(null);
         }
 
         private void keptMethod(MethodTree method, MethodTree ours, String internalName, RootClass root) {
@@ -859,7 +936,9 @@ class HandleClassesTest {
             String message = "\"" + key + "\"";
             List<String> statements = new ArrayList<>();
             Levels levels = LEVELS.get(root.internalName);
-            int since = levels == null ? MIN_API : levels.sinceOf(key);
+            int since = levels == null
+                    ? MIN_API
+                    : levels.sinceOf(key, declaringInterfaceOf(root.android, target, levels));
             if (since > MIN_API) {
                 statements.add(
                         "if (Build.VERSION.SDK_INT < " + since + ") { throw new NoSuchMethodError(" + message + "); }");
@@ -881,6 +960,55 @@ class HandleClassesTest {
             return statements;
         }
 
+        private String declaringInterfaceOf(ClassModel android, MethodModel target, Levels levels) {
+            String key = target.methodName().stringValue() + target.methodType().stringValue();
+            List<String> declaring = new ArrayList<>();
+            String inheriting = null;
+            for (ClassEntry type : android.interfaces()) {
+                ClassModel model = interfaceModel(android, type);
+                if (model == null) {
+                    continue;
+                }
+                if (declares(model, target)) {
+                    declaring.add(type.asInternalName());
+                } else if (inheriting == null && isInherited(model, target)) {
+                    inheriting = type.asInternalName();
+                }
+            }
+            if (declaring.size() > 1) {
+                violations.add(key + " is declared by more than one interface " + declaring);
+            }
+            if (declaring.isEmpty() && inheriting != null && !levels.members().containsKey(key)) {
+                violations.add(key + " is declared by a super-interface of " + inheriting);
+            }
+            return declaring.isEmpty() ? null : declaring.getFirst();
+        }
+
+        private boolean isInherited(ClassModel type, MethodModel target) {
+            for (ClassEntry entry : type.interfaces()) {
+                ClassModel model = interfaceModel(type, entry);
+                if (model != null && (declares(model, target) || isInherited(model, target))) {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        private ClassModel interfaceModel(ClassModel implementing, ClassEntry type) {
+            ClassModel model = androidModel(type.asInternalName());
+            if (model == null) {
+                violations.add(implementing.thisClass().asInternalName() + " implements " + type.asInternalName()
+                        + ", which android.jar lacks");
+            }
+            return model;
+        }
+
+        private static boolean declares(ClassModel type, MethodModel target) {
+            return type.methods().stream()
+                    .anyMatch(method -> method.methodName().equalsString(target.methodName().stringValue())
+                            && method.methodTypeSymbol().equals(target.methodTypeSymbol()));
+        }
+
         private String endPointOf(ClassModel android, MethodModel target) {
             if (!isShaped(target)) {
                 return null;
@@ -897,24 +1025,38 @@ class HandleClassesTest {
 
         private boolean isShaped(MethodModel method) {
             Set<AccessFlag> flags = method.flags().flags();
+            MethodTypeDesc type = method.methodTypeSymbol();
             if (method.methodName().equalsString("<init>") || flags.contains(AccessFlag.STATIC)
-                    || !flags.contains(AccessFlag.PUBLIC) || !isCrossed(method.methodTypeSymbol().returnType(), true)) {
+                    || !flags.contains(AccessFlag.PUBLIC) || !isCrossed(type.returnType(), true)
+                    || !type.parameterList().stream().allMatch(parameter -> isCrossed(parameter, false))) {
                 return false;
             }
-            return method.methodTypeSymbol().parameterList().stream().allMatch(type -> isCrossed(type, false));
+            long texts = type.parameterList().stream().filter(ConstantDescs.CD_String::equals).count();
+            boolean primitive = type.returnType().isPrimitive() && !type.returnType().equals(ConstantDescs.CD_void);
+            if (texts > 1 || texts == 1 && !primitive) {
+                String violation = method.methodName().stringValue() + type.descriptorString()
+                        + (texts > 1
+                                ? " has more than one String parameter"
+                                : " has a String parameter and a result that is no primitive");
+                if (!violations.contains(violation)) {
+                    violations.add(violation);
+                }
+                return false;
+            }
+            return true;
         }
 
         private boolean isCrossed(ClassDesc type, boolean isResult) {
-            if (type.descriptorString().equals("V")) {
+            if (type.equals(ConstantDescs.CD_void)) {
                 return isResult;
             }
-            if (type.isPrimitive() || type.descriptorString().equals("Ljava/lang/String;")) {
+            if (type.isPrimitive() || type.equals(ConstantDescs.CD_String)) {
                 return true;
             }
             if (type.isArray()) {
-                return isResult && type.componentType().isPrimitive();
+                return isResult && ARRAY_ELEMENTS.contains(type.componentType());
             }
-            return HANDLE.equals(VERDICTS.get(internalNameOf(type)));
+            return isResult && HANDLE.equals(VERDICTS.get(internalNameOf(type)));
         }
 
         private static String collapsed(Tree tree) {
@@ -932,6 +1074,7 @@ class HandleClassesTest {
             for (RootClass root : roots) {
                 root.verbatim.forEach(type -> work.add(Map.entry(type, root)));
                 root.constants.forEach(field -> work.add(Map.entry(field, root)));
+                root.creators.forEach(field -> work.add(Map.entry(field, root)));
             }
             for (HiddenMethod hidden : hiddenMethods) {
                 if (!hidden.stub()) {

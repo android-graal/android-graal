@@ -1,6 +1,9 @@
 // Generated from android.jar, its api-versions.xml, its sources and the proxy boundary.
 package org.androidgraal.android.art.handles;
 
+import android.content.res.TypedArray;
+import android.hardware.OverlayProperties;
+import android.os.Build;
 import android.view.Display;
 import java.util.IdentityHashMap;
 import org.androidgraal.art.Image;
@@ -11,10 +14,14 @@ public final class HandleClasses {
 
     private static final IdentityHashMap<Class<?>, Integer> ORDINALS = new IdentityHashMap<>();
 
-    public static final long FINGERPRINT = 0x682eac6d8c4f48a1L;
+    public static final long FINGERPRINT = 0xbcfa7c8c7a50673fL;
 
     static {
         ORDINALS.put(Display.class, 0);
+        ORDINALS.put(TypedArray.class, 1);
+        if (Build.VERSION.SDK_INT >= 35) {
+            ORDINALS.put(OverlayProperties.class, 2);
+        }
     }
 
     private HandleClasses() {

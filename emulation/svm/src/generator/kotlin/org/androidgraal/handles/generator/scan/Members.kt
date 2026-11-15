@@ -10,6 +10,7 @@ import com.sun.source.util.Trees
 import org.androidgraal.handles.generator.model.Fates
 import org.androidgraal.handles.generator.model.FieldFate
 import org.androidgraal.handles.generator.model.Kept
+import org.androidgraal.handles.generator.model.KeptCreator
 import org.androidgraal.handles.generator.model.MethodFate
 import org.androidgraal.handles.generator.model.Removed
 import org.androidgraal.handles.generator.model.Root
@@ -34,6 +35,8 @@ internal class Members(private val sources: File, private val classpath: Classpa
         val declarations = shape.declarationsOf(type)
         checkDeclared(root, declarations)
         val fields = declarations.fields.associateWith { fateOf(it, root) }
+        val createFromParcel = fields.filterValues { it == KeptCreator }.keys.singleOrNull()
+            ?.let(shape::createFromParcelOf)
         val types = declarations.types.associateWith { fateOf(it, root) }
         val settled = settledOf(declarations.methods, root)
         val resolver = Resolver(
@@ -45,18 +48,21 @@ internal class Members(private val sources: File, private val classpath: Classpa
         )
         val hidden = hiddenOf(declarations.methods.filter { it !in settled }, resolver)
         val fates = Fates(fields, settled + hidden, types)
-        checkKeptTexts(root, fates, declarations, resolver)
+        checkKeptTexts(root, fates, declarations, resolver, createFromParcel?.body)
+        checkCreator(root, fates, resolver, createFromParcel?.body)
         checkConstants(root, fates, resolver)
-        val removedAnnotations = absentAnnotationsOf(type, fates, resolver)
+        val removedAnnotations = absentAnnotationsOf(type, fates, resolver, createFromParcel?.body)
         shape.checkRemoved(removedAnnotations)
-        shape.checkLevelGuards(resolver.presentImports)
         return SourcePlan(
             root = root,
             source = source,
             type = type,
             fates = fates,
+            createFromParcel = createFromParcel,
             removedImports = resolver.absentImports,
+            addsBuild = shape.addsBuildOf(type, resolver.presentImports),
             javaImport = shape.javaImportOf(resolver.presentImports),
+            lastImport = shape.lastImport(),
             removedAnnotations = removedAnnotations,
             notes = notesOf(root, fates),
         )
@@ -65,14 +71,20 @@ internal class Members(private val sources: File, private val classpath: Classpa
     private fun checkDeclared(root: Root, declarations: Declarations) {
         val fields = declarations.fields.map { it.name.toString() }
         val types = declarations.types.map { it.simpleName.toString() }
-        val absent = (root.constants.filter { it !in fields } + root.values.filter { it !in types }).firstOrNull()
+        val named = root.constants + listOfNotNull(CREATOR.takeIf { root.creator })
+        val absent = named.firstOrNull { it !in fields } ?: root.values.firstOrNull { it !in types }
         if (absent != null) fail("${root.internalName} $absent has no declaration in the SDK source")
     }
 
     private fun fateOf(field: VariableTree, root: Root): FieldFate {
         val hidden = field.modifiers.flags.containsAll(CONSTANT) &&
             (field.type is PrimitiveTypeTree || field.type.toString() == "String")
-        return if (field.name.toString() in root.constants || hidden) Kept else Removed.NOT_KEPT
+        val name = field.name.toString()
+        return when {
+            root.creator && name == CREATOR -> KeptCreator
+            name in root.constants || hidden -> Kept
+            else -> Removed.NOT_KEPT
+        }
     }
 
     private fun fateOf(type: ClassTree, root: Root): TypeFate {
@@ -91,7 +103,13 @@ internal class Members(private val sources: File, private val classpath: Classpa
         val fates: Map<String, MethodFate> = root.declared.associateBy { it.method.sourceKey } +
             root.lacking.associate { it.sourceKey to Removed.LACKING_TYPE }
         return methods.zip(keys).mapNotNull { (method, key) ->
-            val fate = fates[key] ?: if (method.name.contentEquals("<init>")) Removed.NOT_KEPT else null
+            val native = Modifier.NATIVE in method.modifiers.flags
+            if (native && key in fates) fail("$name $key is native and android.jar declares it, $UNWRITTEN")
+            val fate = fates[key] ?: when {
+                method.name.contentEquals("<init>") -> Removed.NOT_KEPT
+                native -> Removed.NATIVE
+                else -> null
+            }
             fate?.let { method to it }
         }.toMap()
     }
@@ -121,10 +139,16 @@ internal class Members(private val sources: File, private val classpath: Classpa
         }
     }
 
-    private fun checkKeptTexts(root: Root, fates: Fates, declarations: Declarations, resolver: Resolver) {
+    private fun checkKeptTexts(
+        root: Root,
+        fates: Fates,
+        declarations: Declarations,
+        resolver: Resolver,
+        replaced: Tree?,
+    ) {
         val top = root.name.simpleName()
-        for (text in fates.nested + fates.constants + fates.verbatim) {
-            val references = referencesOf(text)
+        for (text in fates.nested + fates.constants + listOfNotNull(fates.creator) + fates.verbatim) {
+            val references = referencesOf(text, replaced)
             if (resolver.constructsTop(references)) {
                 fail("${root.internalName} is constructed by text the handle keeps and its constructors are cut")
             }
@@ -140,6 +164,12 @@ internal class Members(private val sources: File, private val classpath: Classpa
                 }
             }
         }
+    }
+
+    private fun checkCreator(root: Root, fates: Fates, resolver: Resolver, replaced: Tree?) {
+        val creator = fates.creator ?: return
+        val name = resolver.unresolvedOf(referencesOf(creator, replaced), fates.removed) ?: return
+        fail("${root.internalName} $CREATOR names $name, which the emulation lacks, $UNWRITTEN")
     }
 
     private fun checkConstants(root: Root, fates: Fates, resolver: Resolver) {

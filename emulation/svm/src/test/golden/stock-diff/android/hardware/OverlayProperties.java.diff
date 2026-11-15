@@ -1,0 +1,172 @@
+--- a/emulation/svm/src/main/java/android/hardware/OverlayProperties.java
++++ b/emulation/svm/src/main/java/android/hardware/OverlayProperties.java
+@@ -1,3 +1,4 @@
++// Generated from android.jar, its api-versions.xml, its sources and the proxy boundary.
+ /**
+  * Copyright (C) 2022 The Android Open Source Project
+  *
+@@ -23,7 +24,11 @@
+ import android.os.Parcel;
+ import android.os.Parcelable;
+ 
+-import libcore.util.NativeAllocationRegistry;
++import android.os.Build;
++import org.androidgraal.android.handles.OverlayPropertiesBinding;
++import org.androidgraal.hosted.annotate.Added;
++import org.androidgraal.hosted.annotate.Emulated;
++import org.androidgraal.shared.Proxy;
+ 
+ /**
+  * Provides supported overlay properties of the device.
+@@ -39,37 +44,15 @@
+  * </p>
+  */
+ @FlaggedApi(Flags.FLAG_OVERLAYPROPERTIES_CLASS_API)
+-public final class OverlayProperties implements Parcelable {
+-
+-    private static final NativeAllocationRegistry sRegistry =
+-            NativeAllocationRegistry.createMalloced(OverlayProperties.class.getClassLoader(),
+-            nGetDestructor());
+-
+-    private long mNativeObject;
+-    // only for virtual displays
+-    private static OverlayProperties sDefaultOverlayProperties;
+-    // Invoked on destruction
+-    private Runnable mCloser;
+-
+-    private LutProperties[] mLutProperties;
+-
+-    private OverlayProperties(long nativeObject) {
+-        if (nativeObject != 0) {
+-            mCloser = sRegistry.registerNativeAllocation(this, nativeObject);
+-        }
+-        mNativeObject = nativeObject;
+-    }
+-
++@Emulated
++public final class OverlayProperties implements Parcelable, Proxy {
+     /**
+      * For virtual displays, we provide an overlay properties object
+      * with RGBA 8888 only, sRGB only, true for mixed color spaces.
+      * @hide
+      */
+     public static OverlayProperties getDefault() {
+-        if (sDefaultOverlayProperties == null) {
+-            sDefaultOverlayProperties = new OverlayProperties(nCreateDefault());
+-        }
+-        return sDefaultOverlayProperties;
++        throw new UnsupportedOperationException("hidden on ART");
+     }
+ 
+     /**
+@@ -79,13 +62,11 @@
+     @SuppressLint("ArrayReturn")
+     @NonNull
+     public LutProperties[] getLutProperties() {
+-        if (mNativeObject == 0) {
+-            return null;
++        if (Build.VERSION.SDK_INT < 36) {
++            throw new NoSuchMethodError("getLutProperties()[Landroid/hardware/LutProperties;");
+         }
+-        if (mLutProperties == null) {
+-            mLutProperties = nGetLutProperties(mNativeObject);
+-        }
+-        return mLutProperties;
++        throw new UnsupportedOperationException(
++                "getLutProperties()[Landroid/hardware/LutProperties;");
+     }
+ 
+     /**
+@@ -97,12 +78,11 @@
+      */
+     @FlaggedApi(Flags.FLAG_OVERLAYPROPERTIES_CLASS_API)
+     public boolean isCombinationSupported(@DataSpace.ColorDataSpace int dataspace,
+-            @HardwareBuffer.Format int format) {
+-        if (mNativeObject == 0) {
+-            return false;
++            int format) {
++        if (Build.VERSION.SDK_INT < 35) {
++            throw new NoSuchMethodError("isCombinationSupported(II)Z");
+         }
+-
+-        return nIsCombinationSupported(mNativeObject, dataspace, format);
++        return OverlayPropertiesBinding.isCombinationSupported(this, dataspace, format);
+     }
+ 
+     /**
+@@ -114,37 +94,36 @@
+      */
+     @FlaggedApi(Flags.FLAG_OVERLAYPROPERTIES_CLASS_API)
+     public boolean isMixedColorSpacesSupported() {
+-        if (mNativeObject == 0) {
+-            return false;
++        if (Build.VERSION.SDK_INT < 35) {
++            throw new NoSuchMethodError("isMixedColorSpacesSupported()Z");
+         }
+-        return nSupportMixedColorSpaces(mNativeObject);
++        return OverlayPropertiesBinding.isMixedColorSpacesSupported(this);
+     }
+ 
+     @FlaggedApi(Flags.FLAG_OVERLAYPROPERTIES_CLASS_API)
+     @Override
+     public int describeContents() {
+-        return 0;
++        if (Build.VERSION.SDK_INT < 35) {
++            throw new NoSuchMethodError("describeContents()I");
++        }
++        return OverlayPropertiesBinding.describeContents(this);
+     }
+ 
+     @FlaggedApi(Flags.FLAG_OVERLAYPROPERTIES_CLASS_API)
+     @Override
+     public void writeToParcel(@NonNull Parcel dest, int flags) {
+-        if (mNativeObject == 0) {
+-            dest.writeInt(0);
+-            return;
++        if (Build.VERSION.SDK_INT < 35) {
++            throw new NoSuchMethodError("writeToParcel(Landroid/os/Parcel;I)V");
+         }
+-        dest.writeInt(1);
+-        nWriteOverlayPropertiesToParcel(mNativeObject, dest);
++        throw new UnsupportedOperationException("writeToParcel(Landroid/os/Parcel;I)V");
+     }
+ 
+     @FlaggedApi(Flags.FLAG_OVERLAYPROPERTIES_CLASS_API)
+     public static final @NonNull Parcelable.Creator<OverlayProperties> CREATOR =
+             new Parcelable.Creator<OverlayProperties>() {
+         public OverlayProperties createFromParcel(Parcel in) {
+-            if (in.readInt() != 0) {
+-                return new OverlayProperties(nReadOverlayPropertiesFromParcel(in));
+-            }
+-            return null;
++            throw new UnsupportedOperationException(
++                    "createFromParcel(Landroid/os/Parcel;)Landroid/hardware/OverlayProperties;");
+         }
+ 
+         public OverlayProperties[] newArray(int size) {
+@@ -152,12 +131,17 @@
+         }
+     };
+ 
+-    private static native long nGetDestructor();
+-    private static native long nCreateDefault();
+-    private static native boolean nSupportMixedColorSpaces(long nativeObject);
+-    private static native boolean nIsCombinationSupported(
+-            long nativeObject, int dataspace, int format);
+-    private static native void nWriteOverlayPropertiesToParcel(long nativeObject, Parcel dest);
+-    private static native long nReadOverlayPropertiesFromParcel(Parcel in);
+-    private static native LutProperties[] nGetLutProperties(long nativeObject);
++    @Added(reason = "the id of the ART object this handle forwards to")
++    private final long id;
++
++    @Added(reason = "the handle of the ART object received under its id")
++    public OverlayProperties(long id) {
++        this.id = id;
++    }
++
++    @Added(reason = "the id this handle crosses to ART as")
++    @Override
++    public long foreignId() {
++        return id;
++    }
+ }

@@ -12,11 +12,14 @@ import com.palantir.javapoet.TypeSpec
 import com.palantir.javapoet.WildcardTypeName
 import org.androidgraal.handles.generator.model.ArrayKind
 import org.androidgraal.handles.generator.model.Forwarded
+import org.androidgraal.handles.generator.model.HandleKind
 import org.androidgraal.handles.generator.model.HandleModel
 import org.androidgraal.handles.generator.model.Kind
+import org.androidgraal.handles.generator.model.ParameterKind
 import org.androidgraal.handles.generator.model.PrimitiveKind
 import org.androidgraal.handles.generator.model.Root
 import org.androidgraal.handles.generator.model.TextKind
+import org.androidgraal.handles.generator.model.VoidKind
 import javax.lang.model.element.Modifier.FINAL
 import javax.lang.model.element.Modifier.PRIVATE
 import javax.lang.model.element.Modifier.PUBLIC
@@ -66,7 +69,7 @@ internal class ImageSources(model: HandleModel) : Sources(model) {
             .addParameter(root.name, HANDLE)
             .addParameters(
                 wire.parameters.mapIndexed { index, kind ->
-                    ParameterSpec.builder(kind.type, "a$index").build()
+                    ParameterSpec.builder(parameterTypeOf(kind), "a$index").build()
                 },
             )
             .addStatement("\$T thread = \$T.thread()", JavaNames.ART_THREAD, JavaNames.ART)
@@ -81,18 +84,46 @@ internal class ImageSources(model: HandleModel) : Sources(model) {
             )
             .addStatement("\$N = method", methodFieldOf(forwarded))
             .endControlFlow()
-            .addStatement(
-                "\$T args = \$T.get(\$L, \$T.class)",
-                JavaNames.J_VALUE,
-                JavaNames.STACK_VALUE,
-                1 + wire.parameters.size,
-                JavaNames.J_VALUE,
-            )
+        val text = wire.parameters.indexOf(TextKind)
+        if (text >= 0) {
+            spec.addStatement("int n$text = a$text == null ? \$T.NULL : a$text.length()", JavaNames.BLOCKS)
+                .addStatement("int bytes = \$T.size(n$text, 2)", JavaNames.BLOCKS)
+                .addStatement("long transport = a$text == null ? 0 : \$T.alloc(bytes)", JavaNames.IMAGE_TRANSPORT)
+                .beginControlFlow("try")
+                .beginControlFlow("if (transport != 0)")
+                .addStatement("\$T.setBlockHeader(transport, n$text, 2)", JavaNames.IMAGE_TRANSPORT)
+                .addStatement("\$T.write(a$text, transport + \$T.HEADER)", JavaNames.IMAGE_TRANSPORT, JavaNames.BLOCKS)
+                .endControlFlow()
+        }
+        val slots = wire.parameters.sumOf { if (it == TextKind) 2 else 1 }
+        spec.addStatement(
+            "\$T args = \$T.get(\$L, \$T.class)",
+            JavaNames.J_VALUE,
+            JavaNames.STACK_VALUE,
+            1 + slots,
+            JavaNames.J_VALUE,
+        )
             .addStatement("args.addressOf(0).setLong(\$N.foreignId())", HANDLE)
+        var slot = 1
         wire.parameters.forEachIndexed { index, kind ->
-            spec.addStatement("args.addressOf(${index + 1}).set\$L(a$index)", capitalized(kind.type))
+            when (kind) {
+                is PrimitiveKind -> spec.addStatement(
+                    "args.addressOf(${slot++}).set\$L(a$index)",
+                    capitalized(kind.type),
+                )
+
+                TextKind -> spec.addStatement("args.addressOf(${slot++}).setLong(transport)")
+                    .addStatement("args.addressOf(${slot++}).setInt(bytes)")
+            }
         }
         returnOf(spec, wire.result, endPoints)
+        if (text >= 0) {
+            spec.nextControlFlow("finally")
+                .beginControlFlow("if (transport != 0)")
+                .addStatement("\$T.free(transport)", JavaNames.IMAGE_TRANSPORT)
+                .endControlFlow()
+                .endControlFlow()
+        }
         return spec.build()
     }
 
@@ -107,6 +138,17 @@ internal class ImageSources(model: HandleModel) : Sources(model) {
             )
                 .addStatement("\$T.reachabilityFence(\$N)", JavaNames.REFERENCE, HANDLE)
                 .addStatement("return r")
+
+            VoidKind -> spec.addStatement("\$T.callVoid(thread, \$N, method, args)", JavaNames.ART, endPoints)
+                .addStatement("\$T.reachabilityFence(\$N)", JavaNames.REFERENCE, HANDLE)
+
+            is HandleKind -> spec.addStatement(
+                "long r = \$T.callLong(thread, \$N, method, args)",
+                JavaNames.ART,
+                endPoints,
+            )
+                .addStatement("\$T.reachabilityFence(\$N)", JavaNames.REFERENCE, HANDLE)
+                .addStatement("return (\$T) \$T.receive(r)", kind.type, JavaNames.IMAGE_TABLE)
 
             TextKind -> blockOf(spec, endPoints)
                 .addStatement("String result = \$T.readStringBlock(r)", JavaNames.IMAGE_TRANSPORT)
@@ -185,8 +227,15 @@ internal class ImageSources(model: HandleModel) : Sources(model) {
 
 private fun typeOf(kind: Kind): TypeName = when (kind) {
     is PrimitiveKind -> kind.type
+    VoidKind -> TypeName.VOID
+    is HandleKind -> kind.type
     TextKind -> TypeName.get(String::class.java)
     is ArrayKind -> ArrayTypeName.of(kind.component)
+}
+
+private fun parameterTypeOf(kind: ParameterKind): TypeName = when (kind) {
+    is PrimitiveKind -> kind.type
+    TextKind -> TypeName.get(String::class.java)
 }
 
 private fun classFieldOf(level: Int?): String = "endPoints" + (level ?: "")

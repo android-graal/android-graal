@@ -5,7 +5,11 @@ import com.sun.source.tree.CompilationUnitTree
 import com.sun.source.tree.Tree
 import com.sun.source.util.SourcePositions
 
-internal class SourceFile(val text: String, val unit: CompilationUnitTree, private val positions: SourcePositions) {
+internal class SourceFile(read: String, val unit: CompilationUnitTree, private val positions: SourcePositions) {
+    val endsWithLineBreak: Boolean = read.endsWith("\n")
+
+    val text: String = if (endsWithLineBreak) read else "$read\n"
+
     private val starts: IntArray = (listOf(0) + text.indices.filter { text[it] == '\n' }.map { it + 1 }).toIntArray()
 
     val lineCount: Int = starts.size - 1
