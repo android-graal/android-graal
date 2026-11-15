@@ -46,7 +46,7 @@ final class Exports {
     /**
      * Processes the release request {@code released} and ends its export when all references are released.
      *
-     * @throws IllegalStateException when {@code id} is not exported or was released more often then retained
+     * @throws IllegalStateException when {@code id} is not exported or was released more often than retained
      */
     public synchronized void release(ReleasedReferences released) {
         long id = released.id();

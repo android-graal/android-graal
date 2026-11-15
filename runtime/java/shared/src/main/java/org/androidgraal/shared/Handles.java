@@ -34,7 +34,7 @@ public final class Handles {
     private final Release release;
     private final long idStep;
 
-    /** The table of the side whose ids have the sign of {@code step}. */
+    /** The table of the side whose ids have the sign of {@code idStep}. */
     public Handles(long idStep, Release release) {
         this.exports = new Exports(idStep);
         this.imports = new Imports();
@@ -98,8 +98,8 @@ public final class Handles {
 
     /**
      * Ends the exports whose sends a batch of the other side's {@link Release} releases. An element naming an id this
-     * side does not export, or more references than it sent, throws an {@link IllegalStateException} once every other
-     * element is applied.
+     * side does not export, or more references than it sent, throws an {@link IllegalStateException}, the elements
+     * after it are not applied.
      */
     public void releaseExports(List<ReleasedReferences> batch) {
         for (ReleasedReferences released : batch) {

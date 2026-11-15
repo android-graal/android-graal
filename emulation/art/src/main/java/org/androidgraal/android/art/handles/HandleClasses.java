@@ -24,7 +24,8 @@ public final class HandleClasses {
         if (object == null) {
             return 0;
         }
-        return Handles.tagOf(HANDLES.send(object), ordinalOf(object.getClass()));
+        int ordinal = ordinalOf(object.getClass());
+        return Handles.tagOf(HANDLES.send(object), ordinal);
     }
 
     private static int ordinalOf(Class<?> type) {
