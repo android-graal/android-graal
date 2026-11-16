@@ -20,6 +20,10 @@ public final class Flags {
     public static final String FLAG_MAINLINE_VCN_PLATFORM_API = "android.os.mainline_vcn_platform_api";
     /** @hide */
     public static final String FLAG_PARCEL_MARSHALL_BYTEBUFFER = "android.os.parcel_marshall_bytebuffer";
+    /** @hide */
+    public static final String FLAG_SECURITY_STATE_SERVICE = "android.os.security_state_service";
+    /** @hide */
+    public static final String FLAG_TELEMETRY_APIS_FRAMEWORK_INITIALIZATION = "android.os.telemetry_apis_framework_initialization";
 
     @UnsupportedAppUsage
     public static boolean forceConcurrentMessageQueue() {

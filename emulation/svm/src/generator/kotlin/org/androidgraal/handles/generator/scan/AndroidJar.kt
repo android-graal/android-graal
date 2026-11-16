@@ -42,11 +42,18 @@ internal fun signatureOf(method: MethodModel): MethodSignature {
 internal fun methodOf(owner: String, method: MethodModel): Method {
     val name = method.methodName().stringValue()
     val signature = signatureOf(method)
+    val thrown = signature.throwableSignatures().ifEmpty {
+        method.findAttribute(Attributes.exceptions())
+            .map { attribute -> attribute.exceptions().map { Signature.ClassTypeSig.of(it.asSymbol()) } }
+            .orElse(emptyList())
+    }
     return Method(
         name = name,
         type = method.methodTypeSymbol(),
         sourceKey = sourceKeyOf(owner, name, signature),
-        types = (signature.arguments() + signature.result()).flatMap(::typesOf),
+        types = (signature.arguments() + signature.result() + thrown).flatMap(::typesOf),
+        isGeneric = signature.typeParameters().isNotEmpty(),
+        isProtected = method.flags().has(AccessFlag.PROTECTED),
     )
 }
 

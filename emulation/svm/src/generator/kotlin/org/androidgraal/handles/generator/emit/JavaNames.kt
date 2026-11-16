@@ -38,6 +38,8 @@ internal object JavaNames {
 
     fun bindingOf(root: ClassName): ClassName = ClassName.get(IMAGE_PACKAGE, root.simpleName() + "Binding")
 
+    fun receivedOf(root: ClassName): ClassName = ClassName.get(IMAGE_PACKAGE, "$" + root.simpleName())
+
     fun endPointsOf(root: ClassName, level: Int?): ClassName =
         ClassName.get(ART_PACKAGE, root.simpleName() + "EndPoints" + (level ?: ""))
 }

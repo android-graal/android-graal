@@ -2366,7 +2366,7 @@ public final class Display implements Proxy {
 
     @Added(reason = "the id this handle crosses to ART as")
     @Override
-    public long foreignId() {
+    public final long foreignId() {
         return id;
     }
 }

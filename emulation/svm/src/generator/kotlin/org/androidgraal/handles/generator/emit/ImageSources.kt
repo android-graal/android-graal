@@ -28,7 +28,23 @@ import javax.lang.model.element.Modifier.STATIC
 private const val HANDLE = "handle"
 
 internal class ImageSources(model: HandleModel) : Sources(model) {
-    override fun render(): List<JavaFile> = model.roots.map(::bindingOf) + table()
+    private val bound = model.roots.filter { it.forwarded.isNotEmpty() }
+
+    override fun render(): List<JavaFile> =
+        bound.map(::bindingOf) + model.roots.filter { it.isAbstract }.map(::receivedOf) + table()
+
+    private fun receivedOf(root: Root): JavaFile {
+        val received = JavaNames.receivedOf(root.name)
+        val constructor = MethodSpec.constructorBuilder()
+            .addModifiers(PUBLIC)
+            .addParameter(TypeName.LONG, "id")
+            .addStatement("super(id)")
+            .build()
+        val type = TypeSpec.classBuilder(received).addModifiers(PUBLIC, FINAL)
+            .superclass(root.name)
+            .addMethod(constructor)
+        return javaFileOf(received, type.build())
+    }
 
     private fun bindingOf(root: Root): JavaFile {
         val binding = JavaNames.bindingOf(root.name)
@@ -84,15 +100,24 @@ internal class ImageSources(model: HandleModel) : Sources(model) {
             )
             .addStatement("\$N = method", methodFieldOf(forwarded))
             .endControlFlow()
-        val text = wire.parameters.indexOf(TextKind)
-        if (text >= 0) {
-            spec.addStatement("int n$text = a$text == null ? \$T.NULL : a$text.length()", JavaNames.BLOCKS)
-                .addStatement("int bytes = \$T.size(n$text, 2)", JavaNames.BLOCKS)
-                .addStatement("long transport = a$text == null ? 0 : \$T.alloc(bytes)", JavaNames.IMAGE_TRANSPORT)
-                .beginControlFlow("try")
-                .beginControlFlow("if (transport != 0)")
-                .addStatement("\$T.setBlockHeader(transport, n$text, 2)", JavaNames.IMAGE_TRANSPORT)
-                .addStatement("\$T.write(a$text, transport + \$T.HEADER)", JavaNames.IMAGE_TRANSPORT, JavaNames.BLOCKS)
+        val texts = wire.parameters.indices.filter { wire.parameters[it] == TextKind }
+        val names = BlockNames(texts)
+        texts.forEach {
+            spec.addStatement("int n$it = a$it == null ? \$T.NULL : a$it.length()", JavaNames.BLOCKS)
+        }
+        texts.forEach { spec.addStatement("int ${names.bytes(it)} = \$T.size(n$it, 2)", JavaNames.BLOCKS) }
+        texts.forEach {
+            spec.addStatement(
+                "long ${names.transport(it)} = a$it == null ? 0 : \$T.alloc(${names.bytes(it)})",
+                JavaNames.IMAGE_TRANSPORT,
+            )
+        }
+        if (texts.isNotEmpty()) spec.beginControlFlow("try")
+        texts.forEach {
+            val transport = names.transport(it)
+            spec.beginControlFlow("if ($transport != 0)")
+                .addStatement("\$T.setBlockHeader($transport, n$it, 2)", JavaNames.IMAGE_TRANSPORT)
+                .addStatement("\$T.write(a$it, $transport + \$T.HEADER)", JavaNames.IMAGE_TRANSPORT, JavaNames.BLOCKS)
                 .endControlFlow()
         }
         val slots = wire.parameters.sumOf { if (it == TextKind) 2 else 1 }
@@ -112,50 +137,59 @@ internal class ImageSources(model: HandleModel) : Sources(model) {
                     capitalized(kind.type),
                 )
 
-                TextKind -> spec.addStatement("args.addressOf(${slot++}).setLong(transport)")
-                    .addStatement("args.addressOf(${slot++}).setInt(bytes)")
+                TextKind -> spec.addStatement("args.addressOf(${slot++}).setLong(${names.transport(index)})")
+                    .addStatement("args.addressOf(${slot++}).setInt(${names.bytes(index)})")
+
+                is HandleKind -> spec.addStatement(
+                    "args.addressOf(${slot++}).setLong(\$T.send(a$index))",
+                    JavaNames.IMAGE_TABLE,
+                )
             }
         }
-        returnOf(spec, wire.result, endPoints)
-        if (text >= 0) {
+        val handles = wire.parameters.indices.filter { wire.parameters[it] is HandleKind }
+        val fenced = listOf(HANDLE) + handles.map { "a$it" }
+        returnOf(spec, wire.result, endPoints, fenced)
+        if (texts.isNotEmpty()) {
             spec.nextControlFlow("finally")
-                .beginControlFlow("if (transport != 0)")
-                .addStatement("\$T.free(transport)", JavaNames.IMAGE_TRANSPORT)
-                .endControlFlow()
-                .endControlFlow()
+            texts.forEach {
+                spec.beginControlFlow("if (${names.transport(it)} != 0)")
+                    .addStatement("\$T.free(${names.transport(it)})", JavaNames.IMAGE_TRANSPORT)
+                    .endControlFlow()
+            }
+            spec.endControlFlow()
         }
         return spec.build()
     }
 
-    private fun returnOf(spec: MethodSpec.Builder, kind: Kind, endPoints: String) {
+    private fun returnOf(spec: MethodSpec.Builder, kind: Kind, endPoints: String, fenced: List<String>) {
         when (kind) {
-            is PrimitiveKind -> spec.addStatement(
-                "\$T r = \$T.call\$L(thread, \$N, method, args)",
-                kind.type,
-                JavaNames.ART,
-                capitalized(kind.type),
-                endPoints,
-            )
-                .addStatement("\$T.reachabilityFence(\$N)", JavaNames.REFERENCE, HANDLE)
-                .addStatement("return r")
+            is PrimitiveKind -> {
+                spec.addStatement(
+                    "\$T r = \$T.call\$L(thread, \$N, method, args)",
+                    kind.type,
+                    JavaNames.ART,
+                    capitalized(kind.type),
+                    endPoints,
+                )
+                fenceOf(spec, fenced).addStatement("return r")
+            }
 
-            VoidKind -> spec.addStatement("\$T.callVoid(thread, \$N, method, args)", JavaNames.ART, endPoints)
-                .addStatement("\$T.reachabilityFence(\$N)", JavaNames.REFERENCE, HANDLE)
+            VoidKind -> {
+                spec.addStatement("\$T.callVoid(thread, \$N, method, args)", JavaNames.ART, endPoints)
+                fenceOf(spec, fenced)
+            }
 
-            is HandleKind -> spec.addStatement(
-                "long r = \$T.callLong(thread, \$N, method, args)",
-                JavaNames.ART,
-                endPoints,
-            )
-                .addStatement("\$T.reachabilityFence(\$N)", JavaNames.REFERENCE, HANDLE)
-                .addStatement("return (\$T) \$T.receive(r)", kind.type, JavaNames.IMAGE_TABLE)
+            is HandleKind -> {
+                spec.addStatement("long r = \$T.callLong(thread, \$N, method, args)", JavaNames.ART, endPoints)
+                fenceOf(spec, fenced).addStatement("return (\$T) \$T.receive(r)", kind.type, JavaNames.IMAGE_TABLE)
+            }
 
-            TextKind -> blockOf(spec, endPoints)
+            TextKind -> blockOf(spec, endPoints, fenced)
                 .addStatement("String result = \$T.readStringBlock(r)", JavaNames.IMAGE_TRANSPORT)
                 .addStatement("\$T.free(r)", JavaNames.IMAGE_TRANSPORT)
                 .addStatement("return result")
 
-            is ArrayKind -> blockOf(spec, endPoints)
+            is ArrayKind -> blockOf(spec, endPoints, fenced)
                 .addStatement(
                     "\$T result = r == 0 ? null : new \$T[\$T.getBlockLength(r)]",
                     ArrayTypeName.of(kind.component),
@@ -168,8 +202,8 @@ internal class ImageSources(model: HandleModel) : Sources(model) {
         }
     }
 
-    private fun blockOf(spec: MethodSpec.Builder, endPoints: String): MethodSpec.Builder {
-        return spec.addStatement(
+    private fun blockOf(spec: MethodSpec.Builder, endPoints: String, fenced: List<String>): MethodSpec.Builder {
+        spec.addStatement(
             "\$T view = \$T.callObject(thread, \$N, method, args)",
             JavaNames.J_OBJECT,
             JavaNames.ART,
@@ -177,16 +211,22 @@ internal class ImageSources(model: HandleModel) : Sources(model) {
         )
             .addStatement("long r = \$T.address(thread.env, view)", JavaNames.ART)
             .addStatement("\$T.deleteLocal(thread.env, view)", JavaNames.ART)
-            .addStatement("\$T.reachabilityFence(\$N)", JavaNames.REFERENCE, HANDLE)
+        return fenceOf(spec, fenced)
+    }
+
+    private fun fenceOf(spec: MethodSpec.Builder, fenced: List<String>): MethodSpec.Builder {
+        fenced.forEach { spec.addStatement("\$T.reachabilityFence(\$N)", JavaNames.REFERENCE, it) }
+        return spec
     }
 
     private fun table(): JavaFile {
         val factory = ParameterizedTypeName.get(JavaNames.FACTORY, WildcardTypeName.subtypeOf(Any::class.java))
-        val factories = CodeBlock.join(model.roots.map { CodeBlock.of("\$T::new", it.name) }, ", ")
+        val received = model.roots.map { if (it.isAbstract) JavaNames.receivedOf(it.name) else it.name }
+        val factories = CodeBlock.join(received.map { CodeBlock.of("\$T::new", it) }, ", ")
         val initialize = MethodSpec.methodBuilder("initialize")
             .addModifiers(PUBLIC, STATIC)
             .addParameter(JavaNames.JNI_ENV, "env")
-        model.roots.forEach { initialize.addStatement("\$T.initialize(env)", JavaNames.bindingOf(it.name)) }
+        bound.forEach { initialize.addStatement("\$T.initialize(env)", JavaNames.bindingOf(it.name)) }
         val type = TypeSpec.classBuilder(JavaNames.IMAGE_TABLE).addModifiers(PUBLIC, FINAL)
             .addField(
                 FieldSpec.builder(JavaNames.HANDLES, "HANDLES", PRIVATE, STATIC, FINAL)
@@ -236,6 +276,7 @@ private fun typeOf(kind: Kind): TypeName = when (kind) {
 private fun parameterTypeOf(kind: ParameterKind): TypeName = when (kind) {
     is PrimitiveKind -> kind.type
     TextKind -> TypeName.get(String::class.java)
+    is HandleKind -> kind.type
 }
 
 private fun classFieldOf(level: Int?): String = "endPoints" + (level ?: "")

@@ -1,5 +1,6 @@
 package org.androidgraal.android;
 
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -15,17 +16,20 @@ import com.sun.source.tree.BlockTree;
 import com.sun.source.tree.ClassTree;
 import com.sun.source.tree.CompilationUnitTree;
 import com.sun.source.tree.ConditionalExpressionTree;
+import com.sun.source.tree.ExpressionStatementTree;
 import com.sun.source.tree.ExpressionTree;
 import com.sun.source.tree.IdentifierTree;
 import com.sun.source.tree.ImportTree;
 import com.sun.source.tree.LiteralTree;
 import com.sun.source.tree.MemberSelectTree;
+import com.sun.source.tree.MethodInvocationTree;
 import com.sun.source.tree.MethodTree;
 import com.sun.source.tree.NewArrayTree;
 import com.sun.source.tree.NewClassTree;
 import com.sun.source.tree.ParameterizedTypeTree;
 import com.sun.source.tree.ParenthesizedTree;
 import com.sun.source.tree.PrimitiveTypeTree;
+import com.sun.source.tree.StatementTree;
 import com.sun.source.tree.Tree;
 import com.sun.source.tree.TypeCastTree;
 import com.sun.source.tree.TypeParameterTree;
@@ -71,6 +75,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Stream;
 import java.util.zip.ZipEntry;
@@ -237,6 +242,52 @@ class HandleClassesTest {
                 fail(path + " breaks the transform's rules:\n" + String.join("\n", check.violations)
                         + "\nhunks no rule covers:\n" + String.join("\n", hunks));
             }
+        }
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("handles")
+    void anAbstractRootIsReceivedAsItsFinalSubclass(String path) throws IOException {
+        String internalName = path.substring(0, path.length() - ".java".length());
+        String simpleName = internalName.substring(internalName.lastIndexOf('/') + 1);
+        Path received = COPIES.resolve("org/androidgraal/android/handles/$" + simpleName + ".java");
+        boolean isAbstract;
+        try (ZipFile jar = new ZipFile(ANDROID_JAR.toFile())) {
+            ZipEntry entry = jar.getEntry(internalName + ".class");
+            isAbstract = ClassFile.of().parse(jar.getInputStream(entry).readAllBytes()).flags()
+                    .has(AccessFlag.ABSTRACT);
+        }
+        if (!isAbstract) {
+            assertFalse(Files.exists(received),
+                    received + " exists for the root " + internalName + ", which is no abstract class");
+            return;
+        }
+        assertTrue(Files.isRegularFile(received), "the abstract root " + internalName + " has no " + received);
+        Parsed parsed = new Parsed(Files.readString(received, StandardCharsets.UTF_8));
+        List<String> imports = parsed.unit.getImports().stream().map(tree -> tree.getQualifiedIdentifier().toString())
+                .toList();
+        String expected = "public final class $" + simpleName + " extends " + simpleName + " { public $" + simpleName
+                + "(long id) { super(id); } }";
+        assertTrue(parsed.lineText(0).equals(FIRST_LINE), received + " does not start with the generator's line");
+        assertTrue(imports.equals(List.of(internalName.replace('/', '.'))), received + " imports " + imports);
+        assertTrue(Check.collapsed(parsed.top()).equals(expected),
+                received + " is " + Check.collapsed(parsed.top()) + ", where the generator writes " + expected);
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("handles")
+    void aRootHasABindingOnlyWithAWireOfItsOwn(String path) throws IOException {
+        String internalName = path.substring(0, path.length() - ".java".length());
+        String simpleName = internalName.substring(internalName.lastIndexOf('/') + 1);
+        Path binding = COPIES.resolve("org/androidgraal/android/handles/" + simpleName + "Binding.java");
+        try (ZipFile jar = new ZipFile(ANDROID_JAR.toFile())) {
+            Check check = new Check(path, jar);
+            ClassModel android = check.androidModel(internalName);
+            boolean wired = android.methods().stream().filter(Check::isDeclared)
+                    .anyMatch(method -> !check.namesAbsentType(method) && check.isShaped(method)
+                            && check.upperOf(android, method).isEmpty());
+            assertTrue(Files.isRegularFile(binding) == wired, internalName
+                    + (wired ? " has a wire of its own and no " : " has no wire of its own and the ") + binding);
         }
     }
 
@@ -562,6 +613,8 @@ class HandleClassesTest {
 
         private final List<Map.Entry<Tree, RootClass>> keptTexts = new ArrayList<>();
 
+        private final List<String> uppers = new ArrayList<>();
+
         private Check(String path, ZipFile jar) throws IOException {
             this.path = path;
             this.jar = jar;
@@ -577,17 +630,21 @@ class HandleClassesTest {
                 violations.add("the first line is not the generator's");
             }
             String internalName = path.substring(0, path.length() - ".java".length());
+            ClassModel top = androidModel(internalName);
+            if (top != null) {
+                uppersOf(top).forEach(upper -> uppers.addFirst(upper.thisClass().asInternalName()));
+            }
             collect(handle.top(), internalName);
             imports();
-            ClassTree top = handle.top();
-            Optional<? extends AnnotationTree> emulated = top.getModifiers().getAnnotations().stream()
+            ClassTree type = handle.top();
+            Optional<? extends AnnotationTree> emulated = type.getModifiers().getAnnotations().stream()
                     .filter(annotation -> handle.textOf(annotation).equals("@Emulated")).findFirst();
             if (emulated.isEmpty()) {
                 violations.add(internalName + " carries no @Emulated");
             } else {
                 removeAnnotation(handle, handleEdits, emulated.get());
             }
-            compare(source.top(), top, internalName, Mode.ROOT, null);
+            compare(source.top(), type, internalName, Mode.ROOT, null);
             close();
             resolveHiddenMethods();
             namedMethods();
@@ -654,11 +711,16 @@ class HandleClassesTest {
                 }
                 root = new RootClass(internalName, stock, outer, android);
                 roots.add(root);
-                proxy(stock, ours, internalName);
+                if (uppersOf(android).isEmpty()) {
+                    proxy(stock, ours, internalName);
+                } else if (ours.getImplementsClause().size() != stock.getImplementsClause().size()) {
+                    violations.add(internalName + " extends a root and implements what its source does not");
+                }
             }
             List<Tree> unmatched = new ArrayList<>(ours.getMembers());
+            List<String> added = mode == Mode.ROOT ? addedOf(stock, ours, root.android) : List.of();
             List<Tree> candidates = mode == Mode.ROOT
-                    ? new ArrayList<>(unmatched.subList(0, Math.max(0, unmatched.size() - 3)))
+                    ? new ArrayList<>(unmatched.subList(0, Math.max(0, unmatched.size() - added.size())))
                     : unmatched;
             Set<Tree> gone = Collections.newSetFromMap(new IdentityHashMap<>());
             for (Tree member : stock.getMembers()) {
@@ -674,7 +736,7 @@ class HandleClassesTest {
             }
             removals(stock, gone);
             if (mode == Mode.ROOT) {
-                added(ours, unmatched, internalName);
+                added(ours, unmatched, added, internalName);
             } else {
                 for (Tree member : unmatched) {
                     violations.add(internalName + " is verbatim and gains "
@@ -750,7 +812,11 @@ class HandleClassesTest {
                 }
                 case MethodTree method -> {
                     Optional<MethodModel> visible = visibleMethod(root.android, keyOf(method));
-                    if (visible.isPresent() && !namesAbsentType(visible.get())) {
+                    if (visible.isEmpty()) {
+                        hiddenOverride(method, root, internalName);
+                    }
+                    if (visible.isPresent() && !namesAbsentType(visible.get()) && upperOf(root.android, visible.get())
+                            .map(upper -> !namesAbsentType(upper)).orElse(true)) {
                         violations.add(internalName + " loses " + what
                                 + ", which android.jar declares and the emulation can name");
                     } else if (visible.isEmpty() && !method.getName().contentEquals("<init>")
@@ -761,8 +827,9 @@ class HandleClassesTest {
                     }
                 }
                 case ClassTree type -> {
+                    String nested = internalName + "$" + type.getSimpleName();
                     if (type.getKind() == Tree.Kind.ANNOTATION_TYPE
-                            || isVisibleNested(root.android, internalName + "$" + type.getSimpleName())) {
+                            || isVisibleNested(root.android, nested) && VERDICTS.containsKey(nested)) {
                         violations.add(internalName + " loses the nested type " + what);
                     }
                 }
@@ -905,6 +972,9 @@ class HandleClassesTest {
                             + ", a constructor the transform never keeps");
                     return;
                 }
+                if (root != null) {
+                    hiddenOverride(method, root, internalName);
+                }
                 boolean stub = root != null && isStub(ours);
                 if (root != null) {
                     hiddenMethods.add(new HiddenMethod(method, ours, root, stub));
@@ -912,12 +982,19 @@ class HandleClassesTest {
                 if (stub && body != null) {
                     sourceEdits.add(new Edit(source.start(body), source.end(body), "{}"));
                     handleEdits.add(new Edit(handle.start(replacement), handle.end(replacement), "{}"));
+                } else if (stub && isAbstract(method)) {
+                    abstractReplaced(method, ours, internalName);
                 } else if (body != null) {
                     removeAbsentAnnotations(body, internalName);
                 }
                 return;
             }
-            if (body == null || replacement == null) {
+            if (method.getName().contentEquals("<init>")) {
+                keptConstructor(method, ours, visible.get(), internalName, root);
+                return;
+            }
+            boolean abstracted = body == null && replacement != null && isAbstract(method);
+            if (!abstracted && (body == null || replacement == null)) {
                 violations.add(internalName + " " + keyOf(method) + " has no body to replace");
                 return;
             }
@@ -927,23 +1004,132 @@ class HandleClassesTest {
                 violations.add(internalName + " " + keyOf(method) + " has the body " + actual
                         + ", where the generator writes " + expected);
             }
+            if (abstracted) {
+                abstractReplaced(method, ours, internalName);
+                return;
+            }
             sourceEdits.add(new Edit(source.start(body), source.end(body), "{}"));
             handleEdits.add(new Edit(handle.start(replacement), handle.end(replacement), "{}"));
+        }
+
+        private void keptConstructor(MethodTree method, MethodTree ours, MethodModel target, String internalName,
+                RootClass root) {
+            List<String> expected = new ArrayList<>();
+            List<? extends StatementTree> statements = method.getBody().getStatements();
+            if (!statements.isEmpty() && isExplicitCall(statements.getFirst())) {
+                expected.add(collapsed(statements.getFirst()));
+            }
+            expected.addAll(bodyOf(method, target, root));
+            List<String> actual = ours.getBody().getStatements().stream().map(Check::collapsed).toList();
+            if (!actual.equals(expected)) {
+                violations.add(internalName + " " + keyOf(method) + " has the body " + actual
+                        + ", where the generator writes " + expected);
+            }
+            sourceEdits.add(new Edit(source.start(method.getBody()), source.end(method.getBody()), "{}"));
+            handleEdits.add(new Edit(handle.start(ours.getBody()), handle.end(ours.getBody()), "{}"));
+        }
+
+        private static boolean isExplicitCall(StatementTree statement) {
+            return statement instanceof ExpressionStatementTree expression
+                    && expression.getExpression() instanceof MethodInvocationTree call
+                    && call.getMethodSelect() instanceof IdentifierTree callee
+                    && (callee.getName().contentEquals("super") || callee.getName().contentEquals("this"));
+        }
+
+        private List<ClassModel> uppersOf(ClassModel android) {
+            List<ClassModel> chain = new ArrayList<>();
+            ClassModel model = android;
+            while (true) {
+                Optional<String> superclass = model.superclass().map(ClassEntry::asInternalName);
+                if (superclass.isEmpty() || !HANDLE.equals(VERDICTS.get(superclass.get()))) {
+                    return chain;
+                }
+                model = androidModel(superclass.get());
+                if (model == null) {
+                    violations.add(superclass.get() + " is a root android.jar lacks");
+                    return chain;
+                }
+                chain.addFirst(model);
+            }
+        }
+
+        private void hiddenOverride(MethodTree method, RootClass root, String internalName) {
+            if (method.getName().contentEquals("<init>")) {
+                return;
+            }
+            List<ClassModel> uppers = uppersOf(root.android);
+            for (ClassModel upper : uppers.reversed()) {
+                if (upper.methods().stream().filter(Check::isDeclared)
+                        .anyMatch(declared -> androidKeyOf(upper, declared).equals(keyOf(method)))) {
+                    violations.add(internalName + " " + keyOf(method) + " is hidden and overrides what "
+                            + upper.thisClass().asInternalName() + " declares");
+                    return;
+                }
+            }
+        }
+
+        private Optional<MethodModel> upperOf(ClassModel android, MethodModel target) {
+            if (target.methodName().equalsString("<init>")) {
+                return Optional.empty();
+            }
+            for (ClassModel upper : uppersOf(android)) {
+                Optional<MethodModel> declared = upper.methods().stream().filter(Check::isDeclared)
+                        .filter(method -> method.methodName().equalsString(target.methodName().stringValue())
+                                && method.methodTypeSymbol().equals(target.methodTypeSymbol()))
+                        .findFirst();
+                if (declared.isPresent()) {
+                    return declared;
+                }
+            }
+            return Optional.empty();
+        }
+
+        private int sinceOf(ClassModel android, MethodModel target) {
+            String key = target.methodName().stringValue() + target.methodTypeSymbol().descriptorString();
+            Levels levels = LEVELS.get(android.thisClass().asInternalName());
+            return levels == null ? MIN_API : levels.sinceOf(key, declaringInterfaceOf(android, target, levels));
+        }
+
+        private static boolean isAbstract(MethodTree method) {
+            return method.getBody() == null && method.getModifiers().getFlags().contains(Modifier.ABSTRACT);
+        }
+
+        private void abstractReplaced(MethodTree method, MethodTree ours, String internalName) {
+            if (ours.getModifiers().getFlags().contains(Modifier.ABSTRACT)) {
+                violations.add(internalName + " " + keyOf(method) + " keeps abstract and has a body");
+            }
+            StringBuilder masked = new StringBuilder(source.textOf(method.getModifiers()));
+            int start = source.start(method.getModifiers());
+            for (AnnotationTree annotation : method.getModifiers().getAnnotations()) {
+                for (int at = source.start(annotation); at < source.end(annotation); at++) {
+                    masked.setCharAt(at - start, ' ');
+                }
+            }
+            Matcher keyword = Pattern.compile("\\babstract\\b").matcher(masked);
+            int end = start + (keyword.find() ? keyword.end() : 0);
+            if (end == start || source.text.charAt(end) != ' ') {
+                violations.add(internalName + " " + keyOf(method) + " has no abstract keyword followed by a space");
+                return;
+            }
+            int semicolon = source.end(method) - 1;
+            sourceEdits.add(new Edit(start + keyword.start(), end + 1, ""));
+            sourceEdits.add(new Edit(semicolon, semicolon + 1, " {}"));
+            handleEdits.add(new Edit(handle.start(ours.getBody()), handle.end(ours.getBody()), "{}"));
         }
 
         private List<String> bodyOf(MethodTree method, MethodModel target, RootClass root) {
             String key = target.methodName().stringValue() + target.methodTypeSymbol().descriptorString();
             String message = "\"" + key + "\"";
             List<String> statements = new ArrayList<>();
-            Levels levels = LEVELS.get(root.internalName);
-            int since = levels == null
-                    ? MIN_API
-                    : levels.sinceOf(key, declaringInterfaceOf(root.android, target, levels));
+            Optional<MethodModel> upper = upperOf(root.android, target);
+            MethodModel wired = upper.orElse(target);
+            ClassModel owner = upper.isPresent() ? upper.get().parent().orElseThrow() : root.android;
+            int since = sinceOf(owner, wired);
             if (since > MIN_API) {
                 statements.add(
                         "if (Build.VERSION.SDK_INT < " + since + ") { throw new NoSuchMethodError(" + message + "); }");
             }
-            String endPoint = endPointOf(root.android, target);
+            String endPoint = endPointOf(owner, wired);
             if (endPoint == null) {
                 statements.add("throw new UnsupportedOperationException(" + message + ");");
                 return statements;
@@ -953,8 +1139,8 @@ class HandleClassesTest {
                 arguments.add(parameter.getName().toString());
             }
             arguments.addFirst("this");
-            String binding = root.internalName.substring(root.internalName.lastIndexOf('/') + 1).replace("$", "")
-                    + "Binding";
+            String ownerName = owner.thisClass().asInternalName();
+            String binding = ownerName.substring(ownerName.lastIndexOf('/') + 1).replace("$", "") + "Binding";
             String result = target.methodTypeSymbol().returnType().descriptorString().equals("V") ? "" : "return ";
             statements.add(result + binding + "." + endPoint + "(" + String.join(", ", arguments) + ");");
             return statements;
@@ -1016,7 +1202,8 @@ class HandleClassesTest {
             String name = target.methodName().stringValue();
             List<String> overloads = android.methods().stream().filter(Check::isDeclared)
                     .filter(method -> method.methodName().equalsString(name))
-                    .filter(method -> !namesAbsentType(method) && isShaped(method))
+                    .filter(method -> !namesAbsentType(method) && isShaped(method)
+                            && upperOf(android, method).isEmpty())
                     .map(method -> method.methodTypeSymbol().descriptorString()).sorted(Comparator.naturalOrder())
                     .toList();
             int index = overloads.indexOf(target.methodTypeSymbol().descriptorString());
@@ -1026,24 +1213,14 @@ class HandleClassesTest {
         private boolean isShaped(MethodModel method) {
             Set<AccessFlag> flags = method.flags().flags();
             MethodTypeDesc type = method.methodTypeSymbol();
-            if (method.methodName().equalsString("<init>") || flags.contains(AccessFlag.STATIC)
-                    || !flags.contains(AccessFlag.PUBLIC) || !isCrossed(type.returnType(), true)
-                    || !type.parameterList().stream().allMatch(parameter -> isCrossed(parameter, false))) {
-                return false;
-            }
-            long texts = type.parameterList().stream().filter(ConstantDescs.CD_String::equals).count();
-            boolean primitive = type.returnType().isPrimitive() && !type.returnType().equals(ConstantDescs.CD_void);
-            if (texts > 1 || texts == 1 && !primitive) {
-                String violation = method.methodName().stringValue() + type.descriptorString()
-                        + (texts > 1
-                                ? " has more than one String parameter"
-                                : " has a String parameter and a result that is no primitive");
-                if (!violations.contains(violation)) {
-                    violations.add(violation);
-                }
-                return false;
-            }
-            return true;
+            return !method.methodName().equalsString("<init>") && !flags.contains(AccessFlag.STATIC)
+                    && flags.contains(AccessFlag.PUBLIC) && !isGeneric(method) && isCrossed(type.returnType(), true)
+                    && type.parameterList().stream().allMatch(parameter -> isCrossed(parameter, false));
+        }
+
+        private static boolean isGeneric(MethodModel method) {
+            return method.findAttribute(Attributes.signature())
+                    .map(attribute -> !attribute.asMethodSignature().typeParameters().isEmpty()).orElse(false);
         }
 
         private boolean isCrossed(ClassDesc type, boolean isResult) {
@@ -1056,7 +1233,7 @@ class HandleClassesTest {
             if (type.isArray()) {
                 return isResult && ARRAY_ELEMENTS.contains(type.componentType());
             }
-            return isResult && HANDLE.equals(VERDICTS.get(internalNameOf(type)));
+            return HANDLE.equals(VERDICTS.get(internalNameOf(type)));
         }
 
         private static String collapsed(Tree tree) {
@@ -1329,19 +1506,44 @@ class HandleClassesTest {
                     || type.toString().equals("java.lang.String");
         }
 
-        private void added(ClassTree ours, List<Tree> unmatched, String internalName) {
+        private List<String> addedOf(ClassTree stock, ClassTree ours, ClassModel android) {
             String simpleName = ours.getSimpleName().toString();
-            List<String> expected = List.of(
-                    "@Added(reason = \"the id of the ART object this handle forwards to\") private final long id;",
-                    "@Added(reason = \"the handle of the ART object received under its id\") public " + simpleName
-                            + "(long id) { this.id = id; }",
-                    "@Added(reason = \"the id this handle crosses to ART as\") @Override public long foreignId() { "
+            Set<String> spelled = new HashSet<>();
+            for (Tree member : stock.getMembers()) {
+                if (member instanceof MethodTree method && method.getName().contentEquals("<init>")) {
+                    spelled.add(keyOf(method));
+                }
+            }
+            List<String> added = new ArrayList<>();
+            added.add("@Added(reason = \"the id of the ART object this handle forwards to\") private final long id;");
+            for (MethodModel constructor : android.methods()) {
+                if (isDeclared(constructor) && constructor.methodName().equalsString("<init>")
+                        && !spelled.contains(androidKeyOf(android, constructor))) {
+                    added.add("@Added(reason = \"the public constructor android.jar declares\") public " + simpleName
+                            + "() { throw new UnsupportedOperationException(\"<init>"
+                            + constructor.methodType().stringValue() + "\"); }");
+                }
+            }
+            if (!uppersOf(android).isEmpty()) {
+                added.removeFirst();
+                added.add("@Added(reason = \"the handle of the ART object received under its id\") public " + simpleName
+                        + "(long id) { super(id); }");
+                return added;
+            }
+            added.add("@Added(reason = \"the handle of the ART object received under its id\") public " + simpleName
+                    + "(long id) { this.id = id; }");
+            added.add(
+                    "@Added(reason = \"the id this handle crosses to ART as\") @Override public final long foreignId() { "
                             + "return id; }");
+            return added;
+        }
+
+        private void added(ClassTree ours, List<Tree> unmatched, List<String> expected, String internalName) {
             List<? extends Tree> members = ours.getMembers();
-            List<? extends Tree> last = members.subList(Math.max(0, members.size() - 3), members.size());
+            List<? extends Tree> last = members.subList(Math.max(0, members.size() - expected.size()), members.size());
             if (!last.equals(unmatched)) {
-                violations.add(internalName + " gains members other than the three added ones at its end: "
-                        + unmatched.stream().map(this::describeOurs).toList());
+                violations.add(internalName + " gains members other than the " + expected.size()
+                        + " added ones at its end: " + unmatched.stream().map(this::describeOurs).toList());
                 return;
             }
             for (int i = 0; i < last.size(); i++) {
@@ -1349,7 +1551,7 @@ class HandleClassesTest {
                 if (!text.equals(expected.get(i))) {
                     violations.add(internalName + " has an added member of another shape: " + text);
                 }
-                int index = members.size() - 3 + i;
+                int index = members.size() - expected.size() + i;
                 handleEdits.add(handle.regionOf(ours, index, index));
             }
         }
@@ -1485,6 +1687,11 @@ class HandleClassesTest {
                     base = type;
                 } else if (handleClasses.containsKey(type + "$" + first)) {
                     base = type + "$" + first;
+                }
+            }
+            for (int i = 0; i < uppers.size() && base == null; i++) {
+                if (exists(uppers.get(i) + "$" + first)) {
+                    base = uppers.get(i) + "$" + first;
                 }
             }
             if (base == null) {

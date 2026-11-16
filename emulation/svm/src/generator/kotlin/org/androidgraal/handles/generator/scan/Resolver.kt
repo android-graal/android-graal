@@ -32,9 +32,11 @@ internal class Resolver(
     val top: Scope,
     private val declarations: Declarations,
     private val removed: Set<Tree>,
+    private val inherited: Map<String, String>,
 ) {
     private val scopes: Map<ClassTree, Scope> = scopesOf(top).associateBy { it.type }
     private val kept: Set<String> = scopes.values.map { it.internalName }.toSet()
+    private val inheritedTypes: Set<String> = inherited.values.toSet()
     private val packagePath = top.internalName.substringBeforeLast('/')
 
     val presentImports: List<ImportTree> = unit.imports.filter(::isPresentImport)
@@ -135,7 +137,7 @@ internal class Resolver(
     private fun typeOf(segments: List<String>, context: Scope): String? {
         val outermost = outermostOf(segments.first(), context) ?: return typeOfQualified(segments)
         val type = (listOf(outermost) + segments.drop(1)).joinToString("$")
-        if (segments.size > 1 && type !in kept && !classpath.has(type)) {
+        if (segments.size > 1 && type !in kept && type !in inheritedTypes && !classpath.has(type)) {
             fail(
                 "${top.internalName} names ${segments.joinToString(".")}, a nested class the handle does not keep " +
                     "and the emulation lacks, $UNWRITTEN",
@@ -146,6 +148,7 @@ internal class Resolver(
 
     private fun outermostOf(name: String, context: Scope): String? {
         return localOf(name, context)
+            ?: inherited[name]
             ?: importedOf(name)
             ?: "$packagePath/$name".takeIf(classpath::has)
             ?: "java/lang/$name".takeIf(classpath::has)
@@ -167,7 +170,7 @@ internal class Resolver(
     private fun typeOfQualified(segments: List<String>): String? {
         for (split in segments.size - 1 downTo 1) {
             val name = segments.take(split).joinToString("/") + "/" + segments.drop(split).joinToString("$")
-            if (classpath.has(name)) return name
+            if (name in inheritedTypes || classpath.has(name)) return name
         }
         return null
     }

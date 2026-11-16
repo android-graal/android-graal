@@ -1,5 +1,7 @@
 package org.androidgraal.handles.generator.model
 
+import com.palantir.javapoet.ClassName
+
 internal sealed interface Fate
 
 internal sealed interface FieldFate : Fate
@@ -20,6 +22,11 @@ internal object Kept : FieldFate, TypeFate
 internal object KeptCreator : FieldFate
 
 internal class Forwarded(override val method: Method, override val level: Int?, val wire: Wire) : Declared {
+    override val note: String? = null
+}
+
+internal class Inherited(override val method: Method, override val level: Int?, val wire: Wire, val owner: ClassName) :
+    Declared {
     override val note: String? = null
 }
 

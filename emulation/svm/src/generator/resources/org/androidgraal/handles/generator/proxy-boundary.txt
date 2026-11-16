@@ -3,3 +3,6 @@ android.view.Display$Mode value
 android.view.Display$HdrCapabilities value
 android.content.res.TypedArray handle
 android.hardware.OverlayProperties handle
+android.content.Context handle
+android.content.ContextWrapper handle
+android.view.ContextThemeWrapper handle

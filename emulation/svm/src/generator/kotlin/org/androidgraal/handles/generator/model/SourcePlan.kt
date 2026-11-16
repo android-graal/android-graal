@@ -3,6 +3,7 @@ package org.androidgraal.handles.generator.model
 import com.sun.source.tree.AnnotationTree
 import com.sun.source.tree.ClassTree
 import com.sun.source.tree.ImportTree
+import com.sun.source.tree.MethodInvocationTree
 import com.sun.source.tree.MethodTree
 import com.sun.source.tree.Tree
 import com.sun.source.tree.VariableTree
@@ -31,6 +32,8 @@ internal class SourcePlan(
     val type: ClassTree,
     val fates: Fates,
     val createFromParcel: MethodTree?,
+    val addedConstructors: List<Method>,
+    val constructorCalls: Map<MethodTree, MethodInvocationTree>,
     val removedImports: Set<ImportTree>,
     val addsBuild: Boolean,
     val javaImport: ImportTree?,

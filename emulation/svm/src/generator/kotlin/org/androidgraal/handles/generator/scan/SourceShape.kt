@@ -12,7 +12,7 @@ import org.androidgraal.handles.generator.model.UNWRITTEN
 import org.androidgraal.handles.generator.model.fail
 import javax.lang.model.element.Modifier
 
-private val CHECKED = setOf(Modifier.PUBLIC, Modifier.FINAL)
+private val CHECKED = setOf(Modifier.PUBLIC, Modifier.ABSTRACT, Modifier.FINAL)
 
 private const val BUILD = "android.os.Build"
 
@@ -22,6 +22,8 @@ private val JAVA = Regex("javax?\\..*")
 
 internal class SourceShape(private val root: Root, private val source: SourceFile) {
     private val name = root.internalName
+
+    private val generic = root.declared.filter { it.method.isGeneric }.map { it.method.sourceKey }.toSet()
 
     fun type(): ClassTree {
         checkText()
@@ -88,8 +90,12 @@ internal class SourceShape(private val root: Root, private val source: SourceFil
         if (declared != root.modifiers) {
             fail("$name's source declares $declared where android.jar declares ${root.modifiers}")
         }
-        if (type.typeParameters.isNotEmpty() || type.extendsClause != null) {
-            fail("$name's source declares a type parameter or a superclass android.jar lacks, $UNWRITTEN")
+        if (type.typeParameters.isNotEmpty()) fail("$name's source declares a type parameter, $UNWRITTEN")
+        val extended = type.extendsClause?.toString()?.substringAfterLast('.')
+        if (extended != root.superclass?.name?.simpleName()) {
+            fail(
+                "$name's source extends $extended where android.jar declares ${root.superclass?.internalName}, $UNWRITTEN",
+            )
         }
         val implemented = type.implementsClause.map { it.toString().substringAfterLast('.') }
         if (implemented != root.interfaces.map { it.substringAfterLast('/') }) {
@@ -116,9 +122,12 @@ internal class SourceShape(private val root: Root, private val source: SourceFil
 
     private fun checkMethod(method: MethodTree) {
         val key = sourceKeyOf(name, method)
-        if (method.typeParameters.isNotEmpty()) fail("$name $key is generic in the SDK source, $UNWRITTEN")
-        if (method.body == null && Modifier.NATIVE !in method.modifiers.flags) {
-            fail("$name $key has no body in the SDK source and is not native, $UNWRITTEN")
+        if (method.typeParameters.isNotEmpty() && key !in generic) {
+            fail("$name $key is generic in the SDK source and android.jar does not declare it, $UNWRITTEN")
+        }
+        val flags = method.modifiers.flags
+        if (method.body == null && Modifier.NATIVE !in flags && Modifier.ABSTRACT !in flags) {
+            fail("$name $key has no body in the SDK source and is neither native nor abstract, $UNWRITTEN")
         }
     }
 }

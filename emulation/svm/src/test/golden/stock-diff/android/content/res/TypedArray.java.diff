@@ -1180,7 +1180,7 @@
      @Override
 -    public String toString() {
 -        return Arrays.toString(mData);
-+    public long foreignId() {
++    public final long foreignId() {
 +        return id;
      }
  }

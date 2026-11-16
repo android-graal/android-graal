@@ -50,8 +50,10 @@ internal class ArtSources(model: HandleModel) : Sources(model) {
 
     private fun endPointOf(root: Root, forwarded: Forwarded): MethodSpec {
         val wire = forwarded.wire
+        val texts = wire.parameters.indices.filter { wire.parameters[it] == TextKind }
+        val names = BlockNames(texts)
         val arguments = wire.parameters.withIndex()
-            .joinToString(", ") { (index, kind) -> if (kind == TextKind) "v$index" else "a$index" }
+            .joinToString(", ") { (index, kind) -> if (kind is PrimitiveKind) "a$index" else "v$index" }
         val call = CodeBlock.of("receiver.\$N($arguments)", forwarded.method.name)
         val spec = MethodSpec.methodBuilder(wire.endPoint)
             .addAnnotation(JavaNames.END_POINT)
@@ -61,25 +63,35 @@ internal class ArtSources(model: HandleModel) : Sources(model) {
         wire.parameters.forEachIndexed { index, kind ->
             when (kind) {
                 is PrimitiveKind -> spec.addParameter(kind.type, "a$index")
-                TextKind -> spec.addParameter(TypeName.LONG, "transport").addParameter(TypeName.INT, "bytes")
+
+                TextKind -> spec.addParameter(TypeName.LONG, names.transport(index))
+                    .addParameter(TypeName.INT, names.bytes(index))
+
+                is HandleKind -> spec.addParameter(TypeName.LONG, "h$index")
             }
         }
         spec.beginControlFlow("try")
-        val text = wire.parameters.indexOf(TextKind)
-        if (text >= 0) {
-            spec.addStatement("\$T thread = \$T.thread()", JavaNames.IMAGE_THREAD, JavaNames.IMAGE)
+        if (texts.isNotEmpty()) threadOf(spec)
+        for (text in texts) {
+            val view = names.view(text)
+            val transport = names.transport(text)
+            spec.addStatement(
+                "\$T $view = $transport == 0 ? null : \$T.view(thread, $transport, ${names.bytes(text)})",
+                JavaNames.BYTE_BUFFER,
+                JavaNames.ART_TRANSPORT,
+            )
                 .addStatement(
-                    "\$T view = transport == 0 ? null : \$T.view(thread, transport, bytes)",
-                    JavaNames.BYTE_BUFFER,
-                    JavaNames.ART_TRANSPORT,
-                )
-                .addStatement(
-                    "String v$text = view == null ? null : \$T.readStringBlock(view, 0)",
+                    "String v$text = $view == null ? null : \$T.readStringBlock($view, 0)",
                     JavaNames.ART_TRANSPORT,
                 )
         }
+        wire.parameters.forEachIndexed { index, kind ->
+            if (kind is HandleKind) spec.addStatement("\$T v$index = HANDLES.receive(h$index, null)", kind.type)
+        }
         spec.addStatement("\$T receiver = HANDLES.object(handle)", root.name)
-        when (val result = wire.result) {
+        val result = wire.result
+        if (texts.isEmpty() && (result == TextKind || result is ArrayKind)) threadOf(spec)
+        when (result) {
             is PrimitiveKind -> spec.addStatement("return \$L", call)
 
             VoidKind -> spec.addStatement("\$L", call)
@@ -112,9 +124,12 @@ internal class ArtSources(model: HandleModel) : Sources(model) {
         return spec.endControlFlow().build()
     }
 
+    private fun threadOf(spec: MethodSpec.Builder) {
+        spec.addStatement("\$T thread = \$T.thread()", JavaNames.IMAGE_THREAD, JavaNames.IMAGE)
+    }
+
     private fun blockOf(spec: MethodSpec.Builder, type: TypeName, call: CodeBlock): MethodSpec.Builder {
-        return spec.addStatement("\$T thread = \$T.thread()", JavaNames.IMAGE_THREAD, JavaNames.IMAGE)
-            .addStatement("\$T result = \$L", type, call)
+        return spec.addStatement("\$T result = \$L", type, call)
             .beginControlFlow("if (result == null)")
             .addStatement("return null")
             .endControlFlow()

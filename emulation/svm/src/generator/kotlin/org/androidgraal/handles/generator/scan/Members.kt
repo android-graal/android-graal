@@ -1,6 +1,9 @@
 package org.androidgraal.handles.generator.scan
 
 import com.sun.source.tree.ClassTree
+import com.sun.source.tree.ExpressionStatementTree
+import com.sun.source.tree.IdentifierTree
+import com.sun.source.tree.MethodInvocationTree
 import com.sun.source.tree.MethodTree
 import com.sun.source.tree.PrimitiveTypeTree
 import com.sun.source.tree.Tree
@@ -11,6 +14,7 @@ import org.androidgraal.handles.generator.model.Fates
 import org.androidgraal.handles.generator.model.FieldFate
 import org.androidgraal.handles.generator.model.Kept
 import org.androidgraal.handles.generator.model.KeptCreator
+import org.androidgraal.handles.generator.model.Method
 import org.androidgraal.handles.generator.model.MethodFate
 import org.androidgraal.handles.generator.model.Removed
 import org.androidgraal.handles.generator.model.Root
@@ -19,6 +23,7 @@ import org.androidgraal.handles.generator.model.SourcePlan
 import org.androidgraal.handles.generator.model.Stubbed
 import org.androidgraal.handles.generator.model.TypeFate
 import org.androidgraal.handles.generator.model.UNWRITTEN
+import org.androidgraal.handles.generator.model.Unsupported
 import org.androidgraal.handles.generator.model.Verbatim
 import org.androidgraal.handles.generator.model.fail
 import java.io.File
@@ -27,7 +32,15 @@ import javax.tools.ToolProvider
 
 private val CONSTANT = setOf(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
 
+private const val INIT = "<init>"
+
+private const val SUPER = "super"
+
+private val EXPLICIT_CALLS = setOf(SUPER, "this")
+
 internal class Members(private val sources: File, private val classpath: Classpath) {
+    private val nested = HashMap<String, List<String>>()
+
     fun planOf(root: Root): SourcePlan {
         val source = sourceFileOf(sources.resolve("${root.internalName}.java"))
         val shape = SourceShape(root, source)
@@ -45,20 +58,28 @@ internal class Members(private val sources: File, private val classpath: Classpa
             top = Scope(type, root.internalName, null),
             declarations = declarations,
             removed = Fates(fields, settled, types).removed,
+            inherited = inheritedTypesOf(root),
         )
         val hidden = hiddenOf(declarations.methods.filter { it !in settled }, resolver)
         val fates = Fates(fields, settled + hidden, types)
         checkKeptTexts(root, fates, declarations, resolver, createFromParcel?.body)
         checkCreator(root, fates, resolver, createFromParcel?.body)
         checkConstants(root, fates, resolver)
+        val constructorCalls = constructorCallsOf(fates)
+        checkConstructorCalls(root, fates, resolver, constructorCalls)
+        val addedConstructors = addedConstructorsOf(root, declarations)
+        checkConstructorTargets(root, fates, constructorCalls, addedConstructors)
         val removedAnnotations = absentAnnotationsOf(type, fates, resolver, createFromParcel?.body)
         shape.checkRemoved(removedAnnotations)
+        nested[root.internalName] = fates.nested.map { it.simpleName.toString() }
         return SourcePlan(
             root = root,
             source = source,
             type = type,
             fates = fates,
             createFromParcel = createFromParcel,
+            addedConstructors = addedConstructors,
+            constructorCalls = constructorCalls,
             removedImports = resolver.absentImports,
             addsBuild = shape.addsBuildOf(type, resolver.presentImports),
             javaImport = shape.javaImportOf(resolver.presentImports),
@@ -66,6 +87,15 @@ internal class Members(private val sources: File, private val classpath: Classpa
             removedAnnotations = removedAnnotations,
             notes = notesOf(root, fates),
         )
+    }
+
+    private fun inheritedTypesOf(root: Root): Map<String, String> {
+        val types = LinkedHashMap<String, String>()
+        for (upper in generateSequence(root.superclass) { it.superclass }) {
+            val kept = nested[upper.internalName] ?: fail("${upper.internalName} is planned after ${root.internalName}")
+            kept.forEach { types.putIfAbsent(it, "${upper.internalName}$$it") }
+        }
+        return types
     }
 
     private fun checkDeclared(root: Root, declarations: Declarations) {
@@ -102,16 +132,97 @@ internal class Members(private val sources: File, private val classpath: Classpa
         if (absent != null) fail("$name ${absent.key} has no declaration in the SDK source")
         val fates: Map<String, MethodFate> = root.declared.associateBy { it.method.sourceKey } +
             root.lacking.associate { it.sourceKey to Removed.LACKING_TYPE }
+        val constructors = root.constructors.associateBy { it.sourceKey }
         return methods.zip(keys).mapNotNull { (method, key) ->
             val native = Modifier.NATIVE in method.modifiers.flags
             if (native && key in fates) fail("$name $key is native and android.jar declares it, $UNWRITTEN")
-            val fate = fates[key] ?: when {
-                method.name.contentEquals("<init>") -> Removed.NOT_KEPT
-                native -> Removed.NATIVE
-                else -> null
+            val fate = fates[key] ?: constructors[key]?.let { Unsupported(it, null) } ?: when {
+                method.name.contentEquals(INIT) -> Removed.NOT_KEPT
+                else -> hiddenFateOf(root, key, native)
             }
             fate?.let { method to it }
         }.toMap()
+    }
+
+    private fun hiddenFateOf(root: Root, key: String, native: Boolean): MethodFate? {
+        val upper = generateSequence(root.superclass) { it.superclass }.firstOrNull { upper ->
+            upper.declared.any { it.method.sourceKey == key } || upper.lacking.any { it.sourceKey == key }
+        }
+        if (upper != null) {
+            fail("${root.internalName} $key is hidden and overrides what ${upper.internalName} declares, $UNWRITTEN")
+        }
+        return if (native) Removed.NATIVE else null
+    }
+
+    private fun addedConstructorsOf(root: Root, declarations: Declarations): List<Method> {
+        val spelled = declarations.methods.filter { it.name.contentEquals(INIT) }
+            .map { sourceKeyOf(root.internalName, it) }
+        val added = root.constructors.filter { it.sourceKey !in spelled }
+        val parameters = added.firstOrNull { it.type.parameterCount() > 0 }
+        if (parameters != null) {
+            fail(
+                "${root.internalName} ${parameters.key} has parameters and the SDK source does not spell it, $UNWRITTEN",
+            )
+        }
+        return added
+    }
+
+    private fun constructorCallsOf(fates: Fates): Map<MethodTree, MethodInvocationTree> {
+        return fates.methods.filter { (method, fate) -> fate is Unsupported && method.name.contentEquals(INIT) }
+            .keys.mapNotNull { method ->
+                val first = method.body.statements.firstOrNull() as? ExpressionStatementTree
+                val call = first?.expression as? MethodInvocationTree
+                val callee = call?.methodSelect as? IdentifierTree
+                if (callee != null && callee.name.toString() in EXPLICIT_CALLS) method to call else null
+            }.toMap()
+    }
+
+    private fun checkConstructorCalls(
+        root: Root,
+        fates: Fates,
+        resolver: Resolver,
+        calls: Map<MethodTree, MethodInvocationTree>,
+    ) {
+        val gone = fates.removed + fates.methods.filterValues { it == Stubbed }.keys
+        for ((method, call) in calls) {
+            val references = References(null)
+            references.scan(method.parameters, null)
+            references.scan(call.arguments, null)
+            val name = resolver.unresolvedOf(references, gone) ?: continue
+            fail(
+                "${root.internalName} ${sourceKeyOf(root.internalName, method)} calls a constructor with $name, " +
+                    "which the handle cuts or the emulation lacks, $UNWRITTEN",
+            )
+        }
+    }
+
+    private fun checkConstructorTargets(
+        root: Root,
+        fates: Fates,
+        calls: Map<MethodTree, MethodInvocationTree>,
+        added: List<Method>,
+    ) {
+        val name = root.internalName
+        val upper = root.superclass?.internalName ?: OBJECT
+        val upperArities = root.superclass?.constructors?.map { it.type.parameterCount() }?.toSet() ?: setOf(0)
+        val ownArities = root.constructors.map { it.type.parameterCount() }.toSet()
+        val spelled = fates.methods.filter { (method, fate) -> fate is Unsupported && method.name.contentEquals(INIT) }
+        for (method in spelled.keys) {
+            val call = calls[method]
+            val callee = (call?.methodSelect as? IdentifierTree)?.name?.toString() ?: SUPER
+            val arity = call?.arguments?.size ?: 0
+            val (target, arities) = if (callee == SUPER) upper to upperArities else name to ownArities
+            if (arity in arities) continue
+            val how = if (call == null) "calls $SUPER of arity 0 implicitly" else "calls $callee of arity $arity"
+            fail("$name ${sourceKeyOf(name, method)} $how where $target keeps no constructor of that arity, $UNWRITTEN")
+        }
+        val implicit = added.firstOrNull() ?: return
+        if (0 !in upperArities) {
+            fail(
+                "$name ${implicit.key} is added and calls $SUPER of arity 0 implicitly where $upper keeps no " +
+                    "constructor of that arity, $UNWRITTEN",
+            )
+        }
     }
 
     private fun checkUnique(name: String, keys: List<String>, input: String) {
@@ -121,7 +232,7 @@ internal class Members(private val sources: File, private val classpath: Classpa
 
     private fun hiddenOf(methods: List<MethodTree>, resolver: Resolver): Map<MethodTree, MethodFate> {
         val (headed, lacking) = methods.partition(resolver::isPresentHead)
-        val stubbed = LinkedHashSet<MethodTree>()
+        val stubbed = LinkedHashSet(headed.filter { Modifier.ABSTRACT in it.modifiers.flags })
         do {
             val gone = lacking.toSet() + stubbed
             val unresolved = headed.filter { it !in stubbed && !resolver.isResolvedBody(it, gone) }
@@ -133,10 +244,11 @@ internal class Members(private val sources: File, private val classpath: Classpa
 
     private fun notesOf(root: Root, fates: Fates): List<String> {
         val lacking = root.lacking.associate { it.sourceKey to it.key }
-        return fates.methods.mapNotNull { (method, fate) ->
-            val key = sourceKeyOf(root.internalName, method)
-            fate.note?.let { "${root.internalName} ${lacking[key] ?: key} $it" }
-        }
+        return root.cut.map { "$it is nested in android.jar, the proxy boundary does not list it, it is cut" } +
+            fates.methods.mapNotNull { (method, fate) ->
+                val key = sourceKeyOf(root.internalName, method)
+                fate.note?.let { "${root.internalName} ${lacking[key] ?: key} $it" }
+            }
     }
 
     private fun checkKeptTexts(
@@ -150,7 +262,7 @@ internal class Members(private val sources: File, private val classpath: Classpa
         for (text in fates.nested + fates.constants + listOfNotNull(fates.creator) + fates.verbatim) {
             val references = referencesOf(text, replaced)
             if (resolver.constructsTop(references)) {
-                fail("${root.internalName} is constructed by text the handle keeps and its constructors are cut")
+                fail("${root.internalName} is constructed by text the handle keeps, $UNWRITTEN")
             }
             val names = references.used.filter { it !in references.declared } +
                 references.selected.filter { (qualifier, _) -> qualifier == top }.map { (_, name) -> name }

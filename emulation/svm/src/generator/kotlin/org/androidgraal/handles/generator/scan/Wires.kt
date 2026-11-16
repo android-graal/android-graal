@@ -9,10 +9,8 @@ import org.androidgraal.handles.generator.model.Method
 import org.androidgraal.handles.generator.model.ParameterKind
 import org.androidgraal.handles.generator.model.PrimitiveKind
 import org.androidgraal.handles.generator.model.TextKind
-import org.androidgraal.handles.generator.model.UNWRITTEN
 import org.androidgraal.handles.generator.model.VoidKind
 import org.androidgraal.handles.generator.model.Wire
-import org.androidgraal.handles.generator.model.fail
 import java.lang.constant.ClassDesc
 import java.lang.constant.ConstantDescs
 import java.lang.invoke.MethodHandles
@@ -26,20 +24,16 @@ private val ELEMENT_BYTES = mapOf(
     ConstantDescs.CD_double to 8,
 )
 
-internal fun wireOf(owner: String, method: Method, handles: List<String>): Wire? {
-    val parameters = method.type.parameterList().map { parameterOf(it) ?: return null }
+internal fun wireOf(method: Method, handles: List<String>): Wire? {
+    val parameters = method.type.parameterList().map { parameterOf(it, handles) ?: return null }
     val result = resultOf(method.type.returnType(), handles) ?: return null
-    val texts = parameters.count { it == TextKind }
-    if (texts > 1) fail("$owner ${method.key} has more than one String parameter, $UNWRITTEN")
-    if (texts == 1 && result !is PrimitiveKind) {
-        fail("$owner ${method.key} has a String parameter and a result that is no primitive, $UNWRITTEN")
-    }
     return Wire(method.name, result, parameters)
 }
 
-private fun parameterOf(type: ClassDesc): ParameterKind? = when {
+private fun parameterOf(type: ClassDesc, handles: List<String>): ParameterKind? = when {
     type.isPrimitive -> primitiveOf(type)
     type == ConstantDescs.CD_String -> TextKind
+    isHandle(type, handles) -> handleOf(type)
     else -> null
 }
 
@@ -48,9 +42,11 @@ private fun resultOf(type: ClassDesc, handles: List<String>): Kind? = when {
     type.isPrimitive -> primitiveOf(type)
     type == ConstantDescs.CD_String -> TextKind
     type.isArray -> ELEMENT_BYTES[type.componentType()]?.let { ArrayKind(typeNameOf(type.componentType()), it) }
-    isHandle(type, handles) -> HandleKind(ClassName.get(type.packageName(), type.displayName()))
+    isHandle(type, handles) -> handleOf(type)
     else -> null
 }
+
+private fun handleOf(type: ClassDesc): HandleKind = HandleKind(ClassName.get(type.packageName(), type.displayName()))
 
 private fun isHandle(type: ClassDesc, handles: List<String>): Boolean =
     type.isClassOrInterface && type.descriptorString().drop(1).dropLast(1) in handles

@@ -33,3 +33,15 @@ internal abstract class Sources(internal val model: HandleModel) {
 
     internal fun capitalized(type: TypeName): String = type.toString().replaceFirstChar(Char::uppercase)
 }
+
+internal class BlockNames(texts: List<Int>) {
+    private val isIndexed = texts.size > 1
+
+    fun transport(index: Int): String = nameOf("transport", index)
+
+    fun bytes(index: Int): String = nameOf("bytes", index)
+
+    fun view(index: Int): String = nameOf("view", index)
+
+    private fun nameOf(name: String, index: Int): String = if (isIndexed) "$name$index" else name
+}

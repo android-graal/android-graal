@@ -17,7 +17,9 @@ internal class ArrayKind(val component: TypeName, val elementBytes: Int) : Kind
 
 internal object VoidKind : Kind
 
-internal class HandleKind(val type: ClassName) : Kind
+internal class HandleKind(val type: ClassName) :
+    Kind,
+    ParameterKind
 
 internal class Wire(val endPoint: String, val result: Kind, val parameters: List<ParameterKind>) {
     val jniDescriptor: String = "(J" + parameters.joinToString("") { descriptorOf(it) } + ")" + when (result) {
@@ -33,4 +35,5 @@ internal class Wire(val endPoint: String, val result: Kind, val parameters: List
 private fun descriptorOf(parameter: ParameterKind): String = when (parameter) {
     is PrimitiveKind -> parameter.descriptor
     TextKind -> "JI"
+    is HandleKind -> "J"
 }
