@@ -359,7 +359,7 @@
       /**
       * Set the base theme for this context.  Note that this should be called
       * before any views are instantiated in the Context (for example before
-@@ -1075,7 +908,9 @@
+@@ -1075,22 +908,18 @@
       *
       * @param resid The style resource describing the theme.
       */
@@ -370,7 +370,10 @@
  
      /** @hide Needed for some internal implementation...  not public because
       * you can't assume this actually means anything. */
-@@ -1085,12 +920,6 @@
+     @UnsupportedAppUsage
+     public int getThemeResId() {
+-        return 0;
++        throw new UnsupportedOperationException("hidden on ART");
      }
  
      /**
@@ -470,7 +473,7 @@
      }
  
      /**
-@@ -1185,18 +1011,12 @@
+@@ -1185,39 +1011,22 @@
       * @return the attribution tag this context is for or {@code null} if this is the default.
       */
      public @Nullable String getAttributionTag() {
@@ -493,7 +496,11 @@
      // TODO moltmann: Remove
      /**
       * @removed
-@@ -1207,17 +1027,6 @@
+      */
+     @Deprecated
+     public @Nullable String getFeatureId() {
+-        return getAttributionTag();
++        throw new UnsupportedOperationException("hidden on ART");
      }
  
      /**
@@ -688,6 +695,15 @@
  
      /**
       * Returns the absolute path to the directory that is related to the crate on the filesystem.
+@@ -1475,7 +1326,7 @@
+     @NonNull
+     @TestApi
+     public File getCrateDir(@NonNull String crateId) {
+-        throw new RuntimeException("Not implemented. Must override in a subclass.");
++        throw new UnsupportedOperationException("hidden on ART");
+     }
+ 
+     /**
 @@ -1498,7 +1349,9 @@
       * @see #getDir
       * @see android.app.backup.BackupAgent
@@ -986,7 +1002,7 @@
  
      /**
       * @deprecated Use {@link android.app.WallpaperManager#clear
-@@ -2196,106 +2024,11 @@
+@@ -2196,2060 +2024,20 @@
       * {@link android.Manifest.permission#SET_WALLPAPER}.
       */
      @Deprecated
@@ -1095,8 +1111,11 @@
       * Identifies whether this Context instance will be able to process calls to
       * {@link #startActivityForResult(String, Intent, int, Bundle)}.
       * @hide
-@@ -2305,1951 +2038,6 @@
-         return false;
+      */
+     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
+     public boolean canStartActivityForResult() {
+-        return false;
++        throw new UnsupportedOperationException("hidden on ART");
      }
  
 -    /**
@@ -3206,6 +3225,15 @@
  
      /**
       * Returns the permission request state for a given runtime permission. This method provides a
+@@ -7053,7 +4864,7 @@
+     @CheckResult
+     @PermissionRequestState
+     public int getPermissionRequestState(@NonNull String permission) {
+-        throw new RuntimeException("Not implemented. Must override in a subclass.");
++        throw new UnsupportedOperationException("hidden on ART");
+     }
+ 
+     /**
 @@ -7085,8 +4896,11 @@
       *
       * @see #revokeUriPermission
@@ -3740,7 +3768,12 @@
  
      /**
       * Creates a UI context with a {@code token}. The users of this API should handle this context's
-@@ -8006,18 +5767,6 @@
+@@ -8002,22 +5763,10 @@
+     @UiContext
+     @NonNull
+     public Context createTokenContext(@NonNull IBinder token, @NonNull Display display) {
+-        throw new RuntimeException("Not implemented. Must override in a subclass.");
++        throw new UnsupportedOperationException("hidden on ART");
      }
  
      /**
@@ -3771,6 +3804,15 @@
      }
  
      /**
+@@ -8039,7 +5791,7 @@
+      */
+     @Nullable
+     public Display getDisplayNoVerify() {
+-        throw new RuntimeException("Not implemented. Must override in a subclass.");
++        throw new UnsupportedOperationException("hidden on ART");
+     }
+ 
+     /**
 @@ -8051,7 +5803,9 @@
       */
      @SuppressWarnings("HiddenAbstractMethod")
@@ -3782,6 +3824,15 @@
  
      /**
       * @return Returns the id of the Display object associated with this Context or
+@@ -8062,7 +5816,7 @@
+      * @hide
+      */
+     public int getAssociatedDisplayId() {
+-        throw new RuntimeException("Not implemented. Must override in a subclass.");
++        throw new UnsupportedOperationException("hidden on ART");
+     }
+ 
+     /**
 @@ -8073,7 +5827,9 @@
      @SuppressWarnings("HiddenAbstractMethod")
      @SuppressLint("UnflaggedApi") // @TestApi without associated feature.
@@ -3793,6 +3844,15 @@
  
      /**
       * Updates the device ID association of this Context. Since a Context created with
+@@ -8093,7 +5849,7 @@
+      */
+     @TestApi
+     public void updateDeviceId(int deviceId) {
+-        throw new RuntimeException("Not implemented. Must override in a subclass.");
++        throw new UnsupportedOperationException("hidden on ART");
+     }
+ 
+     /**
 @@ -8128,7 +5884,10 @@
       * @see #isUiContext()
       */
@@ -3877,7 +3937,25 @@
  
      /**
       * Returns token if the {@link Context} is a {@link android.app.Activity}. Returns
-@@ -8243,22 +6021,6 @@
+@@ -8212,7 +5990,7 @@
+      */
+     @Nullable
+     public IBinder getActivityToken() {
+-        throw new RuntimeException("Not implemented. Must override in a subclass.");
++        throw new UnsupportedOperationException("hidden on ART");
+     }
+ 
+     /**
+@@ -8224,7 +6002,7 @@
+      */
+     @Nullable
+     public IBinder getWindowContextToken() {
+-        throw new RuntimeException("Not implemented. Must override in a subclass.");
++        throw new UnsupportedOperationException("hidden on ART");
+     }
+ 
+     /**
+@@ -8243,112 +6021,36 @@
      }
  
      /**
@@ -3900,7 +3978,21 @@
       * Used by a mainline module to uniquely identify a specific app process.
       * @hide
       */
-@@ -8278,77 +6040,17 @@
+     @NonNull
+     @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
+     public IBinder getProcessToken() {
+-        throw new RuntimeException("Not implemented. Must override in a subclass.");
++        throw new UnsupportedOperationException("hidden on ART");
+     }
+ 
+     /**
+      * @hide
+      */
+     public Handler getMainThreadHandler() {
+-        throw new RuntimeException("Not implemented. Must override in a subclass.");
++        throw new UnsupportedOperationException("hidden on ART");
+     }
+ 
      /**
       * @hide
       */
@@ -3992,13 +4084,34 @@
      }
  
      /**
-@@ -8414,8 +6119,26 @@
+@@ -8385,7 +6090,9 @@
+      *
+      * @hide
+      */
+-    public void destroy() { }
++    public void destroy() {
++        throw new UnsupportedOperationException("hidden on ART");
++    }
+ 
+     /**
+      * Indicates this {@link Context} has the proper {@link Configuration} to obtain
+@@ -8405,7 +6112,7 @@
+      * @hide
+      */
+     public boolean isConfigurationContext() {
+-        throw new RuntimeException("Not implemented. Must override in a subclass.");
++        throw new UnsupportedOperationException("hidden on ART");
+     }
+ 
+     /**
+@@ -8414,8 +6121,26 @@
       *
       * @hide
       */
 -    @RequiresPermission(android.Manifest.permission.BROADCAST_CLOSE_SYSTEM_DIALOGS)
      public void closeSystemDialogs() {
-         throw new RuntimeException("Not implemented. Must override in a subclass.");
+-        throw new RuntimeException("Not implemented. Must override in a subclass.");
++        throw new UnsupportedOperationException("hidden on ART");
      }
 +
 +    @Added(reason = "the id of the ART object this handle forwards to")

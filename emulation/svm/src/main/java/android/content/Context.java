@@ -916,7 +916,7 @@ public abstract class Context implements Proxy {
      * you can't assume this actually means anything. */
     @UnsupportedAppUsage
     public int getThemeResId() {
-        return 0;
+        throw new UnsupportedOperationException("hidden on ART");
     }
 
     /**
@@ -1023,7 +1023,7 @@ public abstract class Context implements Proxy {
      */
     @Deprecated
     public @Nullable String getFeatureId() {
-        return getAttributionTag();
+        throw new UnsupportedOperationException("hidden on ART");
     }
 
     /**
@@ -1326,7 +1326,7 @@ public abstract class Context implements Proxy {
     @NonNull
     @TestApi
     public File getCrateDir(@NonNull String crateId) {
-        throw new RuntimeException("Not implemented. Must override in a subclass.");
+        throw new UnsupportedOperationException("hidden on ART");
     }
 
     /**
@@ -2035,7 +2035,7 @@ public abstract class Context implements Proxy {
      */
     @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
     public boolean canStartActivityForResult() {
-        return false;
+        throw new UnsupportedOperationException("hidden on ART");
     }
 
     /** @hide */
@@ -4864,7 +4864,7 @@ public abstract class Context implements Proxy {
     @CheckResult
     @PermissionRequestState
     public int getPermissionRequestState(@NonNull String permission) {
-        throw new RuntimeException("Not implemented. Must override in a subclass.");
+        throw new UnsupportedOperationException("hidden on ART");
     }
 
     /**
@@ -5763,7 +5763,7 @@ public abstract class Context implements Proxy {
     @UiContext
     @NonNull
     public Context createTokenContext(@NonNull IBinder token, @NonNull Display display) {
-        throw new RuntimeException("Not implemented. Must override in a subclass.");
+        throw new UnsupportedOperationException("hidden on ART");
     }
 
     /**
@@ -5791,7 +5791,7 @@ public abstract class Context implements Proxy {
      */
     @Nullable
     public Display getDisplayNoVerify() {
-        throw new RuntimeException("Not implemented. Must override in a subclass.");
+        throw new UnsupportedOperationException("hidden on ART");
     }
 
     /**
@@ -5816,7 +5816,7 @@ public abstract class Context implements Proxy {
      * @hide
      */
     public int getAssociatedDisplayId() {
-        throw new RuntimeException("Not implemented. Must override in a subclass.");
+        throw new UnsupportedOperationException("hidden on ART");
     }
 
     /**
@@ -5849,7 +5849,7 @@ public abstract class Context implements Proxy {
      */
     @TestApi
     public void updateDeviceId(int deviceId) {
-        throw new RuntimeException("Not implemented. Must override in a subclass.");
+        throw new UnsupportedOperationException("hidden on ART");
     }
 
     /**
@@ -5990,7 +5990,7 @@ public abstract class Context implements Proxy {
      */
     @Nullable
     public IBinder getActivityToken() {
-        throw new RuntimeException("Not implemented. Must override in a subclass.");
+        throw new UnsupportedOperationException("hidden on ART");
     }
 
     /**
@@ -6002,7 +6002,7 @@ public abstract class Context implements Proxy {
      */
     @Nullable
     public IBinder getWindowContextToken() {
-        throw new RuntimeException("Not implemented. Must override in a subclass.");
+        throw new UnsupportedOperationException("hidden on ART");
     }
 
     /**
@@ -6027,14 +6027,14 @@ public abstract class Context implements Proxy {
     @NonNull
     @SystemApi(client = SystemApi.Client.MODULE_LIBRARIES)
     public IBinder getProcessToken() {
-        throw new RuntimeException("Not implemented. Must override in a subclass.");
+        throw new UnsupportedOperationException("hidden on ART");
     }
 
     /**
      * @hide
      */
     public Handler getMainThreadHandler() {
-        throw new RuntimeException("Not implemented. Must override in a subclass.");
+        throw new UnsupportedOperationException("hidden on ART");
     }
 
     /**
@@ -6090,7 +6090,9 @@ public abstract class Context implements Proxy {
      *
      * @hide
      */
-    public void destroy() { }
+    public void destroy() {
+        throw new UnsupportedOperationException("hidden on ART");
+    }
 
     /**
      * Indicates this {@link Context} has the proper {@link Configuration} to obtain
@@ -6110,7 +6112,7 @@ public abstract class Context implements Proxy {
      * @hide
      */
     public boolean isConfigurationContext() {
-        throw new RuntimeException("Not implemented. Must override in a subclass.");
+        throw new UnsupportedOperationException("hidden on ART");
     }
 
     /**
@@ -6120,7 +6122,7 @@ public abstract class Context implements Proxy {
      * @hide
      */
     public void closeSystemDialogs() {
-        throw new RuntimeException("Not implemented. Must override in a subclass.");
+        throw new UnsupportedOperationException("hidden on ART");
     }
 
     @Added(reason = "the id of the ART object this handle forwards to")

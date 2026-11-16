@@ -108,6 +108,8 @@ class HandleClassesTest {
 
     private static final String STUB = "throw new UnsupportedOperationException(\"hidden on ART\");";
 
+    private static final Set<Modifier> NOT_OVERRIDABLE = Set.of(Modifier.STATIC, Modifier.FINAL, Modifier.PRIVATE);
+
     private static final Set<ClassDesc> ARRAY_ELEMENTS = Set.of(ConstantDescs.CD_char, ConstantDescs.CD_short,
             ConstantDescs.CD_int, ConstantDescs.CD_float, ConstantDescs.CD_long, ConstantDescs.CD_double);
 
@@ -1330,6 +1332,11 @@ class HandleClassesTest {
 
         private void resolveHiddenMethods() {
             Set<Tree> stubbed = Collections.newSetFromMap(new IdentityHashMap<>());
+            for (HiddenMethod hidden : hiddenMethods) {
+                if (isOverridable(hidden)) {
+                    stubbed.add(hidden.ours());
+                }
+            }
             boolean changed = true;
             while (changed) {
                 changed = false;
@@ -1345,11 +1352,19 @@ class HandleClassesTest {
                 if (resolved && hidden.stub()) {
                     violations.add(hidden.root().internalName + " stubs the hidden " + keyOf(hidden.stock())
                             + ", whose body names only what the handle keeps");
+                } else if (!hidden.stub() && isOverridable(hidden)) {
+                    violations.add(hidden.root().internalName + " keeps the hidden " + keyOf(hidden.stock())
+                            + " verbatim, which a subclass of the root can override");
                 } else if (!resolved && !hidden.stub()) {
                     violations.add(hidden.root().internalName + " keeps the hidden " + keyOf(hidden.stock())
                             + " verbatim, whose body names what the handle lacks");
                 }
             }
+        }
+
+        private static boolean isOverridable(HiddenMethod hidden) {
+            return !hidden.root().android.flags().has(AccessFlag.FINAL)
+                    && Collections.disjoint(hidden.stock().getModifiers().getFlags(), NOT_OVERRIDABLE);
         }
 
         private boolean isResolved(HiddenMethod hidden, Set<Tree> stubbed) {

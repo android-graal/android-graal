@@ -32,6 +32,8 @@ import javax.tools.ToolProvider
 
 private val CONSTANT = setOf(Modifier.PUBLIC, Modifier.STATIC, Modifier.FINAL)
 
+private val NOT_OVERRIDABLE = setOf(Modifier.STATIC, Modifier.FINAL, Modifier.PRIVATE)
+
 private const val INIT = "<init>"
 
 private const val SUPER = "super"
@@ -60,7 +62,7 @@ internal class Members(private val sources: File, private val classpath: Classpa
             removed = Fates(fields, settled, types).removed,
             inherited = inheritedTypesOf(root),
         )
-        val hidden = hiddenOf(declarations.methods.filter { it !in settled }, resolver)
+        val hidden = hiddenOf(root, declarations.methods.filter { it !in settled }, resolver)
         val fates = Fates(fields, settled + hidden, types)
         checkKeptTexts(root, fates, declarations, resolver, createFromParcel?.body)
         checkCreator(root, fates, resolver, createFromParcel?.body)
@@ -230,9 +232,12 @@ internal class Members(private val sources: File, private val classpath: Classpa
         if (shared != null) fail("$name has two methods with the source key $shared in $input, $UNWRITTEN")
     }
 
-    private fun hiddenOf(methods: List<MethodTree>, resolver: Resolver): Map<MethodTree, MethodFate> {
+    private fun hiddenOf(root: Root, methods: List<MethodTree>, resolver: Resolver): Map<MethodTree, MethodFate> {
         val (headed, lacking) = methods.partition(resolver::isPresentHead)
-        val stubbed = LinkedHashSet(headed.filter { Modifier.ABSTRACT in it.modifiers.flags })
+        val overridable = headed.filter {
+            Modifier.FINAL !in root.modifiers && it.modifiers.flags.none(NOT_OVERRIDABLE::contains)
+        }
+        val stubbed = LinkedHashSet(overridable)
         do {
             val gone = lacking.toSet() + stubbed
             val unresolved = headed.filter { it !in stubbed && !resolver.isResolvedBody(it, gone) }
